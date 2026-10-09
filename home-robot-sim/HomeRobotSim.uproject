@@ -1,0 +1,5 @@
+{
+ "FileVersion":3,"EngineAssociation":"5.8","Category":"Robotics","Description":"Home robot R1 physics and stereo testbed",
+ "Modules":[{"Name":"HomeRobotSim","Type":"Runtime","LoadingPhase":"Default"}],
+ "Plugins":[{"Name":"ProceduralMeshComponent","Enabled":true},{"Name":"PythonScriptPlugin","Enabled":true}]
+}

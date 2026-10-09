@@ -1,0 +1,930 @@
+{
+  "base_length": 244,
+  "base_width": 200,
+  "base_bottom": 29,
+  "base_thickness": 4,
+  "wheel_diameter": 80,
+  "wheel_track": 228,
+  "wheel_x": 0,
+  "camera_baseline": 0,
+  "camera_height": 107.5,
+  "camera_x": 117,
+  "lidar_height": 147.5,
+  "lidar_x": 20,
+  "outer_radius": 158.9,
+  "shell_radius": 157.4,
+  "rear_shell_radius": 152.5,
+  "base_radius": 148,
+  "bumper_tip_radius": 152.7,
+  "bumper_axis_deg": 30,
+  "bumper_travel": 5.0,
+  "bumper_z": [
+    18,
+    98.5
+  ],
+  "bumper_span_deg": 90,
+  "rear_caster": [
+    -75,
+    0,
+    0
+  ],
+  "caster_ball_radius": 12.7,
+  "cliff_sensors": [
+    [
+      105,
+      72
+    ],
+    [
+      105,
+      -72
+    ],
+    [
+      -110,
+      81
+    ],
+    [
+      -110,
+      -81
+    ]
+  ],
+  "cliff_z": 42.5,
+  "cliff_fov_deg": 25,
+  "camera_hfov_deg": 84,
+  "camera_image_px": [
+    640,
+    360
+  ],
+  "camera_check_image_px": [
+    640,
+    480
+  ],
+  "camera_check_vfov_deg": 68.06,
+  "camera_x_note": "camera_x = lens front face; the image frustum apex used for every clearance check is 3 mm behind it (x 114), the assumed worst entrance-pupil position; the lens solid centre is x 112.4",
+  "camera_image_note": "The simulator renders 640 \u00d7 360 (16:9, as the OV2735 1920 \u00d7 1080 mode); the CAD clearance check deliberately uses a taller 4:3 frustum (VFOV 68.06 deg), which is conservative.",
+  "max_speed_mps": 0.15,
+  "max_speed_source": "home-robot-sim DriveCore.h max_speed (forward)",
+  "reverse_speed_limit_m_s": 0.06,
+  "reverse_speed_limit_source": "firmware reverse speed cap: the simulator firmware caps reverse at 0.06 m/s (the controller never commands more than 0.05 m/s in reverse); the rear-cliff coast check uses it",
+  "drive_model": {
+    "max_torque_nm": 0.1,
+    "dynamic_brake_nm_per_rad_s": 0.01,
+    "rolling_drag_nm": 0.003,
+    "axle_inertia_kg_m2": 0.0005,
+    "hazard_action": "disarm: tl = tr = 0, the wheels then see the simulator dynamic brake (coast)",
+    "source": "home-robot-sim DriveCore.h (max_torque, disarm on hazard) and RobotPawn.cpp / robot-parameters.json (0.010 N m s/rad dynamic brake while disarmed, 0.003 N m rolling drag, 0.0005 kg m2 reflected axle inertia)"
+  },
+  "base_x_range": [
+    -124,
+    120
+  ],
+  "printer_bed": [
+    250,
+    210,
+    210
+  ],
+  "bumper_notch": {
+    "half_width_deg_at_skin": 13.5,
+    "top_z_profile_az_deg_z_mm": [
+      [
+        2.0,
+        75.2
+      ],
+      [
+        2.5,
+        74.5
+      ],
+      [
+        3.0,
+        74.5
+      ],
+      [
+        3.5,
+        74.5
+      ],
+      [
+        4.5,
+        74.5
+      ],
+      [
+        5.0,
+        74.2
+      ],
+      [
+        5.5,
+        74.2
+      ],
+      [
+        6.0,
+        74.5
+      ],
+      [
+        6.5,
+        74.5
+      ],
+      [
+        7.0,
+        74.8
+      ],
+      [
+        7.5,
+        74.5
+      ],
+      [
+        8.0,
+        74.8
+      ],
+      [
+        8.5,
+        74.8
+      ],
+      [
+        9.0,
+        75.2
+      ],
+      [
+        9.5,
+        75.2
+      ],
+      [
+        10.0,
+        75.2
+      ],
+      [
+        10.5,
+        75.7
+      ],
+      [
+        11.0,
+        75.8
+      ],
+      [
+        11.5,
+        76.0
+      ],
+      [
+        12.0,
+        76.2
+      ],
+      [
+        12.5,
+        76.5
+      ],
+      [
+        13.0,
+        77.3
+      ],
+      [
+        13.5,
+        98.5
+      ],
+      [
+        14.0,
+        98.5
+      ],
+      [
+        15.0,
+        98.5
+      ],
+      [
+        16.0,
+        98.5
+      ],
+      [
+        17.0,
+        98.5
+      ],
+      [
+        18.0,
+        98.5
+      ],
+      [
+        19.0,
+        98.5
+      ]
+    ],
+    "design_inputs": {
+      "top_mm": 76.5,
+      "outer_edge_top_mm": 73.5
+    },
+    "note": "measured on the built P_bumper_left outer shell (mirror for the right half); for |az| below half_width_deg_at_skin the bumper top follows the profile, above it the arc is full height (z 98.5)"
+  },
+  "com_estimate_mm": [
+    -18.5,
+    -1.1,
+    60.7
+  ],
+  "com_estimate_note": "total COM including the wheels and the caster ball; body_com_mm excludes them (the simulator Body)",
+  "body_com_mm": [
+    -17.37,
+    -1.12,
+    62.77
+  ],
+  "total_mass_estimate_kg": 2.422,
+  "body_mass_kg": 2.284,
+  "body_inertia_kg_m2": [
+    [
+      0.011697,
+      8.9e-05,
+      -0.000708
+    ],
+    [
+      8.9e-05,
+      0.014611,
+      7.3e-05
+    ],
+    [
+      -0.000708,
+      7.3e-05,
+      0.021975
+    ]
+  ],
+  "skin_z": [
+    26,
+    71.5
+  ],
+  "skin_az_deg": [
+    1.35,
+    70
+  ],
+  "skin_note": "EVA foam skin R158.9 for az ~4..70 (seam-end ramps from az 1.35); bare PTFE-taped shell R157.4 for 70..78, tapering to R152.7 at 90",
+  "seam_mm": 7.5,
+  "seam_end_ramp": {
+    "depth_mm": 2.7,
+    "angle_from_tangent_deg": 15.0
+  },
+  "rear_shell_outer_az_deg": [
+    92.5,
+    180
+  ],
+  "rear_shell_lead_in": {
+    "r_at_start_mm": 151.5,
+    "over_deg": 3.5
+  },
+  "rear_shell_flange_az_deg": [
+    88,
+    94
+  ],
+  "rear_shell_flange_r_mm": [
+    143.0,
+    146.0
+  ],
+  "rear_shell_z": [
+    18,
+    98.5
+  ],
+  "bumper_end_taper": {
+    "az_deg": [
+      78,
+      90
+    ],
+    "r_mm": [
+      157.4,
+      152.7
+    ]
+  },
+  "bumper_dir_left": [
+    -0.866,
+    -0.5
+  ],
+  "bumper_dir_right": [
+    -0.866,
+    0.5
+  ],
+  "switch_trip_mm": 2.25,
+  "bumper_side_play_mm": 0.09999999999999964,
+  "bumper_max_yaw_deg": 0.282,
+  "envelope_worst_case_r_mm": 159.761,
+  "floor_clearance_mm": 14.0,
+  "floor_clearance_note": "bumper, rear shell and pins z 18; caster housing z 14",
+  "height_mm": 155.2,
+  "rear_caster_ball_centre": [
+    -75,
+    0,
+    12.7
+  ],
+  "rear_caster_note": "rear_caster is the floor contact point",
+  "base_x_note": "P_base spans x -124..120 (centre x -2), R148 disc clipped to |y| <= 100",
+  "camera_lower_edge_bumper_clearance_mm": 4.07,
+  "coast_safe_reverse_speed_mps": 0.095,
+  "caster_load_fraction": 0.246,
+  "rear_caster_load_N": 5.85,
+  "rear_cliff_lead_over_caster_mm": 35,
+  "rear_cliff_coast_at_reverse_limit_mm": {
+    "speed_m_s": 0.06,
+    "latency_travel_mm": 4.0,
+    "distance_mm": 14.6,
+    "required_lead_mm": 23.3,
+    "margin_mm": 11.7,
+    "ok": true
+  },
+  "threshold_capability_mm": {
+    "forward": 1.5,
+    "reverse": 1.5,
+    "note": "largest square step (0.5 mm steps) not rated fail",
+    "step_8mm": "fail forward / fail reverse",
+    "step_10mm": "fail forward / fail reverse",
+    "meaning": "CAD quasi-static analysis with the DriveCore torque cap: 8 and 10 mm thresholds are NOT a hardware capability; a simulator pass over them is not evidence the robot can cross them."
+  },
+  "sim_contract": {
+    "drive_axle_x_m": 0.0,
+    "caster_x_m": -0.075,
+    "caster_ball_centre_m": [
+      -0.075,
+      0,
+      0.0127
+    ],
+    "wheel_offset_cm": [
+      0.0,
+      11.4,
+      4.0
+    ],
+    "cliff_rays_m": [
+      [
+        0.105,
+        0.072,
+        0.0425
+      ],
+      [
+        0.105,
+        -0.072,
+        0.0425
+      ],
+      [
+        -0.11,
+        0.081,
+        0.0425
+      ],
+      [
+        -0.11,
+        -0.081,
+        0.0425
+      ]
+    ],
+    "cliff_order": "FL, FR, RL, RR",
+    "collider": {
+      "shape": "round: vertical cylinder sectors about (0,0)",
+      "front_arcs_r_m": 0.1589,
+      "front_arcs_az_deg": [
+        -90,
+        90
+      ],
+      "rear_shell_r_m": 0.1525,
+      "rear_shell_az_deg": [
+        92.5,
+        267.5
+      ],
+      "z_m": [
+        0.018,
+        0.0985
+      ]
+    },
+    "bumpers": {
+      "left_switch": "az 0..+90 (left half)",
+      "right_switch": "az 0..-90 (right half)",
+      "seam_mm": 7.5,
+      "camera_notch": "see bumper_notch: no bumper above the notch top profile for |az| < half_width_deg_at_skin",
+      "zones_note": "a centre hit can trip either or both switches"
+    },
+    "reverse_speed_limit_m_s": 0.06,
+    "infrared_light_bump_sensors": 0,
+    "mass_properties": "cad/mass-properties.json (records, body COM, body inertia)",
+    "sync_guard": "replace the wheel_x == 42 guard with the values here; drop the old bought-part positions"
+  },
+  "bay_board": {
+    "outline_mm": [
+      [
+        -14.648,
+        49.971
+      ],
+      [
+        -14.352,
+        49.853
+      ],
+      [
+        -14.101,
+        49.656
+      ],
+      [
+        -13.918,
+        49.395
+      ],
+      [
+        -13.817,
+        49.092
+      ],
+      [
+        -13.8,
+        48.773
+      ],
+      [
+        -13.8,
+        35.003
+      ],
+      [
+        -13.769,
+        34.685
+      ],
+      [
+        -13.675,
+        34.38
+      ],
+      [
+        -13.522,
+        34.099
+      ],
+      [
+        -13.316,
+        33.854
+      ],
+      [
+        -13.066,
+        33.655
+      ],
+      [
+        -12.782,
+        33.509
+      ],
+      [
+        -12.474,
+        33.424
+      ],
+      [
+        -12.155,
+        33.4
+      ],
+      [
+        6.098,
+        33.4
+      ],
+      [
+        6.418,
+        33.4
+      ],
+      [
+        6.733,
+        33.348
+      ],
+      [
+        7.02,
+        33.209
+      ],
+      [
+        7.254,
+        32.993
+      ],
+      [
+        7.417,
+        32.718
+      ],
+      [
+        7.494,
+        32.409
+      ],
+      [
+        7.5,
+        32.089
+      ],
+      [
+        7.5,
+        -32.275
+      ],
+      [
+        7.461,
+        -32.592
+      ],
+      [
+        7.332,
+        -32.884
+      ],
+      [
+        7.125,
+        -33.127
+      ],
+      [
+        6.857,
+        -33.3
+      ],
+      [
+        6.551,
+        -33.389
+      ],
+      [
+        6.231,
+        -33.4
+      ],
+      [
+        -12.021,
+        -33.4
+      ],
+      [
+        -12.341,
+        -33.406
+      ],
+      [
+        -12.655,
+        -33.466
+      ],
+      [
+        -12.951,
+        -33.587
+      ],
+      [
+        -13.217,
+        -33.765
+      ],
+      [
+        -13.442,
+        -33.991
+      ],
+      [
+        -13.618,
+        -34.259
+      ],
+      [
+        -13.737,
+        -34.555
+      ],
+      [
+        -13.795,
+        -34.87
+      ],
+      [
+        -13.8,
+        -35.19
+      ],
+      [
+        -13.8,
+        -48.639
+      ],
+      [
+        -13.802,
+        -48.959
+      ],
+      [
+        -13.865,
+        -49.272
+      ],
+      [
+        -14.015,
+        -49.553
+      ],
+      [
+        -14.24,
+        -49.78
+      ],
+      [
+        -14.52,
+        -49.932
+      ],
+      [
+        -14.832,
+        -49.998
+      ],
+      [
+        -15.153,
+        -50.0
+      ],
+      [
+        -65.106,
+        -50.0
+      ],
+      [
+        -65.426,
+        -49.992
+      ],
+      [
+        -65.735,
+        -49.91
+      ],
+      [
+        -66.006,
+        -49.743
+      ],
+      [
+        -66.219,
+        -49.505
+      ],
+      [
+        -66.353,
+        -49.216
+      ],
+      [
+        -66.4,
+        -48.9
+      ],
+      [
+        -66.4,
+        48.766
+      ],
+      [
+        -66.384,
+        49.085
+      ],
+      [
+        -66.285,
+        49.389
+      ],
+      [
+        -66.103,
+        49.651
+      ],
+      [
+        -65.854,
+        49.85
+      ],
+      [
+        -65.558,
+        49.969
+      ],
+      [
+        -65.24,
+        50.0
+      ],
+      [
+        -14.966,
+        50.0
+      ]
+    ],
+    "z_bottom_mm": 35.4,
+    "thickness_mm": 1.6,
+    "z_top_mm": 37.0,
+    "mounts_mm": [
+      [
+        -19.5,
+        38.0
+      ],
+      [
+        -19.5,
+        -38.0
+      ],
+      [
+        -11.5,
+        8.5
+      ],
+      [
+        -11.5,
+        -8.5
+      ]
+    ],
+    "clamps_mm": [
+      [
+        -33.0,
+        40.0
+      ],
+      [
+        -33.0,
+        -46.0
+      ]
+    ],
+    "carrier_x_mm": -38.5,
+    "under_carrier_z_mm": 54.77,
+    "connectors_mm": {
+      "J1": [
+        -61.6,
+        -19.59
+      ],
+      "J2": [
+        -61.6,
+        -9.13
+      ],
+      "J13": [
+        -62.98,
+        44.2
+      ],
+      "J12": [
+        -62.98,
+        -0.33
+      ],
+      "J6": [
+        -62.98,
+        30.61
+      ],
+      "J7": [
+        -62.98,
+        13.27
+      ],
+      "J3": [
+        -43.02,
+        -45.15
+      ],
+      "J4": [
+        -11.95,
+        19.66
+      ],
+      "J5": [
+        -7.64,
+        -19.66
+      ],
+      "J8": [
+        4.03,
+        -3.15
+      ],
+      "J9": [
+        4.03,
+        -20.8
+      ],
+      "J10": [
+        -25.45,
+        46.58
+      ],
+      "J11": [
+        -25.35,
+        -46.58
+      ],
+      "U5A": [
+        1.7,
+        23.14
+      ],
+      "U5B": [
+        1.7,
+        11.84
+      ]
+    },
+    "rear_row_courtyards_mm": {
+      "J13": [
+        -66.395,
+        -59.555,
+        39.955,
+        48.445
+      ],
+      "J6": [
+        -66.395,
+        -59.555,
+        22.615,
+        38.605
+      ],
+      "J7": [
+        -66.395,
+        -59.555,
+        5.275,
+        21.265
+      ],
+      "J12": [
+        -66.395,
+        -59.555,
+        -4.575,
+        3.915
+      ],
+      "J2": [
+        -66.395,
+        -56.805,
+        -13.605,
+        -4.655
+      ],
+      "J1": [
+        -66.395,
+        -56.805,
+        -24.065,
+        -15.115
+      ]
+    },
+    "ribs_mm": [
+      [
+        -61.5,
+        -59.55,
+        -4.575,
+        48.445
+      ],
+      [
+        -59.8,
+        -57.8,
+        -24.065,
+        -6.175
+      ]
+    ],
+    "holddown_fingers_mm": [
+      {
+        "box_xyz": [
+          -68.0,
+          38.58,
+          36.992,
+          -64.45,
+          39.98,
+          39.65
+        ],
+        "contact_xy": [
+          -66.0,
+          39.28
+        ],
+        "gap_between_bodies_mm": 2.34,
+        "beam": {
+          "yc": 39.28,
+          "gap": 2.34,
+          "d": 1,
+          "y_end": 38.58,
+          "y_root": 70.28,
+          "posts": [
+            39.23,
+            42.53,
+            45.83,
+            49.13,
+            52.43,
+            55.73,
+            59.03,
+            62.33,
+            65.63,
+            68.93
+          ]
+        },
+        "finger_to_board_top_mm": -0.003,
+        "finger_to_laminate_body_mm": 0.082,
+        "contact_patch_mm2": 1.12,
+        "parts_under_patch": [],
+        "ok": true
+      },
+      {
+        "box_xyz": [
+          -68.0,
+          3.895,
+          36.992,
+          -64.45,
+          5.295,
+          39.65
+        ],
+        "contact_xy": [
+          -66.0,
+          4.595
+        ],
+        "gap_between_bodies_mm": 2.35,
+        "beam": {
+          "yc": 4.595,
+          "gap": 2.35,
+          "d": 1,
+          "y_end": 3.895,
+          "y_root": 35.595,
+          "posts": [
+            4.545,
+            7.845,
+            11.145,
+            14.445,
+            17.745,
+            21.045,
+            24.345,
+            27.645,
+            30.945,
+            34.245
+          ]
+        },
+        "finger_to_board_top_mm": -0.003,
+        "finger_to_laminate_body_mm": 0.082,
+        "contact_patch_mm2": 1.12,
+        "parts_under_patch": [],
+        "ok": true
+      },
+      {
+        "box_xyz": [
+          -68.0,
+          -15.06,
+          36.992,
+          -64.45,
+          -13.66,
+          39.65
+        ],
+        "contact_xy": [
+          -66.0,
+          -14.36
+        ],
+        "gap_between_bodies_mm": 2.5,
+        "beam": {
+          "yc": -14.36,
+          "gap": 2.5,
+          "d": -1,
+          "y_end": -13.66,
+          "y_root": -45.36,
+          "posts": [
+            -14.31,
+            -17.61,
+            -20.91,
+            -24.21,
+            -27.51,
+            -30.81,
+            -34.11,
+            -37.41,
+            -40.71,
+            -44.01
+          ]
+        },
+        "finger_to_board_top_mm": -0.003,
+        "finger_to_laminate_body_mm": 0.082,
+        "contact_patch_mm2": 1.12,
+        "parts_under_patch": [],
+        "ok": true
+      }
+    ],
+    "pico_usb_face_mm": [
+      -48.81,
+      49.92,
+      50.26
+    ],
+    "lead_trim_mm": 1.4,
+    "p03_box_mm": [
+      9.0,
+      -31.0,
+      33,
+      47.0,
+      31.0,
+      48
+    ],
+    "note": "bay B8: the real routed board (pcb/fab/r1_power_io.step, pcb/board_cad.json); connectors_mm are the connector body centres (harness ends)"
+  }
+}

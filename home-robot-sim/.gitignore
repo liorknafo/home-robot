@@ -1,0 +1,6 @@
+Intermediate/
+DerivedDataCache/
+.venv/
+__pycache__/
+*.pyc
+Saved/Logs/

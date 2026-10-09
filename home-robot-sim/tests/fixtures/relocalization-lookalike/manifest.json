@@ -1,0 +1,22 @@
+{
+  "sensor_configuration": "d200_single_camera",
+  "complete": false,
+  "reason": "Stopped by user; current mapping progress saved.",
+  "unresolved_frontier_count": 1,
+  "camera_role": "multi-view sparse low-obstacle map and motion consistency check",
+  "camera_obstacle_cells": 181,
+  "unvisited_navigable_area_m2": 0.7900000000000001,
+  "disconnected_safe_area_m2": 1.2650000000000003,
+  "planning_radius_m": 0.2,
+  "scope": "observed reachable space; sparse camera coverage does not guarantee all low objects or cables",
+  "pose_confidence_is_heuristic": true,
+  "keyframes": 394,
+  "contacts": 1,
+  "skipped_targets": 1,
+  "trouble_spots": 0,
+  "observed_area_m2": 42.080000000000005,
+  "free_area_m2": 36.49250000000001,
+  "uncertain_observed_fraction": 0.009327471482889734,
+  "mean_observed_entropy_bits": 0.08469264954328537,
+  "updates": 2935
+}

@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.DS_Store
+.superpowers/
+pcb/tools/*.jar
+pcb/fab/tmp/
+*-backups/
+fp-info-cache
+pcb/erc.json
+pcb/drc_placed.json
+pcb/*.dsn
+pcb/*.ses
+pcb/drc*.json
+# NVIDIA Jetson Nano B01 STEP (53.7 MB): unzip from reference-models/Jetson_Nano_Dev_Kit_3D_b01.zip; cad/simplify_jetson.py reads it
+reference-models/jetson-nano-b01/Jetson_Nano_Dev_Kit_3D_b01.stp
+# Robot assembly STEP (~67 MB since B8): a build output of cad/build_robot.py, derivable; the GLB and cad/assembly-meshes.json stay tracked
+cad/home-robot-r1.step

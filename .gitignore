@@ -1,0 +1,22 @@
+.DS_Store
+__pycache__/
+*.pyc
+*.log
+# Fetched manufacturer models (tools/fetch_reference_models.sh) - never committed
+home-robot-r1/reference-models/*
+!home-robot-r1/reference-models/SOURCE.txt
+# Generated meshes containing manufacturer geometry
+home-robot-r1/cad/assembly-meshes.json
+home-robot-r1/cad/home-robot-r1.glb
+home-robot-r1/cad/home-robot-r1.step
+home-robot-r1/design-review.html
+home-robot-r1/pcb/tools/*.jar
+home-robot-sim/Content/RobotData/assembly-meshes.json
+# Simulator outputs and caches
+home-robot-sim/Saved/
+home-robot-sim/Intermediate/
+home-robot-sim/DerivedDataCache/
+home-robot-sim/Binaries/
+home-robot-sim/.venv/
+home-robot-sim/reports/*
+!home-robot-sim/reports/.gitkeep

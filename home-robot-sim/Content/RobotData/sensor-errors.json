@@ -1,0 +1,45 @@
+{
+  "schema": "r1-sim-sensor-errors/1",
+  "purpose": "SIMULATOR ONLY (bay B11). Error model applied by controller/sim_sensor_model.py where Unreal's raw robot_state enters the controller (autonomy_service.RobotIO, robot_client.RobotClient, the 2D test harness tests/sim2d.py). The robot code (controller/autonomy) never reads this file or imports that module (tests/test_sensor_errors.py checks this).",
+  "errors": "on",
+  "switch": "'errors' on|off here; the environment variable R1_SENSOR_ERRORS=on|off overrides it (R1_SENSOR_SEED overrides the seed). Off only for exact-regression runs of the simulator itself (tests/run_physics.py measures physics, not the robot, and turns it off).",
+  "seed": 20261027,
+  "seed_choice": "PESSIMISTIC default (controller ruling, B11): 20261027 is the first seed counting up from 20261010 whose board is near the datasheet corners on every axis that matters: accelerometer z offset -76.2 mg (bound 80; x +31.7, y -36.9 mg), so the uncalibrated level norm is 8.96 m/s2 and fails the robot's old +/-0.3 m/s2 gravity gate by 0.84; gyro zero-rate offsets +19.5 / +18.5 / -18.6 deg/s (bound 20); gyro z scale error -2.15 % (>= 2 %); z warm-up drift +0.119 deg/s per C (bound 0.16, i.e. +1.6 deg/s over the assumed warm-up). Criteria: |accel z offset| >= 50 mg and the old gate fails, |gyro ZRO z| >= 10 deg/s, |gyro z scale| >= 2 %. Earlier candidates: 20261010 (passes the old gate uncalibrated, norm error 0.04 m/s2: benign), 20261018 (z scale 1.6 %). R1_SENSOR_SEED=<n> overrides the seed (contrast runs only; the robot's imu-calibration.json must then be re-made for that board).",
+  "seed_note": "One seed draws ONE board: every constant error below (offsets, scale factors, cross-axis terms, temperature coefficients, wheel and track errors) is drawn once from it, uniformly within the stated bound, so the worst cases are as likely as the typical ones. The white-noise sequence is seeded from (seed, run seed); the run seed is 0 for the service and the sim2d LiDAR seed in the 2D harness.",
+  "sample_rate_hz": {"value": 20, "source": "sim", "ref": "RobotPawn::SendState sends one robot_state every 0.05 s; one IMU sample per state is assumed (the Pico forwards the latest sample)."},
+  "power_on_clock": {"source": "sim", "ref": "The model's clock starts at the first sample it sees (service or client start = power-on) and advances by the sim-time step, clipped to 0..0.5 s per sample (an Unreal reset moves sim time back; the board keeps warming)."},
+  "gravity_m_s2": {"value": 9.8, "source": "sim", "ref": "RobotPawn.cpp: SpecificForce = dv/dt + (0, 0, 9.8)"},
+  "gyro": {
+    "part": "InvenSense MPU-6050 on the GY-521, FS_SEL = 0 (+/-250 deg/s)",
+    "datasheet": "MPU-6000/MPU-6050 Product Specification PS-MPU-6000A-00 rev 3.4, section 6.1 (gyroscope). Values quoted from memory; entries marked verify must be checked against the PDF.",
+    "full_scale_dps": {"value": 250, "source": "datasheet", "ref": "FS_SEL = 0; outputs clip at +/-32767 LSB"},
+    "sensitivity_lsb_per_dps": {"value": 131, "source": "datasheet", "ref": "FS_SEL = 0; quantization 1/131 deg/s"},
+    "zero_rate_offset_dps": {"value": 20, "distribution": "uniform +/-value, per axis", "source": "datasheet", "ref": "initial ZRO tolerance +/-20 deg/s"},
+    "zro_temperature_coefficient_dps_per_c": {"value": 0.16, "distribution": "uniform +/-value, per axis", "source": "datasheet", "ref": "derived: ZRO variation over temperature +/-20 deg/s across -40..+85 C (125 C), i.e. <= 0.16 deg/s per C if linear", "verify": true},
+    "noise_density_dps_per_rthz": {"value": 0.005, "source": "datasheet", "ref": "rate noise spectral density at 10 Hz; per-sample white noise sigma = density x sqrt(sample rate) = 0.0224 deg/s at 20 Hz (task brief formula)"},
+    "scale_factor_tolerance": {"value": 0.03, "distribution": "uniform +/-value, per axis", "source": "datasheet", "ref": "sensitivity scale factor tolerance +/-3 % at 25 C"},
+    "cross_axis": {"value": 0.02, "distribution": "uniform +/-value, per off-diagonal term", "source": "datasheet", "ref": "cross-axis sensitivity +/-2 %"},
+    "not_modelled": "scale factor change over temperature (+/-2 % over -40..+85 C: <= 0.24 % over the assumed 15 C warm-up), nonlinearity 0.2 %, power-supply sensitivity, g-sensitivity"
+  },
+  "accelerometer": {
+    "part": "MPU-6050, AFS_SEL = 0 (+/-2 g)",
+    "datasheet": "PS-MPU-6000A-00 rev 3.4, section 6.2 (accelerometer). Values quoted from memory; entries marked verify must be checked against the PDF.",
+    "full_scale_g": {"value": 2, "source": "datasheet", "ref": "AFS_SEL = 0; outputs clip at +/-32767 LSB"},
+    "sensitivity_lsb_per_g": {"value": 16384, "source": "datasheet", "ref": "AFS_SEL = 0; quantization 1/16384 g (g = 9.80665 m/s2)"},
+    "zero_g_offset_mg": {"xy": 50, "z": 80, "distribution": "uniform +/-value, per axis", "source": "datasheet", "ref": "zero-g initial calibration tolerance: x and y +/-50 mg, z +/-80 mg"},
+    "zero_g_temperature_coefficient_mg_per_c": {"xy": 0.5, "z": 0.857, "distribution": "uniform +/-value, per axis", "source": "datasheet", "ref": "derived: zero-g level change vs temperature 0..70 C: x and y +/-35 mg, z +/-60 mg", "verify": true},
+    "noise_density_ug_per_rthz": {"value": 400, "source": "datasheet", "ref": "power spectral density at 10 Hz; per-sample sigma = 400 ug x sqrt(20 Hz) = 1.79 mg"},
+    "sensitivity_tolerance": {"value": 0.03, "distribution": "uniform +/-value, per axis", "source": "datasheet", "ref": "initial calibration tolerance +/-3 %"},
+    "cross_axis": {"value": 0.02, "distribution": "uniform +/-value, per off-diagonal term", "source": "datasheet", "ref": "cross-axis sensitivity +/-2 %"},
+    "not_modelled": "sensitivity change over temperature (+/-0.02 %/C), nonlinearity 0.5 %"
+  },
+  "warm_up": {
+    "temperature_rise_c": {"value": 15, "source": "assumed", "ref": "the enclosure warms as the Jetson runs (GY-521 under the Jetson carrier); not measured"},
+    "time_constant_s": {"value": 600, "source": "assumed", "ref": "first-order rise from power-on: dT(t) = rise x (1 - exp(-t / tau))"}
+  },
+  "odometry": {
+    "wheel_radius_error": {"value": 0.01, "distribution": "uniform +/-value, per wheel", "source": "assumed", "ref": "effective rolling radius vs the nominal wheel_radius_m (printed hub, tyre compression); ticks are scaled by 1 / (1 + error)"},
+    "track_error": {"value": 0.02, "distribution": "uniform +/-value", "source": "assumed", "ref": "effective track vs the nominal wheel_track_m (contact patch width); the left-right tick difference is scaled by 1 + error"},
+    "note": "Wheel slip already comes from the physics: Unreal's encoders count wheel rotation relative to the body (RobotPawn.cpp Tick, LeftRate/RightRate). Only calibration errors are added here. Encoder quantization is Unreal's (ticks are rounded)."
+  }
+}

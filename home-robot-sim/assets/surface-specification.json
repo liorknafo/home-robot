@@ -1,0 +1,38 @@
+{
+  "floor": {
+    "type": "traditional Israeli terrazzo / balatot",
+    "tile_size_cm": 30,
+    "joint_mm": 1.953,
+    "aggregate_diameter_cm_range": [
+      0.36,
+      1.46
+    ],
+    "polished_roughness": 0.3,
+    "matte_roughness": 0.8,
+    "metallic": 0,
+    "specular": 0.4,
+    "coverage_cm": [
+      800,
+      600
+    ]
+  },
+  "walls_and_ceiling": {
+    "type": "off-white matte paint",
+    "roughness": 0.87,
+    "base_srgb": [
+      231,
+      231,
+      228
+    ],
+    "low_frequency_color_variation_sigma_8bit": 1.1
+  },
+  "references": [
+    "https://www.ruhama-sharon.co.il/post/terrazzo-טרצו",
+    "https://www.alony.co.il/מגזין/טרצו_-_לא_מה_שחשבתם"
+  ],
+  "limitations": [
+    "Appearance and material values are approximate, not measured from this home",
+    "Screen-space reflections omit off-screen objects",
+    "Materials are not features inserted to assist localization"
+  ]
+}

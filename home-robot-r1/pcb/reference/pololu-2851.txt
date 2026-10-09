@@ -1,0 +1,33 @@
+Pololu item 2851 - D24V50F5, 5 V 5 A step-down voltage regulator (dev code reg15d)
+Condensed notes for pcb/board_spec.py. Retrieved 2026-10-04. Each fact names its source.
+
+SOURCES
+ [P]  Product page text: https://www.pololu.com/product/2851
+ [D]  Dimension diagram PDF (2 Jan 2018): https://www.pololu.com/file/0J1436/d24v50f5-step-down-voltage-regulator-dimensions.pdf
+ [T]  Top-view photo with pin labels from the product page: https://a.pololu-files.com/picture/0J5850.300.jpg
+
+CONNECTION POINTS - one row of 5 plated holes, 0.1 in (2.54 mm) pitch                         [P] [T] [D]
+ Page: "five connection points for four different connections: enable (EN), input voltage (VIN), 2x ground (GND),
+ and output voltage (VOUT)". Order in the top view [T], left to right with the pin row at the bottom edge:
+   1 EN   2 VIN   3 GND   4 GND   5 VOUT
+ Hole geometry [D] (bottom view drawing): 5 holes, drill dia 1.02 mm, pitch 2.54 mm; row centre 1.27 mm from the board
+ edge; the VOUT hole is 1.91 mm from the side edge (so EN is 1.91 + 4 x 2.54 = 12.07 mm from that edge in the bottom
+ view, 5.73 mm from the left edge in the top view). No PG pin on this model.
+ Outline [D]: 17.8 mm (0.7 in) x 20.3 mm (0.8 in), height 8.8 mm (0.35 in) including the underside parts:
+ 1.57 mm board, 6.1 mm tallest component (capacitor) above the board top, 4.5 mm inductor, 1.1 mm below.
+ Mounting holes [P] [D]: two dia 2.18 mm (0.086 in, for #2-56 / M2), at opposite corners, 13.5 mm (0.53 in) apart
+ horizontally and 16.0 mm (0.63 in) vertically, each 2.2 mm from its two nearest board edges (top-view drawing).
+
+ELECTRICAL                                                                                    [P]
+ VIN up to 38 V, reverse-voltage protected [P]; input range 6-38 V and 5 A typical continuous (product page spec summary); fixed 5 V output (4 %).
+ EN is enabled by default: a 100 k pull-up on the board ties EN to the reverse-protected VIN; driving EN below 0.6 V
+ puts the board in a low-power state. => EN is left unconnected on our board (board_spec.NC).
+ Two GND pins: both tied to GND (U5C pins 3 and 4).
+
+HOW IT IS USED ON THE BOARD
+ U5C is a 1x05 female socket in parallel with the P03 screw terminals U5A/U5B (fit only one of the two regulators):
+   socket pin 1 EN (NC) | 2 VIN = VBAT_SW | 3 GND | 4 GND | 5 VOUT = 5V
+ With the carrier's 2.54 mm male header (body 2.54 mm) in an 8.5 mm socket, the module top is about
+ 8.5 + 2.54 + 1.57 + 6.1 = 18.7 mm above the board (PARTS['U5C']['h'] = 19).
+ Input range note: the battery rail may fall to 6.0 V (spec section 6) which is exactly the regulator's 6 V minimum:
+ regulation at full load near the end of discharge is marginal (see the Task 2 report).

@@ -1,0 +1,215 @@
+"""Bay B6: power-path check on the routed, filled 4-layer board (IPC-2221 at <= 10 degC rise for the ordered copper, copper.py).
+Run with KiCad's Python:
+    cd $R1 && PYTHONPATH=$R1 $KPY -m unittest pcb.tests.ktest_power -v
+The measurements are pcb/power_check.py's, which wraps the B4 / B5 ones (zone_check.trunk_capacity / pin_spoke_capacity /
+narrowest_width, copper.capacity_a). Rulings: PB11 (trunk capacity at contact level, at the true narrowest copper), PB12 (each trunk pin
+carries its own load, board_spec.pad_current), the B6 carry list (via barrels in the pad metric, the < 3 % physical-margin rule, per-track
+tap loads, motor tracks with no via), PB20 (J1's pinout swapped; GND judged as a plane: pad metric + the battery pin's ring cut). The
+polygon floor of B4 (3.0 mm corridor, zone_check.ERODE) still holds in ktest_pcb / ktest_route; the per-net IPC capacity here supersedes it
+as the sizing rule."""
+import math, shutil, tempfile, unittest
+from pathlib import Path
+import pcbnew
+from pcb import board_spec as B, copper as C, power_check as P, zone_check as Z
+D = Path(B.__file__).parent
+PCB = D / 'r1_power_io.kicad_pcb'
+MOTOR_NETS = tuple(B.NETCLASSES['Motor']['nets'])
+MM = pcbnew.FromMM
+
+
+def scratch_copy(t):
+    """The committed board (with its project and DRC rules) copied into the temp dir t and loaded: mutations never touch the repo."""
+    for f in (PCB, D / 'r1_power_io.kicad_pro', D / 'r1_power_io.kicad_dru'): shutil.copy(f, Path(t) / f.name)
+    return pcbnew.LoadBoard(str(Path(t) / PCB.name))
+
+
+class PowerTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.board = pcbnew.LoadBoard(str(PCB))          # the committed board: routed, zones filled (ktest_route checks the fill is current)
+
+    # --- brief step 1 (PB11): every power trunk carries its net current at 10 degC ---
+    def test_trunks_carry_their_current_at_10C(self):
+        """Every power net of CURRENT_A but the motor pairs (tracks, test_motor_tracks_meet_ipc) and GND (a plane, not a trunk - ruling
+        PB20 b: test_power_pad_spokes_carry_their_current and test_battery_gnd_ring_cut): trunk_capacity sums, over the layers where one
+        zone of the net joins every POWER_TRUNK pin, the IPC-2221 current of the true narrowest copper (contact level, PB11)."""
+        for net, amps in B.CURRENT_A.items():
+            if net in MOTOR_NETS or net == 'GND':
+                continue
+            cap = P.trunk_capacity(self.board, net)['capacity_a']
+            self.assertGreaterEqual(cap, amps, net)
+
+    def test_low_margin_trunks_meet_the_physical_rule(self):
+        """Carry items 2 / 3: a trunk whose conservative margin (its net current through every neck, at zero reach tolerance) is under
+        LOW_MARGIN is accepted only when its neck carries a known part of that current with >= PHYSICAL_MARGIN to spare. The neck's
+        current is derived, not assumed: dropping one trunk pin from the net raises the narrowest width, so the neck lies on that pin's
+        own access and carries only that pin's load (board_spec.pad_current) plus every tap load of the net (TAP_LOAD_A, all of them,
+        to be safe). VBAT_SW: the U1B.20 - F1.2 neck isolates U5A.1 (the P03 input, 4.17 A); VMOT: the reach into U3P.1 isolates DRV_L's
+        VIN (2.1 A). Every other leg (the spanning legs without the isolated pin) still carries the full conservative current."""
+        neck_pin = {'VBAT_SW': ('U5A', '1'), 'VMOT': B.drv('L', 'VIN')}       # B6's derivation (task-B6-report.md, power.txt section 2)
+        for net in (n for n in B.POWER_TRUNK if n != 'GND'):
+            r = P.physical_check(self.board, net)
+            if r['conservative_margin'] >= P.LOW_MARGIN:
+                continue
+            self.assertIsNotNone(r['isolated_pin'], f'{net}: the neck carries the whole net current - widen the copper')
+            self.assertEqual(r['isolated_pin'], neck_pin.get(net), (net, r['derivation']))
+            self.assertAlmostEqual(r['neck_current_a'], B.pad_current(*r['isolated_pin']) + P.tap_load_total(net), 6)
+            self.assertGreaterEqual(r['physical_margin'], P.PHYSICAL_MARGIN, (net, r))
+            self.assertGreaterEqual(r['rest_capacity_a'], B.CURRENT_A[net], (net, r))
+        self.assertAlmostEqual(B.pad_current('U5A', '1'), B.P03_IN_A, 6)
+
+    # --- brief step 1 (Review Focus 4, PB12): THT power pads joined by spokes that carry their own load ---
+    def test_power_trunk_pads_include_the_gnd_pads(self):
+        got = P.power_trunk_pads(self.board)
+        self.assertEqual(len(got), len(set(got)))
+        want = {(r, p, n) for n, pins in B.POWER_TRUNK.items() for r, p in pins}
+        self.assertLessEqual(want, set(got))
+        for ref in ('J1', 'J3', 'U5A', 'U5B', 'U3P', 'U4P'):
+            gnd = {(ref, p.GetNumber(), 'GND') for p in self.board.FindFootprintByReference(ref).Pads() if p.GetNetname() == 'GND'}
+            self.assertTrue(gnd); self.assertLessEqual(gnd, set(got), ref)
+
+    def test_power_pad_spokes_carry_their_current(self):      # Review Focus 4
+        """Every power trunk pad: its spokes, summed over the layers it meets its zones on, carry its own load (PB12: pad_current) - and
+        copper reached only through vias counts only up to the via barrels (carry item 1: zone_check.pin_spoke_capacity's max-flow);
+        every joint stays a thermal relief with spokes <= 2.0 mm (iron-solderable). For GND this is the first of PB20's two plane checks
+        (test_battery_gnd_ring_cut is the second)."""
+        for ref, pad, net in P.power_trunk_pads(self.board):
+            self.assertTrue(P.pad_uses_spokes(self.board, ref, pad), f'{ref}.{pad} must be relieved (iron-solderable)')
+            if (ref, pad) in B.PAD_PENDING: continue
+            self.assertGreaterEqual(P.pad_spoke_capacity(self.board, ref, pad), B.pad_current(ref, pad), f'{ref}.{pad}')
+
+    def test_pad_metric_counts_via_barrels(self):
+        """Carry item 1: copper that reaches the plane only through vias counts only up to the barrels. U3P.2 (ruling PB21, B6 fix 2):
+        its one F.Cu spoke into its GND patch and its one B.Cu spoke into the GND island of the 5V notch carry 2 x 2.73 A, but both
+        pieces reach In1 only through the patch's two stitching vias: the pin's figure is its In1 spokes plus those two barrels, not the
+        raw spoke sum."""
+        spokes = P.pad_spokes(self.board, 'U3P', '2')
+        raw = sum(a for _, _, a in spokes.values())
+        got = P.pad_spoke_capacity(self.board, 'U3P', '2')
+        vias = P.pocket_vias(self.board, 'U3P', '2')
+        self.assertEqual({L: n for L, (n, _, _) in spokes.items() if n}, {'F.Cu': 1, 'In1.Cu': 2, 'B.Cu': 1})
+        self.assertEqual(len(vias), 2)
+        self.assertLess(got, raw)
+        self.assertAlmostEqual(got, spokes['In1.Cu'][2] + sum(C.via_current_a(d) for d in vias), 6)
+
+    def test_drv_l_gnd_keeps_a_margin(self):
+        """Ruling PB21: U3P.2, DRV_L's motor-current return (2.1 A), keeps >= 20 % over its current (2.52 A) by the pad metric, and still
+        carries its 2.1 A with 18 um via plating (IPC-6012's class 2 minimum, against the 20 um average copper.VIA_PLATING_MM)."""
+        need = B.pad_current('U3P', '2')
+        self.assertGreaterEqual(P.pad_spoke_capacity(self.board, 'U3P', '2'), 1.2 * need)
+        in1 = P.pad_spokes(self.board, 'U3P', '2')['In1.Cu'][2]
+        thin = in1 + sum(C.via_current_a(d, plating_mm=0.018) for d in P.pocket_vias(self.board, 'U3P', '2'))
+        self.assertGreaterEqual(thin, need)
+
+    def test_mounting_holes_join_layers_through_their_barrels(self):
+        """B6 fix 1 (review minor 5): the plated M3 holes H1-H4 hold no lead, so the pad metric joins their layers through their barrels
+        (the M3 hole and its ring of small plated holes, one land on every layer: copper.via_current_a of each drill, summed), not as
+        soldered leads with no limit between layers. J3.2's metric reaches the main B.Cu GND piece, which all four holes touch."""
+        _, det = Z.pin_path_capacity(self.board, 'J3', '2')
+        self.assertEqual(sorted(det['holes']), ['H1', 'H2', 'H3', 'H4'])
+        for h, amps in det['holes'].items():
+            pads = [p for p in self.board.FindFootprintByReference(h).Pads() if p.GetNetname() == 'GND']
+            self.assertTrue(pads and all(p.GetAttribute() == pcbnew.PAD_ATTRIB_PTH for p in pads), h)
+            self.assertAlmostEqual(amps, sum(C.via_current_a(pcbnew.ToMM(p.GetDrillSize().x)) for p in pads), 6)
+            self.assertLess(amps, math.inf)
+
+    # --- brief step 1: motor tracks (carry item 5) ---
+    def test_motor_tracks_meet_ipc(self):
+        for net in MOTOR_NETS:
+            self.assertGreaterEqual(P.min_track_width(self.board, net), C.ipc2221_width_mm(B.CURRENT_A[net], C.COPPER_OZ['F.Cu']), net)
+
+    def test_motor_nets_have_no_via(self):
+        """Carry item 5: the four motor pairs run pin to pin on one outer layer each (B5). A layer change would need three 0.8 / 0.4 mm
+        vias (copper.via_current_a), so none may appear unnoticed."""
+        self.assertEqual(P.motor_vias(self.board), [])
+        for net in MOTOR_NETS:
+            layers = {t.GetLayerName() for t in self.board.GetTracks() if t.GetClass() != 'PCB_VIA' and t.GetNetname() == net}
+            self.assertEqual(len(layers), 1, (net, layers)); self.assertTrue(layers <= {'F.Cu', 'B.Cu'}, (net, layers))
+        self.assertGreaterEqual(3 * C.via_current_a(B.CLASS_VIA['Motor'][1]), B.CURRENT_A['L_M1'])
+
+    # --- carry item 4: every tap track and via carries the loads behind it ---
+    def test_tap_tracks_carry_their_load(self):
+        """For each tap net (TAP_NETS), every track segment and via carries the summed load (board_spec.TAP_LOAD_A) of the pads it
+        alone feeds from the net's source (the trunk zones; 3V3: the Pico's 3V3 pin), at IPC-2221 10 degC on its layer's copper (vias:
+        the barrel). The NARROW_TRACKS entries' listed current covers what they really feed."""
+        short, seen = [], 0
+        for net in P.TAP_NETS:
+            for it in P.track_loads(self.board, net):
+                seen += 1
+                if it['cap_a'] < it['load_a']: short.append(it)
+        self.assertGreater(seen, 50)
+        self.assertEqual(short, [])
+        narrow = B.narrow_track_keys()
+        for it in P.track_loads(self.board, 'VBAT_SW'):
+            if it['key'] in narrow:
+                self.assertLessEqual(it['load_a'], B.TP1_FEED['current_a'] + 1e-9, it)
+
+    # --- the GND plane (ruling PB20 b): a plane is not a trunk ---
+    def test_battery_gnd_ring_cut(self):
+        """PB20 (b) replaces the brief's single-stream GND trunk test (a plane carries current over its whole width, and only In1 alone
+        joins every GND pin) with two checks: every GND trunk pin's via-aware pad metric >= its PAD_CURRENT_A
+        (test_power_pad_spokes_carry_their_current), and this ring cut round the battery GND pin (J1.1 since PB20): the GND copper leaving
+        the pin across every ring out to just short of the nearest GND load pin carries the battery current, 7.5 A - as a LOWER BOUND
+        (power_check.pin_ring_cut). Per layer the min cut of the GND copper round a disc that holds the pad alone (its edge + 0.05 mm,
+        inside the relief gap), so the cut may run through the relief spokes, confined to the ring out to the load, on a whole-cell
+        raster (it never rounds a neck up), at IPC-2221 for that layer, capped at the layer's own spokes; the layers summed. Any cut of
+        the joined layers restricted to one layer still cuts that layer alone, and the vias only add paths, so the sum is at most what the
+        joined copper carries. B6 fix 1: B6 started the disc outside the relief (pad + gap + 0.25 mm), which took the spokes' copper as
+        the pin's own (In1 3.46 A credited against 2.26 A of spokes) - not a lower bound. With the outer radius fixed, a larger disc only
+        removes closed curves, so the pad-edge cut is the least over every radius (one cut, no sweep)."""
+        r = P.battery_gnd_ring_cut(self.board)
+        self.assertEqual(r['pin'], B.J1_GND_PIN)
+        self.assertEqual(set(r['direct']), {'F.Cu', 'In1.Cu', 'B.Cu'})
+        pad = P._pad(self.board, *B.J1_GND_PIN)
+        gap = min(pcbnew.ToMM(z.GetThermalReliefGap()) for z in self.board.Zones() if z.GetNetname() == 'GND')
+        self.assertLess(r['r0'], pcbnew.ToMM(min(pad.GetSize().x, pad.GetSize().y)) / 2 + gap)    # the disc holds the pad, not the spokes
+        spokes = P.pad_spokes(self.board, *B.J1_GND_PIN)
+        for L, x in r['per'].items():
+            self.assertLessEqual(x['a'], min(x['cut_a'], spokes[L][2]) + 1e-9, L)
+        self.assertGreater(r['r1'], 10.0)
+        self.assertGreaterEqual(r['total_a'], B.CURRENT_A['GND'], r)
+        # monotone: a disc out past the relief (B6's start) never cuts less copper on any layer than the pad-edge disc
+        c, away = r['centre'], P._uv(P._pad(self.board, *r['away'].split('.')))
+        for L in P.GND_CUT_LAYERS:
+            ras = P.copper_raster(self.board, L, west=r['r1'] - c[0] + 3.0)
+            self.assertGreaterEqual(P.raster_cut_mm(ras, c, r['r0'] + 0.7, away, r['r1']), r['per'][L]['cut_mm'], L)
+
+    def test_battery_gnd_ring_cut_fails_on_a_starved_copy(self):
+        """B6 fix 1: the ring cut can fail. A scratch copy whose In1 GND plane and B.Cu GND fill meet J1.1 with no spokes at all (their pad
+        connection set to none, refilled) keeps the plane round the pin but leaves it only its F.Cu spokes: the ring cut falls below
+        7.5 A. B6's disc (out past the relief, cell-centre raster) still credits the plane's copper round the pin and passes the copy."""
+        with tempfile.TemporaryDirectory() as t:
+            b = scratch_copy(t)
+            for z in b.Zones():
+                if z.GetZoneName() in ('GND_PLANE', 'GND_FILL'): z.SetPadConnection(pcbnew.ZONE_CONNECTION_NONE)
+            pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+            r = P.battery_gnd_ring_cut(b)
+            self.assertEqual((r['per']['In1.Cu']['a'], r['per']['B.Cu']['a']), (0.0, 0.0))
+            self.assertLess(r['total_a'], B.CURRENT_A['GND'], r)
+            pad, away = P._pad(b, *B.J1_GND_PIN), P._uv(P._pad(b, *r['away'].split('.')))
+            old_r0 = P._half(pad) + pcbnew.ToMM(Z.zone_of(b, 'GND', C.GND_PLANE_LAYER).GetThermalReliefGap()) + 0.25
+            old = 0.0
+            for L in P.GND_CUT_LAYERS:
+                ras = P.copper_raster(b, L, 0.2, west=r['r1'] - r['centre'][0] + 3.0, whole=False)
+                mm = P.raster_cut_mm(ras, r['centre'], old_r0, away, r['r1'])
+                old += C.ipc2221_current_a(mm, C.COPPER_OZ[L], internal=C.is_internal(L)) if 0 < mm < math.inf else 0.0
+            self.assertGreaterEqual(old, B.CURRENT_A['GND'])            # the blind spot B6's start radius had
+
+    def test_no_pad_is_pending(self):
+        """No trunk pin is excused: PB20 fixed the battery corner, and ruling PB21 (B6 fix 2) U3P.2, whose F.Cu patch B6 fix 1 found
+        0.05 mm short of its pad (board_spec.PAD_PENDING and STITCH_PENDING are empty)."""
+        self.assertEqual(B.PAD_PENDING, {})
+        self.assertEqual(B.STITCH_PENDING, {})
+
+    # --- carry item 6: C3's ripple and its GND via ---
+    def test_c3_ripple_within_its_rating_and_its_via(self):
+        """C3 (DRV_L's local bulk cap, PB16): its share of DRV_L's PWM input ripple (power_check.c3_ripple: I x sqrt(D (1 - D)) at the
+        worst duty, split with C1 by impedance at the PWM frequency) stays within its ripple rating and within its single LP12 GND
+        via's barrel."""
+        r = P.c3_ripple()
+        self.assertLessEqual(r['c3_a'], B.C3_RIPPLE_RATING_A)
+        self.assertLessEqual(r['c3_a'], C.via_current_a(B.GND_VIA[1]))
+
+
+if __name__ == '__main__':
+    unittest.main()

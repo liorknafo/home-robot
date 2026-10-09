@@ -1,0 +1,18 @@
+Omron G5LE-1 DC5 relay (SPDT, 10 A) - pin map used by pcb/board_spec.py. Retrieved 2026-10-04.
+
+SOURCE: Omron G5LE datasheet (3-page extract, page 3 "Dimensions"): https://omronfs.omron.com/en_US/ecb/products/pdf/en-g5le.pdf
+KiCad: symbol Relay:G5LE-1, footprint Relay_THT:Relay_SPDT_Omron-G5LE-1 (library files read locally; pads checked against the drawing).
+
+TERMINAL ARRANGEMENT / INTERNAL CONNECTIONS, SPDT (1c), bottom view (datasheet drawing):
+   1 = COM (common, joins the contact pivot)      2 and 5 = coil (not polarity-marked)
+   3 = NO (contact open at rest)                  4 = NC (the arm rests on this contact at rest)
+ The KiCad symbol agrees: pin 1 at the arm pivot, pin 4 has the filled (closed) contact arrow, pin 3 the open one.
+PCB hole pattern (datasheet): five 1.3 +0.2/-0 mm holes; pin 1 is 2 mm from the coil column; coil/contact columns 12.2 mm
+ apart; rows 12 mm apart. The KiCad footprint has pad 1 at (0,0), pads 2/5 at (-/+6, 2), pads 3/4 at (-/+6, 14.2): same
+ 2 mm / 12 mm / 12.2 mm numbers.
+Body 22.5 max x 16.5 max x 19.0 max mm (above a 0.5 mm standoff); pins 3.5 mm (datasheet p.3 drawing).
+Maximum-switching-capacity graph (p.3): DC resistive load about 7 A up to about 30 V; F2 limits the motor branch to 5 A at 6-8.7 V.
+Ratings tables on pages 1-2 of the datasheet were not read.
+
+board_spec.RELAY_PINS = COIL_P '2', COIL_N '5', COM '1', NO '3', NC '4'. The coil is not polarised: COIL_P/COIL_N only fix which
+end the 1N5819 flyback diode cathode (D1 pin 1 = K) sits on; the diode is on the coil+ end.

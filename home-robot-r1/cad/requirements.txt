@@ -1,0 +1,4 @@
+cadquery==2.6.1
+trimesh==5.1.1
+# Also verified: cadquery 2.8.0 + cadquery-ocp 7.9.3.1.1 + vtk 9.6.2 on Python 3.14 (identical geometry).
+# This script never uses CadQuery assembly constraints, so casadi is not needed at run time.

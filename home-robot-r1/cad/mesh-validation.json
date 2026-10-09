@@ -1,0 +1,665 @@
+[
+  {
+    "file": "P_base.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 172443.5,
+    "size_mm": [
+      244.0,
+      200.0,
+      14.5
+    ],
+    "center_mass_mm": [
+      -3.18,
+      0.05,
+      30.92
+    ],
+    "area_mm2": 95870.1
+  },
+  {
+    "file": "P_battery_tray.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 21933.1,
+    "size_mm": [
+      59.55,
+      146.0,
+      10.0
+    ],
+    "center_mass_mm": [
+      -95.52,
+      0.09,
+      35.2
+    ],
+    "area_mm2": 23410.8
+  },
+  {
+    "file": "P_bumper_left.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 83089.7,
+    "size_mm": [
+      157.195,
+      150.561,
+      80.5
+    ],
+    "center_mass_mm": [
+      95.34,
+      90.41,
+      53.3
+    ],
+    "area_mm2": 53316.1
+  },
+  {
+    "file": "P_bumper_rider_left_A.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 1117.1,
+    "size_mm": [
+      21.484,
+      24.376,
+      5.1
+    ],
+    "center_mass_mm": [
+      112.0,
+      17.0,
+      37.39
+    ],
+    "area_mm2": 1223.8
+  },
+  {
+    "file": "P_bumper_rider_left_B.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 1117.1,
+    "size_mm": [
+      21.484,
+      24.376,
+      5.1
+    ],
+    "center_mass_mm": [
+      65.0,
+      17.0,
+      37.39
+    ],
+    "area_mm2": 1223.8
+  },
+  {
+    "file": "P_bumper_rider_left_C.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 1117.1,
+    "size_mm": [
+      21.484,
+      24.376,
+      5.1
+    ],
+    "center_mass_mm": [
+      55.0,
+      88.0,
+      37.39
+    ],
+    "area_mm2": 1223.8
+  },
+  {
+    "file": "P_bumper_rider_right_A.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 1117.1,
+    "size_mm": [
+      21.484,
+      24.376,
+      5.1
+    ],
+    "center_mass_mm": [
+      112.0,
+      -17.0,
+      37.39
+    ],
+    "area_mm2": 1223.8
+  },
+  {
+    "file": "P_bumper_rider_right_B.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 1117.1,
+    "size_mm": [
+      21.484,
+      24.376,
+      5.1
+    ],
+    "center_mass_mm": [
+      65.0,
+      -17.0,
+      37.39
+    ],
+    "area_mm2": 1223.8
+  },
+  {
+    "file": "P_bumper_rider_right_C.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 1117.1,
+    "size_mm": [
+      21.484,
+      24.376,
+      5.1
+    ],
+    "center_mass_mm": [
+      55.0,
+      -88.0,
+      37.39
+    ],
+    "area_mm2": 1223.8
+  },
+  {
+    "file": "P_bumper_right.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 85086.9,
+    "size_mm": [
+      157.195,
+      158.061,
+      80.5
+    ],
+    "center_mass_mm": [
+      96.61,
+      -88.37,
+      53.15
+    ],
+    "area_mm2": 55286.2
+  },
+  {
+    "file": "P_camera_guard.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 11453.3,
+    "size_mm": [
+      26.0,
+      40.0,
+      34.0
+    ],
+    "center_mass_mm": [
+      114.46,
+      0.47,
+      108.73
+    ],
+    "area_mm2": 8449.6
+  },
+  {
+    "file": "P_camera_tower.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 19924.2,
+    "size_mm": [
+      18.0,
+      118.0,
+      58.5
+    ],
+    "center_mass_mm": [
+      105.72,
+      0.0,
+      65.6
+    ],
+    "area_mm2": 9953.6
+  },
+  {
+    "file": "P_cliff_mount_1.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 1567.9,
+    "size_mm": [
+      24.0,
+      14.4,
+      12.0
+    ],
+    "center_mass_mm": [
+      -109.34,
+      80.98,
+      38.88
+    ],
+    "area_mm2": 1373.6
+  },
+  {
+    "file": "P_cliff_mount_2.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 1567.9,
+    "size_mm": [
+      24.0,
+      14.4,
+      12.0
+    ],
+    "center_mass_mm": [
+      -109.34,
+      -80.98,
+      38.88
+    ],
+    "area_mm2": 1373.6
+  },
+  {
+    "file": "P_cliff_mount_3.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 3155.5,
+    "size_mm": [
+      24.0,
+      24.0,
+      12.0
+    ],
+    "center_mass_mm": [
+      105.0,
+      72.0,
+      38.45
+    ],
+    "area_mm2": 2404.8
+  },
+  {
+    "file": "P_cliff_mount_4.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 3155.5,
+    "size_mm": [
+      24.0,
+      24.0,
+      12.0
+    ],
+    "center_mass_mm": [
+      105.0,
+      -72.0,
+      38.45
+    ],
+    "area_mm2": 2404.8
+  },
+  {
+    "file": "P_ld14_grommet.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 442.9,
+    "size_mm": [
+      11.6,
+      13.8,
+      3.2
+    ],
+    "center_mass_mm": [
+      34.94,
+      -22.0,
+      103.37
+    ],
+    "area_mm2": 508.3
+  },
+  {
+    "file": "P_lid_front.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 37640.8,
+    "size_mm": [
+      152.51,
+      210.272,
+      7.32
+    ],
+    "center_mass_mm": [
+      71.3,
+      -27.17,
+      101.99
+    ],
+    "area_mm2": 27597.5
+  },
+  {
+    "file": "P_lid_left.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 50575.2,
+    "size_mm": [
+      148.599,
+      186.033,
+      7.32
+    ],
+    "center_mass_mm": [
+      17.99,
+      91.07,
+      101.99
+    ],
+    "area_mm2": 35602.4
+  },
+  {
+    "file": "P_lid_post_1.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 4788.9,
+    "size_mm": [
+      22.0,
+      12.0,
+      67.5
+    ],
+    "center_mass_mm": [
+      -80.0,
+      -94.0,
+      62.73
+    ],
+    "area_mm2": 2633.5
+  },
+  {
+    "file": "P_lid_post_2.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 4788.9,
+    "size_mm": [
+      22.0,
+      12.0,
+      67.5
+    ],
+    "center_mass_mm": [
+      -80.0,
+      94.0,
+      62.73
+    ],
+    "area_mm2": 2633.5
+  },
+  {
+    "file": "P_lid_post_3.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 4788.9,
+    "size_mm": [
+      22.0,
+      12.0,
+      67.5
+    ],
+    "center_mass_mm": [
+      85.0,
+      -94.0,
+      62.73
+    ],
+    "area_mm2": 2633.5
+  },
+  {
+    "file": "P_lid_post_4.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 4788.9,
+    "size_mm": [
+      22.0,
+      12.0,
+      67.5
+    ],
+    "center_mass_mm": [
+      85.0,
+      94.0,
+      62.73
+    ],
+    "area_mm2": 2633.5
+  },
+  {
+    "file": "P_lid_rear.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 54611.1,
+    "size_mm": [
+      143.482,
+      203.801,
+      7.32
+    ],
+    "center_mass_mm": [
+      -90.83,
+      20.04,
+      101.99
+    ],
+    "area_mm2": 38919.6
+  },
+  {
+    "file": "P_lid_right.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 50742.6,
+    "size_mm": [
+      143.179,
+      186.749,
+      7.32
+    ],
+    "center_mass_mm": [
+      -19.29,
+      -91.53,
+      101.99
+    ],
+    "area_mm2": 35917.3
+  },
+  {
+    "file": "P_lidar_adapter_clip.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 3454.0,
+    "size_mm": [
+      34.0,
+      22.0,
+      14.0
+    ],
+    "center_mass_mm": [
+      15.13,
+      -40.83,
+      96.55
+    ],
+    "area_mm2": 3130.0
+  },
+  {
+    "file": "P_lidar_tray.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 32503.6,
+    "size_mm": [
+      119.0,
+      86.0,
+      23.8
+    ],
+    "center_mass_mm": [
+      17.89,
+      0.58,
+      106.34
+    ],
+    "area_mm2": 23076.1
+  },
+  {
+    "file": "P_motor_mount_left.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 5805.0,
+    "size_mm": [
+      46.0,
+      19.0,
+      30.0
+    ],
+    "center_mass_mm": [
+      0.0,
+      102.9,
+      39.02
+    ],
+    "area_mm2": 4239.9
+  },
+  {
+    "file": "P_motor_mount_right.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 5805.0,
+    "size_mm": [
+      46.0,
+      19.0,
+      30.0
+    ],
+    "center_mass_mm": [
+      0.0,
+      -102.9,
+      39.02
+    ],
+    "area_mm2": 4239.9
+  },
+  {
+    "file": "P_rear_shell_left.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 93726.2,
+    "size_mm": [
+      157.594,
+      169.86,
+      80.5
+    ],
+    "center_mass_mm": [
+      -94.64,
+      88.81,
+      55.53
+    ],
+    "area_mm2": 61149.4
+  },
+  {
+    "file": "P_rear_shell_right.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 88751.9,
+    "size_mm": [
+      157.594,
+      151.177,
+      80.5
+    ],
+    "center_mass_mm": [
+      -91.65,
+      -93.99,
+      55.84
+    ],
+    "area_mm2": 58166.3
+  },
+  {
+    "file": "bay_clamp_spacer_1.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 76.5,
+    "size_mm": [
+      7.0,
+      6.998,
+      2.4
+    ],
+    "center_mass_mm": [
+      -33.0,
+      -46.0,
+      34.2
+    ],
+    "area_mm2": 138.4
+  },
+  {
+    "file": "bay_clamp_spacer_3.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 76.5,
+    "size_mm": [
+      7.0,
+      6.998,
+      2.4
+    ],
+    "center_mass_mm": [
+      -33.0,
+      40.0,
+      34.2
+    ],
+    "area_mm2": 138.4
+  },
+  {
+    "file": "bay_rib_0.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 310.2,
+    "size_mm": [
+      1.95,
+      53.02,
+      3.0
+    ],
+    "center_mass_mm": [
+      -60.52,
+      21.93,
+      33.9
+    ],
+    "area_mm2": 536.6
+  },
+  {
+    "file": "bay_rib_1.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 100.7,
+    "size_mm": [
+      2.0,
+      17.89,
+      3.0
+    ],
+    "center_mass_mm": [
+      -58.8,
+      -15.53,
+      33.98
+    ],
+    "area_mm2": 184.2
+  },
+  {
+    "file": "bay_spacer_0.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 70.5,
+    "size_mm": [
+      7.0,
+      6.998,
+      2.4
+    ],
+    "center_mass_mm": [
+      -19.5,
+      38.0,
+      34.2
+    ],
+    "area_mm2": 137.2
+  },
+  {
+    "file": "bay_spacer_1.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 70.5,
+    "size_mm": [
+      7.0,
+      6.998,
+      2.4
+    ],
+    "center_mass_mm": [
+      -19.5,
+      -38.0,
+      34.2
+    ],
+    "area_mm2": 137.2
+  },
+  {
+    "file": "bay_spacer_2.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 70.5,
+    "size_mm": [
+      7.0,
+      6.998,
+      2.4
+    ],
+    "center_mass_mm": [
+      -11.5,
+      8.5,
+      34.2
+    ],
+    "area_mm2": 137.2
+  },
+  {
+    "file": "bay_spacer_3.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 70.5,
+    "size_mm": [
+      7.0,
+      6.998,
+      2.4
+    ],
+    "center_mass_mm": [
+      -11.5,
+      -8.5,
+      34.2
+    ],
+    "area_mm2": 137.2
+  }
+]

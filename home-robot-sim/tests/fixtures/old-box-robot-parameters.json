@@ -1,0 +1,452 @@
+{
+  "body_mass_kg": 1.86969,
+  "body_com_x_cm": -0.6608555428974856,
+  "body_com_z_cm": 7.865014574608624,
+  "wheel_mass_kg": 0.035,
+  "caster_ball_mass_kg": 0.068,
+  "total_mass_kg": 2.00769,
+  "estimated_body_com_mm": [
+    -6.6085554289748565,
+    0.5624568778781508,
+    78.65014574608624
+  ],
+  "wheel_radius_m": 0.04,
+  "wheel_track_m": 0.228,
+  "caster_x_m": -0.098,
+  "drive_axle_x_m": 0.042,
+  "encoder_cpr": 4741.44,
+  "friction": 0.8,
+  "rolling_drag_nm": 0.003,
+  "max_drive_torque_nm": 0.1,
+  "records": [
+    {
+      "item": "P_base",
+      "mass_kg": 0.13238,
+      "position_mm": [
+        0.0,
+        0.0,
+        28.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_battery_tray",
+      "mass_kg": 0.01696,
+      "position_mm": [
+        -60.0,
+        0.0,
+        37.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_bumper_left",
+      "mass_kg": 0.04959,
+      "position_mm": [
+        87.0,
+        65.375,
+        71.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_bumper_right",
+      "mass_kg": 0.04959,
+      "position_mm": [
+        87.0,
+        -65.375,
+        71.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_camera_guard",
+      "mass_kg": 0.00909,
+      "position_mm": [
+        113.0,
+        0.0,
+        151.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_camera_tower",
+      "mass_kg": 0.02238,
+      "position_mm": [
+        109.0,
+        0.0,
+        83.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_cliff_mount_1",
+      "mass_kg": 0.00217,
+      "position_mm": [
+        -108.0,
+        72.0,
+        39.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_cliff_mount_2",
+      "mass_kg": 0.00217,
+      "position_mm": [
+        -108.0,
+        -72.0,
+        39.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_cliff_mount_3",
+      "mass_kg": 0.00248,
+      "position_mm": [
+        105.0,
+        72.0,
+        39.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_cliff_mount_4",
+      "mass_kg": 0.00217,
+      "position_mm": [
+        105.0,
+        -72.0,
+        39.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_control_panel",
+      "mass_kg": 0.00834,
+      "position_mm": [
+        -110.25,
+        0.0,
+        119.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_deck",
+      "mass_kg": 0.1152,
+      "position_mm": [
+        -2.0,
+        0.0,
+        80.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_harness_saddle_1",
+      "mass_kg": 0.00233,
+      "position_mm": [
+        -87.0,
+        -94.0,
+        52.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_harness_saddle_2",
+      "mass_kg": 0.00234,
+      "position_mm": [
+        85.0,
+        -94.0,
+        52.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_harness_saddle_3",
+      "mass_kg": 0.00303,
+      "position_mm": [
+        -60.0,
+        94.0,
+        52.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_harness_saddle_4",
+      "mass_kg": 0.00299,
+      "position_mm": [
+        85.0,
+        94.0,
+        52.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_lid",
+      "mass_kg": 0.09958,
+      "position_mm": [
+        0.0,
+        0.0,
+        144.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_lid_post_1",
+      "mass_kg": 0.00262,
+      "position_mm": [
+        -105.0,
+        -82.0,
+        112.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_lid_post_2",
+      "mass_kg": 0.00262,
+      "position_mm": [
+        -105.0,
+        82.0,
+        112.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_lid_post_3",
+      "mass_kg": 0.00262,
+      "position_mm": [
+        87.0,
+        -82.0,
+        112.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_lid_post_4",
+      "mass_kg": 0.00262,
+      "position_mm": [
+        87.0,
+        82.0,
+        112.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_lidar_adapter_clip",
+      "mass_kg": 0.00369,
+      "position_mm": [
+        15.0,
+        -40.0,
+        136.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_lidar_tray",
+      "mass_kg": 0.02529,
+      "position_mm": [
+        14.5,
+        0.0,
+        157.9
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_motor_mount_left",
+      "mass_kg": 0.00322,
+      "position_mm": [
+        42.0,
+        97.5,
+        40.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_motor_mount_right",
+      "mass_kg": 0.00322,
+      "position_mm": [
+        42.0,
+        -97.5,
+        40.0
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_post_1",
+      "mass_kg": 0.003,
+      "position_mm": [
+        -95.0,
+        -84.0,
+        55.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_post_2",
+      "mass_kg": 0.003,
+      "position_mm": [
+        -95.0,
+        84.0,
+        55.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_post_3",
+      "mass_kg": 0.003,
+      "position_mm": [
+        75.0,
+        -84.0,
+        55.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "P_post_4",
+      "mass_kg": 0.003,
+      "position_mm": [
+        75.0,
+        84.0,
+        55.5
+      ],
+      "basis": "Estimated PETG effective material fraction 0.62; replace with slicer mass and actual balance"
+    },
+    {
+      "item": "Battery",
+      "mass_kg": 0.383,
+      "position_mm": [
+        -60,
+        0,
+        50.5
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Jetson + cooler",
+      "mass_kg": 0.22,
+      "position_mm": [
+        -38,
+        0,
+        106
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Left motor",
+      "mass_kg": 0.09,
+      "position_mm": [
+        42,
+        69,
+        40
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Right motor",
+      "mass_kg": 0.09,
+      "position_mm": [
+        42,
+        -69,
+        40
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Controller and sensors",
+      "mass_kg": 0.055,
+      "position_mm": [
+        50,
+        20,
+        95
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Power boards + relay",
+      "mass_kg": 0.085,
+      "position_mm": [
+        0,
+        0,
+        49
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Motor toggle and master switches",
+      "mass_kg": 0.03,
+      "position_mm": [
+        -85,
+        45,
+        125
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Wiring + connectors",
+      "mass_kg": 0.1,
+      "position_mm": [
+        0,
+        0,
+        73
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Fasteners",
+      "mass_kg": 0.055,
+      "position_mm": [
+        0,
+        0,
+        65
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Caster housing",
+      "mass_kg": 0.03,
+      "position_mm": [
+        -98,
+        0,
+        24
+      ],
+      "basis": "Engineering estimate, not measured"
+    },
+    {
+      "item": "Camera",
+      "mass_kg": 0.015,
+      "position_mm": [
+        110,
+        0,
+        150
+      ],
+      "basis": "Provisional single camera mass"
+    },
+    {
+      "item": "D200 LiDAR",
+      "mass_kg": 0.101,
+      "position_mm": [
+        20,
+        0,
+        183.4
+      ],
+      "basis": "Manufacturer listed scanner mass; centre estimated"
+    },
+    {
+      "item": "LiDAR adapter and added cables",
+      "mass_kg": 0.035,
+      "position_mm": [
+        0,
+        -40,
+        140
+      ],
+      "basis": "Engineering allowance"
+    }
+  ],
+  "limitations": [
+    "All masses except nominal battery family rating are provisional estimates.",
+    "Chassis inertia uses a uniform collision box plus COM shift, not a measured inertia tensor.",
+    "Caster is an ideal ball with a spherical bearing constraint.",
+    "Tire friction, rolling drag, motor torque and camera FOV are assumed and require later measurement.",
+    "Reflected gearmotor inertia is approximated by uniform wheel inertia scaling to 0.0005 kg m2 on the free axle; this is not a measured motor model."
+  ],
+  "wheel_effective_axle_inertia_kg_m2": 0.0005,
+  "dynamic_brake_coefficient_nm_per_rad_s": 0.01
+}

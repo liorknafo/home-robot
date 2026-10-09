@@ -1,0 +1,7 @@
+{
+  "observed_area_m2": 38.45000000000001,
+  "free_area_m2": 33.752500000000005,
+  "uncertain_observed_fraction": 0.00975292587776333,
+  "mean_observed_entropy_bits": 0.08130162954330444,
+  "updates": 4924
+}

@@ -1,0 +1,18 @@
+{
+  "configuration": "D200 LD14P + single OV2735 camera; Jetson retained",
+  "entrypoint": "lidar-review.html",
+  "included": [
+    "CAD source, printable STL/STEP, assembly models, wiring and parts list",
+    "Unreal source, materials, scene, native binary for this Mac and controller",
+    "Test sources, compact run traces, source snapshots, result figures and latest LiDAR/camera map"
+  ],
+  "excluded": [
+    "Python environments, build intermediates, transient logs",
+    "Raw multi-gigabyte camera recordings (remain on this computer under Saved/Stereo)"
+  ],
+  "latest_mapping_trial": "full-mapping-20261003T202506",
+  "saved_map": "map_20261003T202506",
+  "saved_map_status": "previous scene snapshot; fresh mapping required",
+  "house_model": "Blender v3 mesh surfaces; current autonomous validation pending",
+  "hardware_validation": "Not performed; sensor statistics partly assumed and LiDAR mounting details provisional."
+}

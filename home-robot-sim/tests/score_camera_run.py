@@ -1,0 +1,16 @@
+"""Read-only camera validation; scene geometry is evaluation only."""
+from pathlib import Path
+import json,math,cv2,numpy as np
+r=Path(__file__).resolve().parents[1];trial=r/'reports'/json.loads((r/'reports/latest-full-mapping-test.json').read_text())['directory'];manifest=json.loads((trial/'trial.json').read_text());final=json.loads((trial/'final-status.json').read_text());mapdir=r/'Saved/Maps'/json.loads((r/'Saved/Maps/latest-lidar-map.json').read_text())['directory'];log=mapdir/'camera-observations.jsonl';events=[json.loads(x) for x in log.read_text().splitlines()] if log.exists() else [];rows=[json.loads(x) for x in (trial/'trace.jsonl').read_text().splitlines()];origin=manifest['map_origin_ground_truth_evaluation_only'];xy0=np.array(origin['position_m'][:2]);yaw=origin['yaw_rad'];rotation=np.array([[math.cos(yaw),-math.sin(yaw)],[math.sin(yaw),math.cos(yaw)]])
+slippers=np.array([[-1.29,-.18],[-1.29,-.35]]);hits=[]
+for e in events:
+ points=np.array(e['points']);world=points[:,:2]@rotation.T+xy0
+ if np.any((np.abs(world[:,None,:]-slippers[None,:,:])<np.array([.18,.09])).all(axis=2)):
+  pose=np.array(e['estimated_pose'][:2])@rotation.T+xy0;hits.append(dict(stamp=e['stamp'],distance_m=float(np.linalg.norm(pose-slippers,axis=1).min()),points=e['points']))
+actual=np.array([x['ground_truth_evaluation_only']['position_m'][:2] for x in rows if 'ground_truth_evaluation_only' in x]);distances=np.linalg.norm(actual[:,None,:]-slippers[None,:,:],axis=2).min(axis=1);near=int(np.argmin(distances));after=float(distances[near+1:].max()) if near+1<len(distances) else None
+result=dict(trial=trial.name,confirmed_frames=len(events),confirmed_points=sum(len(e['points']) for e in events),camera_obstacle_cells=final['camera_obstacle_cells'],first_slipper_detection=hits[0] if hits else None,closest_robot_center_to_slipper_center_m=float(distances.min()),maximum_distance_after_closest_approach_m=after,reported_motion_faults=sorted(set(x['status']['motor_fault'] for x in rows if x['status']['mode']=='mapping' and x['status']['motor_fault']!='none')),stop_reason=final['message'],source_unchanged=manifest.get('source_unchanged'),external_actions=manifest['external_actions'],scope='Offline evaluation only. Known slipper location and true poses used for scoring, never sent to controller. Center distance alone does not prove every collision was avoided.')
+(trial/'camera-results.json').write_text(json.dumps(result,indent=2));(r/'reports/latest-camera-test.json').write_text(json.dumps({'directory':trial.name}));print(json.dumps(result,indent=2))
+if hits:
+ stamp=hits[0]['stamp'];event=next(x for x in events if x['stamp']==stamp);folder=r/'Saved/Stereo'/manifest['recording'];frames=[json.loads(f.read_text()) for f in folder.glob('frame_*.json')];frame=min(frames,key=lambda x:abs(x['sim_time_s']-stamp));im=cv2.imread(str(folder/frame['left']))
+ for uv in event['checks'].get('obstacle_pixels',[]):cv2.circle(im,tuple(round(x) for x in uv),7,(20,185,255),2)
+ cv2.rectangle(im,(0,0),(640,35),(25,35,30),-1);cv2.putText(im,f"Live detection | robot {hits[0]['distance_m']:.2f} m from slipper",(12,24),cv2.FONT_HERSHEY_SIMPLEX,.6,(255,255,255),1,cv2.LINE_AA);cv2.imwrite(str(trial/'first-slipper-detection.png'),im)

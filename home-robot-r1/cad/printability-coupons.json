@@ -1,0 +1,49 @@
+{
+ "printer": "Prusa MK3S 250 x 210 x 210 mm, PETG, 0.4 mm nozzle",
+ "rules": {
+  "min_bed_contact_mm2": 20.0,
+  "max_unsupported_overhang_mm2": 50.0,
+  "overhang_angle_from_vertical_deg": 45,
+  "ignore_first_mm": 0.3,
+  "bridge_max_span_mm": 10,
+  "ledge_max_mm": 1.5,
+  "min_wall_p1_mm": 1.2,
+  "section_probe": {
+   "layer_step_mm": 0.4,
+   "edge_step_mm": 0.25,
+   "thin_below_mm": 1.2,
+   "sliver_min_extent_mm": 1.0
+  }
+ },
+ "parts_checked": 1,
+ "parts_failed": [],
+ "all_pass": true,
+ "parts": [
+  {
+   "part": "P_coupon",
+   "best_orientation": "as exported",
+   "size_mm": [
+    70.0,
+    45.0,
+    9.0
+   ],
+   "fits_bed": true,
+   "bed_contact_mm2": 2702.3,
+   "overhang_mm2": 0.0,
+   "bridge_mm2": 0.0,
+   "overhang_total_mm2": 0.0,
+   "bridge_regions": [],
+   "watertight": true,
+   "winding_consistent": true,
+   "min_wall_mm": 1.0,
+   "wall_p1_mm": 1.5,
+   "area_thinner_than_1p2_pct": 0.08,
+   "section_min_width_mm": 2.7,
+   "section_slivers": [],
+   "section_thin_tips": 0,
+   "triangles": 3120,
+   "issues": [],
+   "pass": true
+  }
+ ]
+}

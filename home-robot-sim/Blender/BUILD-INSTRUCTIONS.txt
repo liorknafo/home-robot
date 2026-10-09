@@ -1,0 +1,41 @@
+FURNISHED APARTMENT — BLENDER ASSETS
+
+furnished-apartment.blend is the editable authoring scene. One Blender unit is
+one centimetre; metre units are displayed using scene scale 0.01.
+All 383 scene entries have authored mesh geometry (1276 mesh parts, about
+340k triangles): shaker kitchen fronts with recessed plinths, oven glass and a
+two-door fridge, welted sofa with turned legs, tables with apron rails, a
+woven basket, draped duvet, panelled doors, moulded trim, leafy plants and
+detailed bathroom fixtures. Wood grain follows each part's length; painted
+joinery uses the paint material. These are original generated assets; no
+third-party asset pack is required.
+
+Room-specific builders live in Scripts/house_assets/*.py (kitchen, living,
+bedroom, study_dining, bathroom, architecture). Each keeps its objects' exact
+footprint and height envelope (within 0.5 cm) and their outline between 3.5
+and 27 cm above the floor, so robot collision and mapping stay comparable.
+
+The apartment layout remains in Content/RobotData/house-scene.json.
+Shared triangles, split normals and UVs are in house-meshes.json.
+Unreal and house-preview.html load the same mesh library. The browser uses
+counterclockwise faces; Unreal converts their winding to its convention.
+Static collision-enabled objects use those same visible triangle surfaces.
+Cables, leaves and other explicitly non-colliding decorations remain visual.
+
+REBUILD
+1. Run Scripts/build_house_textures.py with Python, NumPy and OpenCV.
+2. Run Blender --background --python Scripts/build_house_assets_blender.py.
+3. Run Scripts/build_house_materials_unreal.py through Unreal's Python commandlet.
+4. Build using Scripts/build.command and launch using Scripts/launch.command.
+
+Scripts/build_house.py creates the original layout; if you change or regenerate
+it, run the Blender asset builder afterwards before launching the simulation.
+
+VALIDATION
+reports/house-mesh-validation.json checks mesh integrity.
+reports/house-native-collision.json checks actual Unreal geometry queries.
+The latter is generated when launching Unreal with -ValidateHouseAssets.
+These checks do not establish autonomous mapping or dynamic contact performance.
+Earlier mapping reports refer to the previous scene. Materials and lights remain
+approximations; this is not a scan of the user's home. Furniture and cloth are
+static rigid surfaces, and the simulation does not model cable entanglement.

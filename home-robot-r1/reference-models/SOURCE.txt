@@ -1,0 +1,45 @@
+Pololu 25D gearmotor STEP reference
+Source: https://www.pololu.com/file/0J1647/25d-gearmotor-3d-models.zip
+Selected file: 25d-metal-gearmotor-75-99-encoder.step
+Retrieved: 2026-10-03
+Used as a manufacturer reference; the assembly uses a simplified packaging envelope.
+Dimensions: https://www.pololu.com/file/0J1634/25d-metal-gearmotor-dimension-diagram.pdf
+
+LDROBOT LD14 LiDAR STEP reference (Waveshare D200 LiDAR kit)
+Source: https://files.waveshare.com/upload/9/98/LD14.zip
+Retrieved: 2026-10-04
+Archive SHA-256: bfee1fc762aceba867fee2075ba8a1c2f82bbe91937ae6fe5953a9bd2d0da1e5
+Selected file: LD14.step (unchanged from the archive; file SHA-256 2a229c7645c0236c39ed4a6fa1bc4724456aa28cccf41bbff0be6f83366b5957)
+Used as a manufacturer reference: build_robot.py imports it directly for the LiDAR housing, motor,
+red cap and connector (the open turret shell is rebuilt as a solid from its measured faces).
+Mounting: three lugs at STEP (-35.3, 0), (36, +18), (36, -18); Ø3.24 mm through-holes, Ø5.96 mm top
+counterbores, lug undersides at z = -8.0. Optical windows z 8.4..16.0 (laser plane taken at 12.2).
+The D200 kit ships the LD14P variant; confirm lug positions and window height on the delivered unit.
+
+Added 2026-10-06 (downloads approved by the user):
+- pico-r3/Pico-R3.step (from pico-r3-step.zip): Raspberry Pi Ltd, https://datasheets.raspberrypi.com/pico/Pico-R3-step.zip
+  (redirects to pip-assets.raspberrypi.com RP-008311-DS-1-Pico-R3-step.zip). Frame: PCB y -0.5..0.5 (components +y),
+  USB end at z = -51; BOOTSEL/LED on the low-x side = pin 1 (GP0) column.
+- pololu-4035-drv8874-carrier.step: Pololu, https://www.pololu.com/file/0J1883/drv887x-single-brushed-dc-motor-driver-carrier.step
+  (DRV8874/DRV8876 carrier, 15.24 x 17.78 mm, z-up; no pin labels in the model).
+- pololu-2851-d24v50f5.step: Pololu, https://www.pololu.com/file/0J1437/d24v50f5-step-down-voltage-regulator.step
+
+NVIDIA Jetson Nano Developer Kit (P3450, revision B01) STEP reference
+Source: NVIDIA developer site (Jetson Download Center, Jetson Nano Developer Kit 3D model, B01); downloaded by the user 2026-10-06
+Archive: Jetson_Nano_Dev_Kit_3D_b01.zip (9.3 MB, committed), SHA-256 73c30bf5712d177f735cab336bff24e518c864cd6f6070b90ee184ad229ac604
+Contents: Jetson_Nano_Dev_Kit_3D_b01.stp (53.7 MB, Creo export 2019-05-09, 893 solids, mm), SHA-256
+054c594a8b08185f8aab22e30976f7d7df3f16771455a1485381111e068f279d. Unzip it into jetson-nano-b01/ (git-ignored) to rerun the simplifier.
+Simplified with cad/simplify_jetson.py -> jetson-nano-b01/jetson-nano-b01-simplified.step (4.0 MB, 57 solids, written without
+p-curves) + jetson-nano-b01-simplified.json (role -> solid map with bboxes, holes, ports; build_robot.py reads both and checks the bboxes):
+- kept: carrier PCB, module, heatsink, SO-DIMM, every connector (barrel jack, HDMI + DP, 2 × stacked USB-A, RJ45, micro-USB, 40-pin
+  header, 2 × CSI, fan header) and every other solid with a bbox side >= 3 mm (thicker than 0.2 mm) or volume >= 5 mm3;
+- dropped: 836 small SMD parts, pads and zero-thickness silkscreen/copper patches;
+- solids with more than 300 B-rep faces (HDMI/DP 5289, USB-A stacks 2 × 2110, RJ45 1892, M.2 slot, CSI, SO-DIMM, header, one BGA)
+  are replaced by their bounding boxes clipped to the PCB top, with the front sockets cut as pockets (USB-A 12.5 mm wide at the probed
+  port heights; HDMI, DP, RJ45 and micro-USB openings probed on the exact solids). Carrier, module, heatsink and barrel jack are exact.
+  Faces 21405 -> 3893; the full-detail model stays in the zip.
+Frame (unchanged): carrier PCB x -4..96, y -17..62, z 0..1.57 (component side +z); I/O row on the y = -17 long (100 mm) edge, facing -y.
+Measured from the STEP: mounting holes Ø2.75 at (0,0), (86,0), (0,58), (86,58) = 86 × 58 mm; module holes (12.2, 58.5), (75.8, 58.5);
+heatsink top z 28.28, fan screw holes Ø2.7 on 32 × 32 mm about (44, 41.3); stacked USB-A port centres z 5.69 / 14.19 (8.5 mm pitch),
+faces at y -18.5; barrel jack axis x 2.0, z 8.07; fan header 10.16 × 5.8 at (68.2, 7.77), base top z 4.07.
+Check that the owned board is a B01 (two CSI connectors); the A02 carrier differs.

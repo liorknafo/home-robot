@@ -1,0 +1,18 @@
+Littelfuse FLR PCB fuse holder for ATO blade fuses, 178.6165.0001 - used for F1 (7.5 A) and F2 (5 A). Retrieved 2026-10-04.
+
+SOURCES
+ Datasheet "Blade Fuseholders - FLR PCB Fuseholder for ATO Style Blade Fuse rated 80V" (Littelfuse 2006 catalogue page 102):
+   https://docs.rs-online.com/5bf4/A700000007084019.pdf
+ Distributor/vendor listings (search results, the vendor pages themselves returned 403 / timed out): Littelfuse part page
+   178.6165.0001 (30 A max, 22.5 A continuous, 80 V, 4 solder pins per terminal), Mouser 576-178.6165.0001,
+   Newark 32M4019 (listed as "100 pc / BULK"), Farnell 310499, DigiKey 178.6165.0001. 178.6165.0002 is the 500 pc pack.
+KiCad: Fuse:FuseHolder_Blade_ATO_Littelfuse_FLR_178.6165 (KiCad 9 stock library), symbol Device:Fuse (pins 1 and 2).
+
+DATASHEET FACTS
+ Leaf-spring contacts, soldering terminals "4 pins each" (8 pins in all), copper alloy, silver plated; thermoplastic UL 94 V-0.
+ Plan 20 x 6 mm; body 17.5 mm above the board (plus the fuse body, about 12 mm, above the housing: board_spec uses h = 30);
+ pins 3 mm below the housing; holes 1.4 +/-0.1 mm; pad grid 3.5 mm x 2.5 mm per contact, contacts 5.8 mm apart;
+ one 2.4 mm locating hole. The KiCad footprint pads: four pads numbered 1 at x = 0 and 3.5, four numbered 2 at x = 9.3 and 12.8,
+ each pair at y = 0 and 2.5, NPTH 2.4 mm at (6.4, 1.25): the same numbers.
+ Mating fuse: ATO / FKS blade fuse (7.5 A and 5 A are standard automotive values).
+ The KiCad footprint description says "PCB thickness up to 1.5 mm" for the snap lock; our board is 1.6 mm (see report).

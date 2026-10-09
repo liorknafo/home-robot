@@ -1,0 +1,1823 @@
+{
+  "title": "Home robot R1 — round body, D200 LiDAR and one camera",
+  "date": "2026-10-04",
+  "parts": [
+    {
+      "id": "E01",
+      "category": "Compute",
+      "item": "NVIDIA Jetson Nano assembly",
+      "quantity": 1,
+      "unit": "assembly",
+      "status": "Owned — user confirmed",
+      "new_cost_usd": 0,
+      "source": "https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-devkit",
+      "notes": "Keep the existing carrier, module and heatsink. CAD = NVIDIA's official Jetson Nano Developer Kit P3450 B01 STEP (reference-models/jetson-nano-b01, simplified by cad/simplify_jetson.py): carrier 100 × 79 mm, heatsink top 28.3 mm above the PCB, I/O row (barrel jack, HDMI + DP, 2 × stacked USB-A, RJ45, micro-USB) on the 100 mm edge facing forward (+x), barrel jack on the right; carrier PCB underside z 57 over the motors. Four Ø2.75 mounting holes on 86 × 58 mm (hole pattern from the STEP) at (25, -46), (-33, -46), (25, 40), (-33, 40) on H05 standoffs: two 24 mm stacks from P_base (front) and two 20 mm F-F standoffs on the bay board, which they clamp (rear). Check that the owned board is a B01 (two CSI connectors); an A02 has one CSI connector and other port positions. Barrel-jack power needs the J48 jumper fitted; the 5 V barrel lead assumes the 4 GB kit (a 2 GB kit needs its specified USB-C input). An Orin requires a revised power design. Assembly order (bay board under the Jetson): 0. on the bench, make the two motor pigtails (C18) and plug them on. They differ in length and in pin-1 order, so tag each one \"L / J4\" (left motor) or \"R / J5\" (right motor) right after making it, before it is plugged on. The pre-cut length of the six wires of each pigtail is 55 mm for J4 (left) and 51 mm for J5 (right): the drawn route + terminations + half the 12.7 mm pin spread (6.35 mm), rounded up to the mm, because the six sleeves span 12.7 mm along the header, so the outer wires reach 6.35 mm off the bundle's centre line. Solder the socket end first (one wire lapped on each solder tail of the right-angle socket under its Ø1.8 sleeve, red wire on pin 1, the tails and wires pointing up), then push the socket onto its header; leave the male ends long: they are dressed along the route, trimmed to length and crimped in step 4. J4 pin 1 = rear end, J5 pin 1 = front end (the square pads); the pigtails are built alike, so the rule is the same for both: looking into the socket's mating face with its tails up, the red wire (pin 1) is on the left. The pigtails stay with the board. Battery lead polarity: J1 pin 1 is GND (silk \"-\") and pin 2 is BAT+ (silk \"+\"), so the lead's cavity 1 carries GND (battery -, black) and cavity 2 BAT+ (battery +, red). Check it fail-safe before the fuses go in: with F1 and F2 out, plug W01 into J1 and into the battery and measure F1's input clip (its BAT+ side, F1 pin 1) against a GND pad (TP5 or an M3 hole ring): it must read positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower); a reversed lead reads negative and, with the fuses out, has no current path. Only then fit the fuses: a reversed lead with the fuses in is the costliest mistake on this board (it has no reverse-polarity protection); 1. bond the two printed bearing ribs into their 0.6 mm locating pockets in the P_base top with epoxy (F04) and let it cure; fit the two front Jetson standoffs (24 mm stacks), screwed from below; 2. set the four 2.4 mm printed spacers and the two printed clamp spacers on P_base, lower the bay board onto them and screw it down with four M3 × 8 pan-head screws into the inserts; 3. fit the battery tray (its hold-down beams freed: breakaway posts cut): set it 2 mm aft of its place, slide it forward so its three spring fingers ride up their lead-ins onto the board's top face between the rear connectors, screw it down, and check each finger stands lifted: a 0.05 mm feeler does not pass under its tip; if it does, that finger has play (it is off the board): stick 0.1 mm PTFE tape (F03) under its tip as a shim, a layer at a time (about 0.3 mm at most), until the feeler no longer passes; 4. plug the under-carrier cables. Pigtails: dress each one as drawn, with no slack (it rides up with the board when the joint is unplugged): straight up out of the socket, toward the front about 12 mm over the board beside U5A (J9 on the right), out between the P03 and the motor face, and down to the inline joint just ahead of the motor (x 15.2..17.8, |y| 38..60); then trim each wire to its own length at the male end (41.8 mm (pin 6) to 54.5 mm (pin 1) for J4, 37.4 mm (pin 1) to 50.1 mm (pin 6) for J5: the rear pin's wire is the longest) and crimp its male pin into the 1×6 housing, red wire = pin 1. Factory cables: measure each one from the encoder cap to the female housing's rear face (the wire entry); readings of 186–200 mm all fit. Route the fixed path first (about 90 mm outside the coil): a flat row along the motor's inner end face toward the rear, round the motor's rear shoulder and forward over the motor top (never over the pigtail), down the motor's front shoulder under the bumper lead, and from the coil position into the housing; wind the remainder (the measured length less the fixed path: 96–110 mm) into the coil on the base ahead of the motor (2–3 turns, about 16 mm across, at x 25, |y| 72) and tie it through its two slots. Then mate each motor's factory female housing onto its pigtail's male housing: the joint is not keyed, so mate the pin-1 stripe to the pin-1 stripe (both halves are marked at the red wire) and check the colours run straight across; stand the joint on the base and tie it down with a cable tie down the motor opening and up through the slot beside it; bumpers J10/J11; front cliffs J8/J9; 5. set and verify the P03 output voltage on the bench, connect it to U5A/U5B, then fit it on its foam tape in the front bay with the cable tie through the P_base slots at (28, ±33.3); 6. stand the two rear 20 mm F-F standoffs on the board and screw each down with an M2.5 × 12 countersunk screw from under P_base through the base, the clamp spacer and the board (they clamp the board); 7. fit the Jetson (four M2.5 top screws), then its six plugs. Service: with the lid off, the board's rear band (Pico USB, rear connector row, the Jetson 5 V lead J3, fuses) is reachable; the motor inline joints, the other under-carrier connectors and the P03 (tie, trimpot) need the Jetson off (its six plugs: camera, LiDAR and Pico USB, Wi-Fi dongle, 5 V barrel plug, fan; then its four top screws). To take the board out: Jetson off; the two rear standoffs off (their M2.5 screws from under P_base); the battery out (strap, Tamiya plug); the four tray screws out, the tray slid 2 mm aft and lifted straight out (its springs come off the board edge; its walls are cut clear of the rear cliff sensor boards); the four M3 board screws out; unplug the rear-band plugs, the motor inline joints (loosen each factory-cable coil tie first: the 8 mm each housing slides back comes out of the coil; then cut the joint ties and slide each factory housing off its pigtail; the pigtails stay on J4 / J5 and ride up with the board), the bumper and front cliff leads and the P03 leads; lift the board. Fit new ties when it goes back (retie the coils).",
+      "model": "jetson"
+    },
+    {
+      "id": "E02",
+      "category": "Compute",
+      "item": "Raspberry Pi Pico RP2040",
+      "quantity": 1,
+      "unit": "board",
+      "status": "Purchased — locate and test",
+      "new_cost_usd": 0,
+      "source": "https://www.amazon.com/dp/B08TQSDP28",
+      "notes": "Two purchased July 2022; install one, keep the other as spare. Supplied from Jetson USB only. 51 × 21 mm board.",
+      "model": "pico"
+    },
+    {
+      "id": "E03",
+      "category": "Sensors",
+      "item": "HiLetgo GY-521 MPU-6050",
+      "quantity": 1,
+      "unit": "board",
+      "status": "Purchased — locate and test",
+      "new_cost_usd": 0,
+      "source": "https://www.amazon.com/dp/B01DK83ZYQ",
+      "notes": "August 2019 purchase. Use a 3.3 V I2C bus; check the actual breakout regulator/pullups. CAD uses an estimated 21 × 16 × 8 mm envelope.",
+      "model": "imu"
+    },
+    {
+      "id": "E04",
+      "category": "Sensors",
+      "item": "Waveshare OV2735 2MP USB Camera (A), SKU 33122",
+      "quantity": 1,
+      "unit": "camera",
+      "status": "Buy",
+      "new_cost_usd": 14.99,
+      "source": "https://www.waveshare.com/ov2735-2mp-usb-camera-a.htm",
+      "notes": "Single 25 x 25 mm USB camera; 1080p30, 5 V. Video and future recognition only; no stereo depth. Camera board, lens depth and USB position require actual fit check. Listed price checked 2026-10-03.",
+      "model": "camera"
+    },
+    {
+      "id": "E05",
+      "category": "Drive",
+      "item": "Pololu 4867, 99:1 MP 12 V encoder gearmotor",
+      "quantity": 2,
+      "unit": "motors",
+      "status": "Buy",
+      "new_cost_usd": 107.9,
+      "source": "https://www.pololu.com/product/4867",
+      "notes": "USD 53.95 each. 25 mm diameter; about 69 mm body plus 12.5 mm shaft. 4 mm D-shaft. Nominal 79 RPM at 12 V; approximately 47 RPM unloaded at 7.2 V is an estimate. Encoder supply must be at least 3.5 V: the board feeds it 5 V and reads A / B through the 2N7002 input stages. Factory 200 mm 6-lead cable with a 1×6 0.1 in female housing (red motor +, black motor −, green encoder GND, blue encoder VCC, yellow A, white B): it is not cut; it mates with the C18 pigtail at the inline joint ahead of the motor. Measure each cable from the encoder cap to the female housing's rear face (the wire entry): the vendor's \"200 mm\" is on the verify list, and readings of 186–200 mm all fit. Route the fixed path first and wind the remainder into a 2–3 turn coil on the base and tie it (assembly step 4); loosen the coil tie before unplugging the inline joint. Vendor STEP included as a reference.",
+      "model": "motor"
+    },
+    {
+      "id": "E16",
+      "category": "Drive",
+      "item": "Pololu 4035 DRV8874 single brushed DC motor driver carrier",
+      "quantity": 2,
+      "unit": "carriers",
+      "status": "Buy",
+      "new_cost_usd": 23.88,
+      "source": "https://www.pololu.com/product/4035",
+      "notes": "One per motor, plugged into the bay board sockets U3L / U3P (left) and U4L / U4P (right), turned 180 deg in place (rulings PB15 / PB16: logic row toward the Pico). 4.5–37 V, 2.1 A continuous, about 1.1 V/A current sense, default current limit about 4.4 A (pcb/reference/pololu-4035.txt). Firmware limits each channel to 1.8 A continuous (BRINGUP-NOTES). Solder the supplied male header strips with the components up. USD 11.94 each (B9 review; verify on the order page).",
+      "model": "driver"
+    },
+    {
+      "id": "M01",
+      "category": "Drive",
+      "item": "Pololu 3690, 80 × 10 mm multi-hub wheels",
+      "quantity": 1,
+      "unit": "pair",
+      "status": "Buy",
+      "new_cost_usd": 11.95,
+      "source": "https://www.pololu.com/product/3690",
+      "notes": "Use included 4 mm D collets, plates and six M3 × 7 screws. No additional hubs needed.",
+      "model": "wheel"
+    },
+    {
+      "id": "M02",
+      "category": "Drive",
+      "item": "Pololu 2692, 1 inch ball caster with bearings",
+      "quantity": 1,
+      "unit": "caster",
+      "status": "Buy",
+      "new_cost_usd": 9.95,
+      "source": "https://www.pololu.com/product/2692",
+      "notes": "ONE rear caster (no front support): ball centre at x = -75 mm behind the axle; the caster carries about 0.25 of the weight and the rear cliff sensors (-110, ±81) lead it by 35 mm in reverse. DriveCore disarms on a hazard and the robot coasts on the motor dynamic brake: from the 0.06 m/s firmware reverse speed limit (parameters.json reverse_speed_limit_m_s; required) that needs 23.3 mm (14.6 mm coast, no rolling drag, conservative), so no active brake is required (validation caster_layout.stopping); reversing faster than 0.095 m/s would not be covered. 29 mm assembled height. CAD housing is a conservative envelope; three M3 × 5 pan-head machine screws (H13) on a 16.5 mm bolt circle, outside the Ø25.4 ball, through the 2 mm flange tabs into M3 brass heat-set inserts (H12) pressed into P_base from below. Drill the flange tabs to this pattern if the purchased caster differs.",
+      "model": "caster"
+    },
+    {
+      "id": "P01",
+      "category": "Power",
+      "item": "Tenergy 7.2 V 3800 mAh NiMH flat battery",
+      "quantity": 1,
+      "unit": "pack installed",
+      "status": "Purchased — load-test first",
+      "new_cost_usd": 0,
+      "source": "https://www.amazon.com/dp/B001BKPAR6",
+      "notes": "Two packs and charger purchased March 2021. Install only ONE pack; second stays off robot as spare. Working envelope 140 × 50 × 27 mm, based on the 11200 family with clearance. Confirm actual pack, connector polarity and capacity.",
+      "model": "battery"
+    },
+    {
+      "id": "P02",
+      "category": "Power",
+      "item": "Existing matching NiMH charger",
+      "quantity": 1,
+      "unit": "charger, off robot",
+      "status": "Purchased — verify match",
+      "new_cost_usd": 0,
+      "source": "https://www.amazon.com/dp/B001BKPAR6",
+      "notes": "Charge the removed, disconnected pack using its matching NiMH charger. No onboard charging or docking in R1.",
+      "model": "offboard"
+    },
+    {
+      "id": "P03",
+      "category": "Power",
+      "item": "Existing adjustable DC-DC converter advertised as 5 A",
+      "quantity": 1,
+      "unit": "module",
+      "status": "Purchased — load-test first",
+      "new_cost_usd": 0,
+      "source": "https://www.amazon.com/dp/B085T73CSD",
+      "notes": "March 2021 purchase. Measured envelope 62 × 38 × 14 mm (CAD p03_regulator): on 1 mm double-sided foam tape on P_base in the front bay, turned 90 deg (long side along y, x 9..47, |y| <= 31), under the front of the Jetson carrier and ahead of the bay board's tongue, held by a cable tie through the P_base slots at (28, ±33.3); leads of about 10 mm to U5A/U5B on the tongue's front edge. Adjust and verify regulated 5 V on the bench before it is fitted: its trimpot and tie are not reachable once the Jetson is on. Test at 6.6 V input with the intended load and motor starts; rating alone is not acceptance. Assembly order (bay board under the Jetson): 0. on the bench, make the two motor pigtails (C18) and plug them on. They differ in length and in pin-1 order, so tag each one \"L / J4\" (left motor) or \"R / J5\" (right motor) right after making it, before it is plugged on. The pre-cut length of the six wires of each pigtail is 55 mm for J4 (left) and 51 mm for J5 (right): the drawn route + terminations + half the 12.7 mm pin spread (6.35 mm), rounded up to the mm, because the six sleeves span 12.7 mm along the header, so the outer wires reach 6.35 mm off the bundle's centre line. Solder the socket end first (one wire lapped on each solder tail of the right-angle socket under its Ø1.8 sleeve, red wire on pin 1, the tails and wires pointing up), then push the socket onto its header; leave the male ends long: they are dressed along the route, trimmed to length and crimped in step 4. J4 pin 1 = rear end, J5 pin 1 = front end (the square pads); the pigtails are built alike, so the rule is the same for both: looking into the socket's mating face with its tails up, the red wire (pin 1) is on the left. The pigtails stay with the board. Battery lead polarity: J1 pin 1 is GND (silk \"-\") and pin 2 is BAT+ (silk \"+\"), so the lead's cavity 1 carries GND (battery -, black) and cavity 2 BAT+ (battery +, red). Check it fail-safe before the fuses go in: with F1 and F2 out, plug W01 into J1 and into the battery and measure F1's input clip (its BAT+ side, F1 pin 1) against a GND pad (TP5 or an M3 hole ring): it must read positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower); a reversed lead reads negative and, with the fuses out, has no current path. Only then fit the fuses: a reversed lead with the fuses in is the costliest mistake on this board (it has no reverse-polarity protection); 1. bond the two printed bearing ribs into their 0.6 mm locating pockets in the P_base top with epoxy (F04) and let it cure; fit the two front Jetson standoffs (24 mm stacks), screwed from below; 2. set the four 2.4 mm printed spacers and the two printed clamp spacers on P_base, lower the bay board onto them and screw it down with four M3 × 8 pan-head screws into the inserts; 3. fit the battery tray (its hold-down beams freed: breakaway posts cut): set it 2 mm aft of its place, slide it forward so its three spring fingers ride up their lead-ins onto the board's top face between the rear connectors, screw it down, and check each finger stands lifted: a 0.05 mm feeler does not pass under its tip; if it does, that finger has play (it is off the board): stick 0.1 mm PTFE tape (F03) under its tip as a shim, a layer at a time (about 0.3 mm at most), until the feeler no longer passes; 4. plug the under-carrier cables. Pigtails: dress each one as drawn, with no slack (it rides up with the board when the joint is unplugged): straight up out of the socket, toward the front about 12 mm over the board beside U5A (J9 on the right), out between the P03 and the motor face, and down to the inline joint just ahead of the motor (x 15.2..17.8, |y| 38..60); then trim each wire to its own length at the male end (41.8 mm (pin 6) to 54.5 mm (pin 1) for J4, 37.4 mm (pin 1) to 50.1 mm (pin 6) for J5: the rear pin's wire is the longest) and crimp its male pin into the 1×6 housing, red wire = pin 1. Factory cables: measure each one from the encoder cap to the female housing's rear face (the wire entry); readings of 186–200 mm all fit. Route the fixed path first (about 90 mm outside the coil): a flat row along the motor's inner end face toward the rear, round the motor's rear shoulder and forward over the motor top (never over the pigtail), down the motor's front shoulder under the bumper lead, and from the coil position into the housing; wind the remainder (the measured length less the fixed path: 96–110 mm) into the coil on the base ahead of the motor (2–3 turns, about 16 mm across, at x 25, |y| 72) and tie it through its two slots. Then mate each motor's factory female housing onto its pigtail's male housing: the joint is not keyed, so mate the pin-1 stripe to the pin-1 stripe (both halves are marked at the red wire) and check the colours run straight across; stand the joint on the base and tie it down with a cable tie down the motor opening and up through the slot beside it; bumpers J10/J11; front cliffs J8/J9; 5. set and verify the P03 output voltage on the bench, connect it to U5A/U5B, then fit it on its foam tape in the front bay with the cable tie through the P_base slots at (28, ±33.3); 6. stand the two rear 20 mm F-F standoffs on the board and screw each down with an M2.5 × 12 countersunk screw from under P_base through the base, the clamp spacer and the board (they clamp the board); 7. fit the Jetson (four M2.5 top screws), then its six plugs. Service: with the lid off, the board's rear band (Pico USB, rear connector row, the Jetson 5 V lead J3, fuses) is reachable; the motor inline joints, the other under-carrier connectors and the P03 (tie, trimpot) need the Jetson off (its six plugs: camera, LiDAR and Pico USB, Wi-Fi dongle, 5 V barrel plug, fan; then its four top screws). To take the board out: Jetson off; the two rear standoffs off (their M2.5 screws from under P_base); the battery out (strap, Tamiya plug); the four tray screws out, the tray slid 2 mm aft and lifted straight out (its springs come off the board edge; its walls are cut clear of the rear cliff sensor boards); the four M3 board screws out; unplug the rear-band plugs, the motor inline joints (loosen each factory-cable coil tie first: the 8 mm each housing slides back comes out of the coil; then cut the joint ties and slide each factory housing off its pigtail; the pigtails stay on J4 / J5 and ride up with the board), the bumper and front cliff leads and the P03 leads; lift the board. Fit new ties when it goes back (retie the coils).",
+      "model": "regulator"
+    },
+    {
+      "id": "P07",
+      "category": "Power",
+      "item": "Automotive blade fuses: 7.5 A main and 5 A motor",
+      "quantity": 1,
+      "unit": "set plus spare of each",
+      "status": "Buy",
+      "new_cost_usd": 2,
+      "source": "",
+      "notes": "ATO blade fuses for the bay board's FLR holders: 7.5 A in F1 (main), 5 A in F2 (motor branch), plus a spare of each: e.g. Littelfuse 0287007.PXCN / 0287005.PXCN (verify). Verify the start-up current against the 5 A motor fuse.",
+      "model": "inside holders"
+    },
+    {
+      "id": "P08",
+      "category": "Power",
+      "item": "SPST master rocker switch, ≥10 A at 12 VDC",
+      "quantity": 1,
+      "unit": "switch",
+      "status": "Buy",
+      "new_cost_usd": 3,
+      "source": "",
+      "notes": "Select a documented DC-rated snap-in rocker whose datasheet panel thickness range includes 1.5 mm; the CAD envelope is a 12.6 × 19.8 × 25 mm body (z 78.5–103.5) through a 13.2 × 20.4 mm printed opening in the lid top at (-100, 0), with a 15.7 × 24.4 × 1.5 mm relief pocket under the lid so the panel is 1.5 mm at the opening (check the fit on P_coupon first; file to the datasheet panel cut-out so the snap tabs hold), plus a 24 × 21 × 3 mm bezel on the lid. The old rear panel is now inside the rear shell. Switch off after the Jetson has shut down.",
+      "model": "master_switch"
+    },
+    {
+      "id": "P10",
+      "category": "Power",
+      "item": "100 nF ceramic suppression capacitor",
+      "quantity": 2,
+      "unit": "capacitors",
+      "status": "Buy",
+      "new_cost_usd": 0.5,
+      "source": "",
+      "notes": "Across each motor’s terminals; short leads. Additional 100 nF capacitor in the battery sense filter is listed with signal components.",
+      "model": "motor caps"
+    },
+    {
+      "id": "S01",
+      "category": "Controls",
+      "item": "Maintained SPST motor-power mini-toggle switch",
+      "quantity": 1,
+      "unit": "switch",
+      "status": "Buy",
+      "new_cost_usd": 4,
+      "source": "",
+      "notes": "Planning allowance. Select contacts rated for at least 0.5 A at 12 V DC. Interrupts the 5 V relay coil only; OFF disconnects motor supply while Jetson stays powered. CAD assumes a 6.0 mm bushing through a 6.6 mm printed lid hole (ream to the datasheet panel hole) and a 13 x 8 x 14 mm body; match actual drawing before printing.",
+      "model": "motor_switch"
+    },
+    {
+      "id": "S02",
+      "category": "Controls",
+      "item": "Momentary normally-open arm button",
+      "quantity": 1,
+      "unit": "button",
+      "status": "Buy",
+      "new_cost_usd": 2,
+      "source": "",
+      "notes": "12 mm panel mount, low voltage, through a 12.6 mm printed lid hole (ream to the datasheet size). Connect to Pico input and ground; firmware must require deliberate arming.",
+      "model": "arm_button"
+    },
+    {
+      "id": "S03",
+      "category": "Sensors",
+      "item": "Omron SS-5GL2 hinge roller lever microswitch",
+      "quantity": 2,
+      "unit": "switches",
+      "status": "Buy",
+      "new_cost_usd": 4,
+      "source": "https://components.omron.com/us-en/products/switches/SS",
+      "notes": "Front left/right contact bumpers. Use COM + NC so an open wire also requests a stop. SS-5GL2 is the HINGE ROLLER lever (Ø4.8 × 3.2 roller on a 14.5 mm lever; Omron SS datasheet: OF max 0.49 N, FP max 19.3 mm, OP 14.5 ± 0.8 mm, OT min 1.2 mm, MD max 0.8 mm, heights of the roller top above the mounting-hole line). Each switch hangs under P_base on two M2 × 14 screws with washers and nuts on the base top, through 2.4 mm slots that let it slide ±0.9 mm along its own Y axis, turned 30° so the roller runs along the half's travel. The rail cam holds the roller above the release position at rest; the roller meets the 40° ramp from about 0 mm of travel and a dwell holds it past OP to the 5 mm stop. Because the OP tolerance (±0.8 mm) exceeds OT min (1.2 mm), the switch is set at assembly (from above, in the front bay): hold the half 2.25 mm in (gauge block at the rest stop; the roller force holds the bearing on its slot side), slide the switch toward the cam until it just operates, tighten. During a hit the bearing can cross its slot (up to 2 × 0.1 mm), which makes the switch operate earlier, never later: operation stays within 1.99–2.25 mm for slot widths 8.1–8.2 mm (validation.json bumper_travel.switch.slot_width_cases). Confirm the allowed dog direction with Omron's precautions (the cam meets the roller from the lever-tip side).",
+      "model": "bumper_switch"
+    },
+    {
+      "id": "S04",
+      "category": "Sensors",
+      "item": "Pololu VL53L0X carrier, item 2490",
+      "quantity": 4,
+      "unit": "boards",
+      "status": "Buy",
+      "new_cost_usd": 79.8,
+      "source": "https://www.pololu.com/product/2490",
+      "notes": "USD 19.95 each checked 2026-10-03. Downward-facing sensors, optical face about 42.5 mm above the floor: front (105, ±72), rear (-110, ±81) beside the battery tray. VIN 3.3 V; XSHUT driven LOW or high impedance only. Reassign I2C addresses at boot. Test on actual floors; loss of reading requests stop.",
+      "model": "cliff_sensor"
+    },
+    {
+      "id": "E07",
+      "category": "Compute",
+      "item": "64 GB UHS-I microSD card",
+      "quantity": 1,
+      "unit": "card",
+      "status": "Check existing; budget to buy",
+      "new_cost_usd": 12,
+      "source": "https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-devkit",
+      "notes": "Reuse installed card if healthy and large enough; storage is not confirmed in purchase history. Included inside the Jetson assembly envelope.",
+      "model": "jetson"
+    },
+    {
+      "id": "E08",
+      "category": "Compute",
+      "item": "Compatible USB Wi-Fi adapter",
+      "quantity": 1,
+      "unit": "adapter",
+      "status": "Check existing; budget to buy",
+      "new_cost_usd": 18,
+      "source": "https://developer.nvidia.com/embedded/learn/jetson-nano-2gb-devkit-user-guide",
+      "notes": "Exact adapter/chipset depends on the Jetson image. CAD reserves a compact USB dongle plus plug access; choose a supported model after identifying the existing adapter.",
+      "model": "wifi"
+    },
+    {
+      "id": "E09",
+      "category": "Compute",
+      "item": "40 × 40 × 10 mm 5 V fan with matching Jetson lead",
+      "quantity": 1,
+      "unit": "fan",
+      "status": "Check existing; budget to buy",
+      "new_cost_usd": 8,
+      "source": "https://developer.nvidia.com/embedded/learn/jetson-nano-2gb-devkit-user-guide",
+      "notes": "Use existing cooler if present. Fan header/plug depends on board revision. CAD: 40 × 40 × 10 mm fan (Ø34 bore) on the heatsink 32 mm screw pattern with four M3 pan-head screws (heads ≤ Ø5.6 × 2.1 mm). The lid seals its intake: a 1.3 mm skirt round the Ø35 lid window ends 0.9 mm above the fan frame, 1.03 mm inside the screw heads (check the gap with feelers at assembly: 0.5 mm passes, 1.0 mm does not; a fan with a bore over Ø35 or larger screw heads needs the skirt re-checked). Lid-on load test before the robot is used: lid, LiDAR and tray fitted, sustained full CPU + GPU load for 20 min, log tegrastats (CPU/GPU/SoC temperatures and clocks) and compare with a lid-off run; the lid passes if the clocks never throttle. Carry into pcb/BRINGUP.md (L11).",
+      "model": "fan"
+    },
+    {
+      "id": "C01",
+      "category": "Connections",
+      "item": "USB 2.0 data cable, Type-A to Type-C, 0.5 m",
+      "quantity": 1,
+      "unit": "cable",
+      "status": "Check camera bundle; budget to buy",
+      "new_cost_usd": 5,
+      "source": "",
+      "notes": "Single camera to Jetson. Buy a complete 0.5 m data cable; never cut USB cables to the harness estimate. Charge-only cables are unsuitable. Connector orientation and strain relief are represented as envelopes.",
+      "model": "usb_camera"
+    },
+    {
+      "id": "C02",
+      "category": "Connections",
+      "item": "USB data cable, Type-A to Micro-B, 0.5 m",
+      "quantity": 1,
+      "unit": "cable",
+      "status": "Check existing; budget to buy",
+      "new_cost_usd": 4,
+      "source": "",
+      "notes": "Jetson to Pico. Pico receives power through this cable; do not also connect external 5 V to its VBUS.",
+      "model": "usb_pico"
+    },
+    {
+      "id": "C03",
+      "category": "Connections",
+      "item": "5.5 × 2.1 mm DC barrel plug lead, ≥4 A, 18 AWG",
+      "quantity": 1,
+      "unit": "lead",
+      "status": "Buy after board identification",
+      "new_cost_usd": 4,
+      "source": "https://developer.nvidia.com/embedded/learn/get-started-jetson-nano-devkit",
+      "notes": "Conditional on original Nano 4 GB barrel input: 5 V, center positive, appropriate power-select jumper. For Nano 2 GB replace with a suitable 5 V/3 A USB-C power lead. Never connect battery voltage directly.",
+      "model": "jetson_power"
+    },
+    {
+      "id": "C04",
+      "category": "Connections",
+      "item": "Standard Tamiya mating connector / pigtail",
+      "quantity": 1,
+      "unit": "mate for battery",
+      "status": "Buy",
+      "new_cost_usd": 3,
+      "source": "https://www.tenergy.com/11200",
+      "notes": "Match actual battery housing, contact gender and polarity. Keep the existing battery connector intact. 18 AWG or heavier.",
+      "model": "battery_connector"
+    },
+    {
+      "id": "C05",
+      "category": "Connections",
+      "item": "JST VH 2-position housings and contacts (VHR-2N + SVH-21T-P1.1)",
+      "quantity": 3,
+      "unit": "sets",
+      "status": "Buy",
+      "new_cost_usd": 3.0,
+      "source": "https://www.jst-mfg.com/product/pdf/eng/eVH.pdf",
+      "notes": "Mates for the bay board's B2P-VH headers (the headers are E18): J1 battery lead W01 (cavity 1 = GND, cavity 2 = BAT+: ruling PB20), J2 master rocker pair W02, J3 Jetson 5 V lead W04. 18 AWG; crimp with a JST-type crimper; buy spare contacts.",
+      "model": "vh_connectors"
+    },
+    {
+      "id": "C06",
+      "category": "Connections",
+      "item": "JST XH 5-position housings and contacts (XHP-5 + SXH-001T-P0.6)",
+      "quantity": 4,
+      "unit": "sets",
+      "status": "Buy",
+      "new_cost_usd": 3.0,
+      "source": "https://www.jst-mfg.com/product/pdf/eng/eXH.pdf",
+      "notes": "Mates for the bay board's B5B-XH-A headers J6–J9 (the headers are E18): the four cliff-sensor leads W10–W13 (1 3V3, 2 GND, 3 SDA, 4 SCL, 5 XSHUT). Signals only; buy spare contacts.",
+      "model": "xh_connectors"
+    },
+    {
+      "id": "C08",
+      "category": "Connections",
+      "item": "JST XH 2-position housings and contacts (XHP-2 + SXH-001T-P0.6)",
+      "quantity": 4,
+      "unit": "sets",
+      "status": "Buy",
+      "new_cost_usd": 2.0,
+      "source": "https://www.jst-mfg.com/product/pdf/eng/eXH.pdf",
+      "notes": "Mates for the bay board's B2B-XH-A headers (the headers are E18): bumpers J10 / J11, arm button J12, motor-power toggle loop J13. Buy spare contacts.",
+      "model": "xh_connectors"
+    },
+    {
+      "id": "C09",
+      "category": "Connections",
+      "item": "2.54 mm male header strips for the Pico",
+      "quantity": 1,
+      "unit": "set",
+      "status": "Purchased — verify stock",
+      "new_cost_usd": 0,
+      "source": "https://www.amazon.com/dp/B09MY5MJ36",
+      "notes": "Two 1×20 male strips, soldered to the Pico (E02) if it has none, before it goes into the bay board's sockets. The board's own sockets and the J4 / J5 right-angle headers are board parts (E18); J14 / J15 are DNP pad rows (fit a bare header only if needed).",
+      "model": "headers"
+    },
+    {
+      "id": "C10",
+      "category": "Connections",
+      "item": "18 AWG silicone wire, red and black",
+      "quantity": 6,
+      "unit": "metres total",
+      "status": "Buy",
+      "new_cost_usd": 12,
+      "source": "",
+      "notes": "Power leads from cable-cut-list.json: battery lead W01 (2 × 100 mm), rocker pair W02 (2 × 150 mm), Jetson 5 V lead W04 (2 × 250 mm) and the four P03 leads (4 × 50 mm, trimmed): about 1.2 m in all, red and black; the rest is spare. Cut list = route allowances, not individual conductor counts.",
+      "model": "power_harness"
+    },
+    {
+      "id": "C11",
+      "category": "Connections",
+      "item": "24–26 AWG flexible signal wire",
+      "quantity": 25,
+      "unit": "metres total",
+      "status": "Check existing; budget to buy",
+      "new_cost_usd": 15,
+      "source": "",
+      "notes": "Signal leads from cable-cut-list.json: four cliff-sensor leads W10–W13 (5 wires each: 200 / 250 / 250 / 200 mm), two bumper leads (2 × 250 mm), the arm-button lead W15 (2 × 200 mm) and the toggle loop W14 (2 × 150 mm, 24 AWG): about 6.2 m in all. Multiple colours (the cut list suggests one per pin); twist each signal with its ground where practical. The motor pigtails are 28 AWG silicone (C18).",
+      "model": "signal_harness"
+    },
+    {
+      "id": "C12",
+      "category": "Connections",
+      "item": "Split sleeving, cable ties, ferrules, insulated spades and heat-shrink",
+      "quantity": 1,
+      "unit": "assortment",
+      "status": "Check existing; budget to buy",
+      "new_cost_usd": 8,
+      "source": "",
+      "notes": "Match terminal widths on the actual switches (master rocker, motor toggle, arm button: insulated spades). Includes the battery straps and adhesive strain-relief bases. Cable ties: the P03 tie, two motor inline-joint ties and two factory-cable coil ties (2.5 mm wide, 100–150 mm long; fitted at assembly step 4; a joint tie is cut and replaced to service a joint, a coil tie is loosened first). Heat-shrink: Ø1.8 mm sleeves (1/16 in, 2:1) over the 12 pigtail solder joints (C18) and Ø3 / Ø5 for the lead ends. Add 1 m of 8 mm power sleeve and 12 mm sensor / USB split sleeve; tie the leads down at the P_base tie slots.",
+      "model": "harness finishing"
+    },
+    {
+      "id": "E17",
+      "category": "Control board",
+      "item": "R1 power & I/O bay board: 4-layer 1.6 mm PCB, 74 × 100 mm (JLCPCB, 5 pcs) + top-side SMT stencil",
+      "quantity": 1,
+      "unit": "order (5 boards + stencil)",
+      "status": "Buy",
+      "new_cost_usd": 15.0,
+      "source": "pcb/fab/ORDERING.md",
+      "notes": "Upload pcb/fab/r1_power_io-gerbers.zip; options, the size / price-tier check and the stencil in ORDERING.md. About USD 8 for 5 boards plus the stencil (about 7), before shipping: check on the order page. Agents never order: the user places the order.",
+      "model": "bay_board"
+    },
+    {
+      "id": "E18",
+      "category": "Control board",
+      "item": "Bay board parts (pcb/fab/r1_power_io-bom.csv): sockets, board connectors, fuse holders, relay, capacitors and the SMD parts",
+      "quantity": 1,
+      "unit": "set (one board)",
+      "status": "Buy",
+      "new_cost_usd": 20.0,
+      "source": "pcb/fab/r1_power_io-bom.csv",
+      "notes": "Fitted parts per pcb/fab/r1_power_io-bom.csv (MPNs from board_spec.PARTS): Pico sockets U1A / U1B (Sullins PPTC201LFBN-RC ×2), GY-521 socket U2 (PPTC081LFBN-RC), DRV8874 sockets U3L / U3P / U4L / U4P (PPTC071LFBN-RC ×4); board connectors J1–J3 (JST B2P-VH(LF)(SN) ×3), J4 / J5 (Amphenol 68016-106HLF right-angle 1×6 headers ×2, the right-angle connectors chosen in B3), J6–J9 (JST B5B-XH-A(LF)(SN) ×4), J10–J13 (JST B2B-XH-A(LF)(SN) ×4); P03 terminals U5A / U5B (Phoenix Contact 1715721 ×2); fuse holders F1 / F2 (Littelfuse 178.6165.0001 ×2; the fuses are P07); relay K1 (Omron G5LE-1 DC5); C1 (Panasonic EEU-FR1E471); C3 (Panasonic EEE-FK1C101P); C2, D1 (SS14), Q1–Q5 (2N7002), LED1–LED3 and R1–R23 (reflowed through the stencil). J14 / J15 are DNP pad rows. The relay's coil loop (S01 toggle) is an experimental stop circuit, not a certified safety system. About USD 20 at small quantities (estimate, from memory: verify); the MPNs marked \"verify\" are on this file's verify list.",
+      "model": "bay_board"
+    },
+    {
+      "id": "H01",
+      "category": "Fasteners",
+      "item": "M3 × 8 socket screws",
+      "quantity": 40,
+      "unit": "screws",
+      "status": "Buy / reuse stock",
+      "new_cost_usd": 3,
+      "source": "",
+      "notes": "Deck-to-pillar bolts (into the nuts in the pillar tops), board-tray fixtures and brackets. Includes spares; exact allocation is in assembly notes. Base-side fasteners: H10 thread-forming (rear shell, pillars) or H13 machine screws into the H12 brass inserts.",
+      "model": "fasteners"
+    },
+    {
+      "id": "H02",
+      "category": "Fasteners",
+      "item": "M3 × 12 socket screws",
+      "quantity": 16,
+      "unit": "screws",
+      "status": "Buy / reuse stock",
+      "new_cost_usd": 2,
+      "source": "",
+      "notes": "Deck/top attachment and through-bolted accessories. Verify engagement against the actual printed stack.",
+      "model": "fasteners"
+    },
+    {
+      "id": "H03",
+      "category": "Fasteners",
+      "item": "M3 nuts and washers",
+      "quantity": 48,
+      "unit": "of each",
+      "status": "Buy / reuse stock",
+      "new_cost_usd": 3,
+      "source": "",
+      "notes": "Through-bolted joints, including the nuts under P_base for the four camera-tower M3 × 10 socket screws (H13) (inside the bumper-rail keep-out, checked against the moving rails). The bay-board spacers, the battery tray, the caster, the lid-post feet and the lid screws use H12 inserts; the rear shell uses H10.",
+      "model": "fasteners"
+    },
+    {
+      "id": "H04",
+      "category": "Fasteners",
+      "item": "M2 × 8 screws, nuts and 4 mm nylon spacers",
+      "quantity": 16,
+      "unit": "sets",
+      "status": "Buy",
+      "new_cost_usd": 3,
+      "source": "",
+      "notes": "Camera clamps and four cliff-sensor carriers; adjust lengths after verifying boards.",
+      "model": "fasteners"
+    },
+    {
+      "id": "H05",
+      "category": "Fasteners",
+      "item": "M2.5 screws + nylon standoffs, front: two 24 mm stacks (12 mm M-F + 12 mm F-F) + four M2.5 × 6 pan-head carrier screws",
+      "quantity": 2,
+      "unit": "front stacks (+ four top screws)",
+      "status": "Buy",
+      "new_cost_usd": 2,
+      "source": "",
+      "notes": "Front: two 24 mm M2.5 nylon standoff stacks from P_base to the Jetson carrier, each a 12 mm M-F (female end down, male stud up) under a 12 mm F-F, so both ends are female, on M2.5 × 8 countersunk screws from under P_base (flush in 90 deg countersinks). (A one-piece stock 25 mm F-F would raise the carrier to z 58; the CAD keeps z 57.) Four M2.5 × 6 pan-head screws hold the carrier on all four standoffs from the top (the two rear ones are H14). Jetson B01 mounting holes Ø2.75 on 86 × 58 mm (hole pattern taken from NVIDIA's STEP) at (25, -46), (-33, -46), (25, 40), (-33, 40). Carrier underside z 57: 4.5 mm over the motor tops (through-hole leads reach 1.9 mm under the PCB); Jetson isolated from P_base. Assembly order (bay board under the Jetson): 0. on the bench, make the two motor pigtails (C18) and plug them on. They differ in length and in pin-1 order, so tag each one \"L / J4\" (left motor) or \"R / J5\" (right motor) right after making it, before it is plugged on. The pre-cut length of the six wires of each pigtail is 55 mm for J4 (left) and 51 mm for J5 (right): the drawn route + terminations + half the 12.7 mm pin spread (6.35 mm), rounded up to the mm, because the six sleeves span 12.7 mm along the header, so the outer wires reach 6.35 mm off the bundle's centre line. Solder the socket end first (one wire lapped on each solder tail of the right-angle socket under its Ø1.8 sleeve, red wire on pin 1, the tails and wires pointing up), then push the socket onto its header; leave the male ends long: they are dressed along the route, trimmed to length and crimped in step 4. J4 pin 1 = rear end, J5 pin 1 = front end (the square pads); the pigtails are built alike, so the rule is the same for both: looking into the socket's mating face with its tails up, the red wire (pin 1) is on the left. The pigtails stay with the board. Battery lead polarity: J1 pin 1 is GND (silk \"-\") and pin 2 is BAT+ (silk \"+\"), so the lead's cavity 1 carries GND (battery -, black) and cavity 2 BAT+ (battery +, red). Check it fail-safe before the fuses go in: with F1 and F2 out, plug W01 into J1 and into the battery and measure F1's input clip (its BAT+ side, F1 pin 1) against a GND pad (TP5 or an M3 hole ring): it must read positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower); a reversed lead reads negative and, with the fuses out, has no current path. Only then fit the fuses: a reversed lead with the fuses in is the costliest mistake on this board (it has no reverse-polarity protection); 1. bond the two printed bearing ribs into their 0.6 mm locating pockets in the P_base top with epoxy (F04) and let it cure; fit the two front Jetson standoffs (24 mm stacks), screwed from below; 2. set the four 2.4 mm printed spacers and the two printed clamp spacers on P_base, lower the bay board onto them and screw it down with four M3 × 8 pan-head screws into the inserts; 3. fit the battery tray (its hold-down beams freed: breakaway posts cut): set it 2 mm aft of its place, slide it forward so its three spring fingers ride up their lead-ins onto the board's top face between the rear connectors, screw it down, and check each finger stands lifted: a 0.05 mm feeler does not pass under its tip; if it does, that finger has play (it is off the board): stick 0.1 mm PTFE tape (F03) under its tip as a shim, a layer at a time (about 0.3 mm at most), until the feeler no longer passes; 4. plug the under-carrier cables. Pigtails: dress each one as drawn, with no slack (it rides up with the board when the joint is unplugged): straight up out of the socket, toward the front about 12 mm over the board beside U5A (J9 on the right), out between the P03 and the motor face, and down to the inline joint just ahead of the motor (x 15.2..17.8, |y| 38..60); then trim each wire to its own length at the male end (41.8 mm (pin 6) to 54.5 mm (pin 1) for J4, 37.4 mm (pin 1) to 50.1 mm (pin 6) for J5: the rear pin's wire is the longest) and crimp its male pin into the 1×6 housing, red wire = pin 1. Factory cables: measure each one from the encoder cap to the female housing's rear face (the wire entry); readings of 186–200 mm all fit. Route the fixed path first (about 90 mm outside the coil): a flat row along the motor's inner end face toward the rear, round the motor's rear shoulder and forward over the motor top (never over the pigtail), down the motor's front shoulder under the bumper lead, and from the coil position into the housing; wind the remainder (the measured length less the fixed path: 96–110 mm) into the coil on the base ahead of the motor (2–3 turns, about 16 mm across, at x 25, |y| 72) and tie it through its two slots. Then mate each motor's factory female housing onto its pigtail's male housing: the joint is not keyed, so mate the pin-1 stripe to the pin-1 stripe (both halves are marked at the red wire) and check the colours run straight across; stand the joint on the base and tie it down with a cable tie down the motor opening and up through the slot beside it; bumpers J10/J11; front cliffs J8/J9; 5. set and verify the P03 output voltage on the bench, connect it to U5A/U5B, then fit it on its foam tape in the front bay with the cable tie through the P_base slots at (28, ±33.3); 6. stand the two rear 20 mm F-F standoffs on the board and screw each down with an M2.5 × 12 countersunk screw from under P_base through the base, the clamp spacer and the board (they clamp the board); 7. fit the Jetson (four M2.5 top screws), then its six plugs. Service: with the lid off, the board's rear band (Pico USB, rear connector row, the Jetson 5 V lead J3, fuses) is reachable; the motor inline joints, the other under-carrier connectors and the P03 (tie, trimpot) need the Jetson off (its six plugs: camera, LiDAR and Pico USB, Wi-Fi dongle, 5 V barrel plug, fan; then its four top screws). To take the board out: Jetson off; the two rear standoffs off (their M2.5 screws from under P_base); the battery out (strap, Tamiya plug); the four tray screws out, the tray slid 2 mm aft and lifted straight out (its springs come off the board edge; its walls are cut clear of the rear cliff sensor boards); the four M3 board screws out; unplug the rear-band plugs, the motor inline joints (loosen each factory-cable coil tie first: the 8 mm each housing slides back comes out of the coil; then cut the joint ties and slide each factory housing off its pigtail; the pigtails stay on J4 / J5 and ride up with the board), the bumper and front cliff leads and the P03 leads; lift the board. Fit new ties when it goes back (retie the coils).",
+      "model": "fasteners"
+    },
+    {
+      "id": "H06",
+      "category": "Fasteners",
+      "item": "M3 × 6 button-head motor-face screws (ISO 7380)",
+      "quantity": 4,
+      "unit": "screws",
+      "status": "Buy",
+      "new_cost_usd": 0.5,
+      "source": "",
+      "notes": "Button heads (1.65 mm) sit in 1 mm counterbores in the motor mount: 1.85 mm to the wheel disc. Nominal engagement 4 mm; motor threaded holes are 6 mm deep. Never use longer screws without checking depth.",
+      "model": "fasteners"
+    },
+    {
+      "id": "H08",
+      "category": "Fasteners",
+      "item": "Bumper guide hardware",
+      "quantity": 1,
+      "unit": "set",
+      "status": "Buy",
+      "new_cost_usd": 26,
+      "source": "",
+      "notes": "Per robot (two 90° arc bumper halves, each floating 5 mm along its own axis 30° inward of rearward): six M3 × 35 countersunk screws (DIN 7991) fixed in the printed rails and arms from below; four 693ZZ ball bearings (3 × 8 × 4 mm) for the rail pins, each between a Ø3.2 × Ø4.5 × 1.5 mm and a Ø3.2 × Ø4.5 × 1 mm stainless spacer (no wider than the inner-ring land) under an M3 thin clamp nut (DIN 439, medium threadlocker); two Ø5 × 6.5 mm sleeves (M3 bore) under a thin clamp nut for pin C; six printed floating riders, each with a brass stop tube (Ø4 × 0.35 wall × 5 mm), a compression spring (music wire, Ø5 OD × 0.5 wire, free length 7.1 mm, about 2.0 N/mm), an Ø7 washer and an M3 nyloc nut: tighten the nyloc until a 0.1 mm feeler just fits between the washer and the stop tube (4.0 N preload per pin, zero vertical play at rest). Eighteen Ø4 mm chrome-steel balls (G10, plus spares): three per half in the rail/arm-top pockets and six per half under the riders. Every ball runs between 0.5 mm hardened spring-steel races (blue-tempered 1095 or AISI 420, ≥ HRC 48, about 0.35 m of 12.7 mm strip, epoxy): eighteen 3.6 × 8 mm strips bonded to P_base (under each down-ball track and on the base top beside each slot) and eighteen 4 × 9 mm strips in the 11.5 mm pocket floors and rider pocket ceilings. Four M2 × 14 screws, washers and nuts for the two switches. Bearing slots in P_base are printed 8.2 mm wide and filed to 8.1–8.2 mm with P_coupon as the gauge (±0.05–0.1 mm side play: the planar-play checks use 0.1). Critical vertical friction ≥ 0.17 over the whole 0–90° arc at 20–98.5 mm, and ≥ 0.08 with bearing and ball friction equal (validation.json bumper_travel.friction_lock, .hertz).",
+      "model": "bumper"
+    },
+    {
+      "id": "H09",
+      "category": "Fasteners",
+      "item": "LiDAR tray and camera guard hardware",
+      "quantity": 1,
+      "unit": "set",
+      "status": "Buy",
+      "new_cost_usd": 2,
+      "source": "",
+      "notes": "Three M2.5 × 10 thread-forming screws for the LD14 lugs (or M2.5 heat-set inserts in Ø3.6 holes with M2.5 × 10 machine screws), four M3 × 10 screws and nyloc nuts for the tray on the lid (holes at (-35, ±38) and (66, ±35)), two M2.5 × 10 screws and nuts for the camera guard.",
+      "model": "fasteners"
+    },
+    {
+      "id": "H10",
+      "category": "Fasteners",
+      "item": "M3 thread-forming screws for PETG (pan / countersunk)",
+      "quantity": 8,
+      "unit": "screws",
+      "status": "Buy",
+      "new_cost_usd": 2,
+      "source": "",
+      "notes": "Thread-forming M3 for PETG into Ø2.6 pilots with at least 5 mm engagement: eight M3 × 10 pan-head screws from below for the four rear-shell foot ribs (heads in Ø6.2 counterbores over a 0.3 mm sacrificial bridge, into Ø8 × 5 mm bosses: 6.5 mm engagement) (the deck pillars and their four screws went with the deck in the low-profile layout). All other base screws are machine screws (H13) into brass inserts (H12) (validation.json blind_pilots).",
+      "model": "fasteners"
+    },
+    {
+      "id": "H11",
+      "category": "Fasteners",
+      "item": "Ø3 × 8 mm steel dowel pins (ISO 8734)",
+      "quantity": 2,
+      "unit": "pins",
+      "status": "Buy / reuse stock",
+      "new_cost_usd": 0.5,
+      "source": "",
+      "notes": "Radial dowels through the rear-shell lap joint at 180° (az 183.5°, z 36 and 66 mm): Ø3.1 press fit over 4.0 mm in the left lap tongue and its 2 mm inner pad, Ø3.3 slip fit over 2.7 mm in the right segment wall; pressed in from outside to 0.1 mm under the shell surface (validation.json rear_shell.dowels; lap radial clearance 0.4 mm); teardrop holes print without support. Ream to size if the print is tight.",
+      "model": "fasteners"
+    },
+    {
+      "id": "H12",
+      "category": "Fasteners",
+      "item": "M3 brass heat-set inserts, 3 mm long (for Ø4.0 mm holes)",
+      "quantity": 23,
+      "unit": "inserts",
+      "status": "Buy",
+      "new_cost_usd": 6,
+      "source": "",
+      "model": "fasteners",
+      "notes": "Pressed into Ø4.0 through holes in the 4 mm P_base with a soldering iron, flush with the face the screw enters, with the plate on a flat steel backing plate: the last 1 mm of each hole stays open and takes the displaced PETG (deburr or countersink the far face afterwards). From the top for the four bay-board spacers, four battery-tray corners and the eight lid-post foot screws; from below for the three caster screws; plus one pressed flush into the top of each of the four lid posts (lid screws). Buy a pack of 50 (spares for the coupon). Follow the insert maker's hole size if it differs from Ø4.0."
+    },
+    {
+      "id": "H13",
+      "category": "Fasteners",
+      "item": "M3 stainless machine screws for the inserts and the camera tower",
+      "quantity": 27,
+      "unit": "screws",
+      "status": "Buy",
+      "new_cost_usd": 4,
+      "source": "",
+      "model": "fasteners",
+      "notes": "Into the H12 inserts (3 mm of thread in each, validation.json blind_pilots): four M3 × 8 pan head (bay board, through the board and a 2.4 mm printed spacer), four M3 × 6 countersunk (battery tray), three M3 × 5 pan head (caster), eight M3 × 6 pan head (lid-post feet), four M3 × 6 pan head (lid, into the inserts in the post tops). Plus four M3 × 10 socket head screws for the camera-tower feet (nuts H03)."
+    },
+    {
+      "id": "H14",
+      "category": "Fasteners",
+      "item": "Rear Jetson clamp stack (bay board): 2 × M2.5 × 20 mm nylon F-F standoffs + 2 × M2.5 × 12 countersunk screws",
+      "quantity": 2,
+      "unit": "sets",
+      "status": "Buy",
+      "new_cost_usd": 1.5,
+      "source": "",
+      "notes": "The two rear Jetson standoffs stand on the bay board (z 37–57) and clamp it: each a stock 20 mm M2.5 nylon F-F standoff, screwed down with an M2.5 × 12 countersunk screw from under P_base through the base, a 2.4 mm printed clamp spacer (bay_clamp_spacer_*) and the board's Ø3 clamp hole (H5 / H6, ruling PB3), 4 mm into the standoff (assembly step 6). The carrier's top screws on them are in H05.",
+      "model": "fasteners"
+    },
+    {
+      "id": "F01",
+      "category": "Printing",
+      "item": "PETG filament",
+      "quantity": 2,
+      "unit": "kg (two spools)",
+      "status": "Check existing; budget",
+      "new_cost_usd": 40,
+      "source": "",
+      "notes": "Structural base, round bumper arcs, rear shell, riders, mounts, ventilated cover and the bay board's spacers and bearing ribs (no deck: low-profile layout) (about 0.96 kg as modelled: solid walls ≤ 3 mm, 62 % from 3.6 mm (4 perimeters), linear between), plus the test coupon (print-parts/coupons/P_coupon.stl, about 12 g) and one failed arc (120–150 g each). User has Prusa MK3S (250 × 210 × 210 mm); every part and the coupon pass cad/check_printability.py. P_base (244 × 200 mm): no brim, skirt 1 mm or off. Arcs and shells: 4 perimeters, about 245 °C, part cooling ≤ 30 % up to the rim, then a 50–60 % fan height-range modifier for the inner top rims; brim on the arc ends. Bay board printed parts: four 2.4 mm spacers (bay_spacer_0–3) and two clamp spacers (bay_clamp_spacer_1 / _3), 100 % infill; two bearing ribs (bay_rib_0 / _1, bonded with epoxy F04); the battery tray carries the three hold-down springs (bay_holddown, printed with P_battery_tray, beams freed with a razor saw); the LD14 lead grommet (P_ld14_grommet).",
+      "model": "printed_parts"
+    },
+    {
+      "id": "F02",
+      "category": "Printing",
+      "item": "Soft bumper strip / EVA foam tape",
+      "quantity": 0.5,
+      "unit": "metre",
+      "status": "Buy",
+      "new_cost_usd": 2,
+      "source": "",
+      "notes": "1.5 mm EVA foam tape (measure it: 1.5 ± 0.2 mm), 45.5 mm wide (z 26–71.5), on the outside of both bumper arcs from the seam-end ramps to az 70° (2 × 0.18 m plus spare): it makes the 158.9 mm contact skin. Bevel-cut each foam end along the 20° seam-end ramp; keep the 7.5 mm seam free of foam. The outer 20° of each half (az 70–90, including the 78–90° taper to R152.7) is bare PETG covered with PTFE film tape (F03), so side and spin contacts slide instead of gripping. Not on the fixed rear shell, which sits 6.4 mm inside the skin.",
+      "model": "bumper"
+    },
+    {
+      "id": "F03",
+      "category": "Printing",
+      "item": "PTFE (skived) film tape, 0.1 mm × 50 mm, adhesive",
+      "quantity": 1,
+      "unit": "metre",
+      "status": "Buy",
+      "new_cost_usd": 8,
+      "source": "",
+      "notes": "Covers the outer 20° of each bumper half (az 70–90, z 18–98.5) so the skin slides along side and spin contacts (object friction about 0.2 instead of 0.5–0.9 for EVA). Replace when worn.",
+      "model": "bumper"
+    },
+    {
+      "id": "F04",
+      "category": "Printing",
+      "item": "Two-part epoxy adhesive (5–30 min), small pack",
+      "quantity": 1,
+      "unit": "pack",
+      "status": "Check existing; budget to buy",
+      "new_cost_usd": 6.0,
+      "source": "",
+      "notes": "Bonds the two printed bearing ribs (bay_rib_0 / _1) into their 0.6 mm pockets in the P_base top (assembly step 1: cure before the board goes on) and the bumper race strips (H08).",
+      "model": "printed_parts"
+    },
+    {
+      "id": "E15",
+      "category": "Sensors",
+      "item": "Waveshare D200 LiDAR Kit, LD14P, SKU 24659",
+      "quantity": 1,
+      "unit": "kit",
+      "status": "Buy",
+      "new_cost_usd": 54.99,
+      "source": "https://www.waveshare.com/product/robotics/drivers-sensors/d200-lidar-kit.htm",
+      "notes": "Kit includes LD14P, USB serial adapter and approximately 90 mm 4-pin lead. 5 V, <=300 mA, 360 degrees, 6 Hz default, 0.1-8 m rated range. Body envelope 96.3 x 59.8 x 38.8 mm, 101 g. CAD uses the manufacturer LD14 STEP (reference-models/LD14.step): laser plane at the window-band centre, 0 deg (tail) along robot +x, three lugs (Ø3.24 mm holes) screwed to P_lidar_tray with M2.5. Confirm the LD14P matches the LD14 STEP. Never obscure scanner window.",
+      "model": "lidar"
+    },
+    {
+      "id": "C16",
+      "category": "Connections",
+      "item": "USB 2.0 Type-A male to female extension, 0.3 m",
+      "quantity": 1,
+      "unit": "cable",
+      "status": "Buy",
+      "new_cost_usd": 5,
+      "source": "",
+      "notes": "Planning allowance for D200 included USB adapter. Place adapter under lid near LiDAR so its supplied 4-pin lead reaches. Buy complete data cable; verify kit adapter plug before ordering.",
+      "model": "lidar_usb"
+    },
+    {
+      "id": "C17",
+      "category": "Connections",
+      "item": "D200 compatible 1.25 mm 4-pin extension / longer lead, 0.2 m",
+      "quantity": 1,
+      "unit": "lead",
+      "status": "Buy",
+      "new_cost_usd": 3,
+      "source": "",
+      "notes": "Planning allowance. The modeled route from the adapter under the lid up through the lid and tray openings to the LD14 side-entry socket is now about 52 mm, so the supplied ~90 mm lead may reach; keep this lead as the fallback. Confirm exact latch, mating gender and pin order; do not substitute a lookalike JST connector without checking.",
+      "model": "lidar_lead"
+    },
+    {
+      "id": "C18",
+      "category": "Connections",
+      "item": "Motor pigtails (2): Sullins PPPC061LGBN-RC 1×6 right-angle female socket (board end, wires up) + Pololu 1905 1×6 crimp housing with male pins (joint end) + six 28 AWG silicone wires",
+      "quantity": 2,
+      "unit": "pigtails (made up)",
+      "status": "Buy",
+      "new_cost_usd": 17.0,
+      "source": "Sullins PPPC061LGBN-RC via Digi-Key / Mouser; Pololu 1905 housings and male crimp pins (pololu.com); a 6-colour 28 AWG silicone wire set",
+      "notes": "One per motor (ruling PB25 amended; B9). Board end: Sullins PPPC061LGBN-RC: 1x6 2.54 mm right-angle female socket header, through-hole (2.54 mm insulator lying on the board, 8.51 mm deep, tails 3.15 mm; verify), pushed onto J4 / J5's right-angle pins with its six solder tails pointing upward; each wire is lapped 2 mm on a tail tip and soldered under a Ø1.8 mm heat-shrink sleeve, so the wires leave the board upward (socket 2.54 mm tall on the board, tails and sleeves to 8.19 mm over it, inside the 16.27 mm under-carrier zone; the socket and the wires' exit stay 3.2 mm off the motor face) and turn over at >= 3.1 mm radius for the innermost wire (>= 3 × the 1 mm insulation OD). Joint end: a Pololu 1905 1×6 0.1 in crimp housing with six male crimp pins (or a 1×6 straight male header with the wires soldered on if no DuPont crimper). Wire: six 28 AWG silicone wires (Ø1.0 mm), colour-coded red, black, green, blue, yellow, white = pins 1-6 (pins 1-2, the motor pair: 26 AWG thin-wall PTFE / ETFE, OD <= 1.0 mm, preferred if available), in the factory cable's colour order. Pre-cut length = the drawn route + 8.5 mm of terminations (2 lapped on the tail, 2.5 in the sleeve past the tip, 4 in the crimp housing) + half the 12.7 mm pin spread (6.35 mm: the six sleeves span 12.7 mm, so the outer wires are that far off the drawn Ø3 bundle axis), rounded up to the mm: left (J4) 55 mm, right (J5) 51 mm per wire. Make each pigtail like this: pre-cut the wires, solder the socket end first, dress the bundle along its route (assembly step 4), then trim each wire to its own finished length (about 48.1 mm on the J4 bundle axis, 43.8 mm on J5's; the rear pin's wire is the longest: J4 pin 1, J5 pin 6) and crimp the male pin; no slack (the joint is unplugged before the board is lifted, PB25 amended); cut from bulk wire and crimped (not a stock lead). Tag the two pigtails \"L / J4\" and \"R / J5\" right after making them (they differ in length and pin-1 order). Built alike: looking into the socket's mating face with its tails up, the red wire is on the left (pin 1 on J4's rear end, J5's front end). Polarity: the inline joint is not keyed, so pin 1 is marked on both halves: a paint-pen stripe on the pigtail's male housing at the red wire and on the factory female housing at its red wire; mate stripe to stripe and check the colours run straight across. Each joint is tied down on P_base and the factory cable's spare length is coiled and tied (C12 ties; assembly step 4). They stay with the board. About USD 17 for two (2 sockets about 2.2, the 6-colour 28 AWG set about 12, 2 housings + 12 pins about 3): estimate, verify.",
+      "model": "signal_harness"
+    }
+  ],
+  "spares": [
+    [
+      "Arduino Mega 2560 / Nano Every",
+      "Existing alternative controllers; not installed with the Pico."
+    ],
+    [
+      "Second Pico and second Tenergy battery",
+      "Spares; only one of each is installed."
+    ],
+    [
+      "L298N and 12 V / 1000 RPM LMioEtool motors",
+      "Bench experiments. R1 uses slower encoder motors and two Pololu DRV8874 carriers."
+    ],
+    [
+      "LM2596 and Wolfwhoop 5 V / 1.5 A converters",
+      "Auxiliary experiments; not selected for Jetson power."
+    ],
+    [
+      "AuviPal OV5647 camera and ribbon extension",
+      "Existing single Pi camera; potential alternative if the exact Nano carrier, ribbon and driver are verified. USB camera is currently budgeted."
+    ],
+    [
+      "PCA9685 boards and SG90/MG995 servos",
+      "Possible later pan/tilt project. R1 camera is fixed for calibration stability."
+    ],
+    [
+      "Bench supply, soldering equipment, Prusa MK3S and breadboards",
+      "Assembly/testing tools; not installed in robot. Calipers and multimeter are required checks, ownership not confirmed."
+    ],
+    [
+      "Raspberry Pi 4 case/power kit, touchscreen and LCD",
+      "Not required for this Jetson-based robot."
+    ],
+    [
+      "Existing mushroom stop button",
+      "Not used in this revision. Replaced by a compact maintained motor ON/OFF toggle at your request."
+    ]
+  ],
+  "connectors": [
+    [
+      "J01",
+      "Battery (lead W01)",
+      "Tamiya on the pack → adapter lead W01 → JST VHR-2N on board J1 (B2P-VH, rear edge)",
+      "J1: cavity 1 = GND (battery −, black), cavity 2 = BAT+ (battery +, red) (ruling PB20; silk \"-\" / \"+\")",
+      "18 AWG",
+      "J1 pin 1 is GND and pin 2 is BAT+: the opposite of the usual \"pin 1 = +\" habit. Fail-safe check before the fuses go in: with F1 and F2 out, plug W01 into J1 and the battery and measure F1's input clip against a GND pad: positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower) (a reversed lead reads negative and has no current path with the fuses out). A reversed lead with the fuses in is the costliest mistake on this board (no reverse-polarity protection)."
+    ],
+    [
+      "J02",
+      "Regulator input (P03 leads)",
+      "Board U5A screw terminal (Phoenix MKDS 1,5/2-5,08) ← P03 input terminals",
+      "U5A: pin 1 = VBAT_SW (to P03 IN+), pin 2 = GND (to P03 IN−)",
+      "18 AWG",
+      "About 10 mm leads; a reversed P03 input is as costly as a reversed battery lead. Set and check 5.1 V on the bench first."
+    ],
+    [
+      "J03",
+      "Jetson regulated power (lead W04)",
+      "JST VHR-2N on board J3 (vertical B2P-VH in the band behind the Jetson carrier) → 5.5 / 2.1 mm barrel plug (provisional)",
+      "J3: cavity 1 = 5V (barrel centre +), cavity 2 = GND (barrel sleeve)",
+      "18 AWG",
+      "Lead leaves the board's right edge (robot −y) along the W04 corridor to the barrel jack (bay ruling PB5). Replace the output end for the actual Jetson revision; barrel power needs the J48 jumper."
+    ],
+    [
+      "J04",
+      "Regulator output (P03 leads)",
+      "P03 output terminals → board U5B screw terminal (Phoenix MKDS 1,5/2-5,08)",
+      "U5B: pin 1 = 5V (from P03 OUT+), pin 2 = GND (from P03 OUT−)",
+      "18 AWG",
+      "About 10 mm leads. (The deck-era VH lead to the driver terminals is gone: motor power runs in the board copper.)"
+    ],
+    [
+      "J05",
+      "Left motor cable",
+      "Factory female 1×6 → C18 pigtail male 1×6 at the inline joint; pigtail right-angle female socket → board J4 (right-angle 1×6 male header)",
+      "J4: pin 1 = L_M1 (red, motor +), pin 2 = L_M2 (black, motor −), pin 3 = GND (green, encoder GND), pin 4 = 5V (blue, encoder VCC 5 V), pin 5 = ENC_LA_5V (yellow, encoder A), pin 6 = ENC_LB_5V (white, encoder B)",
+      "Factory cable + 28 AWG pigtail",
+      "PB25 / B9: the C18 pigtail (pre-cut length 55 mm per wire = route + terminations + half the 12.7 mm pin spread; finished length about 48.1 mm on the bundle axis, 41.8-54.5 mm by pin once each wire is trimmed after dressing; tag it \"L / J4\") stays plugged on J4 (fitted on the bench); the motor cable mates with it at the inline joint ahead of the left motor (x 15.2..17.8, |y| 38..60), reachable with the Jetson off, tied down on P_base; the factory cable is measured from the encoder cap to the female housing's rear face (readings of 186-200 mm fit), the fixed path routed first (about 90 mm) and the remainder coiled (2-3 turns) and tied ahead of the motor. The joint is not keyed: pin 1 (the red wire) is marked with a paint-pen stripe on both halves; mate stripe to stripe, colours straight across. Before the first power-up check the factory housing's cavity order is red, black, green, blue, yellow, white from pin 1 (board_spec MOTOR); the board's pinout assumes it."
+    ],
+    [
+      "J06",
+      "Right motor cable",
+      "Factory female 1×6 → C18 pigtail male 1×6 at the inline joint; pigtail right-angle female socket → board J5 (right-angle 1×6 male header)",
+      "J5: pin 1 = R_M1 (red, motor +), pin 2 = R_M2 (black, motor −), pin 3 = GND (green, encoder GND), pin 4 = 5V (blue, encoder VCC 5 V), pin 5 = ENC_RA_5V (yellow, encoder A), pin 6 = ENC_RB_5V (white, encoder B)",
+      "Factory cable + 28 AWG pigtail",
+      "PB25 / B9: the C18 pigtail (pre-cut length 51 mm per wire = route + terminations + half the 12.7 mm pin spread; finished length about 43.8 mm on the bundle axis, 37.4-50.1 mm by pin once each wire is trimmed after dressing; tag it \"R / J5\") stays plugged on J5 (fitted on the bench); the motor cable mates with it at the inline joint ahead of the right motor (x 15.2..17.8, |y| 38..60), reachable with the Jetson off, tied down on P_base; the factory cable is measured from the encoder cap to the female housing's rear face (readings of 186-200 mm fit), the fixed path routed first (about 90 mm) and the remainder coiled (2-3 turns) and tied ahead of the motor. The joint is not keyed: pin 1 (the red wire) is marked with a paint-pen stripe on both halves; mate stripe to stripe, colours straight across. Before the first power-up check the factory housing's cavity order is red, black, green, blue, yellow, white from pin 1 (board_spec MOTOR); the board's pinout assumes it."
+    ],
+    [
+      "J09–J12",
+      "Four downward sensors",
+      "4 × JST XH-5 (board J6 / J7 on the rear edge, J8 / J9 on the tongue front edge facing the P03)",
+      "1 3.3 V, 2 GND, 3 SDA, 4 SCL, 5 XSHUT",
+      "26 AWG",
+      "XSHUT on GP0 (XSHUT1) / GP10 (XSHUT2) / GP5 (XSHUT3) / GP13 (XSHUT4): low/high-impedance only; assign 0x30–0x33 at boot. The J8 / J9 leads rise over the P03 under the carrier"
+    ],
+    [
+      "J13",
+      "Left bumper",
+      "JST XH-2 (board J10, left edge under the carrier)",
+      "1 GP6 (BUMP_L) input pullup, 2 GND; switch COM–NC",
+      "26 AWG",
+      "Open circuit requests stop"
+    ],
+    [
+      "J14",
+      "Right bumper",
+      "JST XH-2 (board J11, right edge under the carrier)",
+      "1 GP15 (BUMP_R) input pullup, 2 GND; switch COM–NC",
+      "26 AWG",
+      "Open circuit requests stop"
+    ],
+    [
+      "J15",
+      "Motor-power switch loop",
+      "JST XH-2 (board J13, rear edge) / insulated spades at switch",
+      "1 regulated 5 V, 2 relay coil+ via motor ON/OFF switch",
+      "24 AWG",
+      "Coil− to GND; GP9 (MOTOR_ON_N) senses coil+ through the inverting MOSFET stage Q5"
+    ],
+    [
+      "J16",
+      "Arm button",
+      "JST XH-2 (board J12, rear edge)",
+      "1 GP14 (ARM) input pullup, 2 GND; normally open button",
+      "26 AWG",
+      "Require new press after boot/stop"
+    ],
+    [
+      "J17",
+      "Single camera",
+      "USB-A → USB-C data cable",
+      "Standard USB data and 5 V",
+      "Factory cable",
+      "Reserve ≥25 mm behind plug for bend/strain relief"
+    ],
+    [
+      "J18",
+      "Pico link",
+      "USB-A → Micro-B data cable",
+      "Standard USB; powers Pico",
+      "Factory cable",
+      "No separate VBUS feed"
+    ],
+    [
+      "J19",
+      "Wi-Fi",
+      "USB-A dongle",
+      "Standard USB",
+      "No harness if direct plug",
+      "Chipset support to be confirmed"
+    ],
+    [
+      "J20",
+      "Fan",
+      "Connector matching Jetson fan header",
+      "Use vendor pinout, do not infer by wire color",
+      "Factory fan cable",
+      "Fan header varies with carrier revision"
+    ],
+    [
+      "J21",
+      "Battery-voltage sensing",
+      "On the bay board (no harness)",
+      "VBAT_SW → R11 100k → GP26 (VSENSE) node → R12 33k → GND; C2 100 nF",
+      "—",
+      "At an 8.7 V pack the ADC reads about 2.16 V."
+    ],
+    [
+      "J22",
+      "Master switch (lead W02)",
+      "JST VHR-2N on board J2 (B2P-VH, rear edge) → rocker terminals (insulated spades)",
+      "J2: cavity 1 = F1_OUT (to the rocker), cavity 2 = VBAT_SW (from the rocker)",
+      "18 AWG",
+      "Rocker on the lid top at (-100, 0): F1 output → rocker → switched battery bus. Both wires are battery +; shut the Jetson down before opening the switch."
+    ],
+    [
+      "J23",
+      "Battery positive distribution",
+      "On the bay board (VBAT_SW copper; no WAGO bus)",
+      "J2.2 → F2 / U5A / R11 / R21",
+      "—",
+      "Replaced by the board."
+    ],
+    [
+      "J24",
+      "Ground distribution",
+      "On the bay board (In1 GND plane; no WAGO bus)",
+      "Every GND pin of the board",
+      "—",
+      "Replaced by the board: the regulator, driver and signal grounds share the plane."
+    ],
+    [
+      "J27",
+      "Jetson USB host → D200 included USB adapter",
+      "USB-A male/female extension",
+      "5 V power + USB data",
+      "Use complete 0.3 m data cable",
+      "Adapter converts USB to 3.3 V UART; verify supplied adapter connector."
+    ],
+    [
+      "J28",
+      "D200 adapter → LD14P",
+      "Supplied / matched 1.25 mm 4-pin lead",
+      "Pin 1 PWR/RX, 2 GND, 3 TX, 4 5 V",
+      "Use matched 0.2 m replacement/extension; 230400 baud",
+      "Do not feed 5 V to RX/TX. No separate power feed when USB adapter supplies 5 V."
+    ]
+  ],
+  "pico_pins": [
+    [
+      "GP0",
+      "ToF XSHUT 1 (XSHUT1)",
+      "Drive low or release to high impedance"
+    ],
+    [
+      "GP1",
+      "Left encoder A (ENC_LA_3V3)",
+      "2N7002 stage; 5 V input, inverted 3.3 V output"
+    ],
+    [
+      "GP2",
+      "I2C SDA, I2C1 (SDA)",
+      "IMU and four ToF boards, 3.3 V"
+    ],
+    [
+      "GP3",
+      "I2C SCL, I2C1 (SCL)",
+      "Start at 100 kHz; check aggregate pullups"
+    ],
+    [
+      "GP4",
+      "Left encoder B (ENC_LB_3V3)",
+      "2N7002 inverting stage"
+    ],
+    [
+      "GP5",
+      "ToF XSHUT 3 (XSHUT3)",
+      "Drive low or release to high impedance"
+    ],
+    [
+      "GP6",
+      "Left bumper (BUMP_L)",
+      "NC contact to GND; pullup input"
+    ],
+    [
+      "GP7",
+      "Motor drivers SLEEP (DRV_SLEEP)",
+      "Both drivers; 100k pulldown (asleep until driven high)"
+    ],
+    [
+      "GP8",
+      "Motor drivers FAULT (DRV_FAULT)",
+      "Both drivers (open drain); 10k pullup to 3V3"
+    ],
+    [
+      "GP9",
+      "Stop-loop state (MOTOR_ON_N)",
+      "2N7002 from relay coil+; LOW = motor switch ON, HIGH = motor switch OFF/open wire"
+    ],
+    [
+      "GP10",
+      "ToF XSHUT 2 (XSHUT2)",
+      "Drive low or release to high impedance"
+    ],
+    [
+      "GP11",
+      "Right encoder A (ENC_RA_3V3)",
+      "2N7002 inverting stage"
+    ],
+    [
+      "GP12",
+      "Right encoder B (ENC_RB_3V3)",
+      "2N7002 inverting stage"
+    ],
+    [
+      "GP13",
+      "ToF XSHUT 4 (XSHUT4)",
+      "Drive low or release to high impedance"
+    ],
+    [
+      "GP14",
+      "Arm button (ARM)",
+      "NO to GND; pullup input"
+    ],
+    [
+      "GP15",
+      "Right bumper (BUMP_R)",
+      "NC contact to GND; pullup input"
+    ],
+    [
+      "GP16 / GP17",
+      "Left motor driver IN1 / IN2 (L_IN1 / L_IN2)",
+      "PWM slice 0 A / B; 10k pulldowns"
+    ],
+    [
+      "GP18 / GP19",
+      "Right motor driver IN1 / IN2 (R_IN1 / R_IN2)",
+      "PWM slice 1 A / B; 10k pulldowns"
+    ],
+    [
+      "GP20 / GP21 / GP22",
+      "Spare GPIO on J15 pins 3 / 2 / 1 (SPARE3 / SPARE2 / SPARE1)",
+      "J15 is a DNP pad row (fit a bare 1×6 header if needed)"
+    ],
+    [
+      "GP26 / ADC0",
+      "Battery sensing (VSENSE)",
+      "100k/33k divider + 100 nF filter"
+    ],
+    [
+      "GP27 / ADC1",
+      "Left motor current sense (L_CS)",
+      "Driver CS output"
+    ],
+    [
+      "GP28 / ADC2",
+      "Right motor current sense (R_CS)",
+      "Driver CS output"
+    ],
+    [
+      "3V3 OUT",
+      "Low-voltage sensors",
+      "Check total 3.3 V load with all sensors active"
+    ],
+    [
+      "GND",
+      "Common reference",
+      "Common GND on the bay board (its In1 plane)"
+    ],
+    [
+      "Micro-USB",
+      "Jetson serial / power",
+      "Pico powered from USB only"
+    ]
+  ],
+  "base_new_cost_usd": 587.46,
+  "verify": [
+    {
+      "item": "Sullins PPTC201LFBN-RC / Sullins PPTC081LFBN-RC / Sullins PPTC071LFBN-RC (U1A/U1B, U2, U3L/U3P/U4L/U4P)",
+      "figure": "1×20 / 1×8 / 1×7 2.54 mm female sockets, 8.5 mm body (the module heights in board_spec assume it)",
+      "source": "board_spec SOCKET_MPN (B7, quoted from memory)",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Amphenol 68016-106HLF (J4 / J5)",
+      "figure": "1×6 2.54 mm right-angle male header: plastic body 2.54 mm, pins about 6 mm past it, pin axis 1.27 mm over the board (KiCad PinHeader_1x06_P2.54mm_Horizontal model)",
+      "source": "board_spec HDR6R_MPN; the KiCad footprint / STEP geometry",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Phoenix Contact 1715721 (U5A / U5B)",
+      "figure": "MKDS 1,5/ 2-5,08: 2-way 5.08 mm screw terminal, body 12 mm (PARTS h; its STEP stands 13.8 mm)",
+      "source": "board_spec TERM2_MPN",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Vishay SS14-E3/61T (D1)",
+      "figure": "SMA 40 V 1 A Schottky, body <= 2.7 mm",
+      "source": "board_spec PARTS D1",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Samsung CL21B104KBCNNNC (C2)",
+      "figure": "0805 100 nF 50 V X7R",
+      "source": "board_spec PARTS C2",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Panasonic EEE-FK1C101P (C3, DRV_L bulk cap)",
+      "figure": "FK series 100 µF 16 V, case 6.3 × 5.8 mm: height 5.8 ± 0.3 mm (6.1 mm seated maximum; B6 used 5.8 + 0.3); ESR 0.44 Ω at 100 kHz; ripple 0.16 A at 105 °C. The CAD checks C3 at 6.1 mm under the GY-521: 4.9 mm gap; limits C3_H_MAX 7.5, MODULE_CLEARANCE 8.0",
+      "source": "board_spec PARTS C3 / PART_H_TOL / C3_H_MAX; ORDERING.md verify list; no datasheet in the repo",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Lite-On LTST-C171GKT / Lite-On LTST-C171YKT (LED1–LED3)",
+      "figure": "0805 green / yellow LEDs; forward voltage >= 1.8 V (the lamp currents assume it)",
+      "source": "board_spec LED_MPN, LED_VF_MIN",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Yageo RC0805FR-07100KL / Yageo RC0805FR-0710KL / Yageo RC0805FR-071KL / Yageo RC0805FR-0733KL / Yageo RC0805FR-073K3L / Yageo RC0805FR-074K7L (R1–R23)",
+      "figure": "0805, 1 %, 0.125 W thick film",
+      "source": "board_spec res_mpn()",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Littelfuse 0287007.PXCN / Littelfuse 0287005.PXCN (fuses in F1 / F2, P07)",
+      "figure": "ATO blade fuses 7.5 A / 5 A",
+      "source": "board_spec BOM_EXTRAS",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Littelfuse 178.6165.0001 (F1 / F2 FLR holders)",
+      "figure": "4 solder pins per contact, 22.5 A continuous, 80 V, body 17.5 mm (+ the ATO fuse to about 30 mm); KiCad snap lock \"PCB up to 1.5 mm\" (board 1.6)",
+      "source": "pcb/reference/littelfuse-flr-178.6165.txt",
+      "status": "in the repo"
+    },
+    {
+      "item": "Omron G5LE-1 DC5 (K1) pin map and body",
+      "figure": "1 COM, 2 / 5 coil, 3 NO, 4 NC; body 22.5 × 16.5 × 19.0 mm max",
+      "source": "pcb/reference/omron-g5le-1.txt (datasheet page 3)",
+      "status": "in the repo"
+    },
+    {
+      "item": "Omron G5LE-1 DC5 (K1) ratings",
+      "figure": "coil 63 Ω, 79.4 mA at 5 V; contacts carry the 5 A DC motor branch at 6–8.7 V (the switching-capacity graph read about 7 A to 30 V; the ratings tables were not read)",
+      "source": "board_spec RELAY_COIL_A; pcb/reference/omron-g5le-1.txt",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "DRV8874 on the Pololu 4035 carrier (E16): pinout and carrier ratings",
+      "figure": "4.5–37 V, 2.1 A continuous, CS about 1.1 V/A, default limit about 4.4 A, carrier pull-ups / pull-downs",
+      "source": "pcb/reference/pololu-4035.txt (Pololu product page, schematic, dimension drawing)",
+      "status": "in the repo"
+    },
+    {
+      "item": "DRV8874 thermal figures (TI SLVSF66)",
+      "figure": "R_DS(on) high + low side 200 mΩ typical at 25 °C (about ×1.5 at 150 °C); thermal shutdown about 165 °C; R_θJA about 40 °C/W (JEDEC 4-layer), 60–80 °C/W assumed on the carrier: T_J 88–136 °C at 2.1 A, hence the 1.8 A firmware limit",
+      "source": "ORDERING.md verify list (B6)",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Panasonic EEU-FR1E471 (C1)",
+      "figure": "FR series 470 µF 25 V, 10 mm diameter, 5 mm pitch, <= 20 mm tall (STEP envelope 20 mm), ESR about 0.04 Ω",
+      "source": "board_spec PARTS C1; ORDERING.md",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Pololu 4867 motor (E05) encoders and cable",
+      "figure": "25D 48 CPR Hall encoder, at most 10 mA from a 3.5–20 V supply; factory 200 mm cable, 1×6 0.1 in female housing, cavity order red, black, green, blue, yellow, white from pin 1 (board_spec MOTOR); 99:1 MP 12 V stall 1.8 A at 12 V (about 1.3 A at a full 8.7 V pack; B9 review)",
+      "source": "board_spec ENC_SUPPLY_A, MOTOR; E05 notes",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Pololu 4867 factory lead gauge",
+      "figure": "measure the factory leads (not published; the pigtails assume 26–28 AWG and carry the same current: 28 AWG silicone, about 10–15 °C rise at 2.1 A per the B9 review)",
+      "source": "B9 fix round 1 (review minor 1)",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Pololu 4867 factory cable length: what the vendor's \"200 mm\" measures (to the female housing's rear face, to the wire end, or to the mating face): measure",
+      "figure": "the coil is sized for readings of 186–200 mm taken to the housing's rear face (the wire entry): the fixed path outside the coil is validation motor_joints factory_cable.fixed_path_mm and the remainder winds into 2–3 turns (cad/build_robot.py FAC_READINGS / FAC_TURNS). A reading to the mating face is longer than one to the rear face by the housing's length (14 mm in the CAD, MJ female_l), to the wire end shorter; measure both cables on the real motors before the pigtails are trimmed.",
+      "source": "B9 fix round 2 (controller ruling); the \"200 mm\" is the vendor figure as remembered, not confirmed offline",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Pololu 2490 VL53L0X carriers (S04, ToF sensors)",
+      "figure": "about 40 mA peak each while ranging (ST: 19 mA average), VIN 2.6–5.5 V",
+      "source": "board_spec TOF_A",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Raspberry Pi Pico 3V3 regulator",
+      "figure": "300 mA for external loads (IMU, four ToF sensors, pull-ups)",
+      "source": "board_spec TAP_SOURCE",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "JST VHR-2N / SVH-21T-P1.1 and XHP-5 / XHP-2 / SXH-001T-P0.6 (C05 / C06 / C08) and the board headers B2P-VH(LF)(SN), B5B-XH-A(LF)(SN), B2B-XH-A(LF)(SN)",
+      "figure": "mated heights 16.5 mm (VH top entry) and 9.8 mm (XH)",
+      "source": "board_spec MATED_H (JST catalogue quotes)",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Sullins PPPC061LGBN-RC (C18 pigtail board end)",
+      "figure": "1×6 2.54 mm right-angle female socket: insulator 2.54 mm (lies on the board), 8.51 mm deep; tails 3.15 mm past the insulator face (B9 review); tail centre 1.27 mm behind the rear face (from memory: check the Sullins drawing). The CAD (RA_SOCKET) puts the sleeve tops at z 45.19",
+      "source": "B9 fix round 1 (review minor 2 / 3); cad/build_robot.py RA_SOCKET",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Pololu 1905: 0.1 in (2.54 mm) crimp connector housing 1×6 (C18 joint end), with male crimp pins",
+      "figure": "fits the motor's factory female housing (0.1 in DuPont-style); 1904 is the 1×5",
+      "source": "B9 fix round 1 (review minor 2)",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Prices: Pololu 4035 USD 11.94 each; JLCPCB about USD 8 / 5 boards + stencil; board parts about USD 20; C18 pigtail parts about USD 17",
+      "figure": "base_new_cost_usd uses them",
+      "source": "ORDERING.md; B9 estimates",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "JLCPCB plating and default copper",
+      "figure": "hole-wall copper about 18 µm minimum (B7: U3P.2 3.11 A against 2.1 A); 4-layer default 1 oz outer / 0.5 oz inner",
+      "source": "ORDERING.md verify list",
+      "status": "from memory: verify"
+    }
+  ],
+  "bay_board_connectors": [
+    {
+      "ref": "J1",
+      "function": "Battery in",
+      "board_part": "JST B2P-VH(LF)(SN)",
+      "family": "VH",
+      "entry": "-u",
+      "under_carrier": false,
+      "pins": {
+        "1": "GND",
+        "2": "BAT+"
+      },
+      "mates_with": "JST VHR-2N + 2 × SVH-21T-P1.1 (C05); lead W01",
+      "lead": "W01"
+    },
+    {
+      "ref": "J2",
+      "function": "Master rocker",
+      "board_part": "JST B2P-VH(LF)(SN)",
+      "family": "VH",
+      "entry": "-u",
+      "under_carrier": false,
+      "pins": {
+        "2": "VBAT_SW",
+        "1": "F1_OUT"
+      },
+      "mates_with": "JST VHR-2N + 2 × SVH-21T-P1.1 (C05); lead W02",
+      "lead": "W02"
+    },
+    {
+      "ref": "J13",
+      "function": "Motor toggle loop",
+      "board_part": "JST B2B-XH-A(LF)(SN)",
+      "family": "XH",
+      "entry": "-u",
+      "under_carrier": false,
+      "pins": {
+        "2": "COIL_P",
+        "1": "5V"
+      },
+      "mates_with": "JST XHP-2 + 2 × SXH-001T-P0.6 (C08); lead W14",
+      "lead": "W14"
+    },
+    {
+      "ref": "J12",
+      "function": "Arm button",
+      "board_part": "JST B2B-XH-A(LF)(SN)",
+      "family": "XH",
+      "entry": "-u",
+      "under_carrier": false,
+      "pins": {
+        "2": "GND",
+        "1": "ARM"
+      },
+      "mates_with": "JST XHP-2 + 2 × SXH-001T-P0.6 (C08); lead W15",
+      "lead": "W15"
+    },
+    {
+      "ref": "J6",
+      "function": "Cliff 1",
+      "board_part": "JST B5B-XH-A(LF)(SN)",
+      "family": "XH",
+      "entry": "-u",
+      "under_carrier": false,
+      "pins": {
+        "2": "GND",
+        "1": "3V3",
+        "3": "SDA",
+        "4": "SCL",
+        "5": "XSHUT1"
+      },
+      "mates_with": "JST XHP-5 + 5 × SXH-001T-P0.6 (C06); lead W10",
+      "lead": "W10"
+    },
+    {
+      "ref": "J7",
+      "function": "Cliff 2",
+      "board_part": "JST B5B-XH-A(LF)(SN)",
+      "family": "XH",
+      "entry": "-u",
+      "under_carrier": false,
+      "pins": {
+        "2": "GND",
+        "1": "3V3",
+        "3": "SDA",
+        "4": "SCL",
+        "5": "XSHUT2"
+      },
+      "mates_with": "JST XHP-5 + 5 × SXH-001T-P0.6 (C06); lead W11",
+      "lead": "W11"
+    },
+    {
+      "ref": "J3",
+      "function": "Jetson 5V",
+      "board_part": "JST B2P-VH(LF)(SN)",
+      "family": "VH",
+      "entry": "+v",
+      "under_carrier": false,
+      "pins": {
+        "2": "GND",
+        "1": "5V"
+      },
+      "mates_with": "JST VHR-2N + 2 × SVH-21T-P1.1 (C05); lead W04",
+      "lead": "W04"
+    },
+    {
+      "ref": "J4",
+      "function": "Left motor",
+      "board_part": "Amphenol 68016-106HLF (1x6 2.54 mm right-angle pin header; verify before ordering)",
+      "family": "PinHeader",
+      "entry": "-v",
+      "under_carrier": true,
+      "pins": {
+        "5": "ENC_LA_5V",
+        "3": "GND",
+        "6": "ENC_LB_5V",
+        "4": "5V",
+        "1": "L_M1",
+        "2": "L_M2"
+      },
+      "mates_with": "C18 pigtail: right-angle 1×6 female socket, wires up",
+      "lead": "motor_pigtail_left"
+    },
+    {
+      "ref": "J5",
+      "function": "Right motor",
+      "board_part": "Amphenol 68016-106HLF (1x6 2.54 mm right-angle pin header; verify before ordering)",
+      "family": "PinHeader",
+      "entry": "+v",
+      "under_carrier": true,
+      "pins": {
+        "3": "GND",
+        "5": "ENC_RA_5V",
+        "6": "ENC_RB_5V",
+        "4": "5V",
+        "1": "R_M1",
+        "2": "R_M2"
+      },
+      "mates_with": "C18 pigtail: right-angle 1×6 female socket, wires up",
+      "lead": "motor_pigtail_right"
+    },
+    {
+      "ref": "J8",
+      "function": "Cliff 3",
+      "board_part": "JST B5B-XH-A(LF)(SN)",
+      "family": "XH",
+      "entry": "+u",
+      "under_carrier": true,
+      "pins": {
+        "2": "GND",
+        "1": "3V3",
+        "3": "SDA",
+        "4": "SCL",
+        "5": "XSHUT3"
+      },
+      "mates_with": "JST XHP-5 + 5 × SXH-001T-P0.6 (C06); lead W12",
+      "lead": "W12"
+    },
+    {
+      "ref": "J9",
+      "function": "Cliff 4",
+      "board_part": "JST B5B-XH-A(LF)(SN)",
+      "family": "XH",
+      "entry": "+u",
+      "under_carrier": true,
+      "pins": {
+        "2": "GND",
+        "1": "3V3",
+        "3": "SDA",
+        "4": "SCL",
+        "5": "XSHUT4"
+      },
+      "mates_with": "JST XHP-5 + 5 × SXH-001T-P0.6 (C06); lead W13",
+      "lead": "W13"
+    },
+    {
+      "ref": "J10",
+      "function": "Bumper L",
+      "board_part": "JST B2B-XH-A(LF)(SN)",
+      "family": "XH",
+      "entry": "-v",
+      "under_carrier": true,
+      "pins": {
+        "2": "GND",
+        "1": "BUMP_L"
+      },
+      "mates_with": "JST XHP-2 + 2 × SXH-001T-P0.6 (C08); lead W_bumper_left",
+      "lead": "W_bumper_left"
+    },
+    {
+      "ref": "J11",
+      "function": "Bumper R",
+      "board_part": "JST B2B-XH-A(LF)(SN)",
+      "family": "XH",
+      "entry": "+v",
+      "under_carrier": true,
+      "pins": {
+        "2": "GND",
+        "1": "BUMP_R"
+      },
+      "mates_with": "JST XHP-2 + 2 × SXH-001T-P0.6 (C08); lead W_bumper_right",
+      "lead": "W_bumper_right"
+    },
+    {
+      "ref": "U5A",
+      "function": "Regulator in (P03 module)",
+      "board_part": "Phoenix Contact 1715721 (MKDS 1,5/ 2-5,08; verify before ordering)",
+      "family": "Terminal",
+      "entry": "+u",
+      "under_carrier": true,
+      "pins": {
+        "2": "GND",
+        "1": "VBAT_SW"
+      },
+      "mates_with": "P03 input leads (bare ends in the screw terminal)",
+      "lead": "W_p03_in"
+    },
+    {
+      "ref": "U5B",
+      "function": "Regulator out (P03 module)",
+      "board_part": "Phoenix Contact 1715721 (MKDS 1,5/ 2-5,08; verify before ordering)",
+      "family": "Terminal",
+      "entry": "+u",
+      "under_carrier": true,
+      "pins": {
+        "2": "GND",
+        "1": "5V"
+      },
+      "mates_with": "P03 output leads (bare ends in the screw terminal)",
+      "lead": "W_p03_out"
+    }
+  ],
+  "harness": {
+    "note": "cable-cut-list.json, written by cad/build_robot.py: route = the CAD route; cut = route × 1.2 + 40 mm rounded up to 50 mm, except the pigtails (pre-cut long by half the pin spread, then trimmed to length after dressing and crimped), the factory motor cables (200 mm, not cut) and the P03 leads (cut 50, trim).",
+    "cut_list": [
+      {
+        "id": "motor_pigtail_left",
+        "name": "Motor pigtail left: J4 right-angle socket (wires up) to the inline joint's male housing (PB25, B9)",
+        "board_end": "J4",
+        "wire": "6 × 28 AWG silicone (red, black, green, blue, yellow, white)",
+        "route_mm": 40,
+        "cut_mm": 55,
+        "cut_means": "pre-cut length (trim each wire to its finished length after dressing)",
+        "precut_mm": 55,
+        "finished_centre_mm": 48.1,
+        "finished_by_pin_mm": {
+          "1": 54.5,
+          "2": 51.9,
+          "3": 49.4,
+          "4": 46.8,
+          "5": 44.3,
+          "6": 41.8
+        },
+        "pin_spread_mm": 12.7,
+        "pinout": [
+          "1 L_M1 (red)",
+          "2 L_M2 (black)",
+          "3 GND (green)",
+          "4 5V (blue)",
+          "5 ENC_LA_5V (yellow)",
+          "6 ENC_LB_5V (white)"
+        ]
+      },
+      {
+        "id": "motor_cable_left",
+        "name": "Factory 200 mm motor/encoder cable left (to the inline joint; spare length coiled, PB25 / B9)",
+        "board_end": null,
+        "wire": null,
+        "route_mm": 193,
+        "cut_mm": 200,
+        "pinout": []
+      },
+      {
+        "id": "motor_pigtail_right",
+        "name": "Motor pigtail right: J5 right-angle socket (wires up) to the inline joint's male housing (PB25, B9)",
+        "board_end": "J5",
+        "wire": "6 × 28 AWG silicone (red, black, green, blue, yellow, white)",
+        "route_mm": 35,
+        "cut_mm": 51,
+        "cut_means": "pre-cut length (trim each wire to its finished length after dressing)",
+        "precut_mm": 51,
+        "finished_centre_mm": 43.8,
+        "finished_by_pin_mm": {
+          "1": 37.4,
+          "2": 40.0,
+          "3": 42.5,
+          "4": 45.1,
+          "5": 47.6,
+          "6": 50.1
+        },
+        "pin_spread_mm": 12.7,
+        "pinout": [
+          "1 R_M1 (red)",
+          "2 R_M2 (black)",
+          "3 GND (green)",
+          "4 5V (blue)",
+          "5 ENC_RA_5V (yellow)",
+          "6 ENC_RB_5V (white)"
+        ]
+      },
+      {
+        "id": "motor_cable_right",
+        "name": "Factory 200 mm motor/encoder cable right (to the inline joint; spare length coiled, PB25 / B9)",
+        "board_end": null,
+        "wire": null,
+        "route_mm": 193,
+        "cut_mm": 200,
+        "pinout": []
+      },
+      {
+        "id": "W01",
+        "name": "Battery adapter lead (Tamiya on the pack top → J1, bay board rear edge)",
+        "board_end": "J1",
+        "wire": "2 × 18 AWG silicone (red, black)",
+        "route_mm": 49,
+        "cut_mm": 100,
+        "pinout": [
+          "1 GND (black)",
+          "2 BAT+ (red)"
+        ]
+      },
+      {
+        "id": "W04",
+        "name": "5 V Jetson lead (J3, bay board right edge in the band → barrel plug)",
+        "board_end": "J3",
+        "wire": "2 × 18 AWG silicone (red, black)",
+        "route_mm": 168,
+        "cut_mm": 250,
+        "pinout": [
+          "1 5V (red)",
+          "2 GND (black)"
+        ]
+      },
+      {
+        "id": "W10",
+        "name": "Cliff sensor lead 1 (to J6 on the bay board)",
+        "board_end": "J6",
+        "wire": "5 × 26 AWG (red, black, blue, yellow, white)",
+        "route_mm": 108,
+        "cut_mm": 200,
+        "pinout": [
+          "1 3V3 (red)",
+          "2 GND (black)",
+          "3 SDA (blue)",
+          "4 SCL (yellow)",
+          "5 XSHUT1 (white)"
+        ]
+      },
+      {
+        "id": "W11",
+        "name": "Cliff sensor lead 2 (to J7 on the bay board)",
+        "board_end": "J7",
+        "wire": "5 × 26 AWG (red, black, blue, yellow, white)",
+        "route_mm": 160,
+        "cut_mm": 250,
+        "pinout": [
+          "1 3V3 (red)",
+          "2 GND (black)",
+          "3 SDA (blue)",
+          "4 SCL (yellow)",
+          "5 XSHUT2 (white)"
+        ]
+      },
+      {
+        "id": "W12",
+        "name": "Cliff sensor lead 3 (to J8 on the bay board)",
+        "board_end": "J8",
+        "wire": "5 × 26 AWG (red, black, blue, yellow, white)",
+        "route_mm": 158,
+        "cut_mm": 250,
+        "pinout": [
+          "1 3V3 (red)",
+          "2 GND (black)",
+          "3 SDA (blue)",
+          "4 SCL (yellow)",
+          "5 XSHUT3 (white)"
+        ]
+      },
+      {
+        "id": "W13",
+        "name": "Cliff sensor lead 4 (to J9 on the bay board)",
+        "board_end": "J9",
+        "wire": "5 × 26 AWG (red, black, blue, yellow, white)",
+        "route_mm": 127,
+        "cut_mm": 200,
+        "pinout": [
+          "1 3V3 (red)",
+          "2 GND (black)",
+          "3 SDA (blue)",
+          "4 SCL (yellow)",
+          "5 XSHUT4 (white)"
+        ]
+      },
+      {
+        "id": "W16",
+        "name": "Pico USB cable (left stack → Pico on the bay board)",
+        "board_end": "PICO_USB",
+        "wire": "factory USB cable",
+        "route_mm": 256,
+        "cut_mm": 350,
+        "pinout": []
+      },
+      {
+        "id": "W17",
+        "name": "Single-camera USB cable",
+        "board_end": null,
+        "wire": null,
+        "route_mm": 59,
+        "cut_mm": 150,
+        "pinout": []
+      },
+      {
+        "id": "W19",
+        "name": "LiDAR USB extension",
+        "board_end": null,
+        "wire": null,
+        "route_mm": 200,
+        "cut_mm": 300,
+        "pinout": []
+      },
+      {
+        "id": "W20",
+        "name": "LiDAR matched replacement / extension lead",
+        "board_end": null,
+        "wire": null,
+        "route_mm": 53,
+        "cut_mm": 150,
+        "pinout": []
+      },
+      {
+        "id": "W02",
+        "name": "Master rocker pair (J2, bay board rear edge ↔ lid rocker)",
+        "board_end": "J2",
+        "wire": "2 × 18 AWG silicone (red, orange)",
+        "route_mm": 75,
+        "cut_mm": 150,
+        "pinout": [
+          "1 F1_OUT (red)",
+          "2 VBAT_SW (orange)"
+        ]
+      },
+      {
+        "id": "W14",
+        "name": "Motor-toggle loop (J13, bay board rear edge ↔ lid toggle)",
+        "board_end": "J13",
+        "wire": "2 × 24 AWG (red, orange)",
+        "route_mm": 57,
+        "cut_mm": 150,
+        "pinout": [
+          "1 5V (red)",
+          "2 COIL_P (orange)"
+        ]
+      },
+      {
+        "id": "W15",
+        "name": "Arm button lead (J12, bay board rear edge ↔ lid button)",
+        "board_end": "J12",
+        "wire": "2 × 26 AWG (white, black)",
+        "route_mm": 106,
+        "cut_mm": 200,
+        "pinout": [
+          "1 ARM (white)",
+          "2 GND (black)"
+        ]
+      },
+      {
+        "id": "W18",
+        "name": "Fan lead",
+        "board_end": null,
+        "wire": null,
+        "route_mm": 37,
+        "cut_mm": 100,
+        "pinout": []
+      },
+      {
+        "id": "W_bumper_left",
+        "name": "Bumper lead left (to J10 on the bay board)",
+        "board_end": "J10",
+        "wire": "2 × 26 AWG (white, black)",
+        "route_mm": 156,
+        "cut_mm": 250,
+        "pinout": [
+          "1 BUMP_L (white)",
+          "2 GND (black)"
+        ]
+      },
+      {
+        "id": "W_bumper_right",
+        "name": "Bumper lead right (to J11 on the bay board)",
+        "board_end": "J11",
+        "wire": "2 × 26 AWG (white, black)",
+        "route_mm": 156,
+        "cut_mm": 250,
+        "pinout": [
+          "1 BUMP_R (white)",
+          "2 GND (black)"
+        ]
+      },
+      {
+        "id": "W_p03_in",
+        "name": "P03 input leads (board U5A screw terminal ↔ P03)",
+        "board_end": "U5A",
+        "wire": "2 × 18 AWG silicone (red, black)",
+        "route_mm": 10,
+        "cut_mm": 50,
+        "pinout": [
+          "1 VBAT_SW (red)",
+          "2 GND (black)"
+        ]
+      },
+      {
+        "id": "W_p03_out",
+        "name": "P03 output leads (board U5B screw terminal ↔ P03)",
+        "board_end": "U5B",
+        "wire": "2 × 18 AWG silicone (red, black)",
+        "route_mm": 10,
+        "cut_mm": 50,
+        "pinout": [
+          "1 5V (red)",
+          "2 GND (black)"
+        ]
+      }
+    ],
+    "spike_check": {
+      "source": ".superpowers/sdd/2026-10-06-r1-low-profile/task-W4L-report.md section 8 (rough; mm)",
+      "spike_net_change_mm": 169,
+      "rows": [
+        {
+          "lead": "Battery adapter W01 → J1",
+          "ids": [
+            "W01"
+          ],
+          "now_mm": 50,
+          "spike_b_mm": 95,
+          "final_mm": 49
+        },
+        {
+          "lead": "Rocker W02 → J2",
+          "ids": [
+            "W02"
+          ],
+          "now_mm": 72,
+          "spike_b_mm": 118,
+          "final_mm": 75
+        },
+        {
+          "lead": "Toggle loop W14 → J13",
+          "ids": [
+            "W14"
+          ],
+          "now_mm": 54,
+          "spike_b_mm": 93,
+          "final_mm": 57
+        },
+        {
+          "lead": "Arm button W15 → J12",
+          "ids": [
+            "W15"
+          ],
+          "now_mm": 50,
+          "spike_b_mm": 144,
+          "final_mm": 106
+        },
+        {
+          "lead": "Cliff 1 W10 → J6",
+          "ids": [
+            "W10"
+          ],
+          "now_mm": 61,
+          "spike_b_mm": 116,
+          "final_mm": 108
+        },
+        {
+          "lead": "Cliff 2 W11 → J7",
+          "ids": [
+            "W11"
+          ],
+          "now_mm": 59,
+          "spike_b_mm": 154,
+          "final_mm": 160
+        },
+        {
+          "lead": "Cliff 3 W12 → J8",
+          "ids": [
+            "W12"
+          ],
+          "now_mm": 142,
+          "spike_b_mm": 174,
+          "final_mm": 158
+        },
+        {
+          "lead": "Cliff 4 W13 → J9",
+          "ids": [
+            "W13"
+          ],
+          "now_mm": 142,
+          "spike_b_mm": 159,
+          "final_mm": 127
+        },
+        {
+          "lead": "Bumper L → J10",
+          "ids": [
+            "W_bumper_left"
+          ],
+          "now_mm": 145,
+          "spike_b_mm": 135,
+          "final_mm": 156
+        },
+        {
+          "lead": "Bumper R → J11",
+          "ids": [
+            "W_bumper_right"
+          ],
+          "now_mm": 145,
+          "spike_b_mm": 135,
+          "final_mm": 156
+        },
+        {
+          "lead": "Jetson 5 V W04 → J3",
+          "ids": [
+            "W04"
+          ],
+          "now_mm": 138,
+          "spike_b_mm": 138,
+          "final_mm": 168
+        },
+        {
+          "lead": "Pico USB W16",
+          "ids": [
+            "W16"
+          ],
+          "now_mm": 234,
+          "spike_b_mm": 209,
+          "final_mm": 256
+        },
+        {
+          "lead": "P03 lead U5A",
+          "ids": [
+            "W_p03_in"
+          ],
+          "now_mm": 115,
+          "spike_b_mm": 10,
+          "final_mm": 10
+        },
+        {
+          "lead": "P03 lead U5B",
+          "ids": [
+            "W_p03_out"
+          ],
+          "now_mm": 65,
+          "spike_b_mm": 11,
+          "final_mm": 10
+        },
+        {
+          "lead": "Motor harness L + R (strip era; now the PB25 pigtails)",
+          "ids": [
+            "motor_pigtail_left",
+            "motor_pigtail_right"
+          ],
+          "now_mm": 50,
+          "spike_b_mm": 0,
+          "final_mm": 75
+        }
+      ],
+      "net_change_mm": 149,
+      "spike_b_net_change_mm": 169,
+      "note": "the factory motor cables (200 mm), the USB / fan / LiDAR leads and the new factory-cable coils are outside the spike table, as there"
+    }
+  }
+}

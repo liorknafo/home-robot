@@ -1,0 +1,7 @@
+(version 1)
+(rule "motor pins within one footprint"
+  (constraint clearance (min 0.3mm))
+  (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.Parent == B.Parent && (A.NetClass == 'Motor' || B.NetClass == 'Motor')"))
+(rule "U3P.2 one spoke per outer layer"
+  (constraint min_resolved_spokes 1)
+  (condition "A.Type == 'Pad' && A.memberOfFootprint('U3P') && A.Pad_Number == '2'"))

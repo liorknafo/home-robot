@@ -1,0 +1,60 @@
+Pololu item 4035 - DRV8874 Single Brushed DC Motor Driver Carrier (dev code md41a)
+Condensed notes for pcb/board_spec.py. Retrieved 2026-10-04. Nothing here is guessed: each fact names its source.
+
+SOURCES
+ [P]  Product page text (pinout table, default states, current sense/limit text): https://www.pololu.com/product/4035
+ [S]  Schematic PDF, "DRV887x Single Brushed DC Motor Driver Carrier" (c) 2021 Pololu: https://www.pololu.com/file/0J1862/drv887x-single-brushed-dc-motor-driver-carrier-schematic.pdf
+      (the page's text does not give the pin ORDER; the two header symbols in the schematic do)
+ [D]  Dimension diagram PDF (drawing md41a, 14 Apr 2022): https://www.pololu.com/file/0J1882/drv887x-single-brushed-dc-motor-driver-carrier-dimensions.pdf
+ [T]  Labelled top-view photo from the product page: https://a.pololu-files.com/picture/0J11426.600x480.jpg
+      (component side up, pin-1 end at the top: gives which row is on which side)
+
+HEADERS - two rows of 7 plated holes, 0.1 in (2.54 mm) pitch                                          [S] [D] [T]
+ Row L = the LEFT row of the top view [T]; schematic header with VM on pin 1 [S]:
+   1 VM   2 GND   3 EN/IN1   4 PH/IN2   5 PMODE   6 SLEEP (active-high enable, nSLEEP)   7 VREF
+ Row P = the RIGHT row of the top view [T]; schematic header with VIN on pin 1 [S]:
+   1 VIN  2 GND   3 OUT1     4 OUT2     5 IMODE   6 FAULT (nFAULT, open drain)           7 CS
+ Pin 1 of both rows is at the same end of the board (VM and VIN are side by side) [T] [D iso view].
+ Pin 2 (GND) of each row has a square pad in [T]; there are TWO GND pins, one per row (page: "ground connection points
+ for the motor and logic supplies").
+ Hole geometry [D]: 14 holes, drill dia 1.02 mm; pitch 2.54 mm; ROW SPACING 12.70 mm (0.5 in); first/last hole 1.27 mm
+ from the board edge.
+ Outline [D]: 15.2 mm (0.6 in, across the rows) x 17.8 mm (0.7 in, along the rows). Component height above the board
+ 1.8 mm, board 1.02 mm thick. The carrier ships with breakaway 0.1 in male headers (page): with a 8.5 mm female socket
+ and the 2.54 mm header body under the carrier the carrier top sits about 14 mm above our board.
+ Plugging into two 1x07 female sockets: with both sockets at rotation 0 in KiCad's frame (x right, y down) and pins
+ running +y, the VM row socket is at x0 and the VIN row socket at x0 + 12.70 mm, same y0 (carrier component side up,
+ pin 1 toward -y). Rotating the pair by 180 degrees (pin 1 toward +y) is the other valid way to mount it.
+
+PIN FUNCTIONS AND CARRIER DEFAULTS                                                                        [P] [S]
+ VIN    4.5-37 V supply input (reverse-voltage protection MOSFET Q1 on the carrier).
+ VM     supply AFTER the reverse-protection MOSFET; an output for other circuits. NOT connected on our board.
+ EN/IN1, PH/IN2   control inputs; default LOW (carrier pull-downs). IN/IN mode: IN1/IN2 drive the two half bridges.
+ PMODE  mode select, state latched when the driver is enabled via SLEEP. LOW = PHASE/ENABLE, HIGH = PWM (IN/IN),
+        floating = independent half-bridge. We use IN/IN (same as the MDD3A scheme) so PMODE is tied HIGH = 3V3.
+ SLEEP  low = sleep; default LOW. Driven by Pico GP18 (both carriers, 100 k pull-down on our board).
+ VREF   current-limit reference. The carrier pulls VREF up to SLEEP through 10 k (R2) [S], R5 to GND not populated.
+        So VREF follows the voltage on SLEEP. Left unconnected on our board.
+ IMODE  4-state input for current regulation / over-current mode. The carrier pulls IMODE to GND through 20 k (R4) [S]:
+        cycle-by-cycle current chopping. Left unconnected on our board (keeps the carrier default).
+ FAULT  open-drain, active low, default floating: needs the pull-up (R18, 10 k to 3V3).
+ CS     current-sense output, loaded on the carrier by 2.49 k to GND (R3) [S]. No external resistor needed.
+ Ratings [P]: 4.5-37 V, 2.1 A continuous, default peak-current limit about 4.4 A (with 5 V on SLEEP).
+
+DECISIONS FOR THE UNNAMED / EXTRA PINS (board_spec.DRV_EXTRA_GND, DRV_UNUSED)
+ Row L pin 2 (second GND)  -> GND  (DRV_EXTRA_GND)
+ Row L pin 1 (VM)          -> NC   (output of the carrier's own protected rail; VIN already carries VMOT)
+ Row L pin 7 (VREF)        -> NC   (carrier default: tracks SLEEP)
+ Row P pin 5 (IMODE)       -> NC   (carrier default: pulled to GND, cycle-by-cycle)
+ PMODE (row L pin 5)       -> 3V3  (PWM / IN-IN mode)
+
+CURRENT-SENSE SCALE AND THE 3.3 V ADC LIMIT
+ [P] "approximately 1.1 V/A" (DRV8874; 2.5 V/A is the DRV8876 variant), with the 2.49 k carrier resistor R3 on CS [S].
+ [P] default current limit "approximately 4.4 A ... a lower logic voltage on SLEEP decreases the current limit
+     proportionally" => limit = 4.4 A x V(SLEEP)/5 V.
+ With GP18 high (3.3 V), VREF = 3.3 V:  limit = 4.4 x 3.3/5 = about 2.9 A  (3.3 V / 1.1 V/A = 3.0 A).
+ CS voltage at that limit = 2.9 A x 1.1 V/A = about 3.2 V, i.e. CS at the limit equals VREF = V(SLEEP) = 3.3 V:
+ it stays within the Pico ADC range (0-3.3 V) but with essentially no margin, and CS is not limited to VREF during
+ over-current transients before the chopper reacts. Stall current of the motors is expected below 2.1 A (spec section 10).
+ The CS output also reads full scale (3.3 V) = about 3.0 A, so firmware current limits above 2.9 A cannot be seen.
+ Concern recorded in the Task 2 report: Pico pads tolerate IOVDD + 0.3 V only.

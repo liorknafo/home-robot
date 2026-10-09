@@ -1,0 +1,697 @@
+{
+  "body_mass_kg": 2.2838,
+  "body_com_x_cm": -1.737,
+  "body_com_z_cm": 6.277,
+  "wheel_mass_kg": 0.035,
+  "caster_ball_mass_kg": 0.068,
+  "total_mass_kg": 2.4218,
+  "estimated_body_com_mm": [
+    -17.37,
+    -1.12,
+    62.77
+  ],
+  "wheel_radius_m": 0.04,
+  "wheel_track_m": 0.228,
+  "caster_x_m": -0.075,
+  "drive_axle_x_m": 0.0,
+  "encoder_cpr": 4741.44,
+  "friction": 0.8,
+  "rolling_drag_nm": 0.003,
+  "max_drive_torque_nm": 0.1,
+  "records": [
+    {
+      "item": "P_base",
+      "mass_kg": 0.13622,
+      "position_mm": [
+        -3.2,
+        0.0,
+        30.9
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_battery_tray",
+      "mass_kg": 0.02618,
+      "position_mm": [
+        -97.2,
+        -0.8,
+        34.9
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_motor_mount_left",
+      "mass_kg": 0.00737,
+      "position_mm": [
+        0.0,
+        102.9,
+        39.0
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_motor_mount_right",
+      "mass_kg": 0.00737,
+      "position_mm": [
+        0.0,
+        -102.9,
+        39.0
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "bay_spacer_0",
+      "mass_kg": 9e-05,
+      "position_mm": [
+        -19.5,
+        38.0,
+        34.2
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "bay_spacer_1",
+      "mass_kg": 9e-05,
+      "position_mm": [
+        -19.5,
+        -38.0,
+        34.2
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "bay_spacer_2",
+      "mass_kg": 9e-05,
+      "position_mm": [
+        -11.5,
+        8.5,
+        34.2
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "bay_spacer_3",
+      "mass_kg": 9e-05,
+      "position_mm": [
+        -11.5,
+        -8.5,
+        34.2
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "bay_clamp_spacer_3",
+      "mass_kg": 0.0001,
+      "position_mm": [
+        -33.0,
+        40.0,
+        34.2
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "bay_clamp_spacer_1",
+      "mass_kg": 0.0001,
+      "position_mm": [
+        -33.0,
+        -46.0,
+        34.2
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "bay_rib_0",
+      "mass_kg": 0.00039,
+      "position_mm": [
+        -60.5,
+        21.9,
+        33.9
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "bay_rib_1",
+      "mass_kg": 0.00013,
+      "position_mm": [
+        -58.8,
+        -15.5,
+        34.0
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_cliff_mount_1",
+      "mass_kg": 0.00199,
+      "position_mm": [
+        -109.3,
+        81.0,
+        38.9
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_cliff_mount_2",
+      "mass_kg": 0.00199,
+      "position_mm": [
+        -109.3,
+        -81.0,
+        38.9
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_cliff_mount_3",
+      "mass_kg": 0.00401,
+      "position_mm": [
+        105.0,
+        72.0,
+        38.5
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_cliff_mount_4",
+      "mass_kg": 0.00401,
+      "position_mm": [
+        105.0,
+        -72.0,
+        38.5
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_camera_tower",
+      "mass_kg": 0.01569,
+      "position_mm": [
+        105.7,
+        0.0,
+        65.6
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_camera_guard",
+      "mass_kg": 0.01455,
+      "position_mm": [
+        114.5,
+        0.5,
+        108.7
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lidar_tray",
+      "mass_kg": 0.04128,
+      "position_mm": [
+        17.9,
+        0.6,
+        106.3
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lidar_adapter_clip",
+      "mass_kg": 0.00439,
+      "position_mm": [
+        15.1,
+        -40.8,
+        96.5
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_bumper_left",
+      "mass_kg": 0.09787,
+      "position_mm": [
+        95.3,
+        90.5,
+        53.3
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_bumper_rider_left_A",
+      "mass_kg": 0.00142,
+      "position_mm": [
+        112.0,
+        17.0,
+        37.4
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_bumper_rider_left_B",
+      "mass_kg": 0.00142,
+      "position_mm": [
+        65.0,
+        17.0,
+        37.4
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_bumper_rider_left_C",
+      "mass_kg": 0.00142,
+      "position_mm": [
+        55.0,
+        88.0,
+        37.4
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_bumper_right",
+      "mass_kg": 0.10282,
+      "position_mm": [
+        96.6,
+        -88.4,
+        53.2
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_bumper_rider_right_A",
+      "mass_kg": 0.00142,
+      "position_mm": [
+        112.0,
+        -17.0,
+        37.4
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_bumper_rider_right_B",
+      "mass_kg": 0.00142,
+      "position_mm": [
+        65.0,
+        -17.0,
+        37.4
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_bumper_rider_right_C",
+      "mass_kg": 0.00142,
+      "position_mm": [
+        55.0,
+        -88.0,
+        37.4
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lid_post_1",
+      "mass_kg": 0.00377,
+      "position_mm": [
+        -80.0,
+        -94.0,
+        62.7
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lid_post_2",
+      "mass_kg": 0.00377,
+      "position_mm": [
+        -80.0,
+        94.0,
+        62.7
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lid_post_3",
+      "mass_kg": 0.00377,
+      "position_mm": [
+        85.0,
+        -94.0,
+        62.7
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lid_post_4",
+      "mass_kg": 0.00377,
+      "position_mm": [
+        85.0,
+        94.0,
+        62.7
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lid_front",
+      "mass_kg": 0.04782,
+      "position_mm": [
+        71.3,
+        -27.2,
+        102.0
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lid_left",
+      "mass_kg": 0.06426,
+      "position_mm": [
+        18.0,
+        91.1,
+        102.0
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lid_rear",
+      "mass_kg": 0.06938,
+      "position_mm": [
+        -90.8,
+        20.0,
+        102.0
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lid_right",
+      "mass_kg": 0.06447,
+      "position_mm": [
+        -19.3,
+        -91.5,
+        102.0
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_ld14_grommet",
+      "mass_kg": 0.00056,
+      "position_mm": [
+        34.9,
+        -22.0,
+        103.4
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_rear_shell_left",
+      "mass_kg": 0.11401,
+      "position_mm": [
+        -94.7,
+        88.8,
+        55.5
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_rear_shell_right",
+      "mass_kg": 0.10899,
+      "position_mm": [
+        -91.7,
+        -94.0,
+        55.8
+      ],
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "Battery",
+      "mass_kg": 0.383,
+      "position_mm": [
+        -96.0,
+        0.0,
+        50.5
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Jetson + cooler",
+      "mass_kg": 0.22,
+      "position_mm": [
+        -5.3,
+        -2.7,
+        68.2
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Left motor",
+      "mass_kg": 0.09,
+      "position_mm": [
+        0.0,
+        70.1,
+        40.0
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Right motor",
+      "mass_kg": 0.09,
+      "position_mm": [
+        0.0,
+        -70.1,
+        40.0
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Controller and sensors",
+      "mass_kg": 0.055,
+      "position_mm": [
+        -30.72,
+        16.0,
+        46.14
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Power boards + relay",
+      "mass_kg": 0.085,
+      "position_mm": [
+        -16.08,
+        -7.26,
+        43.07
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Motor toggle and master switches",
+      "mass_kg": 0.03,
+      "position_mm": [
+        -93.4,
+        -6.1,
+        94.7
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Wiring + connectors",
+      "mass_kg": 0.1,
+      "position_mm": [
+        5.1,
+        -1.3,
+        59.3
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Fasteners",
+      "mass_kg": 0.0882,
+      "position_mm": [
+        35.6,
+        -0.2,
+        42.1
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Caster housing",
+      "mass_kg": 0.03,
+      "position_mm": [
+        -75.0,
+        0.0,
+        22.3
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Camera",
+      "mass_kg": 0.015,
+      "position_mm": [
+        110.2,
+        0.0,
+        107.5
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "D200 LiDAR",
+      "mass_kg": 0.101,
+      "position_mm": [
+        26.0,
+        -0.1,
+        142.4
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "LiDAR adapter and added cables",
+      "mass_kg": 0.035,
+      "position_mm": [
+        15.0,
+        -40.0,
+        93.0
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Bumper foam",
+      "mass_kg": 0.0017,
+      "position_mm": [
+        121.4,
+        0.0,
+        48.7
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    }
+  ],
+  "limitations": [
+    "All masses except nominal battery family rating are provisional estimates.",
+    "Caster is an ideal ball with a spherical bearing constraint.",
+    "Tire friction, rolling drag, motor torque and camera FOV are assumed and require later measurement.",
+    "Reflected gearmotor inertia is approximated by uniform wheel inertia scaling to 0.0005 kg m2 on the free axle; this is not a measured motor model.",
+    "Sensing blind band: thin objects confined to 98.5-147.5 mm (above the bumper skin top, bumper_top_z_m, and below the LiDAR scan plane) and object undersides at 147.5-155.15 mm (between the LiDAR plane and the robot top, robot_top_z_m) are invisible to the LiDAR and above the bumper, so nothing senses them; the upper structure (lid, camera guard, LiDAR tray and turret; above the LiDAR plane only the turret) collides with them. The controller handles them only through stall marks (lidar_brain.mark_stall: the wheels turn, the LiDAR shows no motion, nothing is sensed), at most STALL_MARK_LIMIT per session.",
+    "Masses, centre of mass and body_inertia_kg_m2 come from the CAD (cad/mass-properties.json): printed parts at CAD volume x PETG 1.27 g/cm3 x a per-part fill, bought parts at their recorded masses at CAD solid centroids, each group a uniform solid of its CAD envelope for the inertia. Not weighed or measured.",
+    "Chassis inertia and upper collider in Unreal: RobotPawn sets the Body inertia from body_inertia_kg_m2 (principal moments and axes, after the COM nudge; log INERTIA_FIX, state physics_body_inertia_kg_m2), not from its collider. Above the body collider (up to the lid top, body_top_z_m) only the LiDAR column collides: a 32-gon prism circumscribing the turret cylinder (lidar_turret_xy_m, lidar_turret_radius_m) from the lid top to the robot top; the camera guard and the parts of the LiDAR tray and LD14 housing outside the turret footprint are not colliders."
+  ],
+  "wheel_effective_axle_inertia_kg_m2": 0.0005,
+  "dynamic_brake_coefficient_nm_per_rad_s": 0.01,
+  "body_radius_m": 0.1589,
+  "rigid_radius_m": 0.1525,
+  "bumper_shell_radius_m": 0.1574,
+  "bumper_span_deg": 90.0,
+  "bump_zone_edges_deg": [
+    -90.0,
+    -55.0,
+    -20.0,
+    20.0,
+    55.0,
+    90.0
+  ],
+  "bump_zone_names": [
+    "right",
+    "front_right",
+    "centre",
+    "front_left",
+    "left"
+  ],
+  "bump_left_switch_zone_mask": 28,
+  "bump_right_switch_zone_mask": 7,
+  "rear_caster_xy_m": [
+    -0.075,
+    0.0
+  ],
+  "rear_caster_z_m": 0.0,
+  "caster_ball_radius_m": 0.0127,
+  "cliff_sensors_m": [
+    [
+      0.105,
+      0.072
+    ],
+    [
+      0.105,
+      -0.072
+    ],
+    [
+      -0.11,
+      0.081
+    ],
+    [
+      -0.11,
+      -0.081
+    ]
+  ],
+  "cliff_z_m": 0.0425,
+  "camera_mount_m": [
+    0.117,
+    0.0,
+    0.1075
+  ],
+  "lidar_mount_m": [
+    0.02,
+    0.0,
+    0.1475
+  ],
+  "shell_bottom_z_m": 0.018,
+  "body_top_z_m": 0.1035,
+  "bumper_top_z_m": 0.0985,
+  "base_link_height_m": 0.085,
+  "camera_mount_from_body_origin_m": [
+    0.117,
+    0.0,
+    0.0225
+  ],
+  "lidar_mount_from_body_origin_m": [
+    0.02,
+    0.0,
+    0.0625
+  ],
+  "bumper_axis_deg": 30,
+  "bumper_travel_m": 0.005,
+  "robot_com_mm": [
+    -18.48,
+    -1.06,
+    60.71
+  ],
+  "robot_com_behind_axle_m": 0.01848,
+  "frame": "metres unless noted; robot frame x forward, y left, z up. base_link = round-shell centre = drive-axle midpoint, AT FLOOR LEVEL; every mount z (camera_mount_m, lidar_mount_m, cliff_z_m, shell_bottom_z_m, body_top_z_m, robot_top_z_m) is a height above the floor. base_link_height_m is the nominal body-origin height (RobotPawn BodyHeight) used by the controller convention base_link + offset, e.g. camera z 0.085 + 0.0225 = 0.1075 above the floor; camera_mount_from_body_origin_m and lidar_mount_from_body_origin_m give the mounts in that body-origin form (z minus base_link_height_m). rigid_radius_m is the fixed rear shell, bumper_shell_radius_m the moving bumper shell under the skin (body_radius_m); bumper_top_z_m is the skin top edge (no bumper sensing above it); body_top_z_m the lid top; robot_top_z_m the whole robot top (LiDAR turret cap); lidar_turret_* the turret cylinder (centre xy, radius, z range), the only part above the LiDAR plane. rear_caster_z_m is the ball bottom above the floor at rest (0 = touching). bump_zone_edges_deg is the full ascending list: zone i (bump_zones bit i, named bump_zone_names[i]) spans edges[i]..edges[i+1], azimuth about base_link, + = left; its outer values are -/+bumper_span_deg (the half-span). bump_left/right_switch_zone_mask: zones that trip each switch. Masses kg, positions mm: records = the chassis Body (sum = body_mass_kg); separate_body_records = the drive-wheel pair (wheel_mass_kg each) and the caster ball; body_inertia_kg_m2 is about estimated_body_com_mm.",
+  "robot_top_z_m": 0.15515,
+  "lidar_turret_xy_m": [
+    0.02,
+    0.0
+  ],
+  "lidar_turret_radius_m": 0.029922,
+  "lidar_turret_z_m": [
+    0.13825,
+    0.15515
+  ],
+  "separate_body_records": [
+    {
+      "item": "Wheels",
+      "mass_kg": 0.07,
+      "position_mm": [
+        0.0,
+        0.0,
+        40.0
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    },
+    {
+      "item": "Caster ball",
+      "mass_kg": 0.068,
+      "position_mm": [
+        -75.0,
+        0.0,
+        12.7
+      ],
+      "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
+    }
+  ],
+  "body_inertia_kg_m2": [
+    [
+      0.011697,
+      8.9e-05,
+      -0.000708
+    ],
+    [
+      8.9e-05,
+      0.014611,
+      7.3e-05
+    ],
+    [
+      -0.000708,
+      7.3e-05,
+      0.021975
+    ]
+  ],
+  "body_inertia_about": "body_com_mm (the inertia set was built from the same records: centre [-17.36, -1.11, 62.77] mm)",
+  "mass_properties_source": {
+    "file": "home-robot-r1/cad/mass-properties.json",
+    "cad_commit": "76232c4"
+  }
+}
