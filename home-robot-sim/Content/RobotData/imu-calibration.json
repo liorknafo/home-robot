@@ -2,17 +2,17 @@
   "schema": "r1-imu-calibration/1",
   "procedure": "level calibration at bring-up: at rest on a flat floor, motors off, at each heading; offset = mean specific force - g x gravity direction of the cliff ToF floor plane, averaged over the headings (two headings 180 deg apart cancel the floor tilt)",
   "accel_offset_m_s2": [
-    -0.008801,
-    0.173085,
-    0.000968
+    0.168197,
+    -0.415673,
+    -0.85058
   ],
   "gravity_m_s2": 9.8,
   "headings": 2,
   "samples": 152,
   "floor_attitude_rad": [
     [
-      -2.8040528259705188e-06,
-      0.00014332621151797514
+      -2.8039025823608443e-06,
+      0.00014332632551094412
     ],
     [
       -1.4328169626334872e-06,
@@ -21,25 +21,25 @@
   ],
   "heading_residual_m_s2": [
     [
-      -0.009684,
-      0.172245,
-      0.00276
+      0.168479,
+      -0.414673,
+      -0.848513
     ],
     [
-      -0.007917,
-      0.173924,
-      -0.000824
+      0.167915,
+      -0.416672,
+      -0.852648
     ]
   ],
-  "accel_noise_m_s2": 0.020196,
+  "accel_noise_m_s2": 0.020307,
   "gyro_mean_at_calibration_rad_s": [
-    -0.1657213,
-    0.1866798,
-    0.0678007
+    0.339638,
+    0.3230893,
+    -0.3249992
   ],
   "gyro_yaw_coupling": [
-    0.010471,
-    0.016264
+    -0.010098,
+    -0.012961
   ],
   "spin_samples": [
     378,
@@ -48,15 +48,15 @@
   "spin_floor_attitude_rad": [
     [
       5e-06,
-      0.000418
+      0.000417
     ],
     [
-      -4e-06,
-      0.000412
+      -5e-06,
+      0.00041
     ]
   ],
-  "note": "live: the running Unreal simulator through RobotClient with the sensor error model ({'enabled': True, 'seed': 20279949, 'run_seed': 1, 'config': 'Content/RobotData/sensor-errors.json'}); robot placed at (0.0, 0.0) with yaw 180 deg then 0 deg by Unreal resets, 2.0 s settle, 5.0 s each; then 2 turns in place each way at 0.5 rad/s; finally reset to the start pose",
-  "created": "2026-10-10T02:43:18",
+  "note": "live: the running Unreal simulator through RobotClient with the sensor error model ({'enabled': True, 'seed': 20261027, 'run_seed': 1, 'config': 'Content/RobotData/sensor-errors.json'}); robot placed at (0.0, 0.0) with yaw 180 deg then 0 deg by Unreal resets, 2.0 s settle, 5.0 s each; then 2 turns in place each way at 0.5 rad/s; finally reset to the start pose",
+  "created": "2026-10-10T01:54:45",
   "collection": [
     {
       "heading_rad": 3.141592653589793,
