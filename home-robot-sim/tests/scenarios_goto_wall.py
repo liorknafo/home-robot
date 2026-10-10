@@ -20,8 +20,10 @@ clearance >= GOAL_CLEAR = R - 2 cm); 2 cells (.10) are not.
   low_bumper                        the same, no camera detections: only the bumper finds the box
   wall_2cm_s1/_s2, corner_s1/_s2, low_camera_s1/_s2   the same with other LiDAR noise seeds (sim2d Sim seed)
   corner_then_mapping               the corner target, then MAPPING is started from where it stopped (instead of
-                                    the Go-to away): it must turn and leave (> .25 m) within 40 s with no reverse
-                                    command, no backward motion, 0 rigid-body blocks and 0 bumper touches
+                                    the Go-to away): it must turn and leave (> .25 m) within 40 s, 0 rigid-body blocks
+                                    and 0 bumper touches, and NO reverse command and no backward motion while LEAVING
+                                    the corner (ruling PB28: until base_link is LEAVE_M = .5 m from where it started,
+                                    or it reaches its first viewpoint); the on-trail reverse audit covers the whole run
 Reported per Go-to: accepted / rejected, final message, true skin gap to the nearest wall or low object at the
 end (and the minimum during the run), rigid-body blocks, bumper touches, reverse ticks, reverse audit
 (sim2d.reverse_audit on the whole session), forward-only approach, sim time.
@@ -43,6 +45,7 @@ from autonomy.lidar_brain import LidarBrain
 from sim2d import World,Sim,Bridge,box,poly_segments,seg_point_distance,reverse_audit,backward_tick,SKIN_R
 
 X_WALL,Y_WALL,X_RIGHT,Y_TOP=-1.015,-1.015,2.2,1.335
+LEAVE_M=.5   # corner_then_mapping: the 'no reverse while leaving' window ends this far from where Mapping started (ruling PB28)
 WALLS=[((X_WALL,Y_WALL),(X_RIGHT,Y_WALL)),((X_RIGHT,Y_WALL),(X_RIGHT,Y_TOP)),((X_RIGHT,Y_TOP),(X_WALL,Y_TOP)),((X_WALL,Y_TOP),(X_WALL,Y_WALL)),
        ((1.2,.3),(1.6,.3)),((1.6,.3),(1.6,.5)),((1.6,.5),(1.2,.5)),((1.2,.5),(1.2,.3))]      # a counter island
 LOW_BOX=box(.1,Y_WALL+.05,.2,.1)                                                          # 20 x 10 cm, against the wall
@@ -108,7 +111,11 @@ def start_mapping_from_here(br,world,seconds=40.):
         gaps.append(true_gap(world,x.sim.pose[:2]))
         if left[0] is None and np.linalg.norm(x.sim.pose[:2]-origin)>.25:left[0]=round(x.sim.t-t0,1)
     br.start_mapping();br.run(seconds,on_tick=tick);seg=br.trace[start:]
+    # Leaving window (ruling PB28): until base_link is LEAVE_M from where it started, or the robot reaches its first viewpoint
+    # ('sense' again after moving). Later reverses in open space are covered by the on-trail reverse audit, not this rule.
+    end=next((i for i,r in enumerate(seg) if np.linalg.norm(r['truth'][:2]-origin)>=LEAVE_M or (r['phase']=='sense' and any(x['phase']!='sense' for x in seg[:i]))),len(seg))
     return dict(trace_start=start,left_s=left[0],mode=br.b.mode,phase=br.b.phase,message=br.b.message,min_gap_cm=round(100*min(gaps),1),body_blocks=sim.contacts-c0,bumps=sim.bump_events-k0,
+                leaving_window_s=round(seg[min(end,len(seg)-1)]['t']-seg[0]['t'],1),reverse_cmds_leaving=sum(r['v']<0 for r in seg[:end]),backward_ticks_leaving=sum(backward_tick(r) for r in seg[:end]),
                 reverse_cmds=sum(r['v']<0 for r in seg),backward_ticks=sum(backward_tick(r) for r in seg),reverse_audit=reverse_audit(seg))
 
 
@@ -123,7 +130,7 @@ def run(name):
     near=go_to(br,cfg['goal'],on_tick=camera_hook(world) if cfg.get('camera') else None,world=world)
     if cfg.get('then')=='mapping':
         away=start_mapping_from_here(br,world);audit=reverse_audit(br.trace[:away.pop('trace_start')])
-        ok_map=away['left_s'] is not None and away['left_s']<=40 and away['body_blocks']==0 and away['bumps']==0 and away['reverse_cmds']==0 and away['backward_ticks']==0 and away['reverse_audit']['ok']
+        ok_map=away['left_s'] is not None and away['left_s']<=40 and away['body_blocks']==0 and away['bumps']==0 and away['reverse_cmds_leaving']==0 and away['backward_ticks_leaving']==0 and away['reverse_audit']['ok']
         stopped_ok=near.get('message','').startswith(('Arrived.','Stopped '))
         ok=bool(mapped['complete'] and near['accepted'] and stopped_ok and near['body_blocks']==0 and near['bumps']==0 and near['approach_reverse']==0 and ok_map and audit['ok'])
         print(name,'PASS' if ok else 'FAIL',dict(goal=[round(x,4) for x in cfg['goal']],mapping=mapped,near=near,mapping_from_there=away,reverse_audit=audit),flush=True)

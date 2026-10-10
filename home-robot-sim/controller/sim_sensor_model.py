@@ -12,7 +12,7 @@ Model, per robot_state sample (body axes as the robot sees them):
   gyro  w_m = Q(clip(M_g w + b_g0 + k_g dT(t) + n_g))     M_g = I + diag(scale) + cross-axis (off-diagonal)
   accel f_m = Q(clip(M_a f + b_a0 + k_a dT(t) + n_a))
   dT(t) = rise (1 - exp(-t / tau)): warm-up from power-on (the first sample this instance sees)
-  n ~ N(0, (density x sqrt(sample rate))^2) per axis, Q = the LSB quantization, clip = the full scale
+  n ~ N(0, (density x sqrt(DLPF bandwidth))^2) per axis (DLPF_CFG 4: 20 / 21 Hz), Q = the LSB quantization, clip = full scale
   encoders: per-wheel effective radius (ticks / (1 + e_wheel)), effective track (L-R difference x (1 + e_track))
 """
 import json,math,os
@@ -45,8 +45,10 @@ class SensorErrorModel:
         self.rate=float(c['sample_rate_hz']['value'])
         self.gyro_lsb=math.radians(1/g['sensitivity_lsb_per_dps']['value']);self.gyro_full=32767*self.gyro_lsb
         self.accel_lsb=G_UNIT/a['sensitivity_lsb_per_g']['value'];self.accel_full=32767*self.accel_lsb
-        self.gyro_sigma=math.radians(g['noise_density_dps_per_rthz']['value'])*math.sqrt(self.rate)
-        self.accel_sigma=a['noise_density_ug_per_rthz']['value']*1e-6*G_UNIT*math.sqrt(self.rate)
+        # White noise inside the firmware's DLPF bandwidth (ruling PB27: DLPF_CFG 4, samples at 20 Hz).
+        sampling=c.get('imu_sampling',{});self.gyro_bandwidth=float(sampling.get('gyro_bandwidth_hz',self.rate));self.accel_bandwidth=float(sampling.get('accel_bandwidth_hz',self.rate))
+        self.gyro_sigma=math.radians(g['noise_density_dps_per_rthz']['value'])*math.sqrt(self.gyro_bandwidth)
+        self.accel_sigma=a['noise_density_ug_per_rthz']['value']*1e-6*G_UNIT*math.sqrt(self.accel_bandwidth)
         self.rise=float(w['temperature_rise_c']['value']);self.tau=float(w['time_constant_s']['value'])
         # The board: drawn once, in a fixed order, from the config seed (uniform within each bound).
         r=np.random.default_rng(self.seed);u=lambda bound,n:r.uniform(-1,1,n)*np.asarray(bound,float)

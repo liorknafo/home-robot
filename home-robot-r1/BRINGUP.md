@@ -342,31 +342,46 @@ corners (`Content/RobotData/sensor-errors.json` in the simulator).
 
 **Once, at bring-up** (and again after the bay board or the GY-521 is removed, re-seated or replaced):
 1. **Where.** A flat, hard, plain floor (not a rug: the four cliff ToF sensors must see one plane), with 0.5 m clear all round.
-2. **Warm up.** Leave the robot powered, Jetson running, for about 10 min. The board warms under the carrier and its offsets move with
-   temperature; the controller corrects what remains online.
-3. **Level, two headings.** Motors off (the J13 loop open). Run the level calibration: `autonomy.imu.level_calibration`, driven by
-   `controller/imu_level_calibration.py`. Today that tool reads the simulator; on the robot it must read the Pico's IMU stream, which
-   is wired up with the firmware. Keep the robot still for the 5 s it records. Then turn it 180° by hand on the
-   same spot and keep it still for 5 s more. The two headings cancel the floor's own tilt; the cliff ToF floor plane gives the
+2. **Warm up (preferred, not required).** About 10 min powered, Jetson running, puts the board near its working temperature. A cold
+   calibration also works: the simulator calibrates cold, which is the worse case for the drift that follows. Either way the controller
+   corrects the remaining temperature drift online, from the cliff floor plane, at every rest.
+3. **Level, two headings.** The robot must be still with no motion command for 0.5 s; the motors may be on. Run the level
+   calibration: `autonomy.imu.level_calibration`, driven by `controller/imu_level_calibration.py`. Today that tool reads the
+   simulator; on the robot it must read the Pico's IMU stream, which is wired up with the firmware. Keep the robot still for the 5 s
+   it records. Then turn it 180° by hand on the same spot and keep it still for 5 s more. The two headings cancel the floor's own tilt; the cliff ToF floor plane gives the
    reference attitude.
 4. **Spin.** Motors on. The robot turns in place two full turns each way at 0.5 rad/s, so keep the 0.5 m clear. This measures how
    much of the yaw rate leaks into the x / y gyro (cross-axis sensitivity ±2 % plus the module's mounting tilt). The body's own
    vibration while spinning averages out over the two turns. The tilt of the spin axis, which the cliff floor plane sees, is taken
    out.
 5. **Result.** `Content/RobotData/imu-calibration.json`: per-axis accelerometer offsets, the reference gravity, and the yaw coupling.
-   Expect:
-   - |x|, |y| offsets ≤ 0.5 m/s² and |z| ≤ 0.8 m/s²;
-   - couplings ≤ 0.05;
-   - the two headings' residuals within about 0.2 m/s² of each other (a larger difference means the floor is not flat: move and
-     repeat);
-   - the recorded floor attitude under 0.5°.
+   The tool installs the file only if every check passes. Otherwise it writes `imu-calibration.rejected.json` and stops. The limits
+   live in one place, `controller/autonomy/imu.py` (`LEVEL_HEADING_DIFF_LIMIT_M_S2`, `LEVEL_FLOOR_ATTITUDE_LIMIT_DEG`,
+   `LEVEL_OFFSET_LIMIT_M_S2`, `YAW_COUPLING_LIMIT`); they are quoted here.
 
-   Anything larger points at a loose or tilted GY-521, or at cliff ToF offsets. Fix that rather than accept the numbers.
+   **The real fault detectors:**
+   - **Heading residuals.** The two headings' residuals must agree within 0.2 m/s² per axis. That is twice the floor's tilt times g,
+     about 0.6°. A larger difference means the floor is not flat or the robot moved: move it and repeat.
+   - **Floor attitude.** The cliff floor-plane attitude at rest must be ≤ 0.5°. More means a tilted GY-521, a loose board or cliff
+     ToF offsets. Fix that rather than accept the numbers.
 
-**At every power-on** the robot calibrates the gyro bias itself. It must stand still for 2 s with the motors off: do not touch it. It
-waits in its first measuring stop until this is done. After that, every stop re-estimates the bias (zero-velocity updates), and the
+   **Gross-fault bounds:**
+   - **Offsets:** |x|, |y| ≤ 0.7 and |z| ≤ 1.1 m/s². The stored offsets also absorb the accelerometer's sensitivity (±3 % of g) and
+     cross-axis error (±2 % of g), so an in-spec MPU-6050 reaches ±0.69 / ±0.69 / ±1.08 m/s². Values beyond that mean a broken
+     sensor or a wrong range setting.
+   - **Couplings:** ≤ 0.05 (cross-axis 2 % plus the mounting tilt).
+
+**At every power-on** the robot calibrates the gyro bias itself. It must stand still for 2 s with no motion command; the motors may
+be on. Do not touch it. It waits in its first measuring stop until this is done. After that, every stop re-estimates the bias (zero-velocity updates), and the
 cliff floor plane keeps the accelerometer offsets right as the board warms.
 
-**Firmware requirement.** The Pico forwards raw MPU-6050 samples to the Jetson, at 20 Hz or faster: gyro at FS ±250 °/s, accelerometer
-at ±2 g, with no offset correction of its own. The gyro scale factor (±3 %) is not calibrated: the LiDAR corrects the heading every
-scan.
+**Firmware requirement (ruling PB27).**
+- **Filter.** The Pico configures the MPU-6050 with **DLPF_CFG = 4**: gyro bandwidth 20 Hz, accelerometer 21 Hz.
+- **Rate.** It forwards samples to the Jetson at **20 Hz**: either one sample per 20 Hz tick, or the samples in each 50 ms averaged.
+- **Raw values.** Gyro at FS ±250 °/s, accelerometer at ±2 g, with no offset correction of its own.
+- **Why it matters.** The controller's noise-dependent constants derive from these numbers (`IMU_DLPF_CFG`, `IMU_BANDWIDTH_HZ`,
+  `IMU_RATE_HZ` in `imu.py`). Changing the firmware means changing them there.
+- **Not calibrated.** The gyro scale factor (±3 %): the LiDAR corrects the heading every scan.
+- **Floor-slope caveat.** The online offset correction treats the floor under the cliff sensors as level. Resting on a sloped floor
+  it can learn up to ±0.5 m/s² (about 3°) of slope, with a 30 s time constant, and carry it into areas where the floor plane is
+  invalid. That uses part of the tilt stop's 0.15 rad (8.6°) margin.

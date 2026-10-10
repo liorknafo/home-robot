@@ -1,7 +1,7 @@
 """IMU level calibration at bring-up (bay B11): writes <root>/Content/RobotData/imu-calibration.json.
 
 The procedure is the robot's (autonomy.imu.level_calibration): the robot stands still on a flat, plain floor with the
-motors off; SECONDS of samples are recorded at one heading, the robot is turned 180 deg in place (by hand on the real
+no motion command (motors may be on); SECONDS of samples are recorded at one heading, the robot is turned 180 deg in place (by hand on the real
 robot) and SECONDS more are recorded. Per-axis accelerometer offsets = mean specific force - g x the gravity
 direction of the cliff ToF floor plane, averaged over the two headings (that cancels the floor's own tilt).
 Then the spin calibration (autonomy.imu.yaw_coupling): the robot spins in place, SPIN_TURNS turns at +SPIN_W and
@@ -34,7 +34,13 @@ def to_samples(states):
     return out
 
 def write(calibration,root=ROOT):
-    path=Path(root)/CALIBRATION_FILE;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(calibration,indent=2)+'\n');return path
+    """Install the calibration, only if every bring-up check passes (autonomy.imu.calibration_checks); otherwise it is
+    written next to it as imu-calibration.rejected.json for inspection and ValueError is raised."""
+    path=Path(root)/CALIBRATION_FILE;path.parent.mkdir(parents=True,exist_ok=True)
+    if not all(calibration.get('checks',{}).values()):
+        bad=path.with_name('imu-calibration.rejected.json');bad.write_text(json.dumps(calibration,indent=2)+'\n')
+        raise ValueError(f"level calibration rejected ({', '.join(k for k,v in calibration['checks'].items() if not v)}); see {bad}")
+    path.write_text(json.dumps(calibration,indent=2)+'\n');return path
 
 SPIN_W=.5;SPIN_TURNS=2   # spin calibration: rate (rad/s) and full turns each way
 
@@ -95,4 +101,4 @@ if __name__=='__main__':
     p.add_argument('--y',type=float,default=0.);p.add_argument('--yaw',type=float,default=0.);p.add_argument('--root',type=Path,default=ROOT)
     a=p.parse_args()
     path,cal=synthetic(a.root,seconds=a.seconds) if a.synthetic else live(a.x,a.y,a.yaw,a.seconds,root=a.root)
-    print(path);print(json.dumps({k:cal[k] for k in ('accel_offset_m_s2','gravity_m_s2','samples','floor_attitude_rad','heading_residual_m_s2')}))
+    print(path);print(json.dumps({k:cal[k] for k in ('accel_offset_m_s2','gravity_m_s2','samples','floor_attitude_rad','heading_residual_m_s2','gyro_yaw_coupling','checks')}))

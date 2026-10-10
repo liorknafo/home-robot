@@ -47,7 +47,9 @@ Emulates the simulator <-> autonomy_service boundary without Unreal or UDP:
     wheel and track calibration errors), exactly where autonomy_service applies it. sensor_errors=None follows the
     file / R1_SENSOR_ERRORS; the IMU noise sequence is seeded with the Sim seed. With errors on, Bridge first writes
     the robot's IMU level-calibration file into the brain's root, made by the robot's own bring-up procedure
-    (controller/imu_level_calibration.synthetic), as the simulator provides it for the Unreal runs.
+    (controller/imu_level_calibration.synthetic), as the simulator provides it for the Unreal runs. Then (ruling PB28)
+    Bridge powers the robot on at its start pose until its IMU start-up calibration is complete, before the scenario
+    clock starts (Bridge.power_on).
 The controller only ever sees the state dicts; world geometry stays here.
 """
 import json
@@ -380,13 +382,16 @@ class Sim:
             self.ranges = []; self.times = []; self.lidar_index = 0
 
     def state(self):
+        return self.sensor_model.apply(self.ideal_state())
+
+    def ideal_state(self):
         sensors = dict(left_ticks=round(self.left_ticks), right_ticks=round(self.right_ticks), encoder_cpr=CPR,
                        bumper=self.bump, bumper_left=self.left, bumper_right=self.right, bumper_events=self.bump_events, bump_zones=self.zones,
                        cliff_m=self.cliff_ranges(), gyro_rad_s=[0., 0., self.gyro], specific_force_m_s2=[0., 0., 9.8])
         self.zones = 0   # zones latch between 20 Hz state messages
         if self.scan is not None:
             sensors['lidar'] = self.scan
-        return self.sensor_model.apply(dict(sim_time_s=self.t, armed=self.armed, fault=self.fault, sensors=sensors))
+        return dict(sim_time_s=self.t, armed=self.armed, fault=self.fault, sensors=sensors)
 
 
 class Bridge:
@@ -404,6 +409,23 @@ class Bridge:
             if not (Path(brain.root) / CALIBRATION_FILE).exists():
                 synthetic(brain.root, SensorErrorModel(enabled=True, run_seed=sim.sensor_model.run_seed + 1000,
                                                        config=dict(sim.sensor_model.config, seed=sim.sensor_model.seed)))   # the same board
+        self.power_on_s = self.power_on()
+
+    def power_on(self, limit=10., dt=.05):
+        """Ruling PB28: the scenario clock starts only after the robot reports its IMU start-up calibration complete (the
+        real robot calibrates at power-on, before anyone starts Mapping). The robot rests at its start pose, motors off,
+        and the brain gets rest states timestamped BEFORE the scenario's sim time, without stepping the simulator, so the
+        LiDAR and slip random streams (and every scenario's numbers) are those of a robot that was already calibrated.
+        Returns the power-on seconds it took (None without an IMU calibration)."""
+        imu = getattr(self.b, 'imu', None)
+        if imu is None:
+            return None
+        t0 = self.sim.t - limit
+        for k in range(int(limit / dt)):
+            if imu.startup_done:
+                return round(k * dt, 2)
+            self.b.predict(self.sim.sensor_model.apply(dict(self.sim.ideal_state(), sim_time_s=t0 + k * dt)))
+        raise RuntimeError('the IMU start-up calibration did not complete during power-on')
 
     def start_mapping(self):
         self.b.start_mapping(self.sim.t); self.arm_pending = True; self.sim.power_on()

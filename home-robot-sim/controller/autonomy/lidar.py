@@ -4,7 +4,7 @@ Noise, planar scan and confidence limits are documented in lidar-review.html.
 """
 import math,json,cv2,numpy as np
 from collections import deque
-from .localization import Localizer
+from .localization import Localizer,HEADING_FIX_UNC
 from .stereo import wrap
 from .grid import Grid
 from .geometry import PLAN_RADIUS,R,LIDAR_MOUNT
@@ -224,7 +224,7 @@ class LidarLocalizer(Localizer):
         self.quality=quality;self.visual_inliers=quality.get('inliers',0)
         if result is None:self.uncertainty+=.025;self.tracking='LiDAR geometry uncertain';return False,pred
         self.motion_residual_m=float(np.linalg.norm(result[:2]-pred[:2]));correction=result-pred;correction[2]=wrap(correction[2]);self.pose+=correction;self.pose[2]=wrap(self.pose[2]);self.history=type(self.history)([(t,np.array([p[0]+correction[0],p[1]+correction[1],wrap(p[2]+correction[2])])) for t,p in self.history],maxlen=100)
-        self.last_visual_time=self.last_good_stamp=stamp;self.unverified_travel_m=0.;self.uncertainty=.025;self.heading_uncertainty=.005;self.tracking='LiDAR scan matched to map';self.motion_inconsistent=False
+        self.last_visual_time=self.last_good_stamp=stamp;self.unverified_travel_m=0.;self.uncertainty=.025;self.heading_uncertainty=HEADING_FIX_UNC;self.tracking='LiDAR scan matched to map';self.motion_inconsistent=False
         if mapping and (self.last_key_pose is None or np.linalg.norm(result[:2]-self.last_key_pose[:2])>.20 or abs(wrap(result[2]-self.last_key_pose[2]))>.45):
             self.keyframes.append({'pose':result.copy()});self.last_key_pose=result.copy();self.points=np.vstack((self.points,transform(points,result)));self.rebuild()
         return True,result

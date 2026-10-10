@@ -84,11 +84,11 @@ class SensorErrorModelStatistics(unittest.TestCase):
         check([b.accel_scale for b in boards],ac['sensitivity_tolerance']['value']);check([b.accel_cross[~np.eye(3,dtype=bool)] for b in boards],ac['cross_axis']['value'])
         check([b.wheel_error for b in boards],od['wheel_radius_error']['value']);check([b.track_error for b in boards],od['track_error']['value'])
     def test_noise_density_quantization_and_full_scale(self):
-        c=ssm.load_config();m=model(rise=0.);n=20000;rate=c['sample_rate_hz']['value']
+        c=ssm.load_config();m=model(rise=0.);n=20000;bw=c['imu_sampling']
         w=np.array([m.gyro([0,0,0]) for _ in range(n)]);f=np.array([m.accel([0,0,G]) for _ in range(n)])
-        # Per-sample sigma = density x sqrt(sample rate); the quantization adds < 1 %.
-        self.assertTrue(np.allclose(np.degrees(w.std(0))/math.sqrt(rate),c['gyro']['noise_density_dps_per_rthz']['value'],rtol=.05),np.degrees(w.std(0)))
-        self.assertTrue(np.allclose(f.std(0)/G_UNIT*1e6/math.sqrt(rate),c['accelerometer']['noise_density_ug_per_rthz']['value'],rtol=.05),f.std(0))
+        # Per-sample sigma = density x sqrt(DLPF bandwidth) (ruling PB27: DLPF_CFG 4); the quantization adds < 1 %.
+        self.assertTrue(np.allclose(np.degrees(w.std(0))/math.sqrt(bw['gyro_bandwidth_hz']),c['gyro']['noise_density_dps_per_rthz']['value'],rtol=.05),np.degrees(w.std(0)))
+        self.assertTrue(np.allclose(f.std(0)/G_UNIT*1e6/math.sqrt(bw['accel_bandwidth_hz']),c['accelerometer']['noise_density_ug_per_rthz']['value'],rtol=.05),f.std(0))
         for x in (w,f):                                                  # white: no sample-to-sample correlation
             d=x-x.mean(0);self.assertTrue(np.all(np.abs((d[1:]*d[:-1]).mean(0)/d.var(0))<.03))
         self.assertTrue(np.allclose(w.mean(0),m.gyro_zro,atol=4*m.gyro_sigma/math.sqrt(n)+m.gyro_lsb))
@@ -97,6 +97,13 @@ class SensorErrorModelStatistics(unittest.TestCase):
         self.assertTrue(np.allclose(w/lsb_g,np.round(w/lsb_g),atol=1e-6));self.assertTrue(np.allclose(f/lsb_a,np.round(f/lsb_a),atol=1e-6))
         self.assertTrue(np.allclose(m.gyro([20.,-20.,20.]),np.array([1,-1,1])*32767*lsb_g))     # +/-250 deg/s clips
         self.assertEqual(m.accel([0.,0.,40.])[2],32767*lsb_a)                                     # +/-2 g clips
+    def test_firmware_sampling_is_the_same_on_both_sides(self):
+        # Ruling PB27: DLPF_CFG 4 (gyro 20 Hz, accelerometer 21 Hz), samples at 20 Hz. The sim's model and the robot's
+        # noise-dependent constants must describe the same firmware.
+        c=ssm.load_config();s=c['imu_sampling']
+        self.assertEqual((imu.IMU_DLPF_CFG,imu.IMU_BANDWIDTH_HZ,imu.IMU_RATE_HZ),(s['dlpf_cfg'],s['gyro_bandwidth_hz'],c['sample_rate_hz']['value']))
+        self.assertAlmostEqual(imu.GYRO_SAMPLE_SIGMA,model().gyro_sigma)
+        self.assertAlmostEqual(math.sqrt(imu.GYRO_R),2*imu.GYRO_SAMPLE_SIGMA)                 # 20 Hz <= 2 x bandwidth: no correlation factor
     def test_scale_cross_axis_and_warm_up(self):
         m=model();m.gyro_sigma=m.accel_sigma=0.;t=600.
         cols=np.array([m.gyro(np.eye(3)[i],t)-m.gyro_bias(t) for i in range(3)]).T
@@ -128,6 +135,22 @@ class SensorErrorModelStatistics(unittest.TestCase):
         self.assertLess(strip,service.index('state=self.sensor_model.apply(state)'))
 
 class RobotImuCalibration(unittest.TestCase):
+    def test_installed_and_in_spec_calibrations_pass_the_documented_bounds(self):
+        # The bounds are imu.LEVEL_* (single source, BRINGUP section 14 quotes them). An in-spec board stores up to
+        # .69 / .69 / 1.08 m/s2 (offset + 3 % sensitivity + 2 % cross-axis): every one must pass, the installed file too.
+        cal=json.loads((ROOT/imu.CALIBRATION_FILE).read_text());self.assertTrue(all(imu.calibration_checks(cal).values()),imu.calibration_checks(cal))
+        worst=np.array([.05,.05,.08])*G_UNIT+np.array([.02,.02,.03])*G;self.assertTrue(np.all(worst<=np.asarray(imu.LEVEL_OFFSET_LIMIT_M_S2)),worst)
+        for s in range(300):
+            m=model(seed=s);off=(m.accel_matrix-np.eye(3))@[0,0,G]+m.accel_offset
+            self.assertTrue(imu.calibration_checks(dict(accel_offset_m_s2=off.tolist()))['offsets_within_bounds'],(s,off))
+        self.assertFalse(imu.calibration_checks(dict(accel_offset_m_s2=[0.,0.,1.2]))['offsets_within_bounds'])
+        bad=dict(accel_offset_m_s2=[0.,0.,0.],heading_residual_m_s2=[[0.,0.,0.],[.3,0.,0.]]);self.assertFalse(imu.calibration_checks(bad)['heading_residuals_agree'])
+        self.assertFalse(imu.calibration_checks(dict(accel_offset_m_s2=[0.,0.,0.],floor_attitude_rad=[[0.,.02]]))['floor_level'])
+        bringup=ROOT.parent/'home-robot-r1/BRINGUP.md'
+        if bringup.exists():                                                                       # the guide quotes the same numbers
+            text=bringup.read_text();x,y,z=imu.LEVEL_OFFSET_LIMIT_M_S2
+            for quote in (f'|x|, |y| ≤ {x}',f'|z| ≤ {z} m/s²',f'{imu.LEVEL_HEADING_DIFF_LIMIT_M_S2} m/s²',f'{imu.LEVEL_FLOOR_ATTITUDE_LIMIT_DEG}°',f'≤ {imu.YAW_COUPLING_LIMIT}','DLPF_CFG = 4'):
+                self.assertIn(quote,text,quote)
     def test_level_calibration_recovers_the_board_and_cancels_floor_tilt(self):
         m=model();body=(.0012,-.0009)                                   # body attitude on its wheels vs the floor (cliff plane)
         for tilt in (np.zeros(2),np.array([.5,-.3])*DEG):              # the floor's own tilt (body frame, heading 0)
@@ -166,7 +189,7 @@ class RobotImuCalibration(unittest.TestCase):
         # Unreal after a stop command: the wheel ramp (~.6 s from a turning drive: outer wheel ~.15 m/s at .25 m/s2), then 1-2 samples of residual body rotation (.005-.01 rad/s)
         # with 1-tick encoder steps (reports/physics-traces.json), then exactly still. A 1.2 s stop (LidarBrain 'sense').
         def run(skip):
-            old=imu.ZUPT_SKIP;imu.ZUPT_SKIP=skip
+            old=imu.ZUPT_SKIP_S;imu.ZUPT_SKIP_S=skip
             try:
                 m=model(rise=0.);c=ImuCalibration();t=0.;ticks=np.zeros(2);errs=[]
                 for k in range(60):s=state(m,t);c.update(t,s['sensors']);t+=DT              # power-on rest
@@ -180,9 +203,43 @@ class RobotImuCalibration(unittest.TestCase):
                         s=state(m,t,omega=(0,0,w),ticks=ticks,armed=True);c.update(t,s['sensors'],armed=True,requested=(0.,0.));t+=DT
                     errs.append(abs(np.degrees(c.bias[2]-m.gyro_bias()[2])))
                 return max(errs)
-            finally:imu.ZUPT_SKIP=old
-        with_skip,without=run(imu.ZUPT_SKIP),run(0)
+            finally:imu.ZUPT_SKIP_S=old
+        with_skip,without=run(imu.ZUPT_SKIP_S),run(0.)
         self.assertLess(with_skip,.05);self.assertGreater(without,.05);self.assertGreater(without,3*with_skip)   # measured .012 vs .073 deg/s
+    def test_settling_skip_is_time_based(self):
+        # The skip covers >= .15 s of a rest after driving at any sample rate (20 Hz forwarded, or a firmware at 100 Hz).
+        for rate in (20.,100.):
+            dt=1/rate;m=model(rise=0.);m.rate=rate;c=ImuCalibration();t=0.;ticks=np.zeros(2)
+            for k in range(int(3*rate)):c.update(t,state(m,t)['sensors']);t+=dt                    # power-on rest
+            for k in range(int(5*rate)):                                                             # 5 s turning
+                ticks+=np.array([-1,1])*.3*TRACK/2*dt/(2*math.pi*WHEEL_R)*CPR
+                c.update(t,state(m,t,omega=(0,0,.3),ticks=ticks,armed=True)['sensors'],armed=True,requested=(0.,.3));t+=dt
+            n0=c.zupt_samples;first_used=None;first_still=None
+            for k in range(int(2*rate)):                                                             # stopped (instantly)
+                c.update(t,state(m,t,ticks=ticks,armed=True)['sensors'],armed=True,requested=(0.,0.))
+                if c.still and first_still is None:first_still=t
+                if c.zupt_samples>n0 and first_used is None:first_used=t
+                t+=dt
+            self.assertIsNotNone(first_used);self.assertGreaterEqual(first_used-first_still,imu.ZUPT_SKIP_S-1e-9,rate)
+            self.assertLess(first_used-first_still,imu.ZUPT_SKIP_S+dt+1e-9,rate)
+    def test_wheels_turning_with_a_steady_gyro_is_not_rest(self):
+        # STILL_TICKS: the wheels slip on the spot (encoders count, the body and the gyro do not move): not a ZUPT.
+        m=model(rise=0.);c=ImuCalibration();t=0.
+        for k in range(60):c.update(t,state(m,t)['sensors']);t+=DT
+        bias=c.bias.copy();n0=c.zupt_samples;ticks=np.zeros(2)
+        for k in range(60):
+            ticks+=np.array([12.,12.]);c.update(t,state(m,t,ticks=ticks,armed=True)['sensors'],armed=True,requested=(0.,0.));t+=DT
+            self.assertFalse(c.still)
+        self.assertEqual(c.zupt_samples,n0);self.assertTrue(np.allclose(c.bias,bias))
+    def test_a_slow_hand_tilt_after_start_up_is_not_absorbed(self):
+        # GYRO_OUTLIER: someone tilts the standing robot slowly (.35 deg/s about x, wheels still, steady): the encoders and
+        # the sample-to-sample steadiness cannot see it, the outlier gate must, and the bias must not follow it.
+        m=model(rise=0.);c=ImuCalibration();t=0.
+        for k in range(100):c.update(t,state(m,t)['sensors']);t+=DT
+        self.assertTrue(c.startup_done);bias=c.bias.copy();rate=math.radians(.35)
+        for k in range(100):
+            roll=rate*k*DT;c.update(t,state(m,t,omega=(rate,0,0),force=G*gravity_direction(roll,0.))['sensors']);t+=DT
+        self.assertLess(np.degrees(abs(c.bias[0]-bias[0])),.05);self.assertFalse(c.still)
     def test_zupt_tracks_the_warm_up_drift_between_drives(self):
         for m in worst_boards()[:2]:
             c=ImuCalibration();t=0.;ticks=np.zeros(2);worst=0.;yaw_rate=.3
@@ -274,6 +331,8 @@ class RobotAttitude(unittest.TestCase):
                                                         (5,0,0,lambda u:5*DEG*s[0],lambda u:-5*DEG*s[1],False)],mapping=False)
             first=next(r['t'] for r in rows if r['init']);self.assertLessEqual(first,.5,signs)
             err=max(np.degrees(np.abs(np.subtract(r['est'],r['truth']))).max() for r in rows if r['init']);self.assertLess(err,1.,(signs,err))
+            root=calibrated_root(m);cal=json.loads((Path(root)/imu.CALIBRATION_FILE).read_text())
+            self.assertTrue(all(imu.calibration_checks(cal).values()),(signs,cal['accel_offset_m_s2'],imu.calibration_checks(cal)))
     def test_old_fixed_gate_rejects_the_configured_board_new_gate_accepts(self):
         m=model();raw=np.mean([state(m,k*DT)['sensors']['specific_force_m_s2'] for k in range(40)],axis=0)
         self.assertGreater(abs(np.linalg.norm(raw)-9.8),.3)              # the stress board fails |f| - 9.8 < .3 uncalibrated

@@ -1501,6 +1501,10 @@ class LidarBrain(Brain):
         # then is not a failure. Any motion requires fresh images below.
         if camera_age>3 and self.phase not in ['relocalizing','recover_localization']:self.idle('Camera images stopped. Low-obstacle coverage unavailable.');return 0.,0.
         if self.frame is None or scan_age>.6 or camera_age>.8:return 0.,0.
+        # Tilt stop: > .15 rad for 10 s. Margin note (B11): where the cliff floor plane is invalid the attitude comes from the
+        # IMU, whose online offset correction (imu.ACCEL_ONLINE_LIMIT, tau 30 s) treats the floor plane as level; resting on a
+        # sloped floor it can learn up to +/-.5 m/s2 (~3 deg) of slope as an offset and carry it into floor-invalid areas,
+        # i.e. up to ~3 deg of the .15 rad (8.6 deg) margin.
         if not self.attitude_initialized or self.tilt_rad>.15:
             self.tilted_since=t if self.tilted_since is None else self.tilted_since
             if t-self.tilted_since>10:self.idle('Robot remained tilted or attitude unknown. Stopped; progress saved.')
