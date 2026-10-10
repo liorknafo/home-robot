@@ -65,6 +65,10 @@ Status: work in progress. Nothing has been ordered or printed yet.
    - Simulator: `cd home-robot-sim && python -m unittest discover -s tests`, plus `tests/scenarios_round.py`.
    - Robot pure tests: `python -m unittest discover` in `home-robot-r1/pcb/tests` and `cad/`.
 
+## Licence
+
+MIT (see [`LICENSE`](LICENSE)) for everything in this repo: software, CAD, board design and documents. The manufacturer 3D models fetched by `tools/fetch_reference_models.sh` keep their own terms and are not part of this repo.
+
 ## Repository maintenance
 
 This repo is a published snapshot of two working folders that live next to it. To refresh and push it:
