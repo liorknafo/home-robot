@@ -3,33 +3,33 @@
   "body_mass_kg": 2.2838,
   "body_com_mm": [
     -17.37,
-    -1.12,
+    -1.13,
     62.77
   ],
   "total_mass_kg": 2.4218,
   "total_com_mm": [
     -18.48,
-    -1.06,
+    -1.07,
     60.71
   ],
   "body_inertia_kg_m2": [
     [
-      0.011697,
-      8.9e-05,
+      0.0117,
+      8.7e-05,
       -0.000708
     ],
     [
-      8.9e-05,
+      8.7e-05,
       0.014611,
-      7.3e-05
+      7.2e-05
     ],
     [
       -0.000708,
-      7.3e-05,
-      0.021975
+      7.2e-05,
+      0.021978
     ]
   ],
-  "body_inertia_about": "body_com_mm (the inertia set was built from the same records: centre [-17.36, -1.11, 62.77] mm)",
+  "body_inertia_about": "body_com_mm (the inertia set was built from the same records: centre [-17.36, -1.13, 62.77] mm)",
   "caster_x_mm": -75,
   "wheel_x_mm": 0,
   "records": [
@@ -38,7 +38,7 @@
       "mass_kg": 0.13622,
       "position_mm": [
         -3.2,
-        0.0,
+        0.1,
         30.9
       ],
       "separate_body": false,
@@ -156,10 +156,10 @@
     },
     {
       "item": "bay_rib_1",
-      "mass_kg": 0.00013,
+      "mass_kg": 0.00014,
       "position_mm": [
         -58.8,
-        -15.5,
+        -16.6,
         34.0
       ],
       "separate_body": false,
@@ -511,8 +511,8 @@
       "mass_kg": 0.055,
       "position_mm": [
         -30.72,
-        16.0,
-        46.14
+        15.97,
+        46.15
       ],
       "separate_body": false,
       "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
@@ -522,8 +522,8 @@
       "mass_kg": 0.085,
       "position_mm": [
         -16.08,
-        -7.26,
-        43.07
+        -7.41,
+        43.12
       ],
       "separate_body": false,
       "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
@@ -544,7 +544,7 @@
       "mass_kg": 0.1,
       "position_mm": [
         5.1,
-        -1.3,
+        -1.6,
         59.3
       ],
       "separate_body": false,

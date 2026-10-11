@@ -271,7 +271,7 @@ TIES=[(-36,-92)]+P03_TIES                     # zip-tie slots in P_base (the (20
 # side through two slots. Both are cut and replaced when the joint is unplugged.
 MJ=dict(x=16.5,t=2.6,w=15.24,z0=33.05,y0=38.0,male_l=8.0,female_l=14.0,engage=6.0,unplug=8.0,tie_y=52.0)
 MJ['z']=round(MJ['z0']+MJ['w']/2,3)          # joint axis height (the six contacts stand in a vertical column)
-MCOIL=dict(c=(25.0,72.0),r=6.0,turns=2.75,z_top=48.5,pitch=4.0,start_deg=180.0)
+MCOIL=dict(c=(25.0,72.0),r=6.0,turns=2.75,z_top=49.0,pitch=4.0,start_deg=180.0)   # B12a: z_top 48.5 -> 49 (3.5 turns: FAC_TURNS)
 TIE=dict(w=2.5,t=1.1,gap=.3,slot_clr=.3,z_under=27.85,head=(3.5,5.0,4.5),head_z=40.0)   # band width / thickness, gap to what it holds, slot clearance, band underside
 # under P_base (0.05 mm clear of it), and the ratchet head (x, y, z size) on the outer leg's outside face from z head_z. The ties have no clash allowance:
 # the slots and the motor opening clear them, so the clash scan checks them against P_base and the joint like any part.
@@ -365,26 +365,32 @@ def pin1_end(ref):
     return ('rear' if p_[0][0]<p_[-1][0] else 'front'),(p_[0][0]-p_[-1][0])*lx+(p_[0][1]-p_[-1][1])*ly>0
 PIN1={r:pin1_end(r) for r in ('J4','J5')};assert all(v[1] for v in PIN1.values()),PIN1   # the same rule fits both headers: red on the left
 ASSY_ORDER=('Assembly order (bay board under the Jetson): 0. on the bench, make the two motor pigtails (C18) and plug them on. They differ in length and in pin-1 order, so tag each one "L / J4" (left motor) or "R / J5" (right motor) right after making it, before it is plugged on. '
-            'The pre-cut length of the six wires of each pigtail is @@PRECUT_J4@@ mm for J4 (left) and @@PRECUT_J5@@ mm for J5 (right): the drawn route + terminations + half the @@SPREAD@@ mm pin spread (@@HALF@@ mm), rounded up to the mm, because the six sleeves span @@SPREAD@@ mm along the header, so the outer wires reach @@HALF@@ mm off the bundle\'s centre line. '
+            'The pre-cut length of the six wires of each pigtail is @@PRECUT_J4@@ mm for J4 (left) and @@PRECUT_J5@@ mm for J5 (right): the drawn route + terminations + the full @@SPREAD@@ mm pin spread, rounded up to the mm, because the six wires fan out @@HALF@@ mm either side of the bundle\'s centre line at both ends (the socket\'s six sleeves and the male housing\'s six cavities each span @@SPREAD@@ mm). '
             'Solder the socket end first (one wire lapped on each solder tail of the right-angle socket under its Ø1.8 sleeve, red wire on pin 1, the tails and wires pointing up), then push the socket onto its header; leave the male ends long: they are dressed along the route, trimmed to length and crimped in step 4. '
             f'J4 pin 1 = {PIN1["J4"][0]} end, J5 pin 1 = {PIN1["J5"][0]} end (the square pads); the pigtails are built alike, so the rule is the same for both: looking into the socket\'s mating face with its tails up, the red wire (pin 1) is on the left. '
             'The pigtails stay with the board. '
-            'Battery lead polarity: J1 pin 1 is GND (silk "-") and pin 2 is BAT+ (silk "+"), so the lead\'s cavity 1 carries GND (battery -, black) and cavity 2 BAT+ (battery +, red). Check it fail-safe before the fuses go in: '
+            'Power connectors (ruling PB30): the battery (J1, an AMASS XT30 PCB male), the master rocker (J2, a JST VH header) and the Jetson 5 V (J3, a Molex Micro-Fit 3.0 right-angle header) are three different connector families, so no lead fits a wrong header; '
+            'tag the three leads anyway ("J1 BATT", "J2 ROCKER", "J3 JETSON 5V") right after making them. '
+            'Battery lead polarity: J1 pin 1 is GND (silk "-") and pin 2 is BAT+ (silk "+"), so the lead\'s XT30U-F carries GND in cavity 1 (its "-" contact: battery -, black) and BAT+ in cavity 2 (its "+" contact: battery +, red); '
+            'the XT30 mates only one way round, but a lead soldered the wrong way round still mates. Check it fail-safe before the fuses go in: '
             'with F1 and F2 out, plug W01 into J1 and into the battery and measure F1\'s input clip (its BAT+ side, F1 pin 1) against a GND pad (TP5 or an M3 hole ring): it must read positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower); a reversed lead reads negative and, '
-            'with the fuses out, has no current path. Only then fit the fuses: a reversed lead with the fuses in is the costliest mistake on this board (it has no reverse-polarity protection); '
+            'with the fuses out, has no current path. Only then fit the fuses, always with the rocker off (F1 first, F2 last): a reversed lead with the fuses in is the costliest mistake on this board (it has no reverse-polarity protection); '
             '1. bond the two printed bearing ribs into their 0.6 mm locating pockets in the P_base top with epoxy (F04) and let it cure; fit the two front Jetson standoffs (24 mm stacks), screwed from below; '
             '2. set the four 2.4 mm printed spacers and the two printed clamp spacers on P_base, lower the bay board onto them and screw it down with four M3 × 8 pan-head screws into the inserts; '
             '3. fit the battery tray (its hold-down beams freed: breakaway posts cut): set it 2 mm aft of its place, slide it forward so its three spring fingers ride up their lead-ins onto the board\'s top face between the rear connectors, screw it down, and check each finger stands lifted: '
             'a 0.05 mm feeler does not pass under its tip; if it does, that finger has play (it is off the board): stick 0.1 mm PTFE tape (F03) under its tip as a shim, a layer at a time (about 0.3 mm at most), until the feeler no longer passes; '
             f'4. plug the under-carrier cables. Pigtails: dress each one as drawn, with no slack (it rides up with the board when the joint is unplugged): straight up out of the socket, toward the front about 12 mm over the board beside U5A (J9 on the right), out between the P03 and the motor face, and down to the inline joint just ahead of the motor (x {MJ["x"]-MJ["t"]/2:g}..{MJ["x"]+MJ["t"]/2:g}, |y| {MJ["y0"]:g}..{MJ["y0"]+MJ["male_l"]+MJ["female_l"]:g}); '
-            'then trim each wire to its own length at the male end (@@FIN_J4@@ for J4, @@FIN_J5@@ for J5: the rear pin\'s wire is the longest) and crimp its male pin into the 1×6 housing, red wire = pin 1. '
-            'Factory cables: measure each one from the encoder cap to the female housing\'s rear face (the wire entry); readings of @@R_LO@@–@@R_HI@@ mm all fit. Route the fixed path first (about @@FIXED@@ mm outside the coil): a flat row along the motor\'s inner end face toward the rear, round the motor\'s rear shoulder and forward over the motor top (never over the pigtail), down the motor\'s front shoulder under the bumper lead, and from the coil position into the housing; '
-            f'wind the remainder (the measured length less the fixed path: @@REM_LO@@–@@REM_HI@@ mm) into the coil on the base ahead of the motor (2–3 turns, about {2*MCOIL["r"]+4:g} mm across, at x {MCOIL["c"][0]:g}, |y| {MCOIL["c"][1]:g}) and tie it through its two slots. '
+            'then trim each wire at its own cavity of the male housing (finished lengths @@FIN_J4@@ for J4 and @@FIN_J5@@ for J5, set by where each wire sits at both ends) and crimp its male pin into the 1×6 housing, red wire = pin 1. '
+            'Factory cables: measure each one from the encoder cap to the female housing\'s rear face (the wire entry); readings of @@R_LO@@–@@R_HI@@ mm all fit (2–3 turns), and a longer cable up to @@R_MAX@@ mm still fits (up to 3.5 turns). Route the fixed path first (about @@FIXED@@ mm outside the coil): a flat row along the motor\'s inner end face toward the rear, round the motor\'s rear shoulder and forward over the motor top (never over the pigtail), down the motor\'s front shoulder under the bumper lead, and from the coil position into the housing; '
+            f'wind the remainder (the measured length less the fixed path: @@REM_LO@@–@@REM_HI@@ mm) into the coil on the base ahead of the motor (2–3.5 turns, about {2*MCOIL["r"]+4:g} mm across, at x {MCOIL["c"][0]:g}, |y| {MCOIL["c"][1]:g}) and tie it through its two slots. '
             'Then mate each motor\'s factory female housing onto its pigtail\'s male housing: the joint is not keyed, so mate the pin-1 stripe to the pin-1 stripe (both halves are marked at the red wire) and check the colours run straight across; stand the joint on the base and tie it down with a cable tie down the motor opening and up through the slot beside it; bumpers J10/J11; front cliffs J8/J9; '
-            f'5. set and verify the P03 output voltage on the bench, connect it to U5A/U5B, then fit it on its foam tape in the front bay with the cable tie through the P_base slots at ({P03_TIES[1][0]:g}, ±{P03_TIES[1][1]:g}); '
+            f'5. set and verify the P03 output voltage on the bench, connect it to U5A/U5B (pin 1 is "+" on both terminals, silk "+", the screw nearer the robot centre line: U5A.1 to P03 IN+, U5B.1 to P03 OUT+, red wires on pin 1), then fit it on its foam tape in the front bay with the cable tie through the P_base slots at ({P03_TIES[1][0]:g}, ±{P03_TIES[1][1]:g}); '
+            'before the Jetson is connected (W04 unplugged): battery in, F1 fitted, rocker on, and measure against a GND pad: U5A.1 reads positive, about the pack voltage, and U5B.1 positive 5.1 V (0 V or negative: the P03 leads are swapped or loose); then rocker off; '
             '6. stand the two rear 20 mm F-F standoffs on the board and screw each down with an M2.5 × 12 countersunk screw from under P_base through the base, the clamp spacer and the board (they clamp the board); '
-            '7. fit the Jetson (four M2.5 top screws), then its six plugs. '
-            'Service: with the lid off, the board\'s rear band (Pico USB, rear connector row, the Jetson 5 V lead J3, fuses) is reachable; the motor inline joints, the other under-carrier connectors and the P03 (tie, trimpot) need the Jetson off '
+            '7. fit the Jetson (four M2.5 top screws), then its six plugs; before the 5 V barrel plug goes in, check the Jetson lead W04 on J3 with its barrel plug free and the rocker on: the plug\'s centre reads positive 5.1 V against its sleeve (negative: the two Micro-Fit crimps are swapped), then rocker off and plug it in. '
+            'Service: step 0, every time, before reaching inside: shut the Jetson down, switch the rocker off and unplug the battery (BAT+ is live and unfused at F1\'s input whenever the battery is plugged in). '
+            'Everyday rule: the rocker off before plugging or unplugging the battery; shut the Jetson down before switching the rocker off; fit or pull a fuse only with the rocker off (rocker off, fit F2, rocker on). '
+            'With the lid off, the board\'s rear band (Pico USB, rear connector row, the Jetson 5 V lead J3, fuses) is reachable; the motor inline joints, the other under-carrier connectors and the P03 (tie, trimpot) need the Jetson off '
             '(its six plugs: camera, LiDAR and Pico USB, Wi-Fi dongle, 5 V barrel plug, fan; then its four top screws). To take the board out: Jetson off; the two rear standoffs off (their M2.5 screws from under P_base); the battery out (strap, Tamiya plug); '
             'the four tray screws out, the tray slid 2 mm aft and lifted straight out (its springs come off the board edge; its walls are cut clear of the rear cliff sensor boards); the four M3 board screws out; '
             f'unplug the rear-band plugs, the motor inline joints (loosen each factory-cable coil tie first: the {MJ["unplug"]:g} mm each housing slides back comes out of the coil; then cut the joint ties and slide each factory housing off its pigtail; the pigtails stay on J4 / J5 and ride up with the board), the bumper and front cliff leads and the P03 leads; lift the board. Fit new ties when it goes back (retie the coils).')
@@ -684,7 +690,7 @@ STEP_ENVELOPES=sorted(_lower-SOCKETS-set(BCONN))
 bb=cq.Compound.makeCompound(list(BSTEP.values())+_env)
 _bq=bb.BoundingBox()
 add('bay_board','Power & I/O bay board: the routed 4-layer board with its fitted parts (pcb/fab/r1_power_io.step)',bb,'pcb','E17/E18','lower',check=True,tess=(.3,.5),
-    note=f'KiCad fab STEP (pcb/fab/r1_power_io.step, robot = STEP + (-66.5, 50, 35.4)): the laminate and every fitted part model (the JST VH headers, the FLR fuse holders and C1 as their envelopes), '
+    note=f'KiCad fab STEP (pcb/fab/r1_power_io.step, robot = STEP + (-66.5, 50, 35.4)): the laminate and every fitted part model (the J1 XT30, J2 JST VH and J3 Micro-Fit headers, the FLR fuse holders and C1 as their envelopes), '
          f'copper skins and via barrels left out; THT leads cut at {LEAD_TRIM} mm under the board (z {ZTRIM:g}: the assembly trims them to <= {LEAD_TRIM} mm, 1.0 mm over the base top); '
          f'{", ".join(STEP_ENVELOPES)} at {"its" if len(STEP_ENVELOPES)==1 else "their"} PARTS h (STEP heights: max(model, PARTS h)). Outline x {_bq.xmin:.1f}..{_bq.xmax:.1f}, |y| <= 50 (tongue |y| <= 33.4 for x > -13.8), z {ZBAY:g}–{ZBAY_TOP:g}; '
          'on four 2.4 mm printed PETG spacers with M3 × 8 pan-head screws into heat-set inserts at '+', '.join(f'({x:g}, {y:g})' for x,y in BAY_MOUNTS)+' (Ø3.2 holes), and clamped at '
@@ -744,11 +750,18 @@ RA_SOCKET=dict(part='Sullins PPPC061LGBN-RC: 1x6 2.54 mm right-angle female sock
 # h: the insulator (it lies on the board; contact axis at h / 2 = J4 / J5's pin height); tail_len: the tails stand 3.15 mm past the insulator face they
 # leave (turned up: past its top face); tail_off: tail centre behind the rear face (0.050 in, from memory: verify on the Sullins drawing); the wire is
 # lapped solder_overlap mm on each tail tip under a Ø sleeve_d heat-shrink that reaches sleeve_past_tail mm past the tip.
+# B12a (ruling PB30): J1 / J2 / J3 are three connector families (XT30 / JST VH / Micro-Fit 3.0), each with its own mate (PLUG_BOM). J3 is a
+# right-angle Micro-Fit header in the band: its receptacle enters its face at the board's right edge and stands out past it (board_cad
+# offboard_reach: receptacle + crimp ends), at the header's height (MATED_H), the lead leaving its far end (plug_end_xy).
+PLUG_BOM=dict(VH='C05',XT30='C19',MicroFit='C20')
 PLUG_BOX={};SOCKET={}
 for r,c in BCONN.items():
     if c['family']=='Terminal':continue
     bx0,by0,bx1,by1=c['body_xy']
     if c['vertical']:PLUG_BOX[r]=(bx0,by0,bx1,by1,ZBAY_TOP,ZBAY_TOP+max(c['mated_h'],BC['parts'][r]['h']))
+    elif c['offboard_reach']:
+        (ex,ey),(px,py)=c['entry_xy'],c['plug_end_xy'];face=(bx1 if ex>0 else bx0) if ex else (by1 if ey>0 else by0)
+        PLUG_BOX[r]=((min(face,px),by0,max(face,px),by1) if ex else (bx0,min(face,py),bx1,max(face,py)))+(ZBAY_TOP,round(ZBAY_TOP+c['mated_h'],3))
     else:
         (ex,ey),(cx0,cy0,cx1,cy1)=c['entry_xy'],c['courtyard_xy'];W=2.54*len(c['pins_xy']);pc=np.mean(c['pins_xy'],0)
         assert not ex and r in ('J4','J5'),r   # only the motor headers lie on the board, entry along y
@@ -769,8 +782,10 @@ for r,c in BCONN.items():
                  f'Inside B3\'s lay-flat zone for {r} (the factory housing would end at y {SOCKET[r]["b3_far_y"]:.2f}). Plugged on the bench before the board goes in (PB25).')
     else:
         add(f'bay_plug_{r}',f'{r} mated plug ({c["family"]})',box((x0+x1)/2,(y0+y1)/2,z0,x1-x0,y1-y0,z1-z0),'connector',
-            'C05' if c['family']=='VH' else ('C06' if len(c['pins_xy'])==5 else 'C08'),'lower',check=True,allow=('bay_board',),
-            note=f'Mated {c["family"]} plug envelope on {r} (z {z0:g}–{z1:g}; the cable leaves {c["entry"]} in board terms, after a {c["bend"]:g} mm wire bend over the plug). Verify the purchased housing.')
+            PLUG_BOM.get(c['family'],'C06' if len(c['pins_xy'])==5 else 'C08'),'lower',check=True,allow=('bay_board',),
+            note=(f'Mated {c["family"]} receptacle on {r}\'s right-angle header, out past the board edge: x {x0:.2f}..{x1:.2f}, y {y0:.2f}..{y1:.2f}, z {z0:g}–{z1:g} (the receptacle and its crimp ends, {c["offboard_reach"]:g} mm past the header face); '
+                  f'the lead leaves its far end ({c["entry"]} in board terms) and bends up ({c["offboard_bend"]:g} mm) into the W04 corridor. Verify the purchased housing.') if c['offboard_reach'] else
+                 f'Mated {c["family"]} plug envelope on {r} (z {z0:g}–{z1:g}; the cable leaves {c["entry"]} in board terms, after a {c["bend"]:g} mm wire bend over the plug). Verify the purchased housing.')
 PICO_PLUG=(11,18,7)   # micro-B plug overmold (x, y, z) out of the receptacle along +y, centred on the receptacle
 add('pico_usb_plug','Pico micro-B cable plug (mated)',box(USB_FACE[0],USB_FACE[1]+PICO_PLUG[1]/2,USB_FACE[2]-PICO_PLUG[2]/2,*PICO_PLUG),'black','C02','lower',allow=('bay_pico',),
     note=f'Plugs along -y into the Pico micro-USB at the board\'s left edge, in the free space x {USB_FACE[0]-PICO_PLUG[0]/2:.1f}..{USB_FACE[0]+PICO_PLUG[0]/2:.1f}, y {USB_FACE[1]:.2f}..{USB_FACE[1]+PICO_PLUG[1]:.2f} '
@@ -894,31 +909,32 @@ for side,sg,ref,motor in (('left',1,'J4','motor_left'),('right',-1,'J5','motor_r
     add(f'motor_tie_coil_{side}',f'Cable tie holding the {side} factory-cable coil down (two P_base slots)',tc,'black','C12','lower',check=True,
         note=f'2.5 mm cable tie (C12) over the coil\'s +x side at y {cyc:g}, through two P_base slots (x {ix0-TIE["slot_clr"]:.1f}..{ix1+TIE["slot_clr"]:.1f} and {ox0-TIE["slot_clr"]:.1f}..{ox1+TIE["slot_clr"]:.1f}): the slack store (B9 carry item 3).')
 PG['term_mm']=round(sum(PG['term'].values()),2)
-# B9 fix round 2 (controller ruling): the pigtail wires are PRE-CUT to route + terminations + half the pin spread (rounded up to the mm), the socket end
-# soldered first, the bundle dressed along its route, then each wire trimmed to its own length and crimped. Finished length of the wire at pin k =
-# route + terminations + (how far its tail is behind the pin-row centre: the bundle runs toward +x, so the rear pin's wire is the longest).
+# B9 fix round 2 (controller ruling): the pigtail wires are PRE-CUT long, the socket end soldered first, the bundle dressed along its route, then each
+# wire trimmed to its own length and crimped. B12a (final review N4): the wires fan out +-spread / 2 off the drawn bundle axis at BOTH ends - the
+# socket's six sleeves along the header and the male housing's six cavities - so the pre-cut is route + terminations + the full pin spread (rounded up
+# to the mm), and each wire is trimmed at its own cavity: its finished length lies within route + terminations +- the spread.
 for s_ in PIGTAIL:
-    pg_=PIGTAIL[s_];pins_=BCONN[pg_['ref']]['pins_xy'];xc_=sum(q[0] for q in pins_)/len(pins_);base_=pg_['route_exact']+PG['term_mm']
+    pg_=PIGTAIL[s_];base_=pg_['route_exact']+PG['term_mm']
     pg_['finished_centre_mm']=round(base_,1)
-    pg_['finished_by_pin_mm']={str(k):round(base_+(xc_-q[0]),1) for k,q in enumerate(pins_,1)}
-    pg_['rear_pin']=min(range(len(pins_)),key=lambda k:pins_[k][0])+1;pg_['front_pin']=max(range(len(pins_)),key=lambda k:pins_[k][0])+1
-    pg_['precut_mm']=int(math.ceil(base_+PG['pin_spread_mm']/2-1e-9));pg_['precut_margin_mm']=round(pg_['precut_mm']-base_,2)
-    assert PG['pin_spread_mm']/2-1e-9<=pg_['precut_margin_mm']<PG['pin_spread_mm']/2+1.0 and max(pg_['finished_by_pin_mm'].values())<=pg_['precut_mm'],pg_
-    assert max(pg_['finished_by_pin_mm'],key=pg_['finished_by_pin_mm'].get)==str(pg_['rear_pin']),pg_
+    pg_['finished_range_mm']=[round(base_-PG['pin_spread_mm'],1),round(base_+PG['pin_spread_mm'],1)]
+    pg_['precut_mm']=int(math.ceil(base_+PG['pin_spread_mm']-1e-9));pg_['precut_margin_mm']=round(pg_['precut_mm']-base_,2)
+    assert PG['pin_spread_mm']-1e-9<=pg_['precut_margin_mm']<PG['pin_spread_mm']+1.0 and pg_['finished_range_mm'][1]<=pg_['precut_mm'],pg_
     c_=next(c for c in cables if c['id']==f'motor_pigtail_{s_}')
     c_.update(suggested_cut_mm=pg_['precut_mm'],pigtail=dict(part='C18 motor pigtail (B9)',board_end_part=RA_SOCKET['part'],
         joint_end_part='Pololu 1905 1x6 0.1 in crimp housing with six male crimp pins (or a 1x6 straight male header with the wires soldered on)',wire=PG['wire'],
         route_mm=pg_['route_exact'],terminations_mm=PG['term'],pin_spread_mm=PG['pin_spread_mm'],precut_mm=pg_['precut_mm'],precut_margin_mm=pg_['precut_margin_mm'],
-        finished_centre_mm=pg_['finished_centre_mm'],finished_by_pin_mm=pg_['finished_by_pin_mm'],longest_pin=pg_['rear_pin'],shortest_pin=pg_['front_pin'],length_source='crimped',
+        finished_centre_mm=pg_['finished_centre_mm'],finished_range_mm=pg_['finished_range_mm'],trim='at its own cavity of the male housing, after dressing',length_source='crimped',
         length_note=f'pre-cut length {pg_["precut_mm"]} mm per wire = the drawn route {pg_["route_exact"]:g} mm + {PG["term_mm"]:g} mm of terminations ({PG["term"]["solder_overlap_on_tail"]:g} lapped on the tail, {PG["term"]["inside_sleeve_past_tail"]:g} in the sleeve past the tip, '
-                    f'{PG["term"]["inside_male_housing"]:g} in the male crimp housing) + half the {PG["pin_spread_mm"]:g} mm pin spread ({PG["pin_spread_mm"]/2:g} mm), rounded up to the mm: the six sleeves span {PG["pin_spread_mm"]:g} mm along the header, so the outer wires are {PG["pin_spread_mm"]/2:g} mm off the drawn bundle axis. '
-                    f'Build: cut bulk 28 AWG silicone to the pre-cut length, solder the socket end first, dress the bundle along its route, then trim each wire to its own finished length (about {pg_["finished_centre_mm"]:g} mm on the bundle axis; pin {pg_["rear_pin"]}, the rear one, the longest at '
-                    f'{pg_["finished_by_pin_mm"][str(pg_["rear_pin"])]:g} mm, pin {pg_["front_pin"]} the shortest at {pg_["finished_by_pin_mm"][str(pg_["front_pin"])]:g} mm) and crimp the male pin. '
+                    f'{PG["term"]["inside_male_housing"]:g} in the male crimp housing) + the full {PG["pin_spread_mm"]:g} mm pin spread, rounded up to the mm: the six wires fan out {PG["pin_spread_mm"]/2:g} mm either side of the drawn bundle axis at both ends (the socket\'s six sleeves and the male housing\'s six cavities each span {PG["pin_spread_mm"]:g} mm). '
+                    f'Build: cut bulk 28 AWG silicone to the pre-cut length, solder the socket end first, dress the bundle along its route, then trim each wire at its own cavity of the male housing (finished length about {pg_["finished_centre_mm"]:g} mm on the bundle axis, '
+                    f'{pg_["finished_range_mm"][0]:g}-{pg_["finished_range_mm"][1]:g} mm by where the wire sits at the two ends) and crimp the male pin. '
                     'No slack: the joint is unplugged before the board is lifted (PB25 amended). Tag the pigtail "'+('L / J4' if s_=='left' else 'R / J5')+'" right after making it (the two differ in length and pin-1 order).',
         board_end=f'right-angle socket on {pg_["ref"]} (bench, before the board goes in), wires up',male_end=f'inline joint motor_joint_{s_}'))
 # Factory cable: the fixed path (everything outside the coil) + the coil (the measured variable). Pololu's "200 mm" is to be measured to the female
 # housing's rear face (the verify list asks); readings FAC_READINGS must all fit the coil's FAC_TURNS.
-FAC_READINGS,FAC_TURNS,BASE_TOP=(186.0,200.0),(2.0,3.0),33.0
+# B12a (final review N4): a cable longer than the 200 mm reading still fits - the coil takes up to 3.5 turns (FAC_TURNS; MCOIL z_top 49 keeps the 3.5th
+# turn on the base top) - up to FAC_MAX_READING.
+FAC_READINGS,FAC_TURNS,BASE_TOP=(186.0,200.0),(2.0,3.5),33.0
 FAC={}
 for s_ in COIL:
     fr_=_polylen(MOTOR_CABLE[s_]);cl_=_polylen(COIL[s_]['points']);fx_=round(fr_-cl_,1);tl_=cl_/MCOIL['turns']
@@ -930,12 +946,13 @@ for s_ in COIL:
         notes=f'Factory cable, not cut: measure it from the encoder cap to the female housing\'s rear face (readings of {FAC_READINGS[0]:g}-{FAC_READINGS[1]:g} mm all fit), route the fixed path first (about {fx_:.0f} mm outside the coil), '
               f'wind the remainder ({FAC[s_]["remainder"][0]:.0f}-{FAC[s_]["remainder"][1]:.0f} mm, {FAC_TURNS[0]:g}-{FAC_TURNS[1]:g} turns) into the coil ahead of the motor and tie it (assembly step 4); loosen the coil tie before unplugging the inline joint.')
 assert f'{FAC["left"]["fixed"]:.0f}'==f'{FAC["right"]["fixed"]:.0f}' and FAC["left"]["remainder"]==FAC["right"]["remainder"],FAC   # the two sides are mirror images
+FAC_MAX_READING=math.floor(FAC['left']['fixed']+FAC_TURNS[1]*FAC['left']['turn'])   # the longest reading the 3.5-turn coil takes
 def _fin(s_):
-    by=PIGTAIL[s_]['finished_by_pin_mm'];lo=min(by,key=by.get);hi=max(by,key=by.get);return f'{by[lo]:g} mm (pin {lo}) to {by[hi]:g} mm (pin {hi})'
+    lo,hi=PIGTAIL[s_]['finished_range_mm'];return f'{lo:g}–{hi:g} mm'
 # the assembly order is written before the pigtails and the factory cable are routed, so its numbers are tokens, resolved here (manifest notes already made included)
 ASSY_TOKENS={'@@PRECUT_J4@@':str(PIGTAIL['left']['precut_mm']),'@@PRECUT_J5@@':str(PIGTAIL['right']['precut_mm']),'@@SPREAD@@':f'{PG["pin_spread_mm"]:g}','@@HALF@@':f'{PG["pin_spread_mm"]/2:g}',
     '@@FIN_J4@@':_fin('left'),'@@FIN_J5@@':_fin('right'),'@@R_LO@@':f'{FAC_READINGS[0]:g}','@@R_HI@@':f'{FAC_READINGS[1]:g}','@@FIXED@@':f'{FAC["left"]["fixed"]:.0f}',
-    '@@REM_LO@@':f'{FAC["left"]["remainder"][0]:.0f}','@@REM_HI@@':f'{FAC["left"]["remainder"][1]:.0f}'}
+    '@@REM_LO@@':f'{FAC["left"]["remainder"][0]:.0f}','@@REM_HI@@':f'{FAC["left"]["remainder"][1]:.0f}','@@R_MAX@@':f'{FAC_MAX_READING:g}'}
 def assy_resolve(t):
     for k_,v_ in ASSY_TOKENS.items():t=t.replace(k_,v_)
     return t
@@ -1391,14 +1408,19 @@ for i,(x,y) in enumerate(LIDPOSTS):tfa(f'lid_screw_{i+1}',x,y,ZLIDT,ZLID-INS_L,g
 # the mated plugs on the bay board's connectors (BAY_CONN: the connector body centres in pcb/board_cad.json; B9 sets the cut lengths). Exit heights:
 # each lead ends at its plug's top, where the wires leave it. Under the carrier the front cliff leads (J8, J9) leave the tongue forward and
 # pass over the P03 (top z 48) below the carrier's leads (z 54.77); the bumper leads leave the side edges (J10/J11) outward. The Jetson 5 V lead
-# leaves J3 (a vertical VH in the band at the right edge, ruling PB5) toward -y and runs forward along the W04 corridor (y -56) to the barrel plug.
+# leaves J3 (B12a: a right-angle Micro-Fit in the band at the right edge, ruling PB5) out of its receptacle's far end past the right edge (-y),
+# bends up and runs forward along the W04 corridor (y -56) to the barrel plug.
 # Behind the carrier the rear-edge leads drop onto the rear row in lanes: W01 / W02 from the pack top at x -67, W15 / W11 from the -y side at x
-# -61 / -58 (z 58 / 62, over the Pico), W14 / W10 from the +y side.
+# -61 / -58 (z 58 / 62, over the Pico), W14 / W10 from the +y side. B12a: the battery lead drops straight onto J1's XT30 (its mated top z 59),
+# and W15 steps out to x -57.5 between J1's plug and F2 there (its x -61 lane would cross the taller XT30).
 XE=P_CAM[0]   # USB plug ends (x)
-def bc(ref):return (*BAY_CONN[ref],round(PLUG_BOX[ref][5],2))   # a lead ends at its mated plug's top centre, where its wires leave the plug
-wire('W01','Battery adapter lead (Tamiya on the pack top → J1, bay board rear edge)',[(TAM[0],TAM[1]-14,70.5),(TAM[0],-36,70.5),(-67,BAY_CONN['J1'][1],70.5),(-67,BAY_CONN['J1'][1],56),bc('J1')],2,'power','C10')   # off the pack's -y end, over the strap and the tray front wall, down onto the rear edge
+def bc(ref):   # a lead ends where its wires leave its mated plug: a vertical plug's top centre; an off-board plug's far end, half way up (B12a: J3)
+    if BCONN[ref]['offboard_reach']:return (*BCONN[ref]['plug_end_xy'],round((PLUG_BOX[ref][4]+PLUG_BOX[ref][5])/2,2))
+    return (*BAY_CONN[ref],round(PLUG_BOX[ref][5],2))
+wire('W01','Battery adapter lead (Tamiya on the pack top → J1 XT30, bay board rear edge)',[(TAM[0],TAM[1]-14,70.5),(TAM[0],-36,70.5),(-67,BAY_CONN['J1'][1],70.5),(BAY_CONN['J1'][0],BAY_CONN['J1'][1],66),bc('J1')],2,'power','C10')   # off the pack's -y end, over the strap and the tray front wall, down onto the XT30 from above (B12a)
 W04_Y,W04_Z=-56.0,58.0   # the W04 corridor (PB5: y -42..-57) outside the carrier's right edge (y -50), over the right motor (top z 52.2)
-wire('W04','5 V Jetson lead (J3, bay board right edge in the band → barrel plug)',[bc('J3'),(*BAY_CONN['J3'],W04_Z),(BAY_CONN['J3'][0],W04_Y,W04_Z),(P_BAR[0]+14.5,W04_Y,W04_Z),(P_BAR[0]+14.5,P_BAR[1],P_BAR[2]),(P_BAR[0]-1,P_BAR[1],P_BAR[2])],2,'power','C03','upper')   # up out of the J3 plug, out over the right edge (-y), forward outside the carrier and over the right motor, then up to the plug (14.5 mm of bend room)
+_w4=bc('J3');_w4o=_w4[1]-BCONN['J3']['offboard_bend']/2   # B12a: out of the Micro-Fit receptacle's far end (-y), then up into the corridor
+wire('W04','5 V Jetson lead (J3 Micro-Fit, bay board right edge in the band → barrel plug)',[_w4,(_w4[0],_w4o,_w4[2]),(_w4[0],_w4o,W04_Z),(_w4[0]+8,W04_Y,W04_Z),(P_BAR[0]+14.5,W04_Y,W04_Z),(P_BAR[0]+14.5,P_BAR[1],P_BAR[2]),(P_BAR[0]-1,P_BAR[1],P_BAR[2])],2,'power','C03','upper')   # up out of the J3 plug, out over the right edge (-y), forward outside the carrier and over the right motor, then up to the plug (14.5 mm of bend room)
 for i,(x,y) in enumerate(CLIFF_IDS):   # rear pair to the rear connector row (J6, J7), front pair over the motors' front, then over the P03 to the tongue's front edge (J8, J9)
     sg=1 if y>0 else -1;ref=('J6','J7','J8','J9')[i]
     if x<0:pts=[(x,y+7,49),(-107,84,56),(-70,84,56),(-60,60,58),(-60,37,58),bc(ref)] if y>0 else [(x,y+7,49),(-107,-76,56),(-70,-80,56),(-58,-68,62),(-58,10,62),(-62.5,13,60),bc(ref)]   # the left lead passes 3 mm inside the foot of lid post 2; the right one runs over the Pico at z 62 and drops behind it
@@ -1410,7 +1432,8 @@ wire('W19','LiDAR USB extension',[(XE-1,P_LIDAR[1],P_LIDAR[2]),(XE+3.5,P_LIDAR[1
 wire('W20','LiDAR matched replacement / extension lead',[(28,-40,136-DZ),(30,-28,136-DZ),(LD14_AP[0],LD14_AP[1],139-DZ),(LD14_AP[0],LD14_AP[1],ZLID+LID_T/2),(LD14_AP[0],LD14_AP[1],152-DZ),(35,-19.5,163-DZ),(35,-16,LZ-7.8)],1.2,'signal','C17','cover')
 wire('W02','Master rocker pair (J2, bay board rear edge ↔ lid rocker)',[(MS[0],5,ZLIDT-25),(MS[0],12,ZLIDT-29.5),(-67,12,ZLIDT-29.5),(-67,BAY_CONN['J2'][1],56),bc('J2')],2,'power','C10','cover')   # over the pack top beside the Tamiya pair, then down the x -67 lane onto the rear edge
 wire('W14','Motor-toggle loop (J13, bay board rear edge ↔ lid toggle)',[(TOG[0],TOG[1],ZLID-15),(TOG[0],TOG[1],ZLID-22),(-66,62,68),bc('J13')],1.2,'signal','C08','cover')
-wire('W15','Arm button lead (J12, bay board rear edge ↔ lid button)',[(ARM[0],ARM[1],ZLID-15),(ARM[0],ARM[1],ZLID-22),(-61,-62,60),(-61,-2,58),bc('J12')],1,'signal','C08','cover')   # along the x -61 lane over J1/J2, then down beside the Pico
+_j1y=(BCONN['J1']['body_xy'][1],BCONN['J1']['body_xy'][3])   # B12a: past J1's XT30 (mated top z 59) at x -57.5, between its plug and F2
+wire('W15','Arm button lead (J12, bay board rear edge ↔ lid button)',[(ARM[0],ARM[1],ZLID-15),(ARM[0],ARM[1],ZLID-22),(-61,-62,60),(-61,_j1y[0]-3,59.6),(-57.5,_j1y[0]-1,59.5),(-57.5,_j1y[1]+1,59.2),(-61,_j1y[1]+3,58.8),(-61,-2,58),bc('J12')],1,'signal','C08','cover')   # along the x -61 lane over J2, round J1's plug, then down beside the Pico
 wire('W18','Fan lead',[(JFAN[0]+20,JFAN[1]+17,JFAN[2]+5),(P_FAN[0],JFAN[1]+17,JFAN[2]+5),(P_FAN[0],P_FAN[1],JFAN[2]-5),(P_FAN[0],P_FAN[1],P_FAN[2]+1)],.8,'signal','E09','upper')   # from the fan's front face, ahead of the heatsink, down onto J20
 for side,sgn in [('left',1),('right',-1)]:
     # switch lead: from the terminals under the base, up through the Ø6 hole behind the switch, then aft along the side lane over the motor
@@ -1521,14 +1544,17 @@ scene.export(str(ROOT/'cad'/'home-robot-r1.glb'))
 def pin_nets(ref):return {str(pn):net for net,pl in BS.NETS.items() for r_,pn in pl if r_==ref}
 LEAD_FN={   # cut-list id: (board ref, end, wire, {pin: (function, colour)}, notes)
     'W01':('J1','last','2 × 18 AWG silicone (red, black)',{'1':('battery − (Tamiya −)','black'),'2':('battery + (Tamiya +)','red')},
-           'Battery adapter lead: the Tamiya mate (C04) on the pack top to a JST VHR-2N housing (C05) on J1. POLARITY, in plain words: on the board J1 pin 1 is GND and pin 2 is BAT+ '
-           '(ruling PB20; silk "-" at pin 1, "+" at pin 2), so the black battery-minus wire goes in housing cavity 1 and the red battery-plus wire in cavity 2. Check it fail-safe before the fuses go in: '
+           'Battery adapter lead: the Tamiya mate (C04) on the pack top to an AMASS XT30U-F (C19, the female half on the source side) on J1, the XT30 PCB male; tag it "J1 BATT". '
+           'J1 (XT30), J2 (JST VH) and J3 (Micro-Fit 3.0) are three connector families (ruling PB30): this lead fits no other header. POLARITY, in plain words: on the board J1 pin 1 is GND and pin 2 is BAT+ '
+           '(ruling PB20; silk "-" at pin 1, "+" at pin 2), so the black battery-minus wire goes on the XT30U-F\'s "−" contact (cavity 1, mates pin 1) and the red battery-plus wire on its "+" contact (cavity 2, mates pin 2). '
+           'The XT30 mates only one way round, but a lead soldered the wrong way round still mates. Check it fail-safe before the fuses go in: '
            'with F1 and F2 out, plug W01 into J1 and the battery and measure F1\'s input clip (BAT+ side) against a GND pad: it must read positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower). A reversed lead reads negative and, with the fuses out, has no current path; '
            'with the fuses in it would put the battery backwards across the whole board, which has no reverse-polarity protection.'),
     'W02':('J2','last','2 × 18 AWG silicone (red, orange)',{'1':('to the master rocker (fused battery +)','red'),'2':('from the master rocker (switched battery +)','orange')},
-           'Master rocker pair: JST VHR-2N (C05) on J2 to the rocker\'s two terminals (insulated spades, C12). Both wires are battery + (fused / switched): never on GND.'),
+           'Master rocker pair: JST VHR-2N (C05) on J2 to the rocker\'s two terminals (insulated spades, C12); tag it "J2 ROCKER". Both wires are battery + (fused / switched): never on GND. J2 is the board\'s only JST VH header (PB30).'),
     'W04':('J3','first','2 × 18 AWG silicone (red, black)',{'1':('5 V to the barrel plug centre','red'),'2':('GND to the barrel plug sleeve','black')},
-           'Jetson 5 V lead: JST VHR-2N (C05) on J3 to the 5.5 / 2.1 mm barrel plug (C03), centre positive; the Jetson needs its J48 jumper for barrel power.'),
+           'Jetson 5 V lead: a Molex Micro-Fit 3.0 receptacle (43645-0200, two 43030-series 18 AWG crimps: C20) on J3 to the 5.5 / 2.1 mm barrel plug (C03), centre positive; tag it "J3 JETSON 5V". '
+           'A Micro-Fit fits neither J1 (XT30) nor J2 (JST VH): ruling PB30. The receptacle plugs into J3 from beyond the board\'s right edge, its latch up. The Jetson needs its J48 jumper for barrel power.'),
     **{f'W{10+i}':(f'J{6+i}','last','5 × 26 AWG (red, black, blue, yellow, white)',{'1':('3.3 V to the sensor VIN','red'),'2':('GND','black'),'3':('SDA','blue'),'4':('SCL','yellow'),'5':(f'XSHUT{i+1}','white')},
            f'Cliff sensor {i+1} lead: JST XHP-5 (C06) on J{6+i}, soldered at the Pololu 2490 carrier (VIN, GND, SDA, SCL, XSHUT).') for i in range(4)},
     'W_bumper_left':('J10','last','2 × 26 AWG (white, black)',{'1':('BUMP_L: to the switch NC','white'),'2':('GND: to the switch COM','black')},'Left bumper switch lead: JST XHP-2 (C08) on J10; switch COM and NC, so an open wire reads as a hit.'),
@@ -1538,7 +1564,7 @@ LEAD_FN={   # cut-list id: (board ref, end, wire, {pin: (function, colour)}, not
     **{f'motor_pigtail_{s_}':(r_,'first','6 × 28 AWG silicone (red, black, green, blue, yellow, white)',{'1':('motor + (factory red)','red'),'2':('motor − (factory black)','black'),'3':('encoder GND (factory green)','green'),
            '4':('encoder VCC 5 V (factory blue)','blue'),'5':('encoder A (factory yellow)','yellow'),'6':('encoder B (factory white)','white')},
            f'Motor pigtail (C18) on {r_}: right-angle socket, wires up; colours as the factory cable so they run straight across the inline joint. Pin 1 (red) is marked with a paint-pen stripe on both halves of the joint. '
-           f'Pre-cut {PIGTAIL[s_]["precut_mm"]} mm per wire, solder the socket end first, dress the bundle along its route, then trim each wire to its finished length and crimp (the pin spread makes the outer wires {PG["pin_spread_mm"]/2:g} mm longer or shorter than the bundle axis); '
+           f'Pre-cut {PIGTAIL[s_]["precut_mm"]} mm per wire, solder the socket end first, dress the bundle along its route, then trim each wire at its own cavity of the male housing and crimp (the wires fan out {PG["pin_spread_mm"]/2:g} mm either side of the bundle axis at both ends: at the socket\'s sleeves and at the housing\'s cavities); '
            f'tag the pigtail "{"L / J4" if s_=="left" else "R / J5"}" when it is made.') for s_,r_ in (('left','J4'),('right','J5'))},
     'W16':('PICO_USB','last','factory USB cable','', 'Pico USB cable: up-angled micro-B plug pushed in from above with the lid off.'),
 }
@@ -2592,9 +2618,9 @@ _c18=dict(id='C18',category='Connections',item='Motor pigtails (2): Sullins PPPC
            f'inside the {UNDER_CARRIER_Z-1.5-ZBAY_TOP:.2f} mm under-carrier zone; the socket and the wires\' exit stay {_ex_motor:.1f} mm off the motor face) and turn over at >= {min(min(PIGTAIL[s_]["fillet_radii"]) for s_ in PIGTAIL)-(PG["r_run"]-PG["r_wire"]):.1f} mm radius for the innermost wire '
            f'(>= 3 × the {PG["od"]:g} mm insulation OD). Joint end: a Pololu 1905 1×6 0.1 in crimp housing with six male crimp pins (or a 1×6 straight male header with the wires soldered on if no DuPont crimper). '
            f'Wire: {PG["wire"]}, in the factory cable\'s colour order. Pre-cut length = the drawn route + {PG["term_mm"]:g} mm of terminations ({PG["term"]["solder_overlap_on_tail"]:g} lapped on the tail, {PG["term"]["inside_sleeve_past_tail"]:g} in the sleeve past the tip, '
-           f'{PG["term"]["inside_male_housing"]:g} in the crimp housing) + half the {PG["pin_spread_mm"]:g} mm pin spread ({PG["pin_spread_mm"]/2:g} mm: the six sleeves span {PG["pin_spread_mm"]:g} mm, so the outer wires are that far off the drawn Ø3 bundle axis), rounded up to the mm: '
-           f'left (J4) {PIGTAIL["left"]["precut_mm"]} mm, right (J5) {PIGTAIL["right"]["precut_mm"]} mm per wire. Make each pigtail like this: pre-cut the wires, solder the socket end first, dress the bundle along its route (assembly step 4), then trim each wire to its own finished length '
-           f'(about {PIGTAIL["left"]["finished_centre_mm"]:g} mm on the J4 bundle axis, {PIGTAIL["right"]["finished_centre_mm"]:g} mm on J5\'s; the rear pin\'s wire is the longest: J4 pin {PIGTAIL["left"]["rear_pin"]}, J5 pin {PIGTAIL["right"]["rear_pin"]}) and crimp the male pin; no slack (the joint is unplugged before the board is lifted, PB25 amended); '
+           f'{PG["term"]["inside_male_housing"]:g} in the crimp housing) + the full {PG["pin_spread_mm"]:g} mm pin spread (the six wires fan out {PG["pin_spread_mm"]/2:g} mm either side of the drawn Ø3 bundle axis at the socket\'s sleeves and again at the male housing\'s cavities), rounded up to the mm: '
+           f'left (J4) {PIGTAIL["left"]["precut_mm"]} mm, right (J5) {PIGTAIL["right"]["precut_mm"]} mm per wire. Make each pigtail like this: pre-cut the wires, solder the socket end first, dress the bundle along its route (assembly step 4), then trim each wire to its finished length at its own cavity of the male housing '
+           f'(about {PIGTAIL["left"]["finished_centre_mm"]:g} mm on the J4 bundle axis, {PIGTAIL["right"]["finished_centre_mm"]:g} mm on J5\'s, each wire within the pin spread of that) and crimp the male pin; no slack (the joint is unplugged before the board is lifted, PB25 amended); '
            'cut from bulk wire and crimped (not a stock lead). Tag the two pigtails "L / J4" and "R / J5" right after making them (they differ in length and pin-1 order). '
            f'Built alike: looking into the socket\'s mating face with its tails up, the red wire is on the left (pin 1 on J4\'s {PIN1["J4"][0]} end, J5\'s {PIN1["J5"][0]} end). '
            'Polarity: the inline joint is not keyed, so pin 1 is marked on both halves: a paint-pen stripe on the pigtail\'s male housing at the red wire and on the factory female housing at its red wire; mate stripe to stripe and check the colours run straight across. '
@@ -2606,29 +2632,32 @@ def set_row(rid,cells):
         if row[0]==rid:row[:]=[rid]+cells;return
     BOMF['connectors'].append([rid]+cells)
 def pins_txt(ref,fn,word='cavity'):pm=pin_nets(ref);return ', '.join(f'{word} {k} = {pm[k]} ({fn[k][0]})' for k in sorted(pm,key=int))
-set_row('J01',['Battery (lead W01)','Tamiya on the pack → adapter lead W01 → JST VHR-2N on board J1 (B2P-VH, rear edge)',
-    'J1: cavity 1 = GND (battery −, black), cavity 2 = BAT+ (battery +, red) (ruling PB20; silk "-" / "+")','18 AWG',
+set_row('J01',['Battery (lead W01)','Tamiya on the pack → adapter lead W01 → AMASS XT30U-F (C19) on board J1 (AMASS XT30UPB-M vertical PCB male, rear edge)',
+    'J1: cavity 1 = GND (the XT30U-F\'s "−" contact: battery −, black), cavity 2 = BAT+ (its "+" contact: battery +, red) (ruling PB20; silk "-" / "+")','18 AWG',
+    'Ruling PB30: J1 (XT30), J2 (JST VH) and J3 (Micro-Fit 3.0) are three connector families, so the battery lead fits no other header; tag it "J1 BATT". '
     'J1 pin 1 is GND and pin 2 is BAT+: the opposite of the usual "pin 1 = +" habit. Fail-safe check before the fuses go in: with F1 and F2 out, plug W01 into J1 and the battery and measure F1\'s input clip against a GND pad: positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower) '
     '(a reversed lead reads negative and has no current path with the fuses out). A reversed lead with the fuses in is the costliest mistake on this board (no reverse-polarity protection).'])
 set_row('J02',['Regulator input (P03 leads)','Board U5A screw terminal (Phoenix MKDS 1,5/2-5,08) ← P03 input terminals',f'U5A: {pins_txt("U5A",{"1":("to P03 IN+",""),"2":("to P03 IN−","")},"pin")}','18 AWG',
     'About 10 mm leads; a reversed P03 input is as costly as a reversed battery lead. Set and check 5.1 V on the bench first.'])
-set_row('J03',['Jetson regulated power (lead W04)','JST VHR-2N on board J3 (vertical B2P-VH in the band behind the Jetson carrier) → 5.5 / 2.1 mm barrel plug (provisional)',
-    f'J3: {pins_txt("J3",{"1":("barrel centre +",""),"2":("barrel sleeve","")})}','18 AWG',
-    'Lead leaves the board\'s right edge (robot −y) along the W04 corridor to the barrel jack (bay ruling PB5). Replace the output end for the actual Jetson revision; barrel power needs the J48 jumper.'])
+set_row('J03',['Jetson regulated power (lead W04)','Molex Micro-Fit 3.0 43645-0200 receptacle + 2 × 43030 crimps (C20) on board J3 (Molex 43650-0200 right-angle header in the band behind the Jetson carrier) → 5.5 / 2.1 mm barrel plug (provisional)',
+    f'J3: {pins_txt("J3",{"1":("barrel centre +",""),"2":("barrel sleeve","")})} (silk "+" at pin 1)','18 AWG',
+    'Ruling PB30: a Micro-Fit 3.0, so the Jetson lead fits neither the battery header (XT30) nor the rocker header (JST VH); tag it "J3 JETSON 5V". Micro-Fit 3.0 on 18 AWG, 2 circuits: 8.5 A per circuit (Molex derating table, from memory: verify) for the Jetson\'s 4.5 A. '
+    'The receptacle plugs in from beyond the board\'s right edge (robot −y) and the lead runs along the W04 corridor to the barrel jack (bay ruling PB5). Replace the output end for the actual Jetson revision; barrel power needs the J48 jumper.'])
 set_row('J04',['Regulator output (P03 leads)','P03 output terminals → board U5B screw terminal (Phoenix MKDS 1,5/2-5,08)',f'U5B: {pins_txt("U5B",{"1":("from P03 OUT+",""),"2":("from P03 OUT−","")},"pin")}','18 AWG',
     'About 10 mm leads. (The deck-era VH lead to the driver terminals is gone: motor power runs in the board copper.)'])
 for rid,side,ref in (('J05','left','J4'),('J06','right','J5')):
     set_row(rid,[f'{side.capitalize()} motor cable','Factory female 1×6 → C18 pigtail male 1×6 at the inline joint; pigtail right-angle female socket → board '+ref+' (right-angle 1×6 male header)',
         f'{ref}: '+', '.join(f'pin {k} = {v} ({LEAD_FN[f"motor_pigtail_{side}"][3][k][1]}, {LEAD_FN[f"motor_pigtail_{side}"][3][k][0].split(" (")[0]})' for k,v in sorted(pin_nets(ref).items(),key=lambda q:int(q[0]))),'Factory cable + 28 AWG pigtail',
-        f'PB25 / B9: the C18 pigtail (pre-cut length {PIGTAIL[side]["precut_mm"]} mm per wire = route + terminations + half the {PG["pin_spread_mm"]:g} mm pin spread; finished length about {PIGTAIL[side]["finished_centre_mm"]:g} mm on the bundle axis, {PIGTAIL[side]["finished_by_pin_mm"][str(PIGTAIL[side]["front_pin"])]:g}-{PIGTAIL[side]["finished_by_pin_mm"][str(PIGTAIL[side]["rear_pin"])]:g} mm by pin once each wire is trimmed after dressing; tag it "{"L / J4" if side=="left" else "R / J5"}") stays plugged on {ref} (fitted on the bench); the motor cable mates with it at the inline joint ahead of the {side} motor (x {_jt}, |y| {_jy}), reachable with the Jetson off, '
+        f'PB25 / B9: the C18 pigtail (pre-cut length {PIGTAIL[side]["precut_mm"]} mm per wire = route + terminations + the full {PG["pin_spread_mm"]:g} mm pin spread; finished length about {PIGTAIL[side]["finished_centre_mm"]:g} mm on the bundle axis, {PIGTAIL[side]["finished_range_mm"][0]:g}-{PIGTAIL[side]["finished_range_mm"][1]:g} mm once each wire is trimmed at its cavity after dressing; tag it "{"L / J4" if side=="left" else "R / J5"}") stays plugged on {ref} (fitted on the bench); the motor cable mates with it at the inline joint ahead of the {side} motor (x {_jt}, |y| {_jy}), reachable with the Jetson off, '
         f'tied down on P_base; the factory cable is measured from the encoder cap to the female housing\'s rear face (readings of {FAC_READINGS[0]:g}-{FAC_READINGS[1]:g} mm fit), the fixed path routed first (about {FAC[side]["fixed"]:.0f} mm) and the remainder coiled ({FAC_TURNS[0]:g}-{FAC_TURNS[1]:g} turns) and tied ahead of the motor. The joint is not keyed: pin 1 (the red wire) is marked with a paint-pen stripe on both halves; mate stripe to stripe, colours straight across. '
         'Before the first power-up check the factory housing\'s cavity order is red, black, green, blue, yellow, white from pin 1 (board_spec MOTOR); the board\'s pinout assumes it.'])
 set_row('J21',['Battery-voltage sensing','On the bay board (no harness)','VBAT_SW → R11 100k → GP26 (VSENSE) node → R12 33k → GND; C2 100 nF','—','At an 8.7 V pack the ADC reads about 2.16 V.'])
 set_row('J22',['Master switch (lead W02)','JST VHR-2N on board J2 (B2P-VH, rear edge) → rocker terminals (insulated spades)',f'J2: {pins_txt("J2",{"1":("to the rocker",""),"2":("from the rocker","")})}','18 AWG',
-    'Rocker on the lid top at (-100, 0): F1 output → rocker → switched battery bus. Both wires are battery +; shut the Jetson down before opening the switch.'])
+    'Rocker on the lid top at (-100, 0): F1 output → rocker → switched battery bus. Both wires are battery +; shut the Jetson down before opening the switch. '
+    'J2 is the only JST VH header on the board (J1 is an XT30, J3 a Micro-Fit: PB30), so the rocker pair fits no other header; tag it "J2 ROCKER".'])
 set_row('J23',['Battery positive distribution','On the bay board (VBAT_SW copper; no WAGO bus)','J2.2 → F2 / U5A / R11 / R21','—','Replaced by the board.'])
 set_row('J24',['Ground distribution','On the bay board (In1 GND plane; no WAGO bus)','Every GND pin of the board','—','Replaced by the board: the regulator, driver and signal grounds share the plane.'])
-MATES={'J1':'JST VHR-2N + 2 × SVH-21T-P1.1 (C05); lead W01','J2':'JST VHR-2N + 2 × SVH-21T-P1.1 (C05); lead W02','J3':'JST VHR-2N + 2 × SVH-21T-P1.1 (C05); lead W04',
+MATES={'J1':'AMASS XT30U-F (C19); lead W01','J2':'JST VHR-2N + 2 × SVH-21T-P1.1 (C05); lead W02','J3':'Molex 43645-0200 + 2 × 43030-series 18 AWG crimps (C20); lead W04',
     'J4':'C18 pigtail: right-angle 1×6 female socket, wires up','J5':'C18 pigtail: right-angle 1×6 female socket, wires up',
     **{f'J{6+i}':f'JST XHP-5 + 5 × SXH-001T-P0.6 (C06); lead W{10+i}' for i in range(4)},'J10':'JST XHP-2 + 2 × SXH-001T-P0.6 (C08); lead W_bumper_left','J11':'JST XHP-2 + 2 × SXH-001T-P0.6 (C08); lead W_bumper_right',
     'J12':'JST XHP-2 + 2 × SXH-001T-P0.6 (C08); lead W15','J13':'JST XHP-2 + 2 × SXH-001T-P0.6 (C08); lead W14','U5A':'P03 input leads (bare ends in the screw terminal)','U5B':'P03 output leads (bare ends in the screw terminal)'}
@@ -2641,9 +2670,9 @@ SPIKE=[('W01','Battery adapter W01 → J1',50,95),('W02','Rocker W02 → J2',72,
        (('motor_pigtail_left','motor_pigtail_right'),'Motor harness L + R (strip era; now the PB25 pigtails)',50,0)]
 _rt={c['id']:c['route_mm'] for c in cables}
 sp_rows=[dict(lead=n,ids=list(i) if isinstance(i,tuple) else [i],now_mm=a_,spike_b_mm=b_,final_mm=sum(_rt[k] for k in (i if isinstance(i,tuple) else (i,)))) for i,n,a_,b_ in SPIKE]
-BOMF['harness']=dict(note='cable-cut-list.json, written by cad/build_robot.py: route = the CAD route; cut = route × 1.2 + 40 mm rounded up to 50 mm, except the pigtails (pre-cut long by half the pin spread, then trimmed to length after dressing and crimped), the factory motor cables (200 mm, not cut) and the P03 leads (cut 50, trim).',
+BOMF['harness']=dict(note='cable-cut-list.json, written by cad/build_robot.py: route = the CAD route; cut = route × 1.2 + 40 mm rounded up to 50 mm, except the pigtails (pre-cut long by the pin spread, then each wire trimmed at its cavity after dressing and crimped), the factory motor cables (200 mm, not cut) and the P03 leads (cut 50, trim).',
     cut_list=[dict(id=c['id'],name=c['name'],board_end=(c.get('board_end') or {}).get('ref'),wire=c.get('wire'),route_mm=c['route_mm'],cut_mm=c['suggested_cut_mm'],
-                   **({'cut_means':'pre-cut length (trim each wire to its finished length after dressing)','precut_mm':c['pigtail']['precut_mm'],'finished_centre_mm':c['pigtail']['finished_centre_mm'],'finished_by_pin_mm':c['pigtail']['finished_by_pin_mm'],'pin_spread_mm':c['pigtail']['pin_spread_mm']} if 'pigtail' in c else {}),
+                   **({'cut_means':'pre-cut length (trim each wire at its cavity after dressing)','precut_mm':c['pigtail']['precut_mm'],'finished_centre_mm':c['pigtail']['finished_centre_mm'],'finished_range_mm':c['pigtail']['finished_range_mm'],'pin_spread_mm':c['pigtail']['pin_spread_mm']} if 'pigtail' in c else {}),
                    pinout=[f'{q["cavity"]} {q["net"]} ({q["colour"]})' for q in c.get('pinout',[])]) for c in cables],
     spike_check=dict(source='.superpowers/sdd/2026-10-06-r1-low-profile/task-W4L-report.md section 8 (rough; mm)',spike_net_change_mm=169,rows=sp_rows,
                      net_change_mm=sum(r['final_mm']-r['now_mm'] for r in sp_rows),spike_b_net_change_mm=sum(r['spike_b_mm']-r['now_mm'] for r in sp_rows),
@@ -2766,7 +2795,7 @@ bay_rear_ok=bay_ribs_ok and all(r['ok'] for r in rear_rows.values()) and all(r['
 # terminals, the rear row): a rib under >= 50 % of the body (rear row), else a printed spacer (bay or clamp, Ø7) within BEARING_MAX of it.
 BEARING_MAX=10.0
 SPACERS=[(f'bay_spacer_{i}',xy) for i,xy in enumerate(BAY_MOUNTS)]+[(f'clamp spacer {h["ref"]}',tuple(h['xy'])) for h in BC['clamp_holes']]
-HIGH_FORCE={r for r,c in BCONN.items() if c['family'] in ('VH','Terminal')}|set(REAR_REFS)
+HIGH_FORCE={r for r,c in BCONN.items() if c['family'] in ('VH','XT30','MicroFit','Terminal')}|set(REAR_REFS)   # B12a: the power connectors
 edge_rows={}
 for ref,c in BCONN.items():
     d,n=nearest_fixing(c['centre_xy']);cx0,cy0,cx1,cy1=c['courtyard_xy']
@@ -2902,11 +2931,11 @@ for side,J_ in JOINT.items():
                ok=d0==[0,0,1] and inner>=3*PG['od']-1e-9 and max(uc)<=UNDER_CARRIER_Z-1.5+1e-6 and ex_motor>=1.0 and to_motor>=WIRE_GAP and to_p03>=WIRE_GAP)
     L_nom=_pl(pg['points'])
     length=dict(route_mm=round(L_nom,2),terminations_mm=PG['term'],terminations_total_mm=PG['term_mm'],pin_spread_mm=PG['pin_spread_mm'],precut_mm=pg['precut_mm'],precut_margin_mm=pg['precut_margin_mm'],
-                finished_centre_mm=pg['finished_centre_mm'],finished_by_pin_mm=pg['finished_by_pin_mm'],longest_pin=pg['rear_pin'],length_source='crimped',
-                rule='PB25 amended + B9 fix 2: pre-cut = drawn route + drawn terminations + pin_spread / 2 (rounded up to the mm); socket end soldered first, bundle dressed along its route, each wire then trimmed to its own finished length '
-                     '(route + terminations +- its pin offset) and crimped; no lift slack: the joint is unplugged before the board lifts')
-    length['ok']=(abs(L_nom-pg['route_exact'])<.02 and pg['precut_mm']>=L_nom+PG['term_mm']+PG['pin_spread_mm']/2-1e-9 and pg['precut_mm']<L_nom+PG['term_mm']+PG['pin_spread_mm']/2+1.0
-                  and max(pg['finished_by_pin_mm'].values())<=pg['precut_mm'])
+                finished_centre_mm=pg['finished_centre_mm'],finished_range_mm=pg['finished_range_mm'],length_source='crimped',
+                rule='PB25 amended + B9 fix 2 + B12a (final review N4): pre-cut = drawn route + drawn terminations + the full pin spread (the wires fan out +-spread / 2 at the socket and again at the male housing; rounded up to the mm); '
+                     'socket end soldered first, bundle dressed along its route, each wire then trimmed at its own cavity (route + terminations +- the spread) and crimped; no lift slack: the joint is unplugged before the board lifts')
+    length['ok']=(abs(L_nom-pg['route_exact'])<.02 and pg['precut_mm']>=L_nom+PG['term_mm']+PG['pin_spread_mm']-1e-9 and pg['precut_mm']<L_nom+PG['term_mm']+PG['pin_spread_mm']+1.0
+                  and pg['finished_range_mm'][1]<=pg['precut_mm'])
     tid=f'motor_tie_joint_{side}';cid=f'motor_tie_coil_{side}'
     tie_hits=overlaps(shapes[tid],{tid})
     coil_hits=overlaps(shapes[cid],{cid})

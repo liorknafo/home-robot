@@ -1,4 +1,4 @@
-import json, math, unittest
+import ast, json, math, unittest
 from functools import lru_cache
 from pathlib import Path
 try: import numpy as np
@@ -66,20 +66,35 @@ def neck_violations(rings, on_board, step=0.25):
                         bad.append(((round(x, 3), round(y, 3)), (round(xj, 3), round(yj, 3)), round(d, 3)))
     return bad
 
-# Parts that stay in the CAD and sit over or under the board but are NOT obstacles to its outline (extract_outline.py excludes the same ids, with the
-# reasons; this copy is deliberate: the real-geometry tests below must not import the extractor, which runs on import).
-CLAMP_STACK = {'jetson_standoff_1', 'jetson_standoff_3', 'jetson_screw_1', 'jetson_screw_3'}   # + bay_clamp_spacer_1/3 (in REMOVED_CAD_IDS): they clamp the board at its two rear holes
-BEARING_RIBS = {'bay_rib_0', 'bay_rib_1'}                                                         # printed ribs under the rear-edge connector row (z 33..35.4): the board rests on them by design
-BAY_INSERTS = {f'insert_bay_{i}' for i in range(4)}                                               # heat-set inserts in P_base under the M3 holes (z 30..33)
-PLUGGED_CABLES = {'motor_cable_left', 'motor_cable_right', 'motor_pigtail_left', 'motor_pigtail_right'}   # the factory motor cables and (PB25) the J4 / J5 pigtails run over the board (not W-prefixed)
-BOARD_CONTACTS = {'bay_holddown'} | {p['id'] for p in json.loads(MANIFEST.read_text()) if p['id'].startswith('bay_plug_')}   # B8: mated plugs on the board's connectors and the tray's rear-edge hold-down fingers
-NOT_OBSTACLES = CLAMP_STACK | BEARING_RIBS | BAY_INSERTS | PLUGGED_CABLES | BOARD_CONTACTS
+def manifest_bounds(): return {p['id']: p['bounds'] for p in json.loads(MANIFEST.read_text())}
+def xy_centre(b): return ((b[0] + b[3]) / 2, (b[1] + b[4]) / 2)
+
+EXTRACT_LISTS = ('CLAMP_STACK_IDS', 'SUPPORT_IDS', 'PLUGGED_CABLE_IDS', 'BOARD_CONTACT_IDS', 'NOT_OBSTACLE_IDS')
+def extractor_lists():
+    """B12a (carry 6): the not-obstacle id lists of extract_outline.py (the parts that stay in the CAD over or under the board but are not
+    obstacles to its outline: the clamp stack, the bearing ribs and inserts, the plugged motor cables, the mated plugs and the hold-down; reasons
+    there), read from its source so the ids have one home. Importing the extractor would run it (it needs CadQuery and writes
+    board_outline.json), so only those five top-level assignments are run, with the manifest's {id: bounds} as its MAN."""
+    ns = {'MAN': manifest_bounds()}
+    for node in ast.parse((Path(B.__file__).parent / 'extract_outline.py').read_text()).body:
+        if isinstance(node, ast.Assign) and len(node.targets) == 1 and getattr(node.targets[0], 'id', None) in EXTRACT_LISTS:
+            exec(compile(ast.Module([node], []), 'extract_outline.py', 'exec'), ns)
+    missing = [n for n in EXTRACT_LISTS if n not in ns]
+    assert not missing, f'extract_outline.py no longer defines {missing}'
+    return {n: ns[n] for n in EXTRACT_LISTS}
+EXTRACT = extractor_lists()
+NOT_OBSTACLES = set(EXTRACT['NOT_OBSTACLE_IDS'])
+BAY_INSERTS = {i for i in EXTRACT['SUPPORT_IDS'] if i.startswith('insert_bay_')}    # heat-set inserts in P_base under the M3 holes (z 30..33)
 PAR_ALL = json.loads((CAD / 'parameters.json').read_text())
 BAY = PAR_ALL['bay_board']     # build_robot.py BAY_MOUNTS / BAY_CLAMPS as written to parameters.json
 MOTORS = ('motor_left', 'motor_right')
-
-def manifest_bounds(): return {p['id']: p['bounds'] for p in json.loads(MANIFEST.read_text())}
-def xy_centre(b): return ((b[0] + b[3]) / 2, (b[1] + b[4]) / 2)
+def crossings(poly, c, axis=0):
+    """Sorted crossings of the closed polygon (board frame) with the line u = c (axis 0: their v) or v = c (axis 1: their u)."""
+    o = 1 - axis
+    return sorted(p[o] + (c - p[axis]) * (q[o] - p[o]) / (q[axis] - p[axis]) for p, q in edges(poly) if (p[axis] > c) != (q[axis] > c))
+def box_gap(a, b):
+    """mm between two (u0, v0, u1, v1) boxes (0 when they touch or overlap)."""
+    return math.hypot(max(a[0] - b[2], b[0] - a[2], 0.0), max(a[1] - b[3], b[1] - a[3], 0.0))
 
 class OutlineTests(unittest.TestCase):
     def setUp(self): self.o = json.loads(OUT.read_text())
@@ -118,12 +133,26 @@ class OutlineTests(unittest.TestCase):
         for (x, y), (gx, gy) in zip(BAY['mounts_mm'], got): self.assertLess(math.hypot(x - gx, y - gy), 0.1, 'BAY_MOUNTS in parameters.json')
         self.assertEqual([i for i in B.REMOVED_CAD_IDS if i.startswith('insert_')], [], 'the inserts stay')
     def test_h3_h4_sit_beside_the_tongue_centre(self):
-        """Ruling PB4: H3 / H4 moved to robot (-11.5, +-8.5) = board (55, 41.5) / (55, 58.5), clear of the right-angle motor connectors J4 / J5 and their
-        lay-flat plugs at the motor notches; H1 / H2 stay at (-19.5, +-38)."""
+        """Ruling PB4: H3 / H4 moved to robot (-11.5, +-8.5) = board (55, 41.5) / (55, 58.5), either side of the tongue's centre line, clear of the
+        right-angle motor connectors J4 / J5 and their lay-flat plugs at the motor notches; H1 / H2 stay at (-19.5, +-38). B12a (carry 7): the
+        tongue's edges come from the outline (its v span at the holes' u, the front edge at each hole's v), and the J4 / J5 clearance is measured:
+        each hole's courtyard (B.courtyard_box) stays off both connectors' courtyards grown by their lay-flat plug (MATED_REACH toward the
+        notch, as ktest_pcb's envelope)."""
         self.assertEqual([tuple(h) for h in self.o['holes_uv']], [(47.0, 12.0), (47.0, 88.0), (55.0, 41.5), (55.0, 58.5)])
         self.assertEqual([tuple(B.board_to_robot(*h)) for h in self.o['holes_uv']], [(-19.5, 38.0), (-19.5, -38.0), (-11.5, 8.5), (-11.5, -8.5)])
-        for u, v in self.o['holes_uv'][2:]:
-            self.assertGreaterEqual(B.BOARD_W - u, 15.0); self.assertGreaterEqual(min(abs(v - 16.5), abs(v - 83.5)), 20.0)      # far from the front edge and the notch edges
+        step = {'+u': (1, 0), '-u': (-1, 0), '+v': (0, 1), '-v': (0, -1)}
+        plugs = {}
+        for ref in ('J4', 'J5'):
+            (u0, v0, u1, v1), r, (du, dv) = B.courtyard_box(ref), B.MATED_REACH[ref], step[B.EDGE_CONNECTORS[ref]]
+            plugs[ref] = (u0 + min(du, 0) * r, v0 + min(dv, 0) * r, u1 + max(du, 0) * r, v1 + max(dv, 0) * r)
+        (u3, v3), (u4, v4) = self.o['holes_uv'][2:]
+        self.assertEqual(u3, u4)
+        lo, hi = crossings(self.o['outline_uv'], u3)                     # the tongue between the motor notches (one stretch of board there)
+        self.assertAlmostEqual((v3 + v4) / 2, (lo + hi) / 2, 3)          # either side of the tongue's centre line
+        for h, (u, v) in zip(('H3', 'H4'), self.o['holes_uv'][2:]):
+            self.assertGreaterEqual(crossings(self.o['outline_uv'], v, axis=1)[-1] - u, 15.0, h)          # far from the front edge ...
+            self.assertGreaterEqual(min(v - lo, hi - v), 20.0, h)                                       # ... and from the notch edges
+            for ref, env in plugs.items(): self.assertGreater(box_gap(B.courtyard_box(h), env), 0.0, (h, ref))
     def test_clamp_holes_at_the_rear_jetson_standoffs(self):
         """H5 / H6: the board is clamped by the two rear Jetson standoff stacks, robot (-33, 40) and (-33, -46)."""
         self.assertEqual(len(self.o['clamp_holes_uv']), 2)
@@ -165,11 +194,22 @@ class OutlineTests(unittest.TestCase):
             for p in c: self.assertTrue(inside(self.o['outline_uv'], p), p)
     def test_front_edge_keeps_off_the_p03(self):
         """The P03 regulator (x 9..47, |y| <= 31) is 1.5 mm in front of the board: the tongue's front edge is the nominal x 7.5 = 9 - 1.5, and the
-        board does not reach past it."""
-        for y in (-25.0, 0.0, 25.0):
-            self.assertFalse(self.at(9.0 - 1.4, y), y)
-            self.assertTrue(self.at(9.0 - 1.5 - 0.1, y), y)
-        self.assertLessEqual(max(B.board_to_robot(u, v)[0] for u, v in self.o['outline_uv']), 9.0 - 1.5 + 1e-6)
+        board does not reach past it. B12a (carry 6): the P03's rear face and width are its p03_regulator bounds in cad/component-manifest.json."""
+        x0, y0, _, _, y1, _ = manifest_bounds()['p03_regulator']
+        for y in (y0 + 6.0, 0.0, y1 - 6.0):
+            self.assertFalse(self.at(x0 - 1.4, y), y)
+            self.assertTrue(self.at(x0 - 1.5 - 0.1, y), y)
+        self.assertLessEqual(max(B.board_to_robot(u, v)[0] for u, v in self.o['outline_uv']), x0 - 1.5 + 1e-6)
+    def test_not_obstacles_are_manifest_parts(self):
+        """B12a (carry 6): NOT_OBSTACLES is extract_outline.py's own list (extractor_lists), and every id in it is a part of
+        cad/component-manifest.json - no stale id. The mated plugs are listed by prefix (bay_plug_*, all of the manifest's): one per edge
+        connector with a plug (every J of EDGE_CONNECTORS; the P03 terminals take bare wires)."""
+        man = manifest_bounds()
+        self.assertEqual(sorted(NOT_OBSTACLES - set(man)), [])
+        plugs = {i for i in NOT_OBSTACLES if i.startswith('bay_plug_')}
+        self.assertEqual(plugs, {i for i in man if i.startswith('bay_plug_')})
+        self.assertEqual({i[len('bay_plug_'):] for i in plugs}, {r for r in B.EDGE_CONNECTORS if r.startswith('J')})
+        self.assertEqual(BAY_INSERTS, {f'insert_bay_{i}' for i in range(4)})
     def test_rear_edge_keeps_off_the_battery_tray(self):
         """The battery tray's front wall (x -68, |y| <= 73) is 1.5 mm behind the board's nominal rear edge x -66.5."""
         for y in (-45.0, 0.0, 45.0):
@@ -337,8 +377,16 @@ class RealGeometryTests(unittest.TestCase):
             seen[i] = (len(P), round(float(d.min()), 3))
             self.assertGreaterEqual(float(d.min()), MARGIN - 1e-6, (i, seen[i]))
         self.assertTrue({'P_battery_tray', 'motor_left', 'motor_right', 'p03_regulator'} <= set(seen), sorted(seen))
-        self.assertTrue(CLAMP_STACK.isdisjoint(seen) and BEARING_RIBS.isdisjoint(seen), 'the clamp stack and the ribs are not obstacles')
         self.assertNotIn('jetson', seen, 'the carrier is above the height-zone ceiling')
+    def test_not_obstacles_stand_on_the_board(self):
+        """B12a (carry 6, replaces a check that the clamp stack and the ribs were not among the staying parts, which staying_ids made true by
+        construction): every NOT_OBSTACLES part but the heat-set inserts really reaches into the slab on the board (sampled as above, it is
+        on the board), so leaving it out is what lets the 1.5 mm check pass - the list holds no part that could be a plain keep-out. The
+        inserts (z 30..33) sit under this slab, touching only the extractor's slab floor (z 33, the P_base top); test_holes_sit_on_the_bay_inserts
+        places them."""
+        win = (ENV[0] - 3, ENV[1] - 3, ENV[2] + 3, ENV[3] + 3)
+        on = {i for i, P in self.slab_points(win, ids=sorted(NOT_OBSTACLES)) if float(self.clear_of_board(P).min()) == 0.0}
+        self.assertEqual(NOT_OBSTACLES - on, BAY_INSERTS)
     def test_motor_notches(self):
         """The motors (x +-12.5, |y| >= 35) bite the board's two front-side corners: no outline point (or cutout point) within 1.5 mm of either motor's xy hull."""
         for sign, motor in ((1, 'motor_left'), (-1, 'motor_right')):

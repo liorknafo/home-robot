@@ -3,7 +3,7 @@
     "id": "motor_pigtail_left",
     "name": "Motor pigtail left: J4 right-angle socket (wires up) to the inline joint's male housing (PB25, B9)",
     "route_mm": 40,
-    "suggested_cut_mm": 55,
+    "suggested_cut_mm": 61,
     "points": [
       [
         -11.95,
@@ -112,21 +112,16 @@
         "inside_male_housing": 4.0
       },
       "pin_spread_mm": 12.7,
-      "precut_mm": 55,
-      "precut_margin_mm": 6.9,
+      "precut_mm": 61,
+      "precut_margin_mm": 12.9,
       "finished_centre_mm": 48.1,
-      "finished_by_pin_mm": {
-        "1": 54.5,
-        "2": 51.9,
-        "3": 49.4,
-        "4": 46.8,
-        "5": 44.3,
-        "6": 41.8
-      },
-      "longest_pin": 1,
-      "shortest_pin": 6,
+      "finished_range_mm": [
+        35.4,
+        60.8
+      ],
+      "trim": "at its own cavity of the male housing, after dressing",
       "length_source": "crimped",
-      "length_note": "pre-cut length 55 mm per wire = the drawn route 39.6 mm + 8.5 mm of terminations (2 lapped on the tail, 2.5 in the sleeve past the tip, 4 in the male crimp housing) + half the 12.7 mm pin spread (6.35 mm), rounded up to the mm: the six sleeves span 12.7 mm along the header, so the outer wires are 6.35 mm off the drawn bundle axis. Build: cut bulk 28 AWG silicone to the pre-cut length, solder the socket end first, dress the bundle along its route, then trim each wire to its own finished length (about 48.1 mm on the bundle axis; pin 1, the rear one, the longest at 54.5 mm, pin 6 the shortest at 41.8 mm) and crimp the male pin. No slack: the joint is unplugged before the board is lifted (PB25 amended). Tag the pigtail \"L / J4\" right after making it (the two differ in length and pin-1 order).",
+      "length_note": "pre-cut length 61 mm per wire = the drawn route 39.6 mm + 8.5 mm of terminations (2 lapped on the tail, 2.5 in the sleeve past the tip, 4 in the male crimp housing) + the full 12.7 mm pin spread, rounded up to the mm: the six wires fan out 6.35 mm either side of the drawn bundle axis at both ends (the socket's six sleeves and the male housing's six cavities each span 12.7 mm). Build: cut bulk 28 AWG silicone to the pre-cut length, solder the socket end first, dress the bundle along its route, then trim each wire at its own cavity of the male housing (finished length about 48.1 mm on the bundle axis, 35.4-60.8 mm by where the wire sits at the two ends) and crimp the male pin. No slack: the joint is unplugged before the board is lifted (PB25 amended). Tag the pigtail \"L / J4\" right after making it (the two differ in length and pin-1 order).",
       "board_end": "right-angle socket on J4 (bench, before the board goes in), wires up",
       "male_end": "inline joint motor_joint_left"
     },
@@ -135,7 +130,7 @@
       "end": "first"
     },
     "wire": "6 × 28 AWG silicone (red, black, green, blue, yellow, white)",
-    "notes": "Motor pigtail (C18) on J4: right-angle socket, wires up; colours as the factory cable so they run straight across the inline joint. Pin 1 (red) is marked with a paint-pen stripe on both halves of the joint. Pre-cut 55 mm per wire, solder the socket end first, dress the bundle along its route, then trim each wire to its finished length and crimp (the pin spread makes the outer wires 6.35 mm longer or shorter than the bundle axis); tag the pigtail \"L / J4\" when it is made.",
+    "notes": "Motor pigtail (C18) on J4: right-angle socket, wires up; colours as the factory cable so they run straight across the inline joint. Pin 1 (red) is marked with a paint-pen stripe on both halves of the joint. Pre-cut 61 mm per wire, solder the socket end first, dress the bundle along its route, then trim each wire at its own cavity of the male housing and crimp (the wires fan out 6.35 mm either side of the bundle axis at both ends: at the socket's sleeves and at the housing's cavities); tag the pigtail \"L / J4\" when it is made.",
     "pinout": [
       {
         "cavity": "1",
@@ -178,7 +173,7 @@
   {
     "id": "motor_cable_left",
     "name": "Factory 200 mm motor/encoder cable left (to the inline joint; spare length coiled, PB25 / B9)",
-    "route_mm": 193,
+    "route_mm": 192,
     "suggested_cut_mm": 200,
     "points": [
       [
@@ -293,228 +288,228 @@
       ],
       [
         11.0,
-        61.279,
+        61.287,
         49.5
       ],
       [
-        11.295,
-        62.886,
-        49.463
+        11.294,
+        62.888,
+        49.482
       ],
       [
-        12.139,
-        64.282,
-        49.358
+        12.137,
+        64.28,
+        49.429
       ],
       [
-        18.297,
-        71.209,
-        48.588
+        18.288,
+        71.199,
+        49.045
       ],
       [
-        18.891,
+        18.89,
         72.058,
-        48.494
+        48.982
       ],
       [
-        19.273,
-        73.019,
-        48.387
+        19.276,
+        73.03,
+        48.886
       ],
       [
         19.804,
         75.0,
-        48.167
+        48.667
       ],
       [
         22.0,
         77.196,
-        47.833
+        48.333
       ],
       [
         25.0,
         78.0,
-        47.5
+        48.0
       ],
       [
         28.0,
         77.196,
-        47.167
+        47.667
       ],
       [
         30.196,
         75.0,
-        46.833
+        47.333
       ],
       [
         31.0,
         72.0,
-        46.5
+        47.0
       ],
       [
         30.196,
         69.0,
-        46.167
+        46.667
       ],
       [
         28.0,
         66.804,
-        45.833
+        46.333
       ],
       [
         25.0,
         66.0,
-        45.5
+        46.0
       ],
       [
         22.0,
         66.804,
-        45.167
+        45.667
       ],
       [
         19.804,
         69.0,
-        44.833
+        45.333
       ],
       [
         19.0,
         72.0,
-        44.5
+        45.0
       ],
       [
         19.804,
         75.0,
-        44.167
+        44.667
       ],
       [
         22.0,
         77.196,
-        43.833
+        44.333
       ],
       [
         25.0,
         78.0,
-        43.5
+        44.0
       ],
       [
         28.0,
         77.196,
-        43.167
+        43.667
       ],
       [
         30.196,
         75.0,
-        42.833
+        43.333
       ],
       [
         31.0,
         72.0,
-        42.5
+        43.0
       ],
       [
         30.196,
         69.0,
-        42.167
+        42.667
       ],
       [
         28.0,
         66.804,
-        41.833
+        42.333
       ],
       [
         25.0,
         66.0,
-        41.5
+        42.0
       ],
       [
         22.0,
         66.804,
-        41.167
+        41.667
       ],
       [
         19.804,
         69.0,
-        40.833
+        41.333
       ],
       [
         19.0,
         72.0,
-        40.5
+        41.0
       ],
       [
         19.804,
         75.0,
-        40.167
+        40.667
       ],
       [
         22.0,
         77.196,
-        39.833
+        40.333
       ],
       [
         25.0,
         78.0,
-        39.5
+        40.0
       ],
       [
         28.0,
         77.196,
-        39.167
+        39.667
       ],
       [
         30.196,
         75.0,
-        38.833
+        39.333
       ],
       [
         31.0,
         72.0,
-        38.5
+        39.0
       ],
       [
         30.196,
         69.0,
-        38.167
+        38.667
       ],
       [
         28.0,
         66.804,
-        37.833
+        38.333
       ],
       [
         25.936,
         66.251,
-        37.604
+        38.104
       ],
       [
         24.997,
         66.063,
-        37.583
+        38.083
       ],
       [
         24.052,
         66.0,
-        37.723
+        38.223
       ],
       [
-        20.692,
+        20.75,
         66.0,
-        38.514
+        39.0
       ],
       [
-        18.582,
-        65.44,
-        39.119
+        18.617,
+        65.422,
+        39.566
       ],
       [
-        17.056,
-        63.9,
-        39.779
+        17.066,
+        63.839,
+        40.108
       ],
       [
         16.5,
-        61.773,
-        40.324
+        61.661,
+        40.485
       ],
       [
         16.5,
@@ -533,27 +528,27 @@
         "r_mm": 6.0,
         "turns": 2.75
       },
-      "fixed_path_mm": 89.6,
+      "fixed_path_mm": 89.4,
       "cable_readings_mm": [
         186.0,
         200.0
       ],
       "coil_turns_allowed": [
         2.0,
-        3.0
+        3.5
       ],
       "coil_turns_needed": [
-        2.57,
+        2.58,
         2.95
       ]
     },
-    "notes": "Factory cable, not cut: measure it from the encoder cap to the female housing's rear face (readings of 186-200 mm all fit), route the fixed path first (about 90 mm outside the coil), wind the remainder (96-110 mm, 2-3 turns) into the coil ahead of the motor and tie it (assembly step 4); loosen the coil tie before unplugging the inline joint."
+    "notes": "Factory cable, not cut: measure it from the encoder cap to the female housing's rear face (readings of 186-200 mm all fit), route the fixed path first (about 89 mm outside the coil), wind the remainder (97-111 mm, 2-3.5 turns) into the coil ahead of the motor and tie it (assembly step 4); loosen the coil tie before unplugging the inline joint."
   },
   {
     "id": "motor_pigtail_right",
     "name": "Motor pigtail right: J5 right-angle socket (wires up) to the inline joint's male housing (PB25, B9)",
     "route_mm": 35,
-    "suggested_cut_mm": 51,
+    "suggested_cut_mm": 57,
     "points": [
       [
         -7.64,
@@ -662,21 +657,16 @@
         "inside_male_housing": 4.0
       },
       "pin_spread_mm": 12.7,
-      "precut_mm": 51,
-      "precut_margin_mm": 7.21,
+      "precut_mm": 57,
+      "precut_margin_mm": 13.21,
       "finished_centre_mm": 43.8,
-      "finished_by_pin_mm": {
-        "1": 37.4,
-        "2": 40.0,
-        "3": 42.5,
-        "4": 45.1,
-        "5": 47.6,
-        "6": 50.1
-      },
-      "longest_pin": 6,
-      "shortest_pin": 1,
+      "finished_range_mm": [
+        31.1,
+        56.5
+      ],
+      "trim": "at its own cavity of the male housing, after dressing",
       "length_source": "crimped",
-      "length_note": "pre-cut length 51 mm per wire = the drawn route 35.29 mm + 8.5 mm of terminations (2 lapped on the tail, 2.5 in the sleeve past the tip, 4 in the male crimp housing) + half the 12.7 mm pin spread (6.35 mm), rounded up to the mm: the six sleeves span 12.7 mm along the header, so the outer wires are 6.35 mm off the drawn bundle axis. Build: cut bulk 28 AWG silicone to the pre-cut length, solder the socket end first, dress the bundle along its route, then trim each wire to its own finished length (about 43.8 mm on the bundle axis; pin 6, the rear one, the longest at 50.1 mm, pin 1 the shortest at 37.4 mm) and crimp the male pin. No slack: the joint is unplugged before the board is lifted (PB25 amended). Tag the pigtail \"R / J5\" right after making it (the two differ in length and pin-1 order).",
+      "length_note": "pre-cut length 57 mm per wire = the drawn route 35.29 mm + 8.5 mm of terminations (2 lapped on the tail, 2.5 in the sleeve past the tip, 4 in the male crimp housing) + the full 12.7 mm pin spread, rounded up to the mm: the six wires fan out 6.35 mm either side of the drawn bundle axis at both ends (the socket's six sleeves and the male housing's six cavities each span 12.7 mm). Build: cut bulk 28 AWG silicone to the pre-cut length, solder the socket end first, dress the bundle along its route, then trim each wire at its own cavity of the male housing (finished length about 43.8 mm on the bundle axis, 31.1-56.5 mm by where the wire sits at the two ends) and crimp the male pin. No slack: the joint is unplugged before the board is lifted (PB25 amended). Tag the pigtail \"R / J5\" right after making it (the two differ in length and pin-1 order).",
       "board_end": "right-angle socket on J5 (bench, before the board goes in), wires up",
       "male_end": "inline joint motor_joint_right"
     },
@@ -685,7 +675,7 @@
       "end": "first"
     },
     "wire": "6 × 28 AWG silicone (red, black, green, blue, yellow, white)",
-    "notes": "Motor pigtail (C18) on J5: right-angle socket, wires up; colours as the factory cable so they run straight across the inline joint. Pin 1 (red) is marked with a paint-pen stripe on both halves of the joint. Pre-cut 51 mm per wire, solder the socket end first, dress the bundle along its route, then trim each wire to its finished length and crimp (the pin spread makes the outer wires 6.35 mm longer or shorter than the bundle axis); tag the pigtail \"R / J5\" when it is made.",
+    "notes": "Motor pigtail (C18) on J5: right-angle socket, wires up; colours as the factory cable so they run straight across the inline joint. Pin 1 (red) is marked with a paint-pen stripe on both halves of the joint. Pre-cut 57 mm per wire, solder the socket end first, dress the bundle along its route, then trim each wire at its own cavity of the male housing and crimp (the wires fan out 6.35 mm either side of the bundle axis at both ends: at the socket's sleeves and at the housing's cavities); tag the pigtail \"R / J5\" when it is made.",
     "pinout": [
       {
         "cavity": "1",
@@ -728,7 +718,7 @@
   {
     "id": "motor_cable_right",
     "name": "Factory 200 mm motor/encoder cable right (to the inline joint; spare length coiled, PB25 / B9)",
-    "route_mm": 193,
+    "route_mm": 192,
     "suggested_cut_mm": 200,
     "points": [
       [
@@ -843,228 +833,228 @@
       ],
       [
         11.0,
-        -61.279,
+        -61.287,
         49.5
       ],
       [
-        11.295,
-        -62.886,
-        49.463
+        11.294,
+        -62.888,
+        49.482
       ],
       [
-        12.139,
-        -64.282,
-        49.358
+        12.137,
+        -64.28,
+        49.429
       ],
       [
-        18.297,
-        -71.209,
-        48.588
+        18.288,
+        -71.199,
+        49.045
       ],
       [
-        18.891,
+        18.89,
         -72.058,
-        48.494
+        48.982
       ],
       [
-        19.273,
-        -73.019,
-        48.387
+        19.276,
+        -73.03,
+        48.886
       ],
       [
         19.804,
         -75.0,
-        48.167
+        48.667
       ],
       [
         22.0,
         -77.196,
-        47.833
+        48.333
       ],
       [
         25.0,
         -78.0,
-        47.5
+        48.0
       ],
       [
         28.0,
         -77.196,
-        47.167
+        47.667
       ],
       [
         30.196,
         -75.0,
-        46.833
+        47.333
       ],
       [
         31.0,
         -72.0,
-        46.5
+        47.0
       ],
       [
         30.196,
         -69.0,
-        46.167
+        46.667
       ],
       [
         28.0,
         -66.804,
-        45.833
+        46.333
       ],
       [
         25.0,
         -66.0,
-        45.5
+        46.0
       ],
       [
         22.0,
         -66.804,
-        45.167
+        45.667
       ],
       [
         19.804,
         -69.0,
-        44.833
+        45.333
       ],
       [
         19.0,
         -72.0,
-        44.5
+        45.0
       ],
       [
         19.804,
         -75.0,
-        44.167
+        44.667
       ],
       [
         22.0,
         -77.196,
-        43.833
+        44.333
       ],
       [
         25.0,
         -78.0,
-        43.5
+        44.0
       ],
       [
         28.0,
         -77.196,
-        43.167
+        43.667
       ],
       [
         30.196,
         -75.0,
-        42.833
+        43.333
       ],
       [
         31.0,
         -72.0,
-        42.5
+        43.0
       ],
       [
         30.196,
         -69.0,
-        42.167
+        42.667
       ],
       [
         28.0,
         -66.804,
-        41.833
+        42.333
       ],
       [
         25.0,
         -66.0,
-        41.5
+        42.0
       ],
       [
         22.0,
         -66.804,
-        41.167
+        41.667
       ],
       [
         19.804,
         -69.0,
-        40.833
+        41.333
       ],
       [
         19.0,
         -72.0,
-        40.5
+        41.0
       ],
       [
         19.804,
         -75.0,
-        40.167
+        40.667
       ],
       [
         22.0,
         -77.196,
-        39.833
+        40.333
       ],
       [
         25.0,
         -78.0,
-        39.5
+        40.0
       ],
       [
         28.0,
         -77.196,
-        39.167
+        39.667
       ],
       [
         30.196,
         -75.0,
-        38.833
+        39.333
       ],
       [
         31.0,
         -72.0,
-        38.5
+        39.0
       ],
       [
         30.196,
         -69.0,
-        38.167
+        38.667
       ],
       [
         28.0,
         -66.804,
-        37.833
+        38.333
       ],
       [
         25.936,
         -66.251,
-        37.604
+        38.104
       ],
       [
         24.997,
         -66.063,
-        37.583
+        38.083
       ],
       [
         24.052,
         -66.0,
-        37.723
+        38.223
       ],
       [
-        20.692,
+        20.75,
         -66.0,
-        38.514
+        39.0
       ],
       [
-        18.582,
-        -65.44,
-        39.119
+        18.617,
+        -65.422,
+        39.566
       ],
       [
-        17.056,
-        -63.9,
-        39.779
+        17.066,
+        -63.839,
+        40.108
       ],
       [
         16.5,
-        -61.773,
-        40.324
+        -61.661,
+        40.485
       ],
       [
         16.5,
@@ -1083,26 +1073,26 @@
         "r_mm": 6.0,
         "turns": 2.75
       },
-      "fixed_path_mm": 89.6,
+      "fixed_path_mm": 89.4,
       "cable_readings_mm": [
         186.0,
         200.0
       ],
       "coil_turns_allowed": [
         2.0,
-        3.0
+        3.5
       ],
       "coil_turns_needed": [
-        2.57,
+        2.58,
         2.95
       ]
     },
-    "notes": "Factory cable, not cut: measure it from the encoder cap to the female housing's rear face (readings of 186-200 mm all fit), route the fixed path first (about 90 mm outside the coil), wind the remainder (96-110 mm, 2-3 turns) into the coil ahead of the motor and tie it (assembly step 4); loosen the coil tie before unplugging the inline joint."
+    "notes": "Factory cable, not cut: measure it from the encoder cap to the female housing's rear face (readings of 186-200 mm all fit), route the fixed path first (about 89 mm outside the coil), wind the remainder (97-111 mm, 2-3.5 turns) into the coil ahead of the motor and tie it (assembly step 4); loosen the coil tie before unplugging the inline joint."
   },
   {
     "id": "W01",
-    "name": "Battery adapter lead (Tamiya on the pack top → J1, bay board rear edge)",
-    "route_mm": 49,
+    "name": "Battery adapter lead (Tamiya on the pack top → J1 XT30, bay board rear edge)",
+    "route_mm": 41,
     "suggested_cut_mm": 100,
     "points": [
       [
@@ -1117,18 +1107,18 @@
       ],
       [
         -67,
-        -19.59,
+        -20.5,
         70.5
       ],
       [
-        -67,
-        -19.59,
-        56
+        -62.35,
+        -20.5,
+        66
       ],
       [
-        -61.6,
-        -19.59,
-        53.5
+        -62.35,
+        -20.5,
+        59.0
       ]
     ],
     "board_end": {
@@ -1136,7 +1126,7 @@
       "end": "last"
     },
     "wire": "2 × 18 AWG silicone (red, black)",
-    "notes": "Battery adapter lead: the Tamiya mate (C04) on the pack top to a JST VHR-2N housing (C05) on J1. POLARITY, in plain words: on the board J1 pin 1 is GND and pin 2 is BAT+ (ruling PB20; silk \"-\" at pin 1, \"+\" at pin 2), so the black battery-minus wire goes in housing cavity 1 and the red battery-plus wire in cavity 2. Check it fail-safe before the fuses go in: with F1 and F2 out, plug W01 into J1 and the battery and measure F1's input clip (BAT+ side) against a GND pad: it must read positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower). A reversed lead reads negative and, with the fuses out, has no current path; with the fuses in it would put the battery backwards across the whole board, which has no reverse-polarity protection.",
+    "notes": "Battery adapter lead: the Tamiya mate (C04) on the pack top to an AMASS XT30U-F (C19, the female half on the source side) on J1, the XT30 PCB male; tag it \"J1 BATT\". J1 (XT30), J2 (JST VH) and J3 (Micro-Fit 3.0) are three connector families (ruling PB30): this lead fits no other header. POLARITY, in plain words: on the board J1 pin 1 is GND and pin 2 is BAT+ (ruling PB20; silk \"-\" at pin 1, \"+\" at pin 2), so the black battery-minus wire goes on the XT30U-F's \"−\" contact (cavity 1, mates pin 1) and the red battery-plus wire on its \"+\" contact (cavity 2, mates pin 2). The XT30 mates only one way round, but a lead soldered the wrong way round still mates. Check it fail-safe before the fuses go in: with F1 and F2 out, plug W01 into J1 and the battery and measure F1's input clip (BAT+ side) against a GND pad: it must read positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower). A reversed lead reads negative and, with the fuses out, has no current path; with the fuses in it would put the battery backwards across the whole board, which has no reverse-polarity protection.",
     "pinout": [
       {
         "cavity": "1",
@@ -1154,22 +1144,27 @@
   },
   {
     "id": "W04",
-    "name": "5 V Jetson lead (J3, bay board right edge in the band → barrel plug)",
-    "route_mm": 168,
-    "suggested_cut_mm": 250,
+    "name": "5 V Jetson lead (J3 Micro-Fit, bay board right edge in the band → barrel plug)",
+    "route_mm": 176,
+    "suggested_cut_mm": 300,
     "points": [
       [
-        -43.02,
-        -45.15,
-        53.5
+        -43.9,
+        -59.47,
+        42.0
       ],
       [
-        -43.02,
-        -45.15,
+        -43.9,
+        -63.47,
+        42.0
+      ],
+      [
+        -43.9,
+        -63.47,
         58.0
       ],
       [
-        -43.02,
+        -35.9,
         -56.0,
         58.0
       ],
@@ -1194,7 +1189,7 @@
       "end": "first"
     },
     "wire": "2 × 18 AWG silicone (red, black)",
-    "notes": "Jetson 5 V lead: JST VHR-2N (C05) on J3 to the 5.5 / 2.1 mm barrel plug (C03), centre positive; the Jetson needs its J48 jumper for barrel power.",
+    "notes": "Jetson 5 V lead: a Molex Micro-Fit 3.0 receptacle (43645-0200, two 43030-series 18 AWG crimps: C20) on J3 to the 5.5 / 2.1 mm barrel plug (C03), centre positive; tag it \"J3 JETSON 5V\". A Micro-Fit fits neither J1 (XT30) nor J2 (JST VH): ruling PB30. The receptacle plugs into J3 from beyond the board's right edge, its latch up. The Jetson needs its J48 jumper for barrel power.",
     "pinout": [
       {
         "cavity": "1",
@@ -1739,7 +1734,7 @@
       "end": "last"
     },
     "wire": "2 × 18 AWG silicone (red, orange)",
-    "notes": "Master rocker pair: JST VHR-2N (C05) on J2 to the rocker's two terminals (insulated spades, C12). Both wires are battery + (fused / switched): never on GND.",
+    "notes": "Master rocker pair: JST VHR-2N (C05) on J2 to the rocker's two terminals (insulated spades, C12); tag it \"J2 ROCKER\". Both wires are battery + (fused / switched): never on GND. J2 is the board's only JST VH header (PB30).",
     "pinout": [
       {
         "cavity": "1",
@@ -1806,7 +1801,7 @@
   {
     "id": "W15",
     "name": "Arm button lead (J12, bay board rear edge ↔ lid button)",
-    "route_mm": 106,
+    "route_mm": 110,
     "suggested_cut_mm": 200,
     "points": [
       [
@@ -1823,6 +1818,26 @@
         -61,
         -62,
         60
+      ],
+      [
+        -61,
+        -28.65,
+        59.6
+      ],
+      [
+        -57.5,
+        -26.65,
+        59.5
+      ],
+      [
+        -57.5,
+        -14.35,
+        59.2
+      ],
+      [
+        -61,
+        -12.35,
+        58.8
       ],
       [
         -61,

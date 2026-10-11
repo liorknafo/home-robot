@@ -12,7 +12,8 @@ and reads everything it places or checks around it from this file, so the CAD fo
  - parts:        every footprint's courtyard box, PARTS h, mount, DNP and the under-carrier flag;
  - connectors:   every board_spec.EDGE_CONNECTORS ref: courtyard and F.Fab body boxes, centre, entry direction (board -> robot unit vector),
                  family, vertical or not, mated height (MATED_H), the wire bend over a vertical plug (CABLE_BEND_MM), the lay-flat reach
-                 (MATED_REACH), pins, under-carrier flag;
+                 (MATED_REACH), the off-board reach and bend of a plug that stands out past the board edge (B12a: OFFBOARD_REACH /
+                 OFFBOARD_BEND_MM, J3) with its far end (plug_end_xy, where the wires leave it), pins, under-carrier flag;
  - modules:      the plug-in modules on their socket pads (Pico, DRV_L, DRV_R, IMU): every socket pin, the module body (board_spec.MODULES on
                  its first socket), the module PCB underside z (board top + SOCKET_BODY_H + HEADER_H) and PARTS h;
  - motor_cables: B3's motor-cable model (exit on the motor face, the band beside it, the W x T section) for the CAD to re-assert;
@@ -103,8 +104,14 @@ def main():
         connectors[ref] = dict(courtyard_xy=c, centre_xy=[round((c[0] + c[2]) / 2, 4), round((c[1] + c[3]) / 2, 4)], body_xy=rbox(*fab_body(fp)),
                                entry=d, entry_xy=list(DIRS[d]), family=fam, vertical=vertical, mated_h=B.MATED_H[ref],
                                bend=B.CABLE_BEND_MM[fam] if vertical else 0.0, mated_reach=B.MATED_REACH.get(ref, 0.0),
+                               offboard_reach=B.OFFBOARD_REACH.get(ref, 0.0), offboard_bend=B.OFFBOARD_BEND_MM if ref in B.OFFBOARD_REACH else 0.0,
                                pins_xy=[xy(T(p.GetPosition().x), T(p.GetPosition().y)) for p in sorted(fp.Pads(), key=lambda p: (len(p.GetNumber()), p.GetNumber())) if p.GetNumber()],
                                under_carrier=B.UNDER_CARRIER(ref))
+        if ref in B.OFFBOARD_REACH:      # B12a: a right-angle header whose plug stands out past the board edge (J3): where its wires leave the plug
+            bx = connectors[ref]['body_xy']; ex, ey = DIRS[d]
+            face = (bx[2] if ex > 0 else bx[0]) if ex else (bx[3] if ey > 0 else bx[1])
+            mid = [round((bx[1] + bx[3]) / 2, 4) if ex else round((bx[0] + bx[2]) / 2, 4)]
+            connectors[ref]['plug_end_xy'] = ([round(face + ex * B.OFFBOARD_REACH[ref], 4)] + mid) if ex else (mid + [round(face + ey * B.OFFBOARD_REACH[ref], 4)])
 
     z_module = round(B.Z_PCB_TOP + SOCKET_BODY_H + HEADER_H, 3)
     modules = {}

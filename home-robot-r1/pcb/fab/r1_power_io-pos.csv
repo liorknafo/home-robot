@@ -5,9 +5,9 @@ Ref,Val,Package,PosX,PosY,Rot,Side
 "D1","SS14","D_SMA",15.000000,-20.500000,180.000000,top
 "F1","7.5 A ATO","FuseHolder_Blade_ATO_Littelfuse_FLR_178.6165",23.190000,-71.450000,90.000000,top
 "F2","5 A ATO","FuseHolder_Blade_ATO_Littelfuse_FLR_178.6165",15.980000,-57.300000,-90.000000,top
-"J1","Battery in","JST_VH_B2P-VH_1x02_P3.96mm_Vertical",4.350000,-71.570000,90.000000,top
+"J1","Battery in","AMASS_XT30UPB-M_1x02_P5.0mm_Vertical",4.150000,-73.000000,90.000000,top
 "J2","Master rocker","JST_VH_B2P-VH_1x02_P3.96mm_Vertical",4.350000,-61.110000,90.000000,top
-"J3","Jetson 5V","JST_VH_B2P-VH_1x02_P3.96mm_Vertical",25.460000,-95.700000,180.000000,top
+"J3","Jetson 5V","Molex_Micro-Fit_3.0_43650-0200_1x02_P3.00mm_Horizontal",24.100000,-90.500000,180.000000,top
 "J4","Left motor","PinHeader_1x06_P2.54mm_Horizontal",48.200000,-35.200000,90.000000,top
 "J5","Right motor","PinHeader_1x06_P2.54mm_Horizontal",65.210000,-64.800000,-90.000000,top
 "J6","Cliff 1","JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical",3.000000,-24.390000,90.000000,top
@@ -18,7 +18,7 @@ Ref,Val,Package,PosX,PosY,Rot,Side
 "J11","Bumper R","JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical",42.400000,-97.100000,180.000000,top
 "J12","Arm button","JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical",3.000000,-51.580000,90.000000,top
 "J13","Motor toggle loop","JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical",3.000000,-7.050000,90.000000,top
-"K1","G5LE-1 DC5","Relay_SPDT_Omron-G5LE-1",8.640000,-95.950000,180.000000,top
+"K1","G5LE-1 DC5","Relay_SPDT_Omron-G5LE-1",8.640000,-96.450000,180.000000,top
 "LED1","green","LED_0805_2012Metric",35.750000,-4.000000,-90.000000,top
 "LED2","green","LED_0805_2012Metric",40.250000,-10.500000,90.000000,top
 "LED3","yellow","LED_0805_2012Metric",40.500000,-86.000000,90.000000,top

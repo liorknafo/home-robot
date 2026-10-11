@@ -1,4 +1,4 @@
-import json
+import json, math
 import unittest
 from functools import lru_cache
 from collections import Counter
@@ -321,11 +321,13 @@ class SpecTests(unittest.TestCase):
         for ref, d in want.items(): self.assertEqual(B.EDGE_CONNECTORS[ref], d, ref)
         self.assertEqual(B.TERMINALS, {'U5A': '+u', 'U5B': '+u'})
         for ref in conns: self.assertEqual(B.PARTS[ref]['mount'], 'tht', ref)
-        self.assertEqual(B.CABLE_BEND_MM, {'XH': 5.0, 'PinHeader': 5.0, 'VH': 7.0})
+        self.assertEqual(B.CABLE_BEND_MM, {'XH': 5.0, 'PinHeader': 5.0, 'VH': 7.0, 'XT30': 7.0, 'MicroFit': 7.0})
         self.assertEqual(set(B.MATED_H), conns)
         fam = {r: B.connector_family(r) for r in conns}
         self.assertEqual({r for r, f in fam.items() if f == 'Terminal'}, {'U5A', 'U5B'})
-        self.assertEqual({r for r, f in fam.items() if f == 'VH'}, {'J1', 'J2', 'J3'})
+        self.assertEqual({r for r, f in fam.items() if f == 'VH'}, {'J2'})          # B12a (PB30): J1 XT30, J3 Micro-Fit
+        self.assertEqual({r for r, f in fam.items() if f == 'XT30'}, {'J1'})
+        self.assertEqual({r for r, f in fam.items() if f == 'MicroFit'}, {'J3'})
         self.assertEqual({r for r, f in fam.items() if f == 'PinHeader'}, {'J4', 'J5'})
         for ref, h in B.MATED_H.items(): self.assertGreater(h, 0.0, ref)
         for ref, r in B.MATED_REACH.items():                                  # PB6: only right-angle parts whose plug lies on the board
@@ -341,14 +343,17 @@ class SpecTests(unittest.TestCase):
             if B.UNDER_CARRIER(ref): self.assertLessEqual(need, B.UNDER_CARRIER_MAX_H, ref)
         for ref in ('J4', 'J5'): self.assertEqual(B.PARTS[ref]['fp'], 'Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal', ref)
     def test_under_carrier_flag_follows_the_courtyard(self):
-        """UNDER_CARRIER(ref) is True exactly when the part's courtyard (from its footprint file, placed by PLACEMENT) reaches u >= CARRIER_U."""
+        """UNDER_CARRIER(ref) is True exactly when the part's courtyard (from its footprint file, placed by PLACEMENT) reaches u >= CARRIER_U.
+        B12a (carry 8): checked against the placement's expected set, not the same formula - the Pico's right socket (PB7: u 28.33), the IMU
+        and both drivers, the P03 terminals, C3, the tongue / side / spare headers, the left encoder shifters under the IMU, the lamps, the
+        test pads and all six holes; C1 (27.83), J3 (27.93) and F1 (27.94) stay just behind the line. ktest_pcb checks the flag against the
+        placed board's KiCad courtyards."""
         for ref in B.PARTS:
             u0, v0, u1, v1 = B.courtyard_box(ref)
             self.assertLess(u0, u1, ref); self.assertLess(v0, v1, ref)
-            self.assertEqual(B.UNDER_CARRIER(ref), u1 >= B.CARRIER_U, ref)
-        self.assertTrue(B.UNDER_CARRIER('U3P')); self.assertFalse(B.UNDER_CARRIER('J1'))
-        x0, y0, x1, y1 = B.courtyard_box('J1')
-        self.assertTrue(x1 < B.CARRIER_U)
+        want = {'U1B', 'U2', 'U3L', 'U3P', 'U4L', 'U4P', 'U5A', 'U5B', 'C3', 'J4', 'J5', 'J8', 'J9', 'J10', 'J11', 'J14', 'J15',
+                'Q1', 'Q2', 'R1', 'R3', 'R21', 'R23', *[f'LED{i}' for i in range(1, 4)], *[f'TP{i}' for i in range(1, 6)], *[f'H{i}' for i in range(1, 7)]}
+        self.assertEqual({r for r in B.PARTS if B.UNDER_CARRIER(r)}, want)
     def test_motor_cable_exit_matches_the_motor_geometry(self):
         """B3 fix 1: MOTOR_CABLE_EXIT (board u, v and height over the board top) is where each factory cable leaves its motor: on the
         motor's axis (u of the motor_left / right box centre in cad/component-manifest.json), on its inner end face (the box face nearest the
@@ -366,11 +371,13 @@ class SpecTests(unittest.TestCase):
     def test_json_gpio_mentions_follow_pico_gpio(self):
         """B3 fix 1: parts-and-connections.json agrees with PICO_GPIO everywhere it names a Pico GPIO. The pico_pins table lists exactly
         the PICO_GPIO pins, each row's GP numbers paired in order with the net names in the last parentheses of its description; every
-        other "GPn" in the file is written "GPn (NET)" with PICO_GPIO[NET] == "GPn"."""
+        other "GPn" in the file is written "GPn (NET)" with PICO_GPIO[NET] == "GPn". B12a (carry 8): the table's third column (notes) is
+        scanned too - it names no net in parentheses, so it takes the "GPn (NET)" rule of the rest of the file, and a "PWM slice k A / B"
+        note must be the RP2040's slice of the row's pins (GPn: slice (n / 2) mod 8, channel A even, B odd)."""
         import re
         d = json.loads((tools.PCB_DIR.parent / 'parts-and-connections.json').read_text())
         gp_of = dict(B.PICO_GPIO)
-        seen = set()
+        seen, slices = set(), 0
         for row in d['pico_pins']:
             gps = re.findall(r'\bGP\d+\b', row[0])
             if not gps: continue
@@ -381,8 +388,13 @@ class SpecTests(unittest.TestCase):
             for gp, net in zip(gps, nets):
                 self.assertEqual(gp_of.get(net), gp, f'pico_pins: {gp} is not {net} in PICO_GPIO')
                 seen.add(gp)
+            for m in re.finditer(r'PWM slice (\d+) ([AB](?: / [AB])*)', ' '.join(row[2:])):
+                n = [int(g[2:]) for g in gps]
+                self.assertEqual(({k // 2 % 8 for k in n}, ' / '.join('AB'[k % 2] for k in n)), ({int(m.group(1))}, m.group(2)), row); slices += 1
         self.assertEqual(seen, set(gp_of.values()))
+        self.assertEqual(slices, 2, 'the two motor drivers\' IN1 / IN2 rows')
         rest = {k: v for k, v in d.items() if k != 'pico_pins'}
+        rest['pico_pins notes'] = [row[2:] for row in d['pico_pins']]
         def strings(x):
             if isinstance(x, dict):
                 for v in x.values(): yield from strings(v)
@@ -458,10 +470,10 @@ class SpecTests(unittest.TestCase):
                     self.assertTrue(point_in_polygon(B.pad_uv(ref, pin), pts), f'{net} {layers}: {ref}.{pin} at {B.pad_uv(ref, pin)} outside its zone')
         self.assertEqual(set(B.POWER_TRUNK) - {'GND'}, {'BAT+', 'F1_OUT', 'F2_OUT', 'VBAT_SW', 'VMOT', '5V'})
         self.assertEqual([n for n in B.POWER_TRUNK if n != 'GND' and not B.zone_layers(n)], [], 'zoneless trunk nets')
-        for net in B.POWER_TRUNK:
-            if net != 'GND':
-                self.assertEqual(B.zone_layers(net), tuple(L for L in C.STACKUP if (net, L) in seen and any(
-                    z['net'] == net and L in z['layers'] and z.get('trunk', True) for z in B.POWER_ZONES)), net)
+        # B12a (carry 9): the trunk layers of the documented design (the POWER_ZONES comment), as literals - the In2 copies of VBAT_SW, VMOT,
+        # 5V and F1_OUT are helper pours (trunk=False), so they are not trunk layers
+        self.assertEqual({n: B.zone_layers(n) for n in B.POWER_TRUNK if n != 'GND'},
+                         {'VBAT_SW': ('F.Cu',), 'VMOT': ('F.Cu',), '5V': ('B.Cu',), 'BAT+': ('B.Cu',), 'F1_OUT': ('B.Cu',), 'F2_OUT': ('F.Cu',)})
         self.assertIn('B.Cu', B.zone_layers('5V'))                           # controller hand-over: the 5V trunk on 1 oz B.Cu
         self.assertLessEqual({'VBAT_SW', 'VMOT', '5V', '3V3'}, {z['net'] for z in B.POWER_ZONES if 'In2.Cu' in z['layers']})
 
@@ -519,15 +531,29 @@ class SpecTests(unittest.TestCase):
         self.assertNotIn(('J1', '1'), B.NETS['BAT+']); self.assertNotIn(('J1', '2'), B.NETS['GND'])
         self.assertEqual(B.POWER_TRUNK['BAT+'], [('J1', '2'), ('F1', '1')])
         self.assertIn(('J1', '1'), B.POWER_TRUNK['GND']); self.assertNotIn(('J1', '2'), B.POWER_TRUNK['GND'])
-        self.assertEqual(B.PIN_MARKS, {'J1': {'2': '+', '1': '-'}})
+        self.assertEqual(B.PIN_MARKS['J1'], {'2': '+', '1': '-'})
+
+    def test_pin_marks_b12a(self):
+        """PB20 / B12a (final review N2): '+' / '-' silk marks at J1's BAT+ / GND pins and a '+' at pin 1 of both P03 terminals (U5A.1
+        VBAT_SW in, U5B.1 5V out: the screw nearer the robot centre line) and of the Jetson 5 V header (J3.1). A '+' pin is a supply pin whose
+        connector's other pin is GND; a '-' pin is GND. Each mark is nearer its own pin than the connector's other pin (ktest_pcb checks
+        the whole board, the housings and the courtyards on the built board)."""
+        self.assertEqual(B.PIN_MARKS, {'J1': {'2': '+', '1': '-'}, 'U5A': {'1': '+'}, 'U5B': {'1': '+'}, 'J3': {'1': '+'}})
+        net = {p: n for n, pins in B.NETS.items() for p in pins}
+        self.assertEqual({r: net[(r, '1')] for r in ('U5A', 'U5B', 'J3')}, {'U5A': 'VBAT_SW', 'U5B': '5V', 'J3': '5V'})
+        centre_v = B.robot_to_board(0.0, 0.0)[1]
+        for ref in ('U5A', 'U5B'):                                         # pin 1: the screw nearer the robot centre line (y 0)
+            self.assertLess(abs(B.pad_uv(ref, '1')[1] - centre_v), abs(B.pad_uv(ref, '2')[1] - centre_v), ref)
         for ref, marks in B.PIN_MARKS.items():
             self.assertEqual(set(B.PIN_MARK_AT[ref]), set(marks))         # B6 fix 1: one offset per marked pin
+            pins = {p for (r, p) in net if r == ref}
+            self.assertEqual(len(pins), 2, ref)
             for pin, sign in marks.items():
-                self.assertIn((ref, pin), B.NETS['BAT+' if sign == '+' else 'GND'])
-                # outside the housing (ktest_pcb checks the body): each mark lies past its own pin's end of the row, away from the other
-                other = next(q for q in marks if q != pin)
-                dv = B.pad_uv(ref, pin)[1] - B.pad_uv(ref, other)[1]
-                self.assertGreater(B.PIN_MARK_AT[ref][pin][1] * dv, 0, (ref, pin))
+                other = next(q for q in pins if q != pin)
+                if sign == '+': self.assertEqual((net[(ref, other)], net[(ref, pin)] != 'GND'), ('GND', True), (ref, pin))
+                else: self.assertEqual(net[(ref, pin)], 'GND', (ref, pin))
+                at = B.pad_uv(ref, pin); m = (at[0] + B.PIN_MARK_AT[ref][pin][0], at[1] + B.PIN_MARK_AT[ref][pin][1])
+                self.assertLess(math.dist(m, at), math.dist(m, B.pad_uv(ref, other)), (ref, pin))
 
     def test_gnd_patch_pins_pb21(self):
         """Ruling PB21 (B6 fix 2): one pin per F.Cu GND patch (GND_PATCH_PINS, GND trunk pins), the only pad with its own spoke angle is

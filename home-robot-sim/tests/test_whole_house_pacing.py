@@ -627,7 +627,7 @@ class RoundBodyTests(unittest.TestCase):
                     b.localizer.pose[2]=b.contact_spin
                 else:self.assertEqual(w,0.)
                 # Contact in front, still pressed: stand still (never reverse) and keep the session alive,
-                # waiting for the bumper to release, however long it stays pressed.
+                # waiting for the bumper to release (up to CONTACT_WAIT_S: see the test below).
                 for t in np.arange(1.1,40.,.5):
                     ready(b,t,stamp_only=True);v,w=b.command(dict(sim_time_s=t,armed=False,fault='bumper'));self.assertEqual((v,w),(0.,0.))
                 self.assertEqual(b.mode,'mapping');self.assertEqual(b.phase,'contact');self.assertIn('Waiting for the bumper to release',b.message)
@@ -639,6 +639,156 @@ class RoundBodyTests(unittest.TestCase):
                 b.predict(dict(sim_time_s=1.,fault='bumper',armed=False,sensors=dict(bumper=True,bump_zones=1<<bit,left_ticks=0,right_ticks=0,encoder_cpr=4741.44,gyro_rad_s=[0,0,0],specific_force_m_s2=[0,0,9.8])))
                 b.bumper_pressed=False;b.bumper_sides=(False,False)
                 self.assertEqual(b.command(dict(sim_time_s=1.05,armed=True,fault='none')),(0.,0.));self.assertEqual(b.phase,'plan')
+    # Task G helpers: a pressed contact on the front centre (zone 2), and wheel ticks per metre.
+    PRESS=dict(bumper=True,bump_zones=1<<2,encoder_cpr=4741.44,gyro_rad_s=[0,0,0],specific_force_m_s2=[0,0,9.8])
+    PER_M=4741.44/(2*math.pi*geometry.WHEEL_R)
+    def wheels(self,b,t,run,spin=0.,pressed=False,motion=None):
+        """One predict() with both wheels at `run` m of travel (+/- `spin` m for a turn), requested_motion first."""
+        if motion is not None:b.requested_motion=motion
+        sensors=dict(self.PRESS,left_ticks=(run-spin)*self.PER_M,right_ticks=(run+spin)*self.PER_M)
+        if not pressed:sensors.update(bumper=False,bump_zones=0)
+        b.predict(dict(sim_time_s=t,fault='bumper' if pressed else 'none',armed=not pressed,sensors=sensors))
+    def test_forward_run_is_the_net_forward_drive_since_the_last_turn_in_place(self):
+        # CONTACT_*: what a creep may undo. Forward wheel travel adds, reversing takes it back (never below 0), a turn
+        # in place (v == 0, w != 0) resets it; arcs and standing still keep it.
+        with tempfile.TemporaryDirectory() as tmp:
+            b=LidarBrain(tmp);open_floor(b);b.mode='mapping'
+            self.wheels(b,1.,0.,motion=(0.,0.));self.assertEqual(b.forward_run,0.)
+            self.wheels(b,1.05,.03,motion=(.1,0.));self.assertAlmostEqual(b.forward_run,.03,places=4)
+            self.wheels(b,1.1,.05,motion=(.1,.4));self.assertAlmostEqual(b.forward_run,.05,places=4)
+            self.wheels(b,1.15,.05,motion=(0.,0.));self.assertAlmostEqual(b.forward_run,.05,places=4)
+            self.wheels(b,1.2,.04,motion=(-.05,0.));self.assertAlmostEqual(b.forward_run,.04,places=4)
+            self.wheels(b,1.25,-.02,motion=(-.05,0.));self.assertEqual(b.forward_run,0.)
+            self.wheels(b,1.3,.0,motion=(.1,0.));self.assertAlmostEqual(b.forward_run,.02,places=4)
+            self.wheels(b,1.35,.0,spin=.01,motion=(0.,.4));self.assertEqual(b.forward_run,0.,'a turn in place')
+            self.wheels(b,1.4,.008,spin=.01,motion=(.1,0.));self.assertAlmostEqual(b.forward_run,.008,places=4)
+    def test_pressed_back_off_is_planned_again_when_the_planned_length_stops_fitting(self):
+        # Unreal trial full-mapping-20261011T054731 (the shower tray): the straight back-off was planned at 12 cm along a
+        # curved trail, the next LiDAR scan moved the pose estimate and the straight line then fitted 1 mm short of the plan;
+        # the back-off was dropped whole and the robot waited, pressed, until the time budget ended the run (1110 s).
+        # Here: a trail curving left (radius .25 m, like the local planner's .4 rad/s commits at 10 cm/s), a pose correction
+        # of 8 mm to the right and .04 rad after the contact. The back-off goes on, re-planned shorter (CONTACT_ATTEMPTS bound it).
+        from autonomy.lidar_brain import CONTACT_ATTEMPTS
+        with tempfile.TemporaryDirectory() as tmp:
+            b=LidarBrain(tmp);ring=open_floor(b);b.current_cloud=np.vstack((ring,wall([R+.001,-.3],[R+.001,.3])));ready(b,1.)
+            for th in np.arange(.8,-1e-9,-.04):b.trail.append(np.array([-.25*math.sin(th),.25*(1-math.cos(th))]))
+            b.predict(dict(sim_time_s=1.,fault='bumper',armed=False,sensors=dict(self.PRESS,left_ticks=0,right_ticks=0)))
+            self.assertEqual(b.phase,'contact');self.assertAlmostEqual(b.backoff,.065);self.assertEqual(b.contact_attempts,1)
+            self.assertEqual(b.command(dict(sim_time_s=1.,armed=True,fault='bumper')),(-.05,0.))
+            b.localizer.pose=np.array([0.,-.008,.04])
+            self.assertFalse(b.straight_corridor_clear(-1,b.backoff-np.linalg.norm(b.localizer.pose[:2]-b.escape_origin[:2]),True),'precondition: the rest no longer fits')
+            ready(b,1.05,stamp_only=True);self.assertEqual(b.command(dict(sim_time_s=1.05,armed=True,fault='bumper')),(0.,0.))
+            self.assertEqual(b.phase,'contact');self.assertAlmostEqual(b.backoff,.035);self.assertEqual(b.contact_attempts,2);self.assertIn('Still pressed. Reversing 4 cm',b.message)
+            ready(b,1.1,stamp_only=True);self.assertEqual(b.command(dict(sim_time_s=1.1,armed=True,fault='bumper')),(-.05,0.))
+            # Bounded: with the attempts used up, a refused rest is not planned again; the robot waits for the release.
+            b.contact_attempts=CONTACT_ATTEMPTS;b.localizer.pose=np.array([0.,-.03,0.])
+            ready(b,1.15,stamp_only=True);self.assertEqual(b.command(dict(sim_time_s=1.15,armed=True,fault='bumper')),(0.,0.));self.assertEqual(b.backoff,0.)
+            ready(b,1.2,stamp_only=True);self.assertEqual(b.command(dict(sim_time_s=1.2,armed=True,fault='bumper')),(0.,0.));self.assertEqual(b.phase,'contact')
+    def test_pressed_contact_right_after_a_turn_in_place_creeps_back_over_the_last_forward_drive(self):
+        # 30 cm driven along +x, a quarter turn in place at the trail end, 8 mm forward, pressed on a low step: too little
+        # trail for the 2 cm back-off, which used to mean waiting for ever. The creep (CONTACT_CREEP_V, look-ahead
+        # CONTACT_CREEP_GUARD_M) undoes the 8 mm just driven and no more (forward_run: the wheels take it back).
+        from autonomy.lidar_brain import CONTACT_CREEP_V
+        with tempfile.TemporaryDirectory() as tmp:
+            b=LidarBrain(tmp);ring=open_floor(b);b.current_cloud=np.vstack((ring,wall([R+.001,-.3],[R+.001,.3])));ready(b,1.)
+            for x in np.arange(-.30,1e-9,.01):b.trail.append(np.array([x,0.]))
+            self.wheels(b,1.,0.,motion=(0.,0.));self.wheels(b,1.05,0.,spin=.18,motion=(0.,.4))
+            b.localizer.pose=np.array([0.,0.,math.pi/2]);self.wheels(b,1.1,.004,spin=.18,motion=(.1,0.))
+            b.localizer.pose=np.array([0.,.008,math.pi/2]);b.phase='follow'
+            self.wheels(b,1.15,.008,spin=.18,pressed=True,motion=(.1,0.))
+            self.assertEqual(b.phase,'contact');self.assertEqual(b.backoff_v,CONTACT_CREEP_V);self.assertGreater(b.backoff,.002);self.assertLessEqual(b.backoff,.008+1e-9)
+            self.assertIn('Backing off',b.message)
+            t=1.15;run=.008;moved=0.
+            for k in range(60):
+                ready(b,t,stamp_only=True);v,w=b.command(dict(sim_time_s=t,armed=True,fault='bumper'));b.requested_motion=(v,w)
+                self.assertTrue(v==0 or v==-CONTACT_CREEP_V,(v,w));self.assertEqual(w,0.)
+                b.localizer.pose[1]+=v*.05;moved-=v*.05;run+=v*.05;t+=.05;self.wheels(b,t,run,spin=.18,pressed=True)
+            self.assertGreater(moved,.002);self.assertLessEqual(moved,.008+.001,'undoes at most the forward drive')
+            self.assertEqual(b.backoff,0.,'still pressed (the test keeps the skin pressed): nothing more is legal');self.assertEqual(b.phase,'contact')
+    def test_waiting_tries_the_back_off_again_once_the_wheels_have_stopped(self):
+        # Pressed with too little forward drive to undo at the touch (0.3 mm), so it waits; the body then rolls on 6 mm (as
+        # in the Unreal trial: 5.8 mm after the switch tripped). After CONTACT_SETTLE_S of waiting the back-off is planned
+        # again, once: a creep over the ground just driven. A second roll-on later is not retried (once per contact).
+        from autonomy.lidar_brain import CONTACT_CREEP_V,CONTACT_SETTLE_S
+        with tempfile.TemporaryDirectory() as tmp:
+            b=LidarBrain(tmp);ring=open_floor(b);b.current_cloud=np.vstack((ring,wall([R+.001,-.3],[R+.001,.3])));ready(b,1.)
+            for y in np.arange(-.30,1e-9,.01):b.trail.append(np.array([0.,y]))    # driven along +y, then a quarter turn to face +x
+            self.wheels(b,1.,0.,motion=(0.,0.));self.wheels(b,1.05,0.,spin=.05,motion=(0.,-.4))
+            self.wheels(b,1.1,.0003,spin=.05,pressed=True,motion=(.1,0.))
+            self.assertEqual(b.phase,'contact');self.assertEqual(b.backoff,0.);self.assertLess(b.forward_run,.0005)
+            t=1.1
+            for k in range(4):ready(b,t,stamp_only=True);self.assertEqual(b.command(dict(sim_time_s=t,armed=False,fault='bumper')),(0.,0.));t+=.05
+            b.localizer.pose=np.array([.0063,0.,0.]);self.wheels(b,t,.0063,spin=.05,pressed=True,motion=(0.,0.))
+            self.assertAlmostEqual(b.forward_run,.0063,places=4)
+            while t<1.1+CONTACT_SETTLE_S+.1:
+                ready(b,t,stamp_only=True);v,w=b.command(dict(sim_time_s=t,armed=False,fault='bumper'));t+=.05
+                if b.backoff:break
+            self.assertEqual(b.backoff_v,CONTACT_CREEP_V);self.assertLessEqual(b.backoff,.0063+1e-9);self.assertIn('Still pressed. Backing off',b.message)
+            ready(b,t,stamp_only=True);self.assertEqual(b.command(dict(sim_time_s=t,armed=True,fault='bumper')),(-CONTACT_CREEP_V,0.))
+            self.assertTrue(b.wait_retried)
+    def test_back_in_the_contact_phase_at_the_same_spot_keeps_the_attempts_and_the_wait(self):
+        # Pressed, leaving the contact phase (e.g. to re-verify the position) and coming back still pressed at the same spot
+        # does not restart CONTACT_ATTEMPTS or the CONTACT_WAIT_S wait; a press elsewhere (> CONTACT_SAME_M) or a new touch does.
+        # A stall with no room to back off (bumper released) says so, not 'waiting for the bumper to release'.
+        from autonomy.lidar_brain import CONTACT_SAME_M
+        with tempfile.TemporaryDirectory() as tmp:
+            b=LidarBrain(tmp);ring=open_floor(b);b.current_cloud=np.vstack((ring,wall([R+.001,-.3],[R+.001,.3])));ready(b,1.)
+            b.predict(dict(sim_time_s=1.,fault='bumper',armed=False,sensors=dict(self.PRESS,left_ticks=0,right_ticks=0)))
+            from autonomy.lidar_brain import CONTACT_ATTEMPTS
+            b.contact_attempts=CONTACT_ATTEMPTS;b.waiting_since=1.5;b.wait_retried=True;b.phase='recover_localization'
+            for s_ in np.arange(.30,-1e-9,-.01):b.trail.append(np.array([-s_,0.]))    # trail room behind: only the used-up attempts stop a back-off
+            b.start_contact_phase(20.,'front bumper',[2],recorded=False)
+            self.assertEqual((b.contact_attempts,b.waiting_since,b.wait_retried),(CONTACT_ATTEMPTS,1.5,True));self.assertEqual(b.backoff,0.)
+            b.trail.clear()
+            b.localizer.pose=np.array([CONTACT_SAME_M+.01,0.,0.]);b.start_contact_phase(21.,'front bumper',[2],recorded=False)
+            self.assertEqual((b.contact_attempts,b.waiting_since,b.wait_retried),(0,None,False))
+            b.contact_attempts=3;b.start_contact_phase(22.,'front bumper',[2])
+            self.assertEqual(b.contact_attempts,0,'a new touch')
+            b.bumper_pressed=False;b.start_contact_phase(23.,'stall, nothing sensed',[],max_backoff=.05)
+            self.assertEqual(b.backoff,0.);self.assertIn('No room to back off',b.message)
+    def test_no_creep_without_a_forward_drive(self):
+        # Pressed while turning in place (base_link drifted 6 mm during the spin, the trail holds that drift): no forward
+        # drive to undo, so no reverse at all (the kitchen-corner slip stress case); the contact spin or the wait as before.
+        with tempfile.TemporaryDirectory() as tmp:
+            b=LidarBrain(tmp);ring=open_floor(b);b.current_cloud=np.vstack((ring,wall([R+.001,-.3],[R+.001,.3])));ready(b,1.)
+            b.trail.append(np.array([0.,-.006]));b.localizer.pose=np.array([0.,0.,1.2])
+            self.wheels(b,1.,0.,motion=(0.,0.));self.wheels(b,1.05,0.,spin=.05,motion=(0.,.25))
+            self.wheels(b,1.1,0.,spin=.05,pressed=True,motion=(0.,.25))
+            self.assertEqual(b.phase,'contact');self.assertEqual(b.forward_run,0.);self.assertEqual(b.backoff,0.)
+            for k in range(40):
+                ready(b,1.1+.05*k,stamp_only=True);v,w=b.command(dict(sim_time_s=1.1+.05*k,armed=True,fault='bumper'));self.assertGreaterEqual(v,0.)
+    def test_the_creep_guard_scales_with_speed(self):
+        # command()'s look-ahead: REVERSE_GUARD_M at 5 cm/s, CONTACT_CREEP_GUARD_M at the creep's 2 cm/s or slower.
+        # Toward the far end of a 4 cm trail the creep stops within its look-ahead less the end tolerance of it.
+        from autonomy.lidar_brain import REVERSE_GUARD_M,CONTACT_CREEP_GUARD_M,CONTACT_CREEP_V,TRAIL_CAP_TOL
+        self.assertEqual(LidarBrain.reverse_guard(-.05),REVERSE_GUARD_M);self.assertEqual(LidarBrain.reverse_guard(-.04),REVERSE_GUARD_M)
+        self.assertEqual(LidarBrain.reverse_guard(-CONTACT_CREEP_V),CONTACT_CREEP_GUARD_M);self.assertLess(CONTACT_CREEP_GUARD_M,REVERSE_GUARD_M)
+        for speed,guard in ((.05,REVERSE_GUARD_M),(CONTACT_CREEP_V,CONTACT_CREEP_GUARD_M)):
+            with tempfile.TemporaryDirectory() as tmp:
+                b=LidarBrain(tmp);open_floor(b);ready(b,1.);b.phase='follow';b.drive_command=lambda state,v=-speed:(v,0.)
+                for x in np.arange(-.04,1e-9,.01):b.trail.append(np.array([x,0.]))
+                t=1.
+                for k in range(200):
+                    ready(b,t,stamp_only=True);v,w=b.command(dict(sim_time_s=t,armed=True,fault='none'));b.requested_motion=(v,w);b.localizer.pose[0]+=v*.05;t+=.05
+                self.assertGreaterEqual(b.localizer.pose[0]-guard,-.04-TRAIL_CAP_TOL-.003,speed);self.assertLess(b.localizer.pose[0]-guard,-.04-TRAIL_CAP_TOL+.003,speed)
+    def test_pressed_with_nothing_legal_waits_at_most_contact_wait_then_stops_with_a_message(self):
+        # Task G: no driven trail, no forward drive, contact in front: no legal motion. The robot waits for the release
+        # (a person or a pet may move) at most CONTACT_WAIT_S, standing still, then ends the session with a message,
+        # instead of waiting, pressed, until the time budget (the Unreal trial: 1110 s). Go-to ends the same way.
+        from autonomy.lidar_brain import CONTACT_WAIT_S
+        for mode in ('mapping','go_to'):
+            with tempfile.TemporaryDirectory() as tmp:
+                b=LidarBrain(tmp);ring=open_floor(b);b.current_cloud=np.vstack((ring,wall([R+.001,-.3],[R+.001,.3])));ready(b,1.);b.mode=mode;b.phase='follow'
+                b.predict(dict(sim_time_s=1.,fault='bumper',armed=False,sensors=dict(self.PRESS,left_ticks=0,right_ticks=0)))
+                self.assertEqual(b.phase,'contact');self.assertEqual(b.backoff,0.);self.assertIsNone(b.contact_spin)
+                t=1.
+                while t<1.+CONTACT_WAIT_S-.1:
+                    ready(b,t,stamp_only=True);self.assertEqual(b.command(dict(sim_time_s=t,armed=False,fault='bumper')),(0.,0.));t+=.5
+                self.assertEqual(b.mode,mode);self.assertIn(f'at most {CONTACT_WAIT_S:.0f} s',b.message)
+                for k in range(4):
+                    t+=.1;ready(b,t,stamp_only=True);self.assertEqual(b.command(dict(sim_time_s=t,armed=False,fault='bumper')),(0.,0.))
+                self.assertEqual(b.mode,'idle');self.assertIn('Stuck against an obstacle',b.message);self.assertIn('no driven path behind',b.message)
+                self.assertIn('partial map saved' if mode=='mapping' else 'Stopped.',b.message)
     def test_front_contact_with_a_driven_trail_backs_off_along_it(self):
         with tempfile.TemporaryDirectory() as tmp:
             b=LidarBrain(tmp);ring=open_floor(b);b.current_cloud=np.vstack((ring,wall([R+.001,-.3],[R+.001,.3])));ready(b,1.)

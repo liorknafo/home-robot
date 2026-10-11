@@ -1,7 +1,7 @@
 (export (version "E")
   (design
-    (source "/Users/liorknafo/Documents/Codex/2026-10-03/i-x20/outputs/home-robot-r1/pcb/r1_power_io.kicad_sch")
-    (date "2026-10-09T12:29:03+0300")
+    (source "/Users/liorknafo/.t3/worktrees/home-robot-r1/liorknafo-b12a-connectors/pcb/r1_power_io.kicad_sch")
+    (date "2026-10-11T03:53:03+0300")
     (tool "Eeschema 9.0.9")
     (sheet (number "1") (name "/") (tstamps "/")
       (title_block
@@ -220,11 +220,11 @@
       (tstamps "abf856ae-edd6-5361-8e25-1efd95e66059"))
     (comp (ref "J1")
       (value "Battery in")
-      (footprint "Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical")
+      (footprint "Connector_AMASS:AMASS_XT30UPB-M_1x02_P5.0mm_Vertical")
       (datasheet "~")
       (description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
       (fields
-        (field (name "Footprint") "Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical")
+        (field (name "Footprint") "Connector_AMASS:AMASS_XT30UPB-M_1x02_P5.0mm_Vertical")
         (field (name "Datasheet") "~")
         (field (name "Description") "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"))
       (libsource (lib "Connector_Generic") (part "Conn_01x02") (description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"))
@@ -252,11 +252,11 @@
       (tstamps "06381245-8159-537a-90de-d0a47344e394"))
     (comp (ref "J3")
       (value "Jetson 5V")
-      (footprint "Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical")
+      (footprint "Connector_Molex:Molex_Micro-Fit_3.0_43650-0200_1x02_P3.00mm_Horizontal")
       (datasheet "~")
       (description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)")
       (fields
-        (field (name "Footprint") "Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical")
+        (field (name "Footprint") "Connector_Molex:Molex_Micro-Fit_3.0_43650-0200_1x02_P3.00mm_Horizontal")
         (field (name "Datasheet") "~")
         (field (name "Description") "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"))
       (libsource (lib "Connector_Generic") (part "Conn_01x02") (description "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"))

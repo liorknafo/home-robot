@@ -11,9 +11,10 @@ build's motor-side checks) - and compare it with what the harness and BOM files 
   - the J4 / J5 pigtails leave the board upward through a right-angle socket, at a bend radius the wire takes, the motor-side wires do not
     overlap, the inline joints are polarity-marked and tied down, the factory cable's slack is stored (B9 carry items 2, 3, 7-11);
   - the battery-tray hold-down's lead-in covers preload + stack (item 12) and the assembly notes carry the feeler / shim check (item 6);
-  - fix round 2: the pigtails are pre-cut long by half the pin spread (the six sleeves span 12.7 mm, so the outer wires need +-6.35 mm against the
-    drawn Ø3 bundle) and trimmed to length after dressing, the L / J4 and R / J5 tags and the pin-1 rule are in assembly step 0, and the factory
-    cable's coil is the measured variable (fixed path + 2-3 turns takes every reading from 186 to 200 mm);
+  - fix round 2 / B12a (N4): the pigtails are pre-cut long by the full pin spread (the six sleeves span 12.7 mm, and so do the male
+    housing's cavities, so the outer wires need +-6.35 mm at each end against the drawn Ø3 bundle) and trimmed at the cavity after
+    dressing, the L / J4 and R / J5 tags and the pin-1 rule are in assembly step 0, and the factory cable's coil is the measured variable
+    (fixed path + 2-3 turns takes every reading from 186 to 200 mm; up to 3.5 turns for a longer cable);
   - the cut lengths are in the BOM file, with the spike section 8 table as the rough check, and the from-memory facts sit in one verify list."""
 import json, math, re, unittest
 from pathlib import Path
@@ -44,7 +45,7 @@ def pin1_rule(bc, ref):
 
 
 CABLE_READINGS_MM = (186.0, 200.0)    # what Pololu's "200 mm" factory cable may measure to the housing's rear face (controller ruling, B9 fix round 2)
-COIL_TURNS = (2.0, 3.0)
+COIL_TURNS = (2.0, 3.5)      # B12a (final review N4): up to 3.5 turns, for a cable over 202 mm
 
 
 class HarnessTests(unittest.TestCase):
@@ -92,7 +93,8 @@ class HarnessTests(unittest.TestCase):
 
     def test_board_leads_end_at_their_connectors(self):
         """Every cut-list entry that ends at a board connector ends within 10 mm (plan) of that connector's position in board_cad.json
-        (centre_xy), and every edge connector has its lead in the cut list. The Pico USB cable (not an edge connector) ends where its cable
+        (centre_xy) - or, for a plug that stands out past the board edge (B12a: J3's Micro-Fit receptacle), within 1 mm of its far end
+        (plug_end_xy), where its wires leave it - and every edge connector has its lead in the cut list. The Pico USB cable (not an edge connector) ends where its cable
         leaves the micro-B plug: on the receptacle's axis (within 1 mm of the line from the face centre along out_xy), at most a plug length
         (20 mm) out."""
         ended = set()
@@ -104,6 +106,8 @@ class HarnessTests(unittest.TestCase):
                 u = self.bc['pico_usb'];f, o = u['face_centre_xyz'], u['out_xy']
                 along = (pt[0] - f[0]) * o[0] + (pt[1] - f[1]) * o[1];across = abs((pt[0] - f[0]) * o[1] - (pt[1] - f[1]) * o[0])
                 self.assertTrue(0.0 <= along <= 20.0 and across <= 1.0 and abs(pt[2] - f[2]) <= 1.0, (c['id'], along, across))
+            elif 'plug_end_xy' in self.bc['connectors'][be['ref']]:          # B12a: J3's receptacle stands out past the board edge
+                self.assertLessEqual(math.dist(pt[:2], self.bc['connectors'][be['ref']]['plug_end_xy']), 1.0, (c['id'], be['ref']))
             else:
                 self.assertLessEqual(math.dist(pt[:2], self.bc['connectors'][be['ref']]['centre_xy']), 10.0, (c['id'], be['ref']))
             ended.add(be['ref'])
@@ -183,6 +187,32 @@ class HarnessTests(unittest.TestCase):
             if be and be['ref'] in B.EDGE_CONNECTORS:
                 self.assertEqual({r['cavity']: r['net'] for r in c['pinout']}, pin_nets(be['ref']), c['id'])
 
+    # ---- B12a (ruling PB30, final review N1): J1 / J2 / J3 cannot be cross-plugged --------------------------------------------------
+    def test_battery_rocker_and_jetson_leads_fit_only_their_own_header(self):
+        """The battery (J1), rocker (J2) and Jetson 5 V (J3) headers are three different connector families (board_spec.connector_family:
+        XT30, JST VH, Micro-Fit 3.0), no other edge connector shares J1's or J3's family and J2 is the only VH header, so no lead fits a
+        wrong one. Each lead's board-end connector is its header's mate - in the harness table (mates_with), the cut list (its notes) and
+        the BOM line it names - and each lead carries its tag ("J1 BATT", "J2 ROCKER", "J3 JETSON 5V")."""
+        fam = {r: B.connector_family(r) for r in ('J1', 'J2', 'J3')}
+        self.assertEqual(fam, {'J1': 'XT30', 'J2': 'VH', 'J3': 'MicroFit'})
+        others = {B.connector_family(r) for r in B.EDGE_CONNECTORS if r not in fam}
+        self.assertFalse(others & set(fam.values()), others)
+        self.assertEqual({r: self.rows[r]['family'] for r in fam}, fam)
+        mate = {'J1': ('XT30U-F', 'C19'), 'J2': ('VHR-2N', 'C05'), 'J3': ('43645-0200', 'C20')}
+        tag = {'J1': '"J1 BATT"', 'J2': '"J2 ROCKER"', 'J3': '"J3 JETSON 5V"'}
+        hdr = {'J1': 'XT30UPB-M', 'J2': 'B2P-VH', 'J3': '43650-0200'}
+        for ref, (part, code) in mate.items():
+            self.assertIn(hdr[ref], B.PARTS[ref]['mpn'], ref)
+            self.assertIn(part, self.rows[ref]['mates_with'], ref); self.assertIn(code, self.rows[ref]['mates_with'], ref)
+            lead = self.cutd[self.rows[ref]['lead']]
+            self.assertIn(part, lead['notes'], ref); self.assertIn(tag[ref], lead['notes'], ref)
+            self.assertIn(part, self.parts[code]['item'], code); self.assertEqual(self.parts[code]['status'], 'Buy', code)
+            for other, (p2, _) in mate.items():
+                if other != ref: self.assertNotIn(p2, lead['notes'].replace('fits neither', ''), (ref, other))
+        self.assertNotIn('J1', self.parts['C05']['notes'].split('(ruling PB30')[0])     # the VH housings are J2's only
+        s0, _, _ = self.assy()
+        for w in ('three different connector families', '"J1 BATT"', '"J2 ROCKER"', '"J3 JETSON 5V"'): self.assertIn(w, s0, w)
+
     # ---- carry items 2, 7, 8, 9, 10, 11, 3: the motor pigtails, joints and factory cables ---------------------------------------------
     def test_pigtails_leave_the_board_upward(self):
         """Items 2 / 7 / 11: each J4 / J5 pigtail's board end is a right-angle 0.1 in female socket whose wires leave upward (not toward the
@@ -190,7 +220,7 @@ class HarnessTests(unittest.TestCase):
         under-carrier limit and clear of the motor face and the P03 (gated, and the P03 is never a route end of the pigtail); the C18 line
         names that part (no 0.8 mm bend left). PB25 amended (fix round 1): the pigtail is crimped to length, cut = its drawn route + its drawn
         terminations (lap on the tail, sleeve past the tip, inside the crimp housing: 3-5 mm) per wire, with no lift slack,
-        because the joint is unplugged before the board lifts (fix round 2: the pigtail is pre-cut half a pin spread longer and trimmed after
+        because the joint is unplugged before the board lifts (fix round 2 / B12a: the pigtail is pre-cut a full pin spread longer and trimmed after
         dressing: test_pigtail_precut_covers_the_pin_spread); that lift (pigtails and male housings riding up with the board) meets nothing."""
         mj = self.v['bay_board']['motor_joints']['rows']
         for side in ('left', 'right'):
@@ -276,11 +306,11 @@ class HarnessTests(unittest.TestCase):
     # ---- fix round 2 (controller ruling): per-wire spread, L / R tags, the coil as the measured variable, the meter window ------------------
     def test_pigtail_precut_covers_the_pin_spread(self):
         """R1: the pigtail is drawn as one Ø3 bundle from the pin-row centre, but the six sleeves span 5 x 2.54 = 12.7 mm along x, so the outer
-        wires need +-6.35 mm against the drawn route. The wires are therefore pre-cut to route + terminations + spread / 2 (rounded up to the
-        mm), the socket end soldered first, the bundle dressed along its route and each wire trimmed to its own length: the cut list carries
-        pin_spread_mm (re-derived here from board_cad's pad positions), the pre-cut length (the cut-list cut) and the finished length; the
-        pre-cut is at least route + terminations + spread / 2 and less than a mm more; the longest finished wire is at the rear pin (J4 pin 1, J5
-        pin 6: the per-pin order is reversed between the two); the J05 / J06 rows and the harness table say 'pre-cut' and 'finished'."""
+        wires need +-6.35 mm against the drawn route - and (B12a, final review N4) again at the male housing's six cavities. The wires are
+        therefore pre-cut to route + terminations + the full spread (rounded up to the mm), the socket end soldered first, the bundle
+        dressed along its route and each wire trimmed at its own cavity: the cut list carries pin_spread_mm (re-derived here from
+        board_cad's pad positions), the pre-cut length (the cut-list cut) and the finished length (centre and range); the pre-cut is at
+        least route + terminations + spread and less than a mm more; the J05 / J06 rows and the harness table say 'pre-cut' and 'finished'."""
         mj = self.v['bay_board']['motor_joints']['rows']
         for side, ref in (('left', 'J4'), ('right', 'J5')):
             xs = [p[0] for p in self.bc['connectors'][ref]['pins_xy']]
@@ -288,33 +318,33 @@ class HarnessTests(unittest.TestCase):
             self.assertAlmostEqual(spread, 5 * 2.54, 2)
             c = self.cutd[f'motor_pigtail_{side}'];pg = c['pigtail']
             self.assertAlmostEqual(pg['pin_spread_mm'], spread, 2)
-            need = pg['route_mm'] + sum(pg['terminations_mm'].values()) + spread / 2
+            need = pg['route_mm'] + sum(pg['terminations_mm'].values()) + spread          # B12a (N4): the wires fan out +-spread / 2 at both ends
             self.assertGreaterEqual(pg['precut_mm'], need - 1e-9, (side, pg['precut_mm'], need))
             self.assertLess(pg['precut_mm'], need + 1.0, side)                                      # rounded up to the mm, no more
             self.assertEqual(c['suggested_cut_mm'], pg['precut_mm'])
             self.assertEqual(pg['precut_mm'], int(pg['precut_mm']))
             self.assertIn('trim', pg['length_note']);self.assertIn('pre-cut', pg['length_note']);self.assertIn('finished', pg['length_note'])
-            # per-pin finished lengths: the wire at pin k is longer by how far its tail is behind the bundle's start (the bundle runs to +x)
-            by = pg['finished_by_pin_mm']
-            self.assertEqual(sorted(by), ['1', '2', '3', '4', '5', '6'])
-            pins = self.bc['connectors'][ref]['pins_xy'];xc = sum(p[0] for p in pins) / 6
-            for k, p in enumerate(pins, 1):
-                self.assertAlmostEqual(by[str(k)], pg['route_mm'] + sum(pg['terminations_mm'].values()) + (xc - p[0]), delta=0.06, msg=(ref, k))
-            rear_pin = str(min(range(6), key=lambda k: pins[k][0]) + 1)
-            self.assertEqual(max(by, key=by.get), rear_pin, ref)
-            self.assertLessEqual(max(by.values()), pg['precut_mm'] + 1e-9)
-            self.assertAlmostEqual(pg['finished_centre_mm'], pg['route_mm'] + sum(pg['terminations_mm'].values()), delta=0.06)
+            # finished lengths (B12a, N4): each wire is trimmed at its own cavity of the male housing - route + terminations +- the spread
+            # (+-spread / 2 at the socket, again at the housing) - so the cut list gives the range, not a per-pin figure from one end alone
+            centre = pg['route_mm'] + sum(pg['terminations_mm'].values())
+            self.assertNotIn('finished_by_pin_mm', pg)
+            self.assertAlmostEqual(pg['finished_centre_mm'], centre, delta=0.06)
+            lo, hi = pg['finished_range_mm']
+            self.assertAlmostEqual(lo, centre - spread, delta=0.06); self.assertAlmostEqual(hi, centre + spread, delta=0.06)
+            self.assertLessEqual(hi, pg['precut_mm'] + 1e-9)
+            self.assertIn('cavity', pg['trim'])
             # the build's own validation row says the same, and gates it
             v = mj[side]['pigtail']
             self.assertAlmostEqual(v['pin_spread_mm'], spread, 2)
             self.assertEqual(v['precut_mm'], pg['precut_mm'])
-            self.assertGreaterEqual(v['precut_mm'], v['route_mm'] + v['terminations_total_mm'] + v['pin_spread_mm'] / 2 - 1e-9)
+            self.assertGreaterEqual(v['precut_mm'], v['route_mm'] + v['terminations_total_mm'] + v['pin_spread_mm'] - 1e-9)
             self.assertTrue(v['ok'], side)
             # the BOM file: the J05 / J06 row and the harness table
             text = ' '.join([r for r in self.d['connectors'] if r[0] == {'left': 'J05', 'right': 'J06'}[side]][0])
             for w in ('pre-cut', 'finished', f"{pg['precut_mm']} mm"): self.assertIn(w, text, (side, w))
             row = [r for r in self.d['harness']['cut_list'] if r['id'] == f'motor_pigtail_{side}'][0]
             self.assertEqual(row['cut_mm'], pg['precut_mm']);self.assertEqual(row['precut_mm'], pg['precut_mm']);self.assertEqual(row['finished_centre_mm'], pg['finished_centre_mm'])
+            self.assertEqual(row['finished_range_mm'], pg['finished_range_mm'])
         c18 = self.parts['C18']['notes']
         for w in ('pre-cut', 'trim', 'finished', 'spread'): self.assertIn(w, c18, w)
 
@@ -359,7 +389,10 @@ class HarnessTests(unittest.TestCase):
         coil). The validation carries fixed_path_mm (the route outside the coil) and the coil's turn range, and cable readings of 186-200 mm
         (rear-face reading) all fit it; the slack at the housing's rear face is named for what it is."""
         _, s4, service = self.assy()
-        for w in ('measure', 'rear face', 'fixed path', 'remainder', '2–3 turns', 'tie it'): self.assertIn(w, s4, w)
+        for w in ('measure', 'rear face', 'fixed path', 'remainder', '2–3.5 turns', 'tie it'): self.assertIn(w, s4, w)
+        longest = fc_max = min(self.v['bay_board']['motor_joints']['rows'][s]['factory_cable']['fixed_path_mm'] + COIL_TURNS[1] * self.v['bay_board']['motor_joints']['rows'][s]['factory_cable']['coil']['turn_length_mm'] for s in ('left', 'right'))
+        self.assertGreater(longest, 202.0)                                                          # a cable over 202 mm still fits
+        self.assertIn(f'up to {math.floor(fc_max):g} mm still fits', s4)
         self.assertLess(s4.index('fixed path'), s4.index('remainder'))
         self.assertIn('loosen', service);self.assertIn('coil tie', service)
         self.assertLess(service.index('loosen'), service.index('cut the joint ties'))               # the coil tie first, then the joint ties

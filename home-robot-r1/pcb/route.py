@@ -6,8 +6,9 @@ Run with KiCad's Python:  $KPY pcb/route.py               (the defaults route th
                           $KPY pcb/route.py --grids all   (every set-up in SETUPS; rewrites pcb/r1_power_io.kicad_pcb only on a clean
                                                           result, never touches r1_power_io.kicad_pro)
 One router process (one Freerouting JVM, heap JVM_HEAP) at a time by default (--parallel): the routing machine is short of memory and
-swap / disk (L5b). It starts from the placement every time (all tracks and vias deleted, zones unfilled), so re-running it on the routed
-board gives the same board: every Freerouting run is single-threaded and its input DSN canonical, which makes each variant deterministic.
+swap / disk (L5b). It starts from a fresh build_pcb placement every time (B12a: build_pcb.py run into the work dir; all tracks and vias
+deleted, zones unfilled), so re-running it on the routed board gives the same board: every Freerouting run is single-threaded and its
+input DSN canonical, which makes each variant deterministic.
 Work files (DSN, SES, Freerouting logs, per-variant boards) go to a temp dir (--keep DIR keeps them).
 
 Layers (copper.STACKUP): F.Cu, In2.Cu and B.Cu are Freerouting's signal layers; In1.Cu is the solid GND plane, layer type power on the
@@ -399,11 +400,12 @@ def candidate_dsn(raw, board, lifted=(), trunk_only=False, light=False, own=None
     return router_dsn(raw, areas)
 
 
-def unconnected_pairs(board, nets=None):
+def unconnected_pairs(board, nets=None, with_net=False):
     """One (point, point) pair per missing link, computed here rather than taken from the DRC report (KiCad picks among equivalent
     ratsnest edges differently from run to run, and stage C must be reproducible): each net's copper - pads, tracks, vias, zone fill
     pieces - grouped into clusters by contact on a shared layer; the clusters joined by a minimum spanning tree over their closest pairs
-    of anchor points (pad centres, track ends, via centres)."""
+    of anchor points (pad centres, track ends, via centres). with_net: (net, point, point) triples (stage F routes each link on its own
+    net)."""
     layers = [LAYER[L] for L in C.STACKUP]
     def shape(item, L):
         ps = pcbnew.SHAPE_POLY_SET(); item.TransformShapeToPolygon(ps, L, MM(0.005), MM(0.005), pcbnew.ERROR_OUTSIDE)
@@ -445,7 +447,7 @@ def unconnected_pairs(board, nets=None):
         while rest:                                    # Prim: the closest pair between the joined clusters and the rest
             d, a, b, k = min(((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2, a, b, k)
                              for c in joined for a in c for k, r in enumerate(rest) for b in r)
-            pairs.append((a, b)); joined.append(rest.pop(k))
+            pairs.append((net, a, b) if with_net else (a, b)); joined.append(rest.pop(k))
     return pairs
 
 
@@ -854,10 +856,10 @@ def grid_complete(board, base):
     filled placement (its In1 voids give the via keep-outs). Returns how many it drew."""
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     done = 0
-    for a, c in unconnected_pairs(board):
-        net = next((n for n in {t.GetNetname() for t in board.GetTracks()} | {p.GetNetname() for fp in board.GetFootprints() for p in fp.Pads()}
-                    if n and copper_layers_at(board, n, a) and copper_layers_at(board, n, c)), None)
-        if not net: continue
+    for net, a, c in unconnected_pairs(board, with_net=True):
+        # B12a: the link's own net. Picking 'a net with copper at both ends' from an (unordered) set of names could pick GND - its B.Cu fill
+        # lies under both ends of many signal links - and draw the link as GND tracks
+        if not (copper_layers_at(board, net, a) and copper_layers_at(board, net, c)): continue
         path = grid_route(board, base, net, a, c)
         if path: add_grid_path(board, net, path, a, c); done += 1
     return done
@@ -977,7 +979,11 @@ def main():
     work = Path(args.keep or tmp.name); work.mkdir(parents=True, exist_ok=True)
 
     placed = work / 'placed.kicad_pcb'                          # the placement + locked pre-routes, the start of every run
-    shutil.copy(PCB, placed); shutil.copy(PRO, work / 'placed.kicad_pro')
+    # B12a: the start is a fresh build_pcb placement (its own process, as `$KPY pcb/build_pcb.py` runs), not the committed board: loading a
+    # routed board uses up the UUID generator differently, so the pre-routes got other UUIDs, another save order and another DSN (a re-run
+    # on the routed board diverged at stage C and left a link open). The placement is board_spec's either way.
+    subprocess.run([sys.executable, str(D / 'build_pcb.py'), str(placed)], check=True, capture_output=True)
+    shutil.copy(PRO, work / 'placed.kicad_pro')
     board = pcbnew.LoadBoard(str(placed))
     strip(board); add_preroutes(board)
     pcbnew.SaveBoard(str(placed), board, True)

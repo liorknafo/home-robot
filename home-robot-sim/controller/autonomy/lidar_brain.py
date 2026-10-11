@@ -11,12 +11,16 @@ is pressed command() also sends only what the motor core executes as commanded
 (the repo's DriveCore.h clamps both wheels to reverse while pressed, so a spin
 there would pivot base_link backward: no spin at all while pressed unless
 PRESSED_SPIN_PURE). Where a turn in place is refused only by the TURN_CLEAR
-margin it turns slowly in place instead ('close spin'). Pressed with no driven
-path behind and no allowed spin, it stands still and waits for the bumper to
-release (the session stays alive). A
+margin it turns slowly in place instead ('close spin'). Pressed, it backs off
+along the driven trail, planned again when the trail curves away from the
+straight line, and with less than 2 cm of trail by undoing its own last forward
+drive (CONTACT_*); with no driven path behind and no allowed spin it stands
+still and waits for the bumper to release, at most CONTACT_WAIT_S, then stops
+with a message. A
 target that cannot be reached is skipped, not the session. Only cliff, tilt,
-sensor loss, a user stop, lost localization, repeated contacts in one area, the
-time budget or an exhausted recovery budget end a mapping run. A Go-to target
+sensor loss, a user stop, lost localization, repeated contacts in one area, a
+contact it cannot get off, the time budget or an exhausted recovery budget end a
+mapping run. A Go-to target
 closer to an obstacle than the planner's safe mask (but with room for the body)
 is reached by the normal route to the nearest safe cell, then a slow, forward-only
 final approach checked every tick against the live LiDAR (APPROACH_*).
@@ -30,7 +34,7 @@ from .lidar import LidarLocalizer,LidarGrid,scan_points,transform,relocalization
 from .stereo import wrap
 from .mono import MonoObserver
 from .floor_parallax import LowObstacleCamera
-from .imu import ImuCalibration,GRAVITY_GATE
+from .imu import ImuCalibration,GRAVITY_GATE,GYRO_STARTUP_S
 from .lidar import inverse
 from .local_planner import choose_velocity,turn_clear,NEARBY
 from .geometry import (AXLE_X,LIDAR_MOUNT,PLAN_RADIUS,TRACK as WHEEL_TRACK,WHEEL_R,CLIFF_XY,CLIFF_Z,BASE_Z,BUMP_ZONES,shell_point as _shell_point,
@@ -122,6 +126,33 @@ TRAIL_TOL=.025;TRAIL_CAP_TOL=.005;TRAIL_JOINT=.01;TRAIL_GAP=.05;TRAIL_PLAN_TOL=.
 REVERSE_GUARD_M=.02;REVERSE_SETTLE_S=.5;REVERSE_EPISODE_RESET=.05;FORWARD_CLEAR_M=.01
 # A reverse episode ends only after forward travel of at least max(REVERSE_EPISODE_RESET, the distance it
 # reversed), so repeated forward / back cycles cannot walk the robot backward along its trail.
+# Getting off a bumper contact (task G). Unreal trial full-mapping-20261011T054731 met the 6 cm shower tray after a
+# weaving approach (+/-.4 rad/s commits): the straight back-off was planned at 12 cm, the next LiDAR scan moved the pose
+# estimate 4 mm, the straight line then fitted the curved trail 1 mm short of the plan (reverse_room counts 1 cm steps),
+# the back-off was dropped whole and the robot waited for the bumper to release for the rest of the run (1110 s, until
+# the time budget). A contact 1-2 cm after a turn in place waited the same way (the back-off needed 2 cm of trail room).
+# The skin trips within the bumper travel (6.4 mm to the bumper stop), so a few mm of the ground just driven release it.
+# In the contact phase, pressed, in this order:
+# (1) the straight back-off along the driven trail (>= 2 cm at 5 cm/s, as before); when the planned length stops
+#     fitting it is planned again from where the robot is, shorter (contact_backoff), CONTACT_ATTEMPTS per contact;
+# (2) less trail than that: a CREEP at CONTACT_CREEP_V that undoes the robot's own last forward drive (forward_run:
+#     net wheel travel since it last turned in place), at most forward_run and what the trail allows: its command guard
+#     looks CONTACT_CREEP_GUARD_M ahead (reverse_guard), so the trail must reach that far beyond the creep's end (the
+#     usual TRAIL_CAP_TOL past a trail end included). The look-ahead covers what the motor core can still do after a last
+#     command, the .35 s watchdog at the commanded speed plus the wheel ramp's stop: 7 + .8 mm at 2 cm/s (Unreal rolled
+#     5.0-5.4 mm on). The creep ends by wheel travel (its planned length, even while pressed); a creep down to
+#     CONTACT_CREEP_MIN is tried, since the skin releases once the body is back where it was before the touch. At a trail
+#     END (the session start: only the start position behind the turn) it can undo at most forward_run less
+#     CONTACT_CREEP_GUARD_M - TRAIL_CAP_TOL (3 mm). A turn in place (or the drift in one) is not a forward drive: no creep;
+# (3) no reverse at all: the spin toward the pressed side as before (the firmware refuses any other spin while pressed,
+#     and a spin changes no distance, so it cannot release the skin by itself), then (1)-(2) from the new heading;
+# (4) nothing legal: stand still and wait for the bumper to release (a person, a pet, a moved object) at most
+#     CONTACT_WAIT_S, then stop with a message; the map is saved. Once, after CONTACT_SETTLE_S of standing still (the
+#     wheels have stopped; a body still rolling on after the touch adds to forward_run), (1)-(2) are tried again within
+#     CONTACT_ATTEMPTS. Back in the contact phase still pressed at the same spot (within CONTACT_SAME_M, e.g. after
+#     re-verifying the position), the attempts and the wait go on where they were. Every contact is marked on the map.
+# None of them reverses off the driven trail: command()'s guard and the episode budget apply to all of them.
+CONTACT_ATTEMPTS=4;CONTACT_CREEP_V=.02;CONTACT_CREEP_GUARD_M=.008;CONTACT_CREEP_MIN=.0005;CONTACT_WAIT_S=60.;CONTACT_SETTLE_S=1.;CONTACT_SAME_M=.05
 NARROW_BLOCK_S=300  # seconds a narrow-passage stall keeps narrow planning away from that pinch
 STALL_MARK_SPACING=.10   # m; a second unexplained stall this close to a marked one is skipped, not marked again (mark_stall)
 STALL_BACKOFF=.05        # m; back-off after a marked stall: its nearest mark (R + .05 ahead) ends R + .10 = .259 away, outside PLAN_RADIUS,
@@ -132,6 +163,10 @@ STALL_MARK_LIMIT=8       # unexplained stalls marked per session; the 8th is mar
                          # The overhang scenarios need 5 (sofa: 2 m long, three open edges) and 1 per Go-to (table); the caster-catch
                          # rug edge 1. More than that in one session is not a piece of furniture but something systemic (a room of
                          # low frames, a bad pose): stop and let the user look rather than keep pushing.
+GYRO_STARTUP_WAIT_S=30.  # s the first measuring stop (Mapping 'sense', a Go-to's relocalization) waits for the start-up gyro
+                         # calibration (imu.GYRO_STARTUP_S of continuous rest) before it gives up with gyro_startup_message
+def gyro_startup_message(tail):
+    return f'The gyro start-up calibration needs the robot standing still for {GYRO_STARTUP_S:g} s and it did not. {tail}'
 JAM_SETTLE_S=1.          # s standing still after a jam before acting on it (retreat, retry, skip or mark_stall): the wheel ramp (.4 s
                          # from .1 m/s) still pushes, and while it pushes the pose estimate swings 1-2.5 cm ahead of the blocked body
                          # (odometry vs LiDAR). Reversing at once counted that swing back as reverse travel: two retreats used up
@@ -213,6 +248,8 @@ class LidarBrain(Brain):
         self.relaxed_exit=False;self.contact_spin=None;self.spin_commit=None;self.scan_pose=None;self.spin_wait_from=None;self.spin_scans=deque(maxlen=SPIN_SCANS);self.bumper_sides=(False,False);self.reverse_refused=False;self.reverse_episode=None;self.last_reverse_stamp=-1e9;self.trail_break=False;self.trail_breaks=deque(maxlen=600);self.reversed_since_forward=False;self.forward_mark=None;self.pressed_refused=False;self.pressed_spin_odo=None;self.close_spin_blocked=None;self.close_spin_stall=None;self.gyro_z=0.;self.stuck_skips=0;self.stuck_anchor=None;self.trail=deque(maxlen=600);self.contacts=[];self.trouble=[];self.jams=[];self.stall_marks=[];self.wants_arm=False;self.bump_events=None;self.bumper_pressed=False;self.disarmed_since=None;self.tilted_since=None
         self.odometry=deque(maxlen=240);self.lidar_track=deque(maxlen=40);self.jam_reset=stamp;self.skips=0;self.coverage_mark=0.
         self.margin_anchor=None;self.margin_attempts=0;self.stall_position=None;self.stall_attempts=0;self.retreat_after_localization=False;self.translation_anchor=None;self.translation_since=stamp
+        # Contact recovery (CONTACT_*): net forward wheel travel since the last turn in place, the back-offs tried for this contact, and since when a pressed robot with no legal motion has waited for the release.
+        self.forward_run=0.;self.run_ticks=None;self.contact_attempts=0;self.backoff_v=.05;self.waiting_since=None;self.contact_xy=None;self.creep_until=0.;self.wait_retried=False
     def reset_approach(self,near=False):
         """Final-approach state of a Go-to target outside the safe mask (see APPROACH_*): near (the
         target needs the approach), the staging cell, the running approach, its stop point (confirmed
@@ -303,15 +340,23 @@ class LidarBrain(Brain):
         if m and m.get('kind')=='close_spin':self.close_spin_blocked=dict(xy=p[:2].copy(),direction=m['direction'],stamp=stamp);self.maneuver=None
         self.start_contact_phase(stamp,kind,known)
     def start_contact_phase(self,stamp,kind,known,recorded=True,max_backoff=.12):
-        """Contact phase: a short straight back-off along the driven trail if there is trail room;
-        otherwise (no reverse off the trail, ever) a spin toward the contact where the firmware allows a
-        pure spin while pressed, else stand still until the bumper releases. recorded=False: the bumper
-        is still pressed outside the contact phase (no new touch, nothing new to record)."""
+        """Contact phase: a short straight back-off along the driven trail if there is trail room (pressed,
+        also a short creep: contact_backoff); otherwise (no reverse off the trail, ever) a spin toward the contact
+        where the firmware allows a pure spin while pressed, else stand still until the bumper releases, at
+        most CONTACT_WAIT_S. recorded=False: the bumper is still pressed outside the contact phase (no new
+        touch, nothing new to record)."""
         p=self.localizer.pose
         # A contact during a Go-to's final approach (or while confirming where it stopped) ends that approach:
         # after this contact phase the Go-to ends where it leaves the robot (plan()).
         if self.mode=='go_to' and (self.phase=='approach' or getattr(self,'approach_stop',None) is not None):self.approach_contact=True;self.approach=None
-        self.backoff=max(0.,min(max_backoff,self.reverse_budget(),self.reverse_room(REVERSE_LIMIT)-.015));self.escape_origin=p.copy();self.phase='contact';self.phase_started=stamp;self.path=[];self.next_plan=0;self.maneuver=None
+        # A new contact starts the attempts and the wait afresh; back in the contact phase still pressed at the same spot
+        # (recorded=False, within CONTACT_SAME_M), they go on where they were.
+        if recorded or getattr(self,'contact_xy',None) is None or np.linalg.norm(p[:2]-self.contact_xy)>CONTACT_SAME_M:
+            self.contact_attempts=0;self.waiting_since=None;self.wait_retried=False;self.contact_xy=p[:2].copy()
+        self.contact_max_backoff=max_backoff
+        if self.contact_attempts<CONTACT_ATTEMPTS:self.contact_backoff(max_backoff)
+        else:self.backoff=0.;self.backoff_v=.05
+        self.escape_origin=p.copy();self.phase='contact';self.phase_started=stamp;self.path=[];self.next_plan=0;self.maneuver=None
         # No verified reverse room: spin in place (a spin about base_link moves no
         # part of the round body closer to anything) so that the contact azimuth
         # moves toward 0 deg, i.e. the contact comes to the front and never slides
@@ -322,12 +367,34 @@ class LidarBrain(Brain):
         # waits for the skin to release (then the planner turns in place or drives away).
         # With the clamping motor core (PRESSED_SPIN_PURE False) a pressed spin would pivot backward: no spin.
         az=contact_azimuth(known)
-        if self.backoff<.02:self.backoff=0.
-        self.contact_spin=math.radians(az) if self.backoff<.02 and abs(az)>=10 and known and self.pressed_spin_pure else None
+        self.contact_spin=math.radians(az) if not self.backoff and abs(az)>=10 and known and self.pressed_spin_pure else None
         what=f'Contact ({kind}) recorded on the map' if recorded else f'Still pressed against an obstacle ({kind})'
-        if self.backoff>=.02:self.event(f'{what}. Reversing {100*self.backoff:.0f} cm along the path just driven, then replanning.')
+        if self.backoff:self.event(f'{what}. {self.backoff_message()}')
         elif self.contact_spin is not None:self.event(f'{what} at {az:.0f} deg. No driven path behind; turning in place to bring the contact to the front.')
-        else:self.event(f'{what}. No driven path behind and reversing there would be blind; waiting for the bumper to release.')
+        elif self.bumper_pressed:self.event(f'{what}. No driven path behind and reversing there would be blind; waiting for the bumper to release.')
+        else:self.event(f'{what}. No room to back off along the path just driven; replanning.')
+    def contact_backoff(self,max_backoff=.12):
+        """Plan the contact back-off from here (CONTACT_*): sets backoff (m; 0 = none) and backoff_v (m/s) and
+        returns backoff. The straight back-off along the driven trail when it can be >= 2 cm (5 cm/s, as before);
+        pressed, else the creep (CONTACT_CREEP_V): at most the robot's own last forward drive (forward_run) and what
+        the trail allows under the creep's command guard (CONTACT_CREEP_GUARD_M look-ahead beyond its end, 1 mm steps;
+        it ends where forward_run reaches creep_until). The first of them that passes the back-off's own per-tick check
+        (straight_corridor_clear) is taken; each one taken counts toward CONTACT_ATTEMPTS."""
+        budget=min(max_backoff,self.reverse_budget());plans=[]
+        straight=min(budget,self.reverse_room(REVERSE_LIMIT)-.015)
+        if straight>=.02:plans.append((straight,.05,.01))
+        if self.bumper_pressed:
+            creep=min(budget,getattr(self,'forward_run',0.),self.reverse_room(.04,step=.001)-CONTACT_CREEP_GUARD_M)
+            if creep>=CONTACT_CREEP_MIN:plans.append((creep,CONTACT_CREEP_V,.001))
+        self.backoff=0.;self.backoff_v=.05
+        for distance,v,step in plans:
+            if self.straight_corridor_clear(-1,max(step,distance),True,step=step):
+                self.backoff=float(distance);self.backoff_v=v;self.contact_attempts=getattr(self,'contact_attempts',0)+1
+                self.creep_until=getattr(self,'forward_run',0.)-distance;break
+        return self.backoff
+    def backoff_message(self):
+        if self.backoff_v<.05:return f'Backing off {1000*self.backoff:.0f} mm slowly, undoing the last forward drive along the path just driven, then replanning.'
+        return f'Reversing {100*self.backoff:.0f} cm along the path just driven, then replanning.'
     @staticmethod
     def pressed_sides(sensors):
         """(left, right) bumper switches while pressed: bumper_left/right, else from the zone bits
@@ -427,10 +494,10 @@ class LidarBrain(Brain):
         """Reverse distance still allowed in the current reverse episode (REVERSE_LIMIT in total)."""
         ep=getattr(self,'reverse_episode',None)
         return REVERSE_LIMIT if ep is None else max(0.,REVERSE_LIMIT-ep['travelled'])
-    def reverse_room(self,limit=REVERSE_LIMIT,tolerance=TRAIL_PLAN_TOL):
+    def reverse_room(self,limit=REVERSE_LIMIT,tolerance=TRAIL_PLAN_TOL,step=.01):
         """Straight reverse distance that stays on ground the chassis has driven over (within
-        `tolerance` of the driven trail) and within the episode's reverse budget."""
-        p=self.localizer.pose;steps=np.arange(.01,min(limit,self.reverse_budget()+.03)+1e-6,.01)
+        `tolerance` of the driven trail) and within the episode's reverse budget, in `step`s."""
+        p=self.localizer.pose;steps=np.arange(step,min(limit,self.reverse_budget()+.03)+1e-6,step)
         if not len(steps):return 0.
         off=self.trail_distance(p[:2]-steps[:,None]*np.array([math.cos(p[2]),math.sin(p[2])]))>tolerance
         if not off.any():return float(steps[-1])
@@ -448,6 +515,13 @@ class LidarBrain(Brain):
     def predict(self,state):
         sensors=state.get('sensors',{});stamp=state['sim_time_s'];fault=state.get('fault','none')
         if 'left_ticks' in sensors:self.odometry.append((stamp,sensors['left_ticks'],sensors['right_ticks']));self.encoder_cpr=sensors.get('encoder_cpr',self.encoder_cpr)
+        if 'left_ticks' in sensors and 'right_ticks' in sensors:
+            # forward_run (CONTACT_*): net wheel travel since the last turn in place (reversing takes it back), before
+            # the bumper is read, so a contact's own last tick of driving counts.
+            run=(sensors['left_ticks']+sensors['right_ticks'])/2*2*math.pi*WHEEL_R/self.encoder_cpr;last=getattr(self,'run_ticks',None);self.run_ticks=run
+            v_,w_=self.requested_motion
+            if v_==0 and w_:self.forward_run=0.
+            elif last is not None:self.forward_run=max(0.,getattr(self,'forward_run',0.)+run-last)
         # The bumper event counter catches touches shorter than one 20 Hz sample.
         events=sensors.get('bumper_events');missed=events is not None and self.bump_events is not None and events>self.bump_events
         if events is not None:self.bump_events=events
@@ -676,14 +750,14 @@ class LidarBrain(Brain):
             distances=np.linalg.norm(cloud[None,:,:]-offsets[:,None,:],axis=2).min(axis=1)
             if distances.min()>=minimum-.003 and distances[-1]>DRIVE_CLEARANCE+.025:return wrap(p[2]+delta)
         return None
-    def straight_corridor_clear(self,sign,distance,previously_traversed=False):
+    def straight_corridor_clear(self,sign,distance,previously_traversed=False,step=.01):
         p=self.localizer.pose;free=self.grid.masks()[0];offsets=np.linspace(0,distance,16)
         line=p[:2]+sign*offsets[:,None]*np.array([math.cos(p[2]),math.sin(p[2])])
         if any(not self.grid.valid(self.grid.cell(xy)) or not free[self.grid.cell(xy)] for xy in line):return False
         # Rear low obstacles are invisible to the forward camera and the LiDAR
         # (scan plane geometry.LIDAR_MOUNT[2], 19 cm), so reversing may only
         # retrace ground the body has covered.
-        if previously_traversed and self.reverse_room(distance+.005)<distance-.005:return False
+        if previously_traversed and self.reverse_room(distance+.005,step=step)<distance-.005:return False
         cloud=self.obstacle_points()
         if len(cloud)<60:return False
         gaps=np.linalg.norm(cloud[None,:,:]-sign*np.c_[offsets,np.zeros(len(offsets))][:,None,:],axis=2).min(axis=1)
@@ -1429,12 +1503,19 @@ class LidarBrain(Brain):
         short=float(np.linalg.norm(self.goal-np.asarray(pose)[:2]))
         if getattr(self,'approach_stop',None) is None or short<=APPROACH_ARRIVED:return 'Arrived. Position checked across five LiDAR scans; now Idle.'
         return self.short_message(short)+' Position checked across five LiDAR scans; now Idle.'
-    def reverse_on_trail(self,v,w,distance=REVERSE_GUARD_M):
-        """The next `distance` m of a reverse command keep base_link on the driven trail (on_trail)."""
+    @staticmethod
+    def reverse_guard(v):
+        """The command guard's look-ahead for a reverse at speed v: REVERSE_GUARD_M, or CONTACT_CREEP_GUARD_M at
+        the creep's CONTACT_CREEP_V or slower (the motor core's watchdog and wheel-ramp stop scale with speed)."""
+        return CONTACT_CREEP_GUARD_M if abs(v)<=CONTACT_CREEP_V+1e-9 else REVERSE_GUARD_M
+    def reverse_on_trail(self,v,w,distance=None):
+        """The next `distance` m (default reverse_guard(v)) of a reverse command keep base_link on the driven trail (on_trail)."""
+        distance=self.reverse_guard(v) if distance is None else distance
         rel=self.predicted_centres(v,w,np.linspace(0,distance/max(abs(v),1e-6),9));return self.on_trail(transform(rel,self.localizer.pose))
     def command(self,state):
         """drive_command, with a final guard (no rear bumper, rear camera or low-object sensing behind
-        the robot): a reverse is sent only while its next REVERSE_GUARD_M stays on the driven trail
+        the robot): a reverse is sent only while its next reverse_guard(v) (REVERSE_GUARD_M; the creep's
+        CONTACT_CREEP_GUARD_M at CONTACT_CREEP_V or slower) stays on the driven trail
         (which reversing never extends, see observe_scan) and its reverse episode has covered less
         than REVERSE_LIMIT."""
         v,w=self.drive_command(state);p=self.localizer.pose
@@ -1511,6 +1592,9 @@ class LidarBrain(Brain):
             return 0.,0.
         self.tilted_since=None
         if self.phase in ['relocalizing','recover_localization']:
+            # observe_scan leaves this phase only once the start-up gyro calibration is done: if it is not done after
+            # GYRO_STARTUP_WAIT_S, say so (whether or not the LiDAR has verified the position by then).
+            if not self.imu.ready_to_move() and t-self.phase_started>GYRO_STARTUP_WAIT_S:self.idle(gyro_startup_message('Not moving.'));return 0.,0.
             if t-self.phase_started>45:self.idle(relocalization_failure_message(loc.last_global) if loc.last_global else 'Could not confirm the LiDAR position against the saved map; not moving.');return 0.,0.
             return 0.,0.
         if loc.uncertainty>.15 or t-loc.last_visual_time>1:
@@ -1519,7 +1603,7 @@ class LidarBrain(Brain):
             if t-self.phase_started>1.2 and self.scan_count>=5:
                 # The first move waits for the start-up gyro-bias calibration (imu.GYRO_STARTUP_S of rest).
                 if self.imu.ready_to_move():self.phase='plan';self.plan_not_before=t
-                elif t-self.phase_started>30:self.idle('The gyro start-up calibration needs the robot standing still for 2 s and it did not. Stopped; progress saved.')
+                elif t-self.phase_started>GYRO_STARTUP_WAIT_S:self.idle(gyro_startup_message('Stopped; progress saved.'))
                 else:self.event('Calibrating the gyro bias at rest before the first move.')
             return 0.,0.
         if self.phase=='plan':
@@ -1550,32 +1634,55 @@ class LidarBrain(Brain):
                 left=self.contact_spin-wrap(p[2]-self.escape_origin[2])
                 if self.bumper_pressed and abs(left)>.05 and t-self.phase_started<10 and self.spin_allowed(left):return 0.,math.copysign(CONTACT_SPIN,left)
                 # Contact in front (or released): reverse straight away from it if the trail allows.
-                self.contact_spin=None;self.escape_origin=p.copy();self.phase_started=t
-                self.backoff=max(0.,min(.12,self.reverse_budget(),self.reverse_room(REVERSE_LIMIT)-.015))
-                if self.backoff<.02:self.backoff=0.
-            if self.backoff<.02:
+                self.contact_spin=None;self.escape_origin=p.copy();self.phase_started=t;self.contact_backoff(getattr(self,'contact_max_backoff',.12))
+            if not self.backoff:
                 # No driven trail behind: NEVER reverse (the rear is unsensed and unseen). Released:
                 # replan (the planner turns in place, slowly when close, or drives away). Still
                 # pressed: the firmware refuses forward motion and a spin can only keep the contact
                 # in front, so wait for the skin to release, then stop safely.
                 if not self.bumper_pressed:
                     self.phase='plan';self.plan_not_before=t+.3;self.translation_anchor=None;self.last_progress=t;self.progress_pose=p.copy();self.jam_reset=t;return 0.,0.
-                # Still pressed: stand still and keep the session alive (no blind reverse, no forward
-                # push). Bumper and LiDAR are re-checked every tick; the robot replans the moment the
-                # skin releases (the obstacle moved or was moved). Only the session's own limits
-                # (time budget, a user stop) end the run here.
+                # Still pressed: stand still (no blind reverse, no forward push). Bumper and LiDAR are
+                # re-checked every tick; the robot replans the moment the skin releases (the obstacle
+                # moved or was moved). After CONTACT_WAIT_S it stops with a message instead of waiting
+                # for the time budget: it cannot get off this contact by itself.
+                if getattr(self,'waiting_since',None) is None:self.waiting_since=t
+                # Once, after the wheels have stopped (CONTACT_SETTLE_S): the body may have rolled on after the touch, which
+                # adds ground just driven (forward_run); try the back-off again from here.
+                if t-self.waiting_since>=CONTACT_SETTLE_S and not getattr(self,'wait_retried',False):
+                    self.wait_retried=True
+                    if self.contact_attempts<CONTACT_ATTEMPTS and self.contact_backoff(getattr(self,'contact_max_backoff',.12)):
+                        self.escape_origin=p.copy();self.phase_started=t;self.event(f'Still pressed. {self.backoff_message()}');return 0.,0.
+                if t-self.waiting_since>CONTACT_WAIT_S:
+                    self.idle(f'Stuck against an obstacle: the bumper stayed pressed for {CONTACT_WAIT_S:.0f} s and there is no driven path behind to '
+                              'reverse along (the robot never reverses where it has not driven: it has no rear bumper or camera). '
+                              +('Stopped; partial map saved. ' if self.mode=='mapping' else 'Stopped. ')+'Move the robot clear of the obstacle, then start again.')
+                    return 0.,0.
                 if t-self.phase_started>10 and not getattr(self,'waiting_release',False):
-                    self.waiting_release=True;self.event('Pressed against an obstacle with no driven path behind it: reversing there would be blind and the bumper refuses forward motion. Waiting for the bumper to release.')
+                    self.waiting_release=True;self.event(f'Pressed against an obstacle with no driven path behind it: reversing there would be blind and the bumper refuses forward motion. Waiting for the bumper to release (at most {CONTACT_WAIT_S:.0f} s).')
                 return 0.,0.
-            travelled=np.linalg.norm(p[:2]-self.escape_origin[:2])
+            travelled=np.linalg.norm(p[:2]-self.escape_origin[:2]);creep=self.backoff_v<.05
             # Short straight reverse on the verified trail; anything unexpected
             # ends the back-off early and the planner takes over from here.
-            if (travelled>=self.backoff-.005 and not self.bumper_pressed) or t-self.phase_started>10 or abs(wrap(p[2]-self.escape_origin[2]))>.35 or not self.straight_corridor_clear(-1,max(.01,self.backoff-travelled),True):
-                # Still pressed: the back-off cannot go on, and nothing else is legal while pressed (no
-                # forward push, no blind reverse): stay in the contact phase and wait for the release.
-                if self.bumper_pressed:self.backoff=0.;self.phase_started=t;return 0.,0.
+            stopped=t-self.phase_started>10 or abs(wrap(p[2]-self.escape_origin[2]))>.35
+            # A creep ends at its planned length even while pressed (it undoes the last forward drive and no more), measured by
+            # the wheels (forward_run; mm-exact, unlike the LiDAR pose); the straight back-off goes on while pressed as far as
+            # its own check allows, as before.
+            if ((travelled>=self.backoff-.005 and not self.bumper_pressed) or stopped or (creep and getattr(self,'forward_run',0.)<=self.creep_until+1e-5)
+                    or not self.straight_corridor_clear(-1,max(.001 if creep else .01,self.backoff-travelled),True,step=.001 if creep else .01)):
+                # Still pressed: the back-off cannot go on as planned. When its own check refused the rest (the trail
+                # curves away from the straight line, the pose estimate moved, the trail ran out) or a creep is done, it is planned again
+                # from here, shorter or as a creep (contact_backoff), up to CONTACT_ATTEMPTS per contact. After a
+                # time-out or a heading change (the body is not moving as commanded) nothing more is tried, and
+                # nothing else is legal while pressed (no forward push, no blind reverse): stay in the contact
+                # phase and wait for the release.
+                if self.bumper_pressed:
+                    self.escape_origin=p.copy();self.phase_started=t
+                    if not stopped and self.contact_attempts<CONTACT_ATTEMPTS and self.contact_backoff(getattr(self,'contact_max_backoff',.12)):self.event(f'Still pressed. {self.backoff_message()}')
+                    else:self.backoff=0.
+                    return 0.,0.
                 self.phase='plan';self.plan_not_before=t+.3;self.translation_anchor=None;self.last_progress=t;self.progress_pose=p.copy();self.jam_reset=t;return 0.,0.
-            return -.05,0.
+            return -self.backoff_v,0.
         if self.phase=='escape_margin':
             if self.grid.masks()[3][self.grid.cell(p[:2])]:self.phase='plan';self.plan_not_before=t;self.translation_anchor=None;return 0.,0.
             if t-self.phase_started>3 and np.linalg.norm(p[:2]-self.escape_origin[:2])<.02:

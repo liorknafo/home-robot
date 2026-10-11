@@ -4,12 +4,14 @@ F.Fab, and the copper zones of the 4-layer board (bay B4, copper.STACKUP): the s
 B.Cu and a GND fill on B.Cu under them, every zone pad joined by a wide thermal relief. The board carries the ordered stack-up (1.6 mm,
 copper.COPPER_OZ). Zones are saved unfilled (route.py fills them after routing).
 
-Run with KiCad's Python:  $KPY pcb/build_pcb.py      (writes pcb/r1_power_io.kicad_pcb; never touches r1_power_io.kicad_pro)
+Run with KiCad's Python:  $KPY pcb/build_pcb.py [OUT]  (writes pcb/r1_power_io.kicad_pcb, or OUT - route.py's start board; never touches
+                          r1_power_io.kicad_pro)
 
 Silkscreen (L5 fix 1, spec 2026-10-06 section 3): one label per part, "<ref> <value>" (or a short function word for connectors and
 sockets, board_spec.silk_label), 0.8 mm / 0.15 mm stroke, placed by place_silk_labels clear of pads, other silk, part bodies and the
 edges and nearer its own part than any other; the reference and value fields move to F.Fab. Polarity marks are the stock footprints', plus
-the "+" / "-" at J1's pins (board_spec.PIN_MARKS, ruling PB20: J1's pinout changed).
+the "+" / "-" at J1's pins (board_spec.PIN_MARKS, ruling PB20: J1's pinout changed) and (B12a) the "+" at pin 1 of the P03 terminals
+and of J3.
 
 Schematic parity (bay B7): every footprint keeps its library nickname (load_footprint) and every no-connect pin carries the schematic
 netlist's single-pin 'unconnected-(...)' net (add_no_connect_nets), so kicad-cli DRC --schematic-parity reports nothing.
@@ -204,15 +206,23 @@ def place_silk_labels(board, fps, board_area):
                         out.append((round((u - cu) ** 2 + (v - cv) ** 2, 4), ang, round(au, 4), round(av, 4),
                                     (u - lw / 2, v - lh / 2, u + lw / 2, v + lh / 2)))
         out.sort(key=lambda c: c[:4])
+        return [c for c in out if allowed(ref, c[4])]
+    def allowed(ref, bx):
         mine = body_box[ref]
-        return [c for c in out if not boxes_hit(c[4], own[ref]) and on_board(c[4])
-                and box_gap(c[4], mine) + SILK_OWN_MARGIN <= min(box_gap(c[4], bb) for r2, bb in body_box.items() if r2 != ref)
-                and not any(boxes_hit(c[4], ob) for ob, owner, kind in obstacles if not (owner == ref and kind == 'body'))]
+        return (not boxes_hit(bx, own[ref]) and on_board(bx)
+                and box_gap(bx, mine) + SILK_OWN_MARGIN <= min(box_gap(bx, bb) for r2, bb in body_box.items() if r2 != ref)
+                and not any(boxes_hit(bx, ob) for ob, owner, kind in obstacles if not (owner == ref and kind == 'body')))
     free = {ref: candidates(ref) for ref in size}
+    fixed = {}                                      # B12a: board_spec.SILK_LABEL_AT, held to the same rules, placed before the rest
+    for ref, (u, v, ang) in B.SILK_LABEL_AT.items():
+        lw, lh = size[ref] if ang == 0 else size[ref][::-1]
+        rb, bx = rel[ref][ang], (u - lw / 2, v - lh / 2, u + lw / 2, v + lh / 2)
+        assert allowed(ref, bx), f'SILK_LABEL_AT[{ref!r}] breaks the label rules'
+        fixed[ref] = (0.0, ang, round(u - (rb[0] + rb[2]) / 2, 4), round(v - (rb[1] + rb[3]) / 2, 4), bx)
     # Greedy in a fixed order; the labels that found no room go first in the next pass (at most 6 passes).
-    order = sorted(size, key=lambda r: (B.PARTS[r]['mount'] != 'smd_top', B.PLACEMENT[r][1], B.PLACEMENT[r][0]))
+    order = sorted((r for r in size if r not in fixed), key=lambda r: (B.PARTS[r]['mount'] != 'smd_top', B.PLACEMENT[r][1], B.PLACEMENT[r][0]))
     for _pass in range(6):
-        placed, unplaced = {}, []
+        placed, unplaced = dict(fixed), []
         for ref in order:
             pad = lambda bx: (bx[0] - SILK_SILK_GAP, bx[1] - SILK_SILK_GAP, bx[2] + SILK_SILK_GAP, bx[3] + SILK_SILK_GAP)
             hit = next((c for c in free[ref] if not any(boxes_hit(pad(c[4]), p[4]) for p in placed.values())), None)
@@ -278,7 +288,10 @@ def build(out=OUT):
                                                                            # asks for a solid joint)
             if key in B.PAD_SPOKE_ANGLE: pad.SetThermalSpokeAngleDegrees(B.PAD_SPOKE_ANGLE[key])   # PB21: U3P.2's spokes face its patch
         board.Add(fp)
-        for pin, sign in B.PIN_MARKS.get(ref, {}).items():    # ruling PB20: '+' / '-' at the connector's BAT+ / GND pins (J1_PINOUT)
+        if ref in B.PIN_MARKS:                               # B12a: the stock '+' / '-' texts (the XT30's, past its housing ends, under J2 /
+            for it in fp.GraphicalItems():                   # K1) go to F.Fab; PIN_MARKS are the silk polarity marks
+                if it.GetClass() == 'PCB_TEXT' and it.GetLayer() == pcbnew.F_SilkS and it.GetText() in ('+', '-'): it.SetLayer(pcbnew.F_Fab)
+        for pin, sign in B.PIN_MARKS.get(ref, {}).items():    # ruling PB20 / B12a: '+' / '-' at the connectors' supply / GND pins
             at = next(p for p in fp.Pads() if p.GetNumber() == pin).GetPosition()
             cu, cv = pcbnew.ToMM(at.x) + B.PIN_MARK_AT[ref][pin][0], pcbnew.ToMM(at.y) + B.PIN_MARK_AT[ref][pin][1]   # outside the housing
             h = B.PIN_MARK_LEN / 2
@@ -340,6 +353,7 @@ def build(out=OUT):
 
 
 if __name__ == '__main__':
-    b = build()
+    out = Path(sys.argv[1]) if len(sys.argv) > 1 else OUT     # B12a: route.py builds its start board into its work dir
+    b = build(out)
     print('placed', len(B.PARTS), 'footprints,', sum(1 for z in b.Zones() if not z.GetIsRuleArea()), 'copper zones on',
-          b.GetCopperLayerCount(), 'layers ->', OUT.name)
+          b.GetCopperLayerCount(), 'layers ->', out.name)

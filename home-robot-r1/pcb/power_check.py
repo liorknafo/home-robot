@@ -84,7 +84,7 @@ def pad_uses_spokes(board, ref, pad):
                 ring.BooleanSubtract(inner)
                 full = Z.area_mm2(ring)
                 ring.BooleanIntersection(fill)
-                if not ring.OutlineCount(): continue
+                if not Z._spokes_into(p, lid, fill, gap, TOMM(z.GetThermalReliefSpokeWidth())): continue    # B12a (carry 10): a joint is fill that reaches the pad (B6 fix 1), not fill that only crosses the ring
                 found = True
                 conn = p.GetLocalZoneConnection()
                 if conn == pcbnew.ZONE_CONNECTION_INHERITED: conn = z.GetPadConnection()
@@ -336,12 +336,6 @@ def raster_cut_mm(r, centre, radius, away, outer=None):
     return math.inf
 
 
-def plane_cut_mm(board, centre, radius, away, layer=C.GND_PLANE_LAYER, grid=RING_GRID, net='GND', outer=None):
-    """raster_cut_mm on the net's copper on `layer`: with copper.ipc2221_current_a, the most that layer carries out of the disc."""
-    west = (outer if outer is not None else radius) - centre[0] + 3.0
-    return raster_cut_mm(copper_raster(board, layer, grid, net, west=west), centre, radius, away, outer)
-
-
 # GND source pins for the plane report: (pin, the current it brings in or out)
 GND_SOURCES = [(B.J1_GND_PIN, B.CURRENT_A['GND']), (('J3', '2'), B.P03_OUT_A), (('U5B', '2'), B.P03_OUT_A), (('U5A', '2'), B.P03_IN_A),
                (('U3P', '2'), 2.1), (('U4P', '2'), 2.1), (('C1', '2'), 2.1)]
@@ -507,7 +501,8 @@ def report(board):
     for (ref, pin), amps in GND_SOURCES:
         per, tot, near = gnd_cut_capacity(board, ref, pin)
         row(f'  {ref}.{pin} (carries {amps:.2f} A, ring to {near}): ' + ', '.join(f'{L.split(".")[0]} {mm:.2f} mm {a:.2f} A'
-            for L, (mm, a) in per.items()) + f' -> {tot:.2f} A ({pct(tot / amps - 1)})' + ('  PAD_PENDING' if (ref, pin) in B.PAD_PENDING else ''))
+            for L, (mm, a) in per.items()) + f' -> {tot:.2f} A ({pct(tot / amps - 1)})' + ('  PAD_PENDING' if (ref, pin) in B.PAD_PENDING else '')
+            + ('  (vias ignored: a lower bound; the pad metric, section 3, counts them)' if tot < amps else ''))     # B12a (carry 10)
     row('')
     row('## 7. C3 ripple (carry item 6)')
     for f in (B.DRV_PWM_HZ, 1e3, 100e3):

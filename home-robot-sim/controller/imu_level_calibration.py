@@ -20,7 +20,7 @@ import argparse,json,math,sys,time
 from pathlib import Path
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parent))
-from autonomy.imu import level_calibration,CALIBRATION_FILE,G_LOCAL
+from autonomy.imu import level_calibration,calibration_checks,calibration_limits,CALIBRATION_FILE,CALIBRATION_KEYS,G_LOCAL
 from autonomy.lidar_brain import downward_floor_pose
 from autonomy.geometry import CLIFF_Z
 ROOT=Path(__file__).resolve().parents[1]
@@ -34,12 +34,17 @@ def to_samples(states):
     return out
 
 def write(calibration,root=ROOT):
-    """Install the calibration, only if every bring-up check passes (autonomy.imu.calibration_checks); otherwise it is
-    written next to it as imu-calibration.rejected.json for inspection and ValueError is raised."""
+    """Install the calibration, only if it is complete (autonomy.imu.CALIBRATION_KEYS) and every bring-up check passes. The
+    checks are run here (autonomy.imu.calibration_checks) and stored with the limits they used: a dict's own 'checks' are
+    not trusted, and a dict without them is not a pass. A refused calibration is written next to the file as
+    imu-calibration.rejected.json for inspection and ValueError is raised."""
     path=Path(root)/CALIBRATION_FILE;path.parent.mkdir(parents=True,exist_ok=True)
-    if not all(calibration.get('checks',{}).values()):
+    missing=[k for k in CALIBRATION_KEYS if k not in calibration]
+    calibration=dict(calibration,checks={} if missing else calibration_checks(calibration),limits=calibration_limits())
+    failed=[f'missing {k}' for k in missing]+[k for k,v in calibration['checks'].items() if not v]
+    if failed:
         bad=path.with_name('imu-calibration.rejected.json');bad.write_text(json.dumps(calibration,indent=2)+'\n')
-        raise ValueError(f"level calibration rejected ({', '.join(k for k,v in calibration['checks'].items() if not v)}); see {bad}")
+        raise ValueError(f"level calibration rejected ({', '.join(failed)}); see {bad}")
     path.write_text(json.dumps(calibration,indent=2)+'\n');return path
 
 SPIN_W=.5;SPIN_TURNS=2   # spin calibration: rate (rad/s) and full turns each way

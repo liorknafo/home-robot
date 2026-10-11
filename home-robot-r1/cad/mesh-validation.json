@@ -3,7 +3,7 @@
     "file": "P_base.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 172443.5,
+    "volume_mm3": 172440.3,
     "size_mm": [
       244.0,
       200.0,
@@ -14,7 +14,7 @@
       0.05,
       30.92
     ],
-    "area_mm2": 95870.1
+    "area_mm2": 95872.6
   },
   {
     "file": "P_battery_tray.stl",
@@ -581,18 +581,18 @@
     "file": "bay_rib_1.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 100.7,
+    "volume_mm3": 113.2,
     "size_mm": [
       2.0,
-      17.89,
+      19.97,
       3.0
     ],
     "center_mass_mm": [
       -58.8,
-      -15.53,
-      33.98
+      -16.58,
+      33.97
     ],
-    "area_mm2": 184.2
+    "area_mm2": 205.0
   },
   {
     "file": "bay_spacer_0.stl",

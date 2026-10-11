@@ -85,7 +85,7 @@ def go_to(br,goal,seconds=150.,on_tick=None,world=None):
     b,sim=br.b,br.sim;start=len(br.trace);t0=sim.t;c0,k0=sim.contacts,sim.bump_events
     try:b.begin_go_to(list(goal),sim.t)
     except ValueError as e:return dict(accepted=False,message=str(e))
-    br.arm_pending=True;sim.power_on();gaps=[]
+    br.arm_pending=True;sim.clear_stop();gaps=[]
     def tick(x):
         gaps.append(true_gap(world,x.sim.pose[:2]))
         if on_tick:on_tick(x)

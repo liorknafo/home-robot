@@ -66,7 +66,7 @@
       {
         "a": "bay_board",
         "b": "bay_plug_J1",
-        "intersection_mm3": 667.77
+        "intersection_mm3": 583.17
       },
       {
         "a": "bay_board",
@@ -92,11 +92,6 @@
         "a": "bay_board",
         "b": "bay_plug_J7",
         "intersection_mm3": 286.28
-      },
-      {
-        "a": "bay_board",
-        "b": "bay_plug_J3",
-        "intersection_mm3": 667.77
       },
       {
         "a": "bay_board",
@@ -421,7 +416,7 @@
       "solid_valid": true,
       "size_mm": [
         2.0,
-        17.89,
+        19.97,
         3.0
       ],
       "fits_mk3s": true,
@@ -1889,7 +1884,7 @@
           "motor_cable_left",
           "W12"
         ],
-        "min_gap_mm": 33.687,
+        "min_gap_mm": 33.557,
         "overlap_mm3": 0.0
       },
       {
@@ -1897,7 +1892,7 @@
           "motor_cable_left",
           "W16"
         ],
-        "min_gap_mm": 10.324,
+        "min_gap_mm": 9.828,
         "overlap_mm3": 0.0
       },
       {
@@ -1905,7 +1900,7 @@
           "motor_cable_left",
           "W_bumper_left"
         ],
-        "min_gap_mm": 1.57,
+        "min_gap_mm": 1.562,
         "overlap_mm3": 0.0
       },
       {
@@ -1961,7 +1956,7 @@
           "motor_cable_right",
           "W_bumper_right"
         ],
-        "min_gap_mm": 1.573,
+        "min_gap_mm": 1.565,
         "overlap_mm3": 0.0
       }
     ],
@@ -1972,7 +1967,7 @@
           "W01",
           "W11"
         ],
-        "min_gap_mm": 6.0,
+        "min_gap_mm": 1.35,
         "overlap_mm3": 0.0
       },
       {
@@ -1980,7 +1975,7 @@
           "W01",
           "W15"
         ],
-        "min_gap_mm": 1.866,
+        "min_gap_mm": 1.85,
         "overlap_mm3": 0.0
       },
       {
@@ -2028,7 +2023,7 @@
           "W11",
           "W15"
         ],
-        "min_gap_mm": 1.606,
+        "min_gap_mm": 0.485,
         "overlap_mm3": 0.0
       },
       {
@@ -2100,7 +2095,7 @@
           "W02",
           "W15"
         ],
-        "min_gap_mm": 1.549,
+        "min_gap_mm": 1.824,
         "overlap_mm3": 0.0
       }
     ],
@@ -13599,7 +13594,7 @@
     "com_x_sensitivity_limit_mm": -14,
     "forward_pitch_onset_min_m_s2": 2.0,
     "caster_load_fraction": 0.246,
-    "rear_caster_load_N": 5.85,
+    "rear_caster_load_N": 5.86,
     "drive_wheel_load_N": 17.9,
     "forward_pitch_onset_decel_m_s2": 2.99,
     "forward_pitch_onset_on_5deg_downhill_m_s2": 2.12,
@@ -13682,7 +13677,7 @@
         "mass_kg": 0.13622,
         "position_mm": [
           -3.2,
-          0.0,
+          0.1,
           30.9
         ],
         "mean_wall_mm": 3.6,
@@ -13811,13 +13806,13 @@
       },
       {
         "item": "bay_rib_1",
-        "mass_kg": 0.00013,
+        "mass_kg": 0.00014,
         "position_mm": [
           -58.8,
-          -15.5,
+          -16.6,
           34.0
         ],
-        "mean_wall_mm": 1.09,
+        "mean_wall_mm": 1.1,
         "fill": 1.0,
         "sim_item": "bay_rib_1"
       },
@@ -14220,8 +14215,8 @@
         "mass_kg": 0.005,
         "position_mm": [
           -40.7,
-          -10.4,
-          43.1
+          -10.7,
+          43.2
         ],
         "sim_item": "Controller and sensors"
       },
@@ -14240,8 +14235,8 @@
         "mass_kg": 0.04416,
         "position_mm": [
           -40.7,
-          -10.4,
-          43.1
+          -10.7,
+          43.2
         ],
         "sim_item": "Power boards + relay"
       },
@@ -14280,7 +14275,7 @@
         "mass_kg": 0.1,
         "position_mm": [
           5.1,
-          -1.3,
+          -1.6,
           59.3
         ],
         "sim_item": "Wiring + connectors"
@@ -15050,66 +15045,66 @@
       "lead_trim_z_mm": 34.0,
       "lead_trim_method": "the STEP leads (down to 1.9 mm under the board, untrimmed) are cut at 1.4 mm under the board, the assembly rule; every clash and rib check uses the cut leads",
       "step_heights_mm": {
-        "LED2": 1.09,
-        "R19": 0.45,
+        "Q3": 1.2,
         "J3": 9.99,
-        "C3": 5.8,
-        "F1": 30.0,
-        "R3": 0.45,
-        "C2": 1.24,
-        "J1": 9.99,
         "U5B": 13.8,
-        "F2": 30.0,
-        "J4": 2.53,
-        "R22": 0.45,
-        "J7": 6.99,
-        "R14": 0.45,
-        "R6": 0.45,
-        "U3P": 8.49,
-        "J5": 2.53,
-        "C1": 19.99,
-        "Q4": 1.2,
-        "Q2": 1.2,
-        "R10": 0.45,
-        "R1": 0.45,
-        "R4": 0.45,
-        "R15": 0.45,
-        "J11": 6.99,
-        "R20": 0.45,
-        "J8": 6.99,
-        "J6": 6.99,
-        "J2": 9.99,
         "U4P": 8.49,
-        "R18": 0.45,
-        "U4L": 8.49,
-        "R11": 0.45,
         "LED1": 1.09,
         "R13": 0.45,
-        "R17": 0.45,
-        "R8": 0.45,
-        "R21": 0.45,
         "J13": 6.99,
-        "R9": 0.45,
-        "Q5": 1.2,
-        "U5A": 13.8,
-        "J9": 6.99,
-        "Q1": 1.2,
-        "R2": 0.45,
-        "LED3": 1.09,
-        "Q3": 1.2,
-        "R5": 0.45,
-        "U3L": 8.49,
-        "U1A": 8.49,
         "R12": 0.45,
-        "R23": 0.45,
-        "D1": 2.22,
-        "R16": 0.45,
-        "U1B": 8.49,
-        "R7": 0.45,
+        "R2": 0.45,
+        "Q4": 1.2,
+        "U5A": 13.8,
+        "R22": 0.45,
+        "R6": 0.45,
+        "J4": 2.53,
+        "J11": 6.99,
+        "Q1": 1.2,
+        "R1": 0.45,
+        "J8": 6.99,
+        "Q2": 1.2,
+        "U3L": 8.49,
+        "J7": 6.99,
+        "R11": 0.45,
+        "R15": 0.45,
+        "F2": 30.0,
+        "R17": 0.45,
         "U2": 8.49,
-        "J12": 6.99,
+        "R3": 0.45,
+        "R10": 0.45,
+        "J5": 2.53,
+        "R8": 0.45,
+        "R18": 0.45,
+        "F1": 30.0,
+        "J6": 6.99,
+        "J9": 6.99,
+        "R14": 0.45,
+        "J1": 10.99,
+        "R4": 0.45,
+        "Q5": 1.2,
+        "R23": 0.45,
+        "J2": 9.99,
         "K1": 19.09,
-        "J10": 6.99
+        "R9": 0.45,
+        "R20": 0.45,
+        "R19": 0.45,
+        "U1A": 8.49,
+        "D1": 2.22,
+        "LED3": 1.09,
+        "U4L": 8.49,
+        "J10": 6.99,
+        "R5": 0.45,
+        "R21": 0.45,
+        "U1B": 8.49,
+        "C2": 1.24,
+        "C3": 5.8,
+        "U3P": 8.49,
+        "R16": 0.45,
+        "R7": 0.45,
+        "LED2": 1.09,
+        "C1": 19.99,
+        "J12": 6.99
       },
       "step_lower_than_parts_h": [
         "D1",
@@ -15243,7 +15238,7 @@
           "id": "bay_rib_1",
           "bounds": [
             -59.8,
-            -24.065,
+            -26.145,
             32.4,
             -57.8,
             -6.175,
@@ -15314,14 +15309,14 @@
         },
         "J1": {
           "body_x_mm": [
-            -65.9,
-            -57.3
+            -65.0,
+            -59.7
           ],
           "body_y_mm": [
-            -23.57,
-            -15.61
+            -25.65,
+            -15.35
           ],
-          "rib_supported_length_mm": 7.96,
+          "rib_supported_length_mm": 10.3,
           "fraction": 1.0
         }
       },
@@ -15340,10 +15335,10 @@
         {
           "rib": "bay_rib_1",
           "gap_mm": 1.0,
-          "nearest_pad": "J1.1",
+          "nearest_pad": "J2.1",
           "pockets_y_mm": [
             [
-              -24.065,
+              -26.145,
               -11.733
             ]
           ]
@@ -15384,16 +15379,16 @@
         },
         "J2": {
           "rib_fraction": 0.871,
-          "fixing_mm": 6.83,
-          "nearest_fixing": "hold-down finger y -14.36",
+          "fixing_mm": 6.74,
+          "nearest_fixing": "hold-down finger y -14.23",
           "without_holddown_mm": 46.66,
           "ok": true
         },
         "J1": {
           "rib_fraction": 1.0,
-          "fixing_mm": 6.83,
-          "nearest_fixing": "hold-down finger y -14.36",
-          "without_holddown_mm": 38.93,
+          "fixing_mm": 7.26,
+          "nearest_fixing": "hold-down finger y -14.23",
+          "without_holddown_mm": 38.88,
           "ok": true
         }
       },
@@ -15479,34 +15474,34 @@
         {
           "box_xyz": [
             -68.0,
-            -15.06,
+            -14.93,
             36.992,
             -64.45,
-            -13.66,
+            -13.53,
             39.65
           ],
           "contact_xy": [
             -66.0,
-            -14.36
+            -14.23
           ],
-          "gap_between_bodies_mm": 2.5,
+          "gap_between_bodies_mm": 2.24,
           "beam": {
-            "yc": -14.36,
-            "gap": 2.5,
+            "yc": -14.23,
+            "gap": 2.24,
             "d": -1,
-            "y_end": -13.66,
-            "y_root": -45.36,
+            "y_end": -13.53,
+            "y_root": -45.23,
             "posts": [
-              -14.31,
-              -17.61,
-              -20.91,
-              -24.21,
-              -27.51,
-              -30.81,
-              -34.11,
-              -37.41,
-              -40.71,
-              -44.01
+              -14.18,
+              -17.48,
+              -20.78,
+              -24.08,
+              -27.38,
+              -30.68,
+              -33.98,
+              -37.28,
+              -40.58,
+              -43.88
             ]
           },
           "finger_to_board_top_mm": -0.003,
@@ -15629,16 +15624,16 @@
     "edge_connector_support": {
       "rows": {
         "J1": {
-          "fixing_mm": 6.83,
-          "nearest_fixing": "hold-down finger y -14.36",
+          "fixing_mm": 7.26,
+          "nearest_fixing": "hold-down finger y -14.23",
           "high_plug_force": true,
           "bearing": "rib under 100 % of the body",
           "bearing_ok": true,
           "ok": true
         },
         "J2": {
-          "fixing_mm": 6.83,
-          "nearest_fixing": "hold-down finger y -14.36",
+          "fixing_mm": 6.74,
+          "nearest_fixing": "hold-down finger y -14.23",
           "high_plug_force": true,
           "bearing": "rib under 87 % of the body",
           "bearing_ok": true,
@@ -15677,10 +15672,10 @@
           "ok": true
         },
         "J3": {
-          "fixing_mm": 10.06,
+          "fixing_mm": 11.01,
           "nearest_fixing": "clamp H6 (rear Jetson standoff)",
           "high_plug_force": true,
-          "bearing": "clamp spacer H6 2.05 mm from the courtyard",
+          "bearing": "clamp spacer H6 2.02 mm from the courtyard",
           "bearing_ok": true,
           "ok": true
         },
@@ -15803,8 +15798,8 @@
             0,
             1
           ],
-          "engagement_mm": 9.99,
-          "travel_mm": 10.99,
+          "engagement_mm": 10.99,
+          "travel_mm": 11.99,
           "hits": [],
           "exempt": null,
           "ok": true
@@ -15871,12 +15866,12 @@
         },
         "J3": {
           "axis": [
-            0,
-            0,
-            1
+            0.0,
+            -1.0,
+            0
           ],
-          "engagement_mm": 9.99,
-          "travel_mm": 10.99,
+          "engagement_mm": 6.0,
+          "travel_mm": 7.0,
           "hits": [],
           "exempt": null,
           "ok": true
@@ -16049,20 +16044,15 @@
             },
             "terminations_total_mm": 8.5,
             "pin_spread_mm": 12.7,
-            "precut_mm": 55,
-            "precut_margin_mm": 6.9,
+            "precut_mm": 61,
+            "precut_margin_mm": 12.9,
             "finished_centre_mm": 48.1,
-            "finished_by_pin_mm": {
-              "1": 54.5,
-              "2": 51.9,
-              "3": 49.4,
-              "4": 46.8,
-              "5": 44.3,
-              "6": 41.8
-            },
-            "longest_pin": 1,
+            "finished_range_mm": [
+              35.4,
+              60.8
+            ],
             "length_source": "crimped",
-            "rule": "PB25 amended + B9 fix 2: pre-cut = drawn route + drawn terminations + pin_spread / 2 (rounded up to the mm); socket end soldered first, bundle dressed along its route, each wire then trimmed to its own finished length (route + terminations +- its pin offset) and crimped; no lift slack: the joint is unplugged before the board lifts",
+            "rule": "PB25 amended + B9 fix 2 + B12a (final review N4): pre-cut = drawn route + drawn terminations + the full pin spread (the wires fan out +-spread / 2 at the socket and again at the male housing; rounded up to the mm); socket end soldered first, bundle dressed along its route, each wire then trimmed at its own cavity (route + terminations +- the spread) and crimped; no lift slack: the joint is unplugged before the board lifts",
             "ok": true
           },
           "pigtail_lift_hits": [],
@@ -16082,23 +16072,23 @@
             "ok": true
           },
           "factory_cable": {
-            "route_mm": 192.6,
+            "route_mm": 192.5,
             "cable_mm": 200.0,
-            "slack_at_housing_rear_face_mm": 7.4,
-            "fixed_path_mm": 89.6,
+            "slack_at_housing_rear_face_mm": 7.5,
+            "fixed_path_mm": 89.4,
             "cable_readings_mm": [
               186.0,
               200.0
             ],
             "coil_turns_allowed": [
               2.0,
-              3.0
+              3.5
             ],
             "coil_turns_needed": [
-              2.57,
+              2.58,
               2.95
             ],
-            "coil_bottom_z_at_max_turns_mm": 34.5,
+            "coil_bottom_z_at_max_turns_mm": 33.0,
             "reading_note": "cable readings are to the female housing's rear face (the wire entry); the vendor's 200 mm is on the verify list",
             "coil": {
               "turn_length_mm": 37.48,
@@ -16111,8 +16101,8 @@
               "length_mm": 103.1,
               "inner_bend_radius_mm": 4.5,
               "z_mm": [
-                37.5,
-                48.5
+                38.0,
+                49.0
               ]
             },
             "slack_tie": "motor_tie_coil_left",
@@ -16188,20 +16178,15 @@
             },
             "terminations_total_mm": 8.5,
             "pin_spread_mm": 12.7,
-            "precut_mm": 51,
-            "precut_margin_mm": 7.21,
+            "precut_mm": 57,
+            "precut_margin_mm": 13.21,
             "finished_centre_mm": 43.8,
-            "finished_by_pin_mm": {
-              "1": 37.4,
-              "2": 40.0,
-              "3": 42.5,
-              "4": 45.1,
-              "5": 47.6,
-              "6": 50.1
-            },
-            "longest_pin": 6,
+            "finished_range_mm": [
+              31.1,
+              56.5
+            ],
             "length_source": "crimped",
-            "rule": "PB25 amended + B9 fix 2: pre-cut = drawn route + drawn terminations + pin_spread / 2 (rounded up to the mm); socket end soldered first, bundle dressed along its route, each wire then trimmed to its own finished length (route + terminations +- its pin offset) and crimped; no lift slack: the joint is unplugged before the board lifts",
+            "rule": "PB25 amended + B9 fix 2 + B12a (final review N4): pre-cut = drawn route + drawn terminations + the full pin spread (the wires fan out +-spread / 2 at the socket and again at the male housing; rounded up to the mm); socket end soldered first, bundle dressed along its route, each wire then trimmed at its own cavity (route + terminations +- the spread) and crimped; no lift slack: the joint is unplugged before the board lifts",
             "ok": true
           },
           "pigtail_lift_hits": [],
@@ -16221,23 +16206,23 @@
             "ok": true
           },
           "factory_cable": {
-            "route_mm": 192.6,
+            "route_mm": 192.5,
             "cable_mm": 200.0,
-            "slack_at_housing_rear_face_mm": 7.4,
-            "fixed_path_mm": 89.6,
+            "slack_at_housing_rear_face_mm": 7.5,
+            "fixed_path_mm": 89.4,
             "cable_readings_mm": [
               186.0,
               200.0
             ],
             "coil_turns_allowed": [
               2.0,
-              3.0
+              3.5
             ],
             "coil_turns_needed": [
-              2.57,
+              2.58,
               2.95
             ],
-            "coil_bottom_z_at_max_turns_mm": 34.5,
+            "coil_bottom_z_at_max_turns_mm": 33.0,
             "reading_note": "cable readings are to the female housing's rear face (the wire entry); the vendor's 200 mm is on the verify list",
             "coil": {
               "turn_length_mm": 37.48,
@@ -16250,8 +16235,8 @@
               "length_mm": 103.1,
               "inner_bend_radius_mm": 4.5,
               "z_mm": [
-                37.5,
-                48.5
+                38.0,
+                49.0
               ]
             },
             "slack_tie": "motor_tie_coil_right",

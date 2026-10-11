@@ -85,7 +85,13 @@ def drv(side, name):
     row, pin = DRV_PINS[name]
     return (f'U{3 if side == "L" else 4}{row}', str(pin))
 
-FP = dict(VH2='Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical', XH2='Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical',
+FP = dict(VH2='Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical',
+          # B12a (ruling PB30): J1 / J2 / J3 are three connector families that cannot be cross-plugged - the battery an XT30 (vertical PCB
+          # male; the right-angle XT30PW-M has no cable path at the rear edge, see PARTS), the rocker a JST VH, the Jetson 5 V a Molex
+          # Micro-Fit 3.0 right-angle header.
+          XT30V='Connector_AMASS:AMASS_XT30UPB-M_1x02_P5.0mm_Vertical',
+          MF2R='Connector_Molex:Molex_Micro-Fit_3.0_43650-0200_1x02_P3.00mm_Horizontal',
+          XH2='Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical',
           XH4='Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical', XH5='Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical',
           HDR6='Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical', HDR4='Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical',
           HDR6R='Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal',      # B3: right-angle, the motor plug lies on the board
@@ -120,9 +126,26 @@ HDR6R_MPN = 'Amphenol 68016-106HLF (1x6 2.54 mm right-angle pin header; verify b
 SOCKET_MPN = {n: f'Sullins PPTC{n:02d}1LFBN-RC (1x{n} 2.54 mm female socket, 8.5 mm body; verify before ordering)' for n in (7, 8, 20)}
 TERM2_MPN = 'Phoenix Contact 1715721 (MKDS 1,5/ 2-5,08; verify before ordering)'
 LED_MPN = {'green': 'Lite-On LTST-C171GKT (green 0805; verify before ordering)', 'yellow': 'Lite-On LTST-C171YKT (yellow 0805; verify before ordering)'}
+# B12a (ruling PB30): J1 / J2 / J3 sat side by side in the band as three identical JST VH-2 headers, so each lead fitted each header -
+# the battery lead into J3 feeds the pack backwards and unfused into the 5 V net, the rocker pair into J1 shorts the pack through the rocker
+# ahead of F1, the Jetson lead into J2 puts pack voltage on the Jetson's 5 V input. Now three families (connector_family below), none of
+# whose plugs fits another's header, all polarised:
+#  - J1 battery: AMASS XT30UPB-M, the vertical PCB male (XT30, 15 A continuous; mates the XT30U-F on the battery lead W01 - the female, shrouded
+#    half on the source side). The controller's XT30PW-M (right-angle) has a horizontal mating axis: facing the rear edge its mated XT30U-F and
+#    wire bend would run into the battery tray's front wall 1.5 mm behind the edge (and the battery, x -71), and facing along the edge or
+#    forward it needs a ~25-30 mm free lane at <= 6 mm over the board that the band does not have (J12 / J2 / K1 on the edge, the 30 mm fuse
+#    holders ahead). The vertical part keeps today's cable path (plugged from above with the lid off, the lead up and over the tray wall).
+#    Pin 1 is the footprint's '-' pad (GND), pin 2 its '+' pad (BAT+): J1_PINOUT unchanged (PB20).
+#  - J3 Jetson 5 V: Molex 43650-0200, the Micro-Fit 3.0 1x2 right-angle through-hole header (3 mm locating peg; -0210 is the SMD-tail
+#    variant), mating face at the right edge; W04 ends in a 43645-0200 receptacle with 43030 crimps (18 AWG). Micro-Fit 3.0: 8.5 A per
+#    circuit for 2 circuits on 18 AWG (Molex PS-43045 derating table; the older catalogue figure is 5 A) against 4.5 A: verify.
+#  - J2 rocker: JST VH (B2P-VH, unchanged).
+XT30_MPN = 'AMASS XT30UPB-M (XT30 vertical PCB male, 2-pin, 15 A continuous; LCSC C428721; verify before ordering)'
+MF2R_MPN = 'Molex 43650-0200 (Micro-Fit 3.0 1x2 right-angle THT header with peg, 8.5 A/circuit on 18 AWG; verify before ordering)'
 PARTS = {
-    'J1': P(conn(2), FP['VH2'], 'Battery in', 'JST B2P-VH(LF)(SN)'), 'J2': P(conn(2), FP['VH2'], 'Master rocker', 'JST B2P-VH(LF)(SN)'),
-    'J3': P(conn(2), FP['VH2'], 'Jetson 5V', 'JST B2P-VH(LF)(SN)'),
+    # J1 h 11: the XT30UPB-M housing over the board (verify on the AMASS drawing); J3 h 10: the Micro-Fit right-angle housing (verify)
+    'J1': P(conn(2), FP['XT30V'], 'Battery in', XT30_MPN, h=11.0), 'J2': P(conn(2), FP['VH2'], 'Master rocker', 'JST B2P-VH(LF)(SN)'),
+    'J3': P(conn(2), FP['MF2R'], 'Jetson 5V', MF2R_MPN, h=10.0),
     # J4 / J5 (B3): right-angle 0.1 in headers; the motors' factory 1x6 plugs (14 mm housings) lie on the board under the carrier
     'J4': P(conn(6), FP['HDR6R'], 'Left motor', HDR6R_MPN, h=2.54), 'J5': P(conn(6), FP['HDR6R'], 'Right motor', HDR6R_MPN, h=2.54),
     **{f'J{6 + i}': P(conn(5), FP['XH5'], f'Cliff {i + 1}', 'JST B5B-XH-A(LF)(SN)') for i in range(4)},
@@ -194,8 +217,9 @@ PICO_GPIO = {
 }
 def gp(net): return pico(PICO_GPIO[net])
 
-# J1 pinout changed (PB20): pin 1 = GND, pin 2 = BAT+. Pin 1 is the south pin (v 71.57), beside the free F.Cu west strip, K1.5 and the
-# main B.Cu GND fill, so the battery return leaves on outer-layer copper; pin 2 (v 67.61) faces J2 / F1, next to BAT+'s fuse. Until bay
+# J1 pinout changed (PB20): pin 1 = GND, pin 2 = BAT+. Pin 1 is the south pin (v 73.0 since B12a's XT30; was 71.57), beside the free F.Cu
+# west strip, K1.5 and the main B.Cu GND fill, so the battery return leaves on outer-layer copper; pin 2 (v 68.0) faces J2 / F1, next to
+# BAT+'s fuse. B12a: the XT30UPB-M footprint's own '-' / '+' pads are pins 1 / 2, so the pinout holds. Until bay
 # B6 it was the other way round (pin 1 BAT+), which boxed the return pin in between BAT+ and F1_OUT. The battery lead (B9 harness) and the
 # sim / BRINGUP docs (B10) follow this table; the silk carries '+' / '-' at the pins (PIN_MARKS).
 J1_PINOUT = {'1': 'GND', '2': 'BAT+'}
@@ -285,7 +309,7 @@ POWER_TRUNK = {   # pads the high-current path must join with >= 3 mm zone coppe
 # Each trunk pin's own load (ruling PB12, B4 fix 1): what its thermal spokes must carry, summed over the layers (zone_check.pin_spoke_capacity).
 # A fuse contact (4 pads) is one pin. Any trunk pin not listed carries CURRENT_A[net] (pad_current).
 P03_OUT_V, P03_OUT_A = 5.0, 4.5     # the P03 regulator's output: the Jetson's 5 V at 4.5 A (CURRENT_A['5V'])
-P03_VIN_MIN, P03_EFF = 6.0, 0.9      # its lowest input (2S pack near cut-off) and its efficiency there
+P03_VIN_MIN, P03_EFF = 6.0, 0.9      # its lowest input (the 6-cell NiMH pack near its 1.0 V/cell cut-off; full charge VBAT_MAX 8.7 V) and its efficiency there
 P03_IN_A = P03_OUT_V * P03_OUT_A / (P03_VIN_MIN * P03_EFF)      # 4.17 A drawn through U5A
 PAD_CURRENT_A = {
     ('J1', '1'): 7.5, ('J1', '2'): 7.5,       # battery connector: the whole pack current, F1's 7.5 A rating
@@ -434,16 +458,28 @@ def silk_label(ref):
     if ref.startswith('H') and ref[1:].isdigit(): return None
     return f"{ref} {SILK_FUNCTION.get(ref, PARTS[ref]['value'])}"
 POLARISED = ['LED1', 'LED2', 'LED3', 'D1', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'C1', 'C3']
-# PB20: connector pin marks build_pcb draws on F.SilkS: '+' at the BAT+ pin, '-' at the GND pin (J1's pinout changed, J1_PINOUT). Each
-# mark is PIN_MARK_LEN strokes (a '+' two crossing, a '-' one along the pin row, the way the J1 label reads) at the pin centre +
-# PIN_MARK_AT[ref][pin] (board frame mm). B6 fix 1: outside the VH housing, so they stay visible once J1 is soldered and mated (inside
-# its F.Fab body they were hidden): at the housing's two -u corners, beside the latch ramp (F.Fab u 0.65 - 2.35, v 66.86 - 72.32) - the
-# '+' off the BAT+ end (pin 2, north), the '-' off the GND end (pin 1, south, beside the stock pin-1 triangle) - each nearer its own pin
-# than any other pad, >= 0.2 mm off J1's silk and 0.7 mm inside the board edge. The other free silk round J1 is taken by J2 (north,
-# whose pin 1 would sit as near a mark there), K1's label (south) and J1's / F2's labels (+u).
-PIN_MARKS = {'J1': {J1_BAT_PIN[1]: '+', J1_GND_PIN[1]: '-'}}
-PIN_MARK_AT = {'J1': {J1_BAT_PIN[1]: (-3.0, -1.6), J1_GND_PIN[1]: (-3.0, 1.6)}}
-PIN_MARK_LEN = 0.8
+# PB20: connector pin marks build_pcb draws on F.SilkS: '+' at a supply pin, '-' at a GND pin. Each mark is PIN_MARK_LEN strokes (a '+'
+# two crossing, a '-' one along the pin row, the way the J1 label reads) at the pin centre + PIN_MARK_AT[ref][pin] (board frame mm),
+# outside the part's F.Fab housing, so it stays visible once the part is soldered and mated, nearer its own pin than any other pad on the
+# board, off every other part's body (its F.Fab drawings, its pads, J4 / J5's C18 socket) - ktest_pcb test_polarity_marks_on_silk.
+#  - J1 (PB20, J1's pinout changed: J1_PINOUT): '+' at BAT+ (pin 2), '-' at GND (pin 1). B12a: the XT30 housing covers both pin ends
+#    (J2 north, K1 south), so the marks sit beside the pins on the +u side, 0.4 mm off J1's silk outline; the footprint's own '+' / '-'
+#    texts (past the housing ends, under J2 and K1) go to F.Fab (build_pcb).
+#  - B12a (final review N2): '+' at pin 1 of both P03 terminals (U5A.1 VBAT_SW, U5B.1 5V: the screw nearer the robot centre line) and of
+#    the Jetson 5 V header (J3.1). U5A.1's behind the terminal (its -u side) in the 1 mm slot between U5A's body and the end of J4's
+#    pin row, south of J4's header body: inside J4's courtyard margin, off its body, pins and the C18 socket (pin row +- 7.62 mm), 0.6 mm
+#    nearer U5A.1 than J4.6 (a 0.7 mm J4 move for room put J4 under the IMU module and its plug corridor into U2 / R3). U5B.1's past the
+#    terminal's +v end (pin 1's end: TP3 and H3's vias leave its -u side no spot nearer U5B.1 than another pad), 2 mm toward the front
+#    edge so U5B's label fits beside it (SILK_LABEL_AT). J3.1's north of the Micro-Fit housing.
+PIN_MARKS = {'J1': {J1_BAT_PIN[1]: '+', J1_GND_PIN[1]: '-'}, 'U5A': {'1': '+'}, 'U5B': {'1': '+'}, 'J3': {'1': '+'}}
+PIN_MARK_AT = {'J1': {J1_BAT_PIN[1]: (3.5, 0.0), J1_GND_PIN[1]: (3.5, 0.0)}, 'U5A': {'1': (-5.85, -0.5)}, 'U5B': {'1': (2.0, 3.3)},
+               'J3': {'1': (0.0, -1.7)}}
+PIN_MARK_LEN = 0.7      # B12a: 0.8 -> 0.7 mm, so U5A.1's '+' (0.85 mm over the stroke ends) fits its 0.95 mm slot with 0.05 mm a side
+# Labels placed by hand (B12a): ref -> (u, v, angle) of the label's glyph-box centre, held to place_silk_labels' rules (build_pcb asserts
+# them) and placed before the search. U5B's only free side is the strip past its +v end (u 62.6 - 73.5, between its body and J8 / J15),
+# which its '+' mark now shares: the search's offsets put the 7.1 mm label over the mark, so it sits at the strip's -u end by hand
+# (0.22 mm from TP3's label, 0.27 mm from the mark).
+SILK_LABEL_AT = {'U5B': (66.205, 44.355, 0)}
 
 # ---------------------------------------------------------------------------------------------------------------------------------
 # Bay B3: connectors on the bay board's edges. EDGE_CONNECTORS: ref -> entry direction, the way its cable leaves the board ('+u' front,
@@ -451,7 +487,8 @@ PIN_MARK_LEN = 0.8
 # rows J14 / J15 (ruling PB8) have no edge.
 EDGE_CONNECTORS = {
     'J1': '-u', 'J2': '-u', 'J13': '-u', 'J12': '-u', 'J6': '-u', 'J7': '-u',     # behind the carrier, rear edge (battery side), latches outward
-    'J3': '+v',                    # Jetson 5 V (PB5 fallback): vertical VH in the band, out of the right edge toward the W04 corridor
+    'J3': '+v',                    # Jetson 5 V (PB5 fallback): in the band, out of the right edge toward the W04 corridor (B12a: Micro-Fit
+                                   # right-angle, its mating face at the edge)
     'J4': '-v', 'J5': '+v',        # motors' factory cables, toward their motor notches (the plug lies on the board, MATED_REACH)
     'J8': '+u', 'J9': '+u',        # front cliffs, tongue front edge; the leads rise over the P03 under the carrier
     'J10': '-v', 'J11': '+v',      # bumpers, side edges under the carrier
@@ -460,15 +497,18 @@ EDGE_CONNECTORS = {
 TERMINALS = {r: EDGE_CONNECTORS[r] for r in ('U5A', 'U5B')}
 # Entry side of each connector footprint in its own frame (unit vector): vertical JST VH / XH -> the latch side (local -y: the lock can be
 # pressed from the edge and the wires leave without crossing the header); side-entry VH and the MKDS terminals -> the plug / wire face
-# (local +y, checked on the KiCad 3D models); a right-angle pin header -> the pin tips (local +x).
+# (local +y, checked on the KiCad 3D models); a right-angle pin header -> the pin tips (local +x). B12a: the vertical XT30 has no latch -
+# its local -y long side faces the edge (the lead leaves its top toward it, as the VH's); the Micro-Fit right-angle header's mating face
+# is local -y (its F.Fab body runs from the pins at y 0 to the face at y -8.92, the peg between).
 ENTRY_LOCAL = {
     'JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical': (0, -1), 'JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical': (0, -1),
     'JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical': (0, -1), 'JST_VH_B2P-VH_1x02_P3.96mm_Vertical': (0, -1),
     'JST_VH_S2P-VH_1x02_P3.96mm_Horizontal': (0, 1), 'PinHeader_1x06_P2.54mm_Horizontal': (1, 0),
     'TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal': (0, 1),
+    'AMASS_XT30UPB-M_1x02_P5.0mm_Vertical': (0, -1), 'Molex_Micro-Fit_3.0_43650-0200_1x02_P3.00mm_Horizontal': (0, -1),
 }
 # Wire-bend allowance above a vertical mated plug (the wires leave its top and turn 90 deg toward the edge).
-CABLE_BEND_MM = {'XH': 5.0, 'PinHeader': 5.0, 'VH': 7.0}
+CABLE_BEND_MM = {'XH': 5.0, 'PinHeader': 5.0, 'VH': 7.0, 'XT30': 7.0, 'MicroFit': 7.0}   # B12a: 18 AWG silicone, as the VH leads
 # Mated height above the board top (header + plug), mm, from the datasheets:
 #  - JST XH top entry: "mounting height 9.8 mm" (JST eXH catalog);
 #  - JST VH top entry 16.5 mm, side entry 10.5 mm (JST VH catalog: "the above-board heights of the mated VH connectors are 16.5 mm for
@@ -477,8 +517,18 @@ CABLE_BEND_MM = {'XH': 5.0, 'PinHeader': 5.0, 'VH': 7.0}
 #    2.6 mm): right-angle, the housing lies on the board centred on the pins (KiCad STEP: pins at z 1.27) -> 2.6 mm. (Vertical it
 #    would stand 2.54 + 14.0 = 16.54 mm, over UNDER_CARRIER_MAX_H before the wire bend: hence the right-angle part.)
 #  - Phoenix MKDS 1,5/2-5,08 terminals: the body (PARTS h, 12 mm); the wires enter horizontally below its top.
-MATED_H = {**{r: 9.8 for r in ('J6', 'J7', 'J8', 'J9', 'J10', 'J11', 'J12', 'J13')}, 'J1': 16.5, 'J2': 16.5, 'J3': 16.5,
+#  - B12a, AMASS XT30UPB-M + XT30U-F (J1): the PCB male about 11 mm over the board, the female's 15-16 mm housing over it with about 5 mm
+#    engaged, its solder cups and heat-shrink on top: 22 mm (from memory: verify on the AMASS drawings).
+#  - B12a, Molex 43650-0200 + 43645-0200 (J3): the right-angle header's housing about 10 mm over the board; the receptacle enters its face
+#    horizontally below that top: 10 mm (verify on the Molex drawings). Its reach past the face is OFFBOARD_REACH.
+MATED_H = {**{r: 9.8 for r in ('J6', 'J7', 'J8', 'J9', 'J10', 'J11', 'J12', 'J13')}, 'J1': 22.0, 'J2': 16.5, 'J3': 10.0,
            'J4': 2.6, 'J5': 2.6, 'U5A': 12.0, 'U5B': 12.0}
+# B12a: a right-angle header whose mated plug sticks out past the board edge (not lying on the board, so not MATED_REACH): how far the plug
+# and its crimp ends reach past the header's mating face along the entry direction. J3: the 43645-0200 receptacle stands about 6 mm proud
+# of the 43650 header's face once latched, plus the wire's crimp barrels and strain relief: 10 mm (verify). The lead then bends upward
+# (OFFBOARD_BEND_MM for 18 AWG) toward the W04 corridor.
+OFFBOARD_REACH = {'J3': 10.0}
+OFFBOARD_BEND_MM = 8.0
 # Ruling PB6: how far the mated plug of a right-angle header reaches past its courtyard in the entry direction (it lies on the board there):
 # the 14.0 mm housing seated on the header body face (local x 4.04, KiCad footprint / STEP) ends at x 18.04; the courtyard ends at
 # x 10.59 -> 7.45 mm.
@@ -492,9 +542,11 @@ MOTOR_CABLE_EXIT = {'J4': (66.5, 15.0, round(43.0 - Z_PCB_TOP, 3)), 'J5': (66.5,
 # side by side, about 6 mm wide and 2 mm thick (the CAD draws the bundle as a 4 mm round wire).
 MOTOR_CABLE_W, MOTOR_CABLE_T = 6.0, 2.0
 def connector_family(ref):
-    """'XH' | 'VH' | 'PinHeader' | 'Terminal', from the PARTS footprint name."""
+    """'XH' | 'VH' | 'XT30' | 'MicroFit' | 'PinHeader' | 'Terminal', from the PARTS footprint name (B12a: J1 XT30, J2 VH, J3 MicroFit - three
+    families whose plugs do not fit each other's headers)."""
     name = PARTS[ref]['fp'].split(':')[1]
-    for key, fam in (('JST_XH', 'XH'), ('JST_VH', 'VH'), ('PinHeader', 'PinHeader'), ('TerminalBlock', 'Terminal')):
+    for key, fam in (('JST_XH', 'XH'), ('JST_VH', 'VH'), ('AMASS_XT30', 'XT30'), ('Molex_Micro-Fit_3.0', 'MicroFit'), ('PinHeader', 'PinHeader'),
+                     ('TerminalBlock', 'Terminal')):
         if name.startswith(key): return fam
     raise KeyError(ref)
 
@@ -540,7 +592,7 @@ def UNDER_CARRIER(ref):
 #    (U1A u 8.8: its right socket's courtyard reaches u 28.38, ruling PB7), micro-USB out of the left edge; past the Pico's end the
 #    VBAT_SW strip (v 52.3..57) joins J2.2 and the F2.1 pins and runs to the channel north of U3P; J2 / J1 on the rear edge, F2 beside
 #    them (the VBAT_SW copper wraps its 2 x 2 F2.1 pins from both sides), F1, K1 (r 180: NO toward C1) and C1 on the VMOT bar to U4P.1,
-#    J3 on the right edge (PB5 fallback). The Pico-side pull-ups / pull-downs, the right encoder shifters, TP2 and R22 sit under the Pico.
+#    J3 on the right edge (PB5 fallback; B12a: a right-angle Micro-Fit, its plug entering from beyond the right edge). The Pico-side pull-ups / pull-downs, the right encoder shifters, TP2 and R22 sit under the Pico.
 #  - under the carrier (u >= 28, <= 16.27 mm): the drivers (both DRV8874 carriers turned 180 deg in place: logic rows U3L / U4L toward
 #    the Pico at u 34.7 / 34.0, VIN/OUT/P rows U3P / U4P toward J4 / J5 at u 47.4 / 46.7, pin 1 at the low-v end; VIN on the VMOT bars),
 #    the left encoder shifters Q1 / R1 / Q2 / R3 under the IMU module (outside both driver interiors; the relay driver Q5 / D1 / R9
@@ -555,8 +607,13 @@ PLACEMENT = {
     # --- band: battery block (F2 between J2 and F1 so the VBAT_SW copper wraps its F2.1 pins), relay, C1, Jetson 5 V
     # B4: F1 0.15 mm toward +v (zone-driven nudge): the VBAT_SW F.Cu neck between U1B.20 and F1.2 4.79 -> 4.94 mm >= 4.84 mm (IPC 7.5 A,
     # 1 oz); its courtyard keeps 0.03 mm from C1's
-    'J2': (4.35, 61.11, 90), 'J1': (4.35, 71.57, 90), 'F2': (15.98, 57.3, 270), 'F1': (23.19, 71.45, 90),
-    'K1': (8.64, 95.95, 180), 'C1': (22.58, 84.33, 90), 'J3': (25.46, 95.7, 180),     # B4: C1 1.0 mm toward +v (BAT+ 4.9 mm south of F1.1)
+    # B12a: J1 is the XT30UPB-M (pins 5 mm apart, body 10.2 mm along v): pin 2 (BAT+) at v 68.0 keeps the hold-down finger's 2.2 mm gap to
+    # J2's body (HD_MIN_GAP, cad/build_robot.py), so K1 moves 0.5 mm toward +v to keep its courtyard off J1's (0.15 mm between them);
+    # u 4.15 (0.2 mm nearer the rear edge than the VH) leaves room for J1's label beyond its pin marks, clear of F2 (PIN_MARK_AT).
+    # J3 is the Micro-Fit right-angle header: pins at v 90.5 put its mating face 0.58 mm inside the right edge; u 24.1 keeps its courtyard
+    # between K1's (u 17.14) and the carrier line (u 28).
+    'J2': (4.35, 61.11, 90), 'J1': (4.15, 73.0, 90), 'F2': (15.98, 57.3, 270), 'F1': (23.19, 71.45, 90),
+    'K1': (8.64, 96.45, 180), 'C1': (22.58, 84.33, 90), 'J3': (24.1, 90.5, 180),     # B4: C1 1.0 mm toward +v (BAT+ 4.9 mm south of F1.1)
     # --- under the Pico (SMD, reflowed before the module goes in; a silk label above each): pull-ups / pull-downs beside their GPIO
     # pins in two columns (u 14.0 by U1A, u 21.4 by U1B), the right encoder shifters at the top of the U1B column, TP2, R22 (5 V lamp)
     'R2': (14.0, 4.5, 0), 'R19': (14.0, 8.0, 0), 'R20': (14.0, 11.5, 0), 'R4': (14.0, 15.0, 0), 'R17': (14.0, 25.0, 0),
@@ -623,11 +680,11 @@ PLACEMENT = {
 # J2.2 - F2.1 link); every 2 x 2 contact needs copper beside each pad column, so F1's east pads take the channel on B.Cu; the H3 / H4
 # washers and J14 close every >= 3 mm 5V route through the tongue; R16 keeps every zone 1.0 mm off the motor pins (U3P.3 / U3P.4 in the
 # channel).
-#  - VBAT_SW, F.Cu + In2.Cu trunks (the In2 copy trimmed at the top of the F2 / F1 gap) (7.5 A: 4.84 mm on 1 oz alone): J2.2, round the F2.1 pins (copper west of F2 and in the
+#  - VBAT_SW, F.Cu trunk + an In2.Cu helper round J2.2 (B5: the In2 copy cut back to a helper) (7.5 A: 4.84 mm on 1 oz alone): J2.2, round the F2.1 pins (copper west of F2 and in the
 #    4.1 mm F2 / F1 gap), the strip over F2 and F1 (to v 49.2 under the Pico's south end, between TP2 and R13), north up the channel between
 #    U1B and U3P (4.27 mm at U3P's motor pins), past U3P.7 and U2.8, the column beside the IMU socket, east under J4's pins (v 24 - 33.9)
 #    to U5A.1. F.Cu 4.1 - 4.3 mm (6.7 - 6.9 A) + In2 the same (2 A): about 8.7 A.
-#  - VMOT, F.Cu + In2.Cu trunks (5 A: 2.77 mm): the spine west of the P rows (u 28 - 32.75), the bar over U3P.1 (u 31.5 - 37: copper on
+#  - VMOT, F.Cu trunk + an In2.Cu helper under the spine and bars (5 A: 2.77 mm): the spine west of the P rows (u 28 - 32.75), the bar over U3P.1 (u 31.5 - 37: copper on
 #    three sides of the pin), the bar east over U4P.1, the bar west through C1.1 to K1's NO pin.
 #  - 5V, B.Cu trunk (4.5 A: 2.4 mm): U5B.1 north between J4.6 and U5B.2, west north of J4's pins (v 25.5 - 31.5) to u 41.5, south through
 #    DRV_L's interior, west of J14 through the gap between the drivers, DRV_R's interior, out between U4P.1 and U4L.1 and west to J3.1;
@@ -666,22 +723,22 @@ POWER_ZONES = [
     dict(net='VMOT', layers=('F.Cu',),
          poly=[(42.5, 38.6), (46.5, 38.6), (46.5, 39.4), (48.3, 39.4), (48.3, 43), (42.3, 43), (42.3, 59), (48, 59), (48, 63),
                (48.5, 63), (48.5, 67.9), (44.9, 67.9), (44.9, 63), (32.75, 63), (32.75, 81.5), (36, 81.5), (36, 86.3), (28, 86.3),
-               (28, 89.6), (12.6, 89.6), (12.6, 80.75), (28, 80.75), (28, 59), (31.5, 59), (31.5, 56.4), (36, 56.4), (36, 41.4),
+               (28, 88.9), (12.6, 88.9), (12.6, 80.75), (28, 80.75), (28, 59), (31.5, 59), (31.5, 56.4), (36, 56.4), (36, 41.4),
                (39.3, 41.4), (39.3, 38.6), (39, 38.6), (39, 35), (42.5, 35)]),
     dict(net='VMOT', layers=('In2.Cu',), trunk=False,
-         poly=[(32.75, 81.5), (36, 81.5), (36, 86.3), (28, 86.3), (28, 89.6), (12.6, 89.6), (12.6, 80.75), (28, 80.75), (28, 59),
+         poly=[(32.75, 81.5), (36, 81.5), (36, 86.3), (28, 86.3), (28, 88.9), (12.6, 88.9), (12.6, 80.75), (28, 80.75), (28, 59),
                (32.75, 59)]),
     dict(net='5V', layers=('B.Cu',),
          poly=[(66.8, 38.2), (71, 38.2), (71, 43), (62.2, 43), (62.2, 31.5), (45.4, 31.5), (45.4, 41), (46.1, 41), (46.1, 43.35),
                (43.03, 43.35), (42.5, 43.88), (42.5, 44.62), (43.03, 45.15), (46.1, 45.15), (46.1, 61.1), (42.35, 61.1), (42.35, 83.6),
-               (41.1, 83.6), (41.1, 86.9), (33.25, 86.9), (33.25, 88.6), (28.9, 88.6), (28.9, 98.5), (23.3, 98.5), (23.3, 88.6),
+               (41.1, 83.6), (41.1, 86.9), (33.25, 86.9), (33.25, 88.6), (28.9, 88.6), (28.9, 92.8), (22.3, 92.8), (22.3, 88.6),
                (24, 88.6), (24, 83.6), (37.9, 83.6), (37.9, 78), (38.6, 78), (38.6, 70.8), (35.25, 70.8), (35.25, 68.3), (38.6, 68.3),
                (38.6, 58.5), (37.5, 58.5), (37.5, 41), (39, 41), (39, 33), (42, 33), (42, 31.5), (41.5, 31.5), (41.5, 25.5), (66.8, 25.5)]),
     dict(net='5V', layers=('In2.Cu',), trunk=False,
          poly=[(69.6, 62.5), (66.15, 62.5), (66.15, 38), (69.6, 38)]),
     dict(net='BAT+', layers=('B.Cu',), spoke=1.5,
          poly=[(6.1, 64), (11.98, 64), (11.98, 71.6), (17.5, 71.6), (17.5, 66.2), (27.3, 66.2), (27.3, 64.1), (32.75, 64.1), (32.75, 80),
-               (24, 80), (24, 77.9), (21.15, 77.9), (21.15, 80), (6.1, 80), (6.1, 69.4), (0.6, 69.4), (0.6, 65), (2, 65), (2, 63.5),
+               (24, 80), (24, 77.9), (21.15, 77.9), (21.15, 80), (6.1, 80), (6.1, 69.8), (0.6, 69.8), (0.6, 65), (2, 65), (2, 63.5),
                (6.1, 63.5)]),
     dict(net='F1_OUT', layers=('B.Cu',), spoke=1.5,
          poly=[(25.28, 51.55), (25.3, 51.57), (25.3, 53.9), (33.45, 53.9), (33.45, 58), (32.75, 58), (32.75, 63.6), (17.53, 63.6),
@@ -693,16 +750,16 @@ POWER_ZONES = [
          poly=[(5.6, 62.6), (11.98, 62.6), (11.98, 71.6), (17.48, 71.6), (17.48, 62.6), (20.5, 62.6), (20.5, 60.6), (22.99, 60.6),
                (22.99, 65), (21.69, 65), (21.69, 75), (6.1, 75), (6.1, 65.86), (0.6, 65.86), (0.6, 59.86), (5.6, 59.86)]),
     dict(net='F2_OUT', layers=('F.Cu',),
-         poly=[(21.6, 76), (12.1, 76), (12.1, 98.2), (6.3, 98.2), (6.3, 74), (7.6, 74), (7.6, 64.6), (21.6, 64.6)]),
+         poly=[(21.6, 76), (12.1, 76), (12.1, 98.2), (6.3, 98.2), (6.3, 74.5), (7.6, 74.5), (7.6, 64.6), (21.6, 64.6)]),
     dict(net='3V3', layers=('In2.Cu',), trunk=False,
          poly=[(16.6, 11.62), (27.3, 11.62), (27.3, 14.2), (16.6, 14.2), (16.6, 34), (13.4, 34), (13.4, 1), (16.6, 1)]),
 ]
 GND_PATCHES = [
-    [(7.1, 73.5), (5.8, 73.5), (5.8, 98), (0.6, 98), (0.6, 69), (7.1, 69)],
+    [(7.1, 74), (5.8, 74), (5.8, 98), (0.6, 98), (0.6, 69.4), (7.1, 69.4)],
     [(47.4, 45.2), (42.7, 45.2), (42.7, 43.65), (47.4, 43.65)],
 ]
-STITCH_VIAS = [('F1_OUT', (1.6, 60.4)), ('F1_OUT', (19, 63.2)), ('F1_OUT', (20.6, 63.2)), ('GND', (1.2, 84.2)), ('GND', (4.6, 84.2)),
-               ('GND', (1.2, 86.4)), ('GND', (4.6, 86.4)), ('GND', (1.2, 88.6)), ('GND', (4.6, 88.6)), ('GND', (43.4, 44.25)),
+STITCH_VIAS = [('F1_OUT', (1.6, 60.4)), ('F1_OUT', (19, 63.2)), ('F1_OUT', (20.6, 63.2)), ('GND', (1.2, 84.7)), ('GND', (4.6, 84.7)),
+               ('GND', (1.2, 86.9)), ('GND', (4.6, 86.9)), ('GND', (1.2, 89.1)), ('GND', (4.6, 89.1)), ('GND', (43.4, 44.25)),
                ('GND', (45.6, 44.25)), ('GND', (18.6, 94)), ('GND', (18.8, 96.6))]
 # --- END generated by gen_power_zones.py ---
 # GND_PATCHES: F.Cu GND copper (ruling PB12, B4 fix 1) round the GND trunk pins whose In1 spokes alone cannot carry their load (the battery
@@ -758,10 +815,11 @@ PREROUTES = [
     # PB18: COIL_P (Q5.1 / R9.1 / K1.2 / J13), in the critical bundle: with Freerouting's fanout stage off (PB18b) stage A lost it in both
     # run 48 variants. Run 43 set-up 0's own route: F.Cu up the pull-up column to R9.1 and J13, In2 from a via by Q5 through U1B's .15/.16
     # and U3L's .2/.3 gaps, down DRV_L / DRV_R's interiors (u 38.18) and round the south to K1.2.
+    # B12a: its tail follows K1.2 0.5 mm toward +v and runs at v 92.4, 0.8 mm clear of the Micro-Fit J3's pads and its 3 mm NPTH peg.
     dict(net='COIL_P', layer='F.Cu', width=0.15, pts=[(3.0, 4.55), (3.0, 5.627), (4.077, 5.627), (7.55, 9.1), (9.076, 9.1), (11.433, 11.457), (11.433, 15.771), (16.162, 20.5), (14.035, 22.627), (14.035, 34.053), (13.088, 35.0), (13.829, 35.741), (13.829, 42.515), (13.337, 43.007)]),
     dict(net='COIL_P', layer='F.Cu', width=0.15, pts=[(13.337, 43.007), (13.337, 44.776), (13.062, 45.05)]),
     dict(net='COIL_P', layer='F.Cu', width=0.15, pts=[(16.162, 20.5), (17.0, 20.5)]),
-    dict(net='COIL_P', layer='In2.Cu', width=0.15, pts=[(13.337, 43.007), (16.599, 39.745), (28.332, 39.745), (34.397, 45.81), (35.009, 45.81), (38.178, 48.978), (38.178, 85.084), (30.356, 92.906), (17.161, 92.906), (16.117, 93.95), (14.64, 93.95)]),
+    dict(net='COIL_P', layer='In2.Cu', width=0.15, pts=[(13.337, 43.007), (16.599, 39.745), (28.332, 39.745), (34.397, 45.81), (35.009, 45.81), (38.178, 48.978), (38.178, 85.084), (30.862, 92.4), (17.667, 92.4), (15.617, 94.45), (14.64, 94.45)]),
     # PB18b: TP1's VBAT_SW feed (probe pad, and R21's lamp feed through it): the router fed it through the band north of DRV_L (F.Cu /
     # B.Cu u 33.4 - 34, In2 v 8), right where the front-right group crosses. Scripted east of H1 instead, down the main body's edge
     # (0.3 mm - the PB18 probe-feed exception, NARROW_TRACKS - where H1's 4.5 mm washer keep-out leaves 0.45 mm to the edge), a B.Cu hop

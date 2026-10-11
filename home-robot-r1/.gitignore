@@ -15,3 +15,5 @@ pcb/drc*.json
 reference-models/jetson-nano-b01/Jetson_Nano_Dev_Kit_3D_b01.stp
 # Robot assembly STEP (~67 MB since B8): a build output of cad/build_robot.py, derivable; the GLB and cad/assembly-meshes.json stay tracked
 cad/home-robot-r1.step
+# macOS archive metadata from unzipping pico-r3-step.zip (final review minor)
+reference-models/pico-r3/__MACOSX/

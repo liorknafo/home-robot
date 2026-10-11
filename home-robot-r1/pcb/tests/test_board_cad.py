@@ -97,6 +97,15 @@ class BoardCadTests(unittest.TestCase):
             self.assertEqual(c['mated_h'], B.MATED_H[ref], ref)
             self.assertEqual(c['bend'], B.CABLE_BEND_MM[fam] if vertical else 0.0, ref)
             self.assertEqual(c['mated_reach'], B.MATED_REACH.get(ref, 0.0), ref)
+            self.assertEqual((c['offboard_reach'], c['offboard_bend']), (B.OFFBOARD_REACH.get(ref, 0.0), B.OFFBOARD_BEND_MM if ref in B.OFFBOARD_REACH else 0.0), ref)
+            if ref in B.OFFBOARD_REACH:                             # B12a (J3): the plug's far end, OFFBOARD_REACH past the body's face, off the board
+                bx0, by0, bx1, by1 = c['body_xy']; ex, ey = DIRS[d]
+                face = (bx1 if ex > 0 else bx0) if ex else (by1 if ey > 0 else by0)
+                end = c['plug_end_xy'][0] if ex else c['plug_end_xy'][1]
+                self.assertAlmostEqual((end - face) * (ex or ey), B.OFFBOARD_REACH[ref], 3, ref)
+                k = 0 if ex else 1; edge = max(q[k] * (ex or ey) for q in self.bc['outline_xy'])
+                self.assertGreater(end * (ex or ey), edge, ref)                                     # past the board edge
+            else: self.assertNotIn('plug_end_xy', c, ref)
             self.assertEqual(c['under_carrier'], B.UNDER_CARRIER(ref), ref)
             self.assertEqual(len(c['pins_xy']), len([p for p in B._footprint_geometry(B.PARTS[ref]['fp'])[1] if p]), ref)
             bx0, by0, bx1, by1 = c['body_xy']                       # F.Fab body, inside the courtyard
@@ -228,7 +237,7 @@ class RobotCadTests(unittest.TestCase):
     def test_motor_joints_and_pigtails(self):
         """PB25 (amended in B9 fix 1): the J4 / J5 pigtails and their inline joints: each joint unplugs >= 8 mm along its axis, the pigtail
         clears the motor face by >= 0.3 mm, the board lifts 20 mm with the joints unplugged (the pigtails ride up with it) meeting nothing, and
-        the pigtail is pre-cut to its route plus its terminations plus half the pin spread (B9 fix 2; no lift slack), then trimmed after dressing; the pigtails are in the cut list and the BOM (C18)."""
+        the pigtail is pre-cut to its route plus its terminations plus the full pin spread (B9 fix 2, B12a N4; no lift slack), then trimmed after dressing; the pigtails are in the cut list and the BOM (C18)."""
         self.assertIs(self.v['motor_joints_serviceable'], True)
         mj = self.v['bay_board']['motor_joints']
         self.assertEqual(mj['board_lift_mm'], 20.0); self.assertEqual(mj['board_lift_hits'], [])

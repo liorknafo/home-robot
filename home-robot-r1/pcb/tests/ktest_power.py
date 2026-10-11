@@ -9,6 +9,7 @@ polygon floor of B4 (3.0 mm corridor, zone_check.ERODE) still holds in ktest_pcb
 as the sizing rule."""
 import math, shutil, tempfile, unittest
 from pathlib import Path
+from unittest import mock
 import pcbnew
 from pcb import board_spec as B, copper as C, power_check as P, zone_check as Z
 D = Path(B.__file__).parent
@@ -194,6 +195,24 @@ class PowerTests(unittest.TestCase):
                 mm = P.raster_cut_mm(ras, r['centre'], old_r0, away, r['r1'])
                 old += C.ipc2221_current_a(mm, C.COPPER_OZ[L], internal=C.is_internal(L)) if 0 < mm < math.inf else 0.0
             self.assertGreaterEqual(old, B.CURRENT_A['GND'])            # the blind spot B6's start radius had
+
+    def test_ring_cut_is_capped_at_the_spokes(self):
+        """B12a (carry 10): pin_ring_cut credits a layer no more than its own spokes. On the real board the cut through J1.1's four In1 spokes
+        (4.4 mm on the whole-cell raster) is below the spokes (4 x 1.2 mm), so the cap never binds; with zone_check.pin_spokes reporting one
+        In1 spoke of the same width (patched), the same cut exceeds it and the layer counts the spoke's current."""
+        near, r1 = P.nearest_gnd_load(self.board, *B.J1_GND_PIN)
+        def cut(): return P.pin_ring_cut(self.board, *B.J1_GND_PIN, r1, P._uv(near), layers=('In1.Cu',))['per']['In1.Cu']
+        real, spokes = cut(), Z.pin_spokes
+        def one_spoke(board, ref, pin):
+            out = dict(spokes(board, ref, pin))
+            n, w, _ = out['In1.Cu']; out['In1.Cu'] = (1, w, C.ipc2221_current_a(w, C.COPPER_OZ['In1.Cu'], internal=True))
+            return out
+        with mock.patch.object(Z, 'pin_spokes', one_spoke): capped = cut()
+        self.assertEqual(real['cut_mm'], capped['cut_mm'])
+        self.assertGreater(real['spokes'][0], 1)
+        self.assertGreater(capped['cut_a'], capped['spoke_a'])          # the cap binds ...
+        self.assertEqual(capped['a'], capped['spoke_a'])                # ... and the layer counts the one spoke
+        self.assertLess(capped['a'], real['a'])
 
     def test_no_pad_is_pending(self):
         """No trunk pin is excused: PB20 fixed the battery corner, and ruling PB21 (B6 fix 2) U3P.2, whose F.Cu patch B6 fix 1 found

@@ -3,6 +3,7 @@
 #include <array>
 #include <cmath>
 #include <cstdint>
+#include <string>
 #include <vector>
 // Platform-independent geometry of the ROUND robot (no Unreal types, so tests can compile it with plain clang++).
 // Robot frame: x forward, y LEFT (REP-103), z up from the floor, origin = base_link = the centre of the round shell,
@@ -30,7 +31,7 @@ struct Geometry{
  std::array<double,3> camera{11.7,0,15}; // camera_mount_m
  std::array<double,3> lidar{2,0,19};     // lidar_mount_m (scan plane)
  double shell_bottom_z=1.8;    // shell_bottom_z_m: lowest rigid shell edge above the floor
- double body_top_z=14.0;       // body_top_z_m: top of the body collider (LiDAR housing is separate)
+ double body_top_z=14.0;       // body_top_z_m: top of the body collider prism (the LiDAR column, lidar_column_prism, rises from it)
  double bumper_top_z=12.0;     // bumper_top_z_m: top edge of the bumper skin (CAD bumper_z[1]); probe rows stop below it
  std::array<double,2> turret_xy{2,0};           // lidar_turret_xy_m: centre of the LiDAR turret cylinder
  double turret_radius=2.9922;                   // lidar_turret_radius_m
@@ -153,5 +154,12 @@ inline bool principal_inertia(const double in[3][3],double eig[3],double axes[3]
  if(det<0)for(int i=0;i<3;i++)axes[2][i]=-axes[2][i];
  for(int k=0;k<3;k++)if(!(eig[k]>0)||eig[k]>eig[(k+1)%3]+eig[(k+2)%3]+1e-12*(eig[0]+eig[1]+eig[2]))return false;
  return true;
+}
+// Parts left out of the robot visual, by assembly-meshes.json id (case-sensitive): the harness cables (W01..W20, W_bumper_*;
+// the W_bundle / W_tie parts stay) and the motor cables. Not wheel_left / wheel_right: Unreal's FString::StartsWith ignores case
+// by default, which used to drop those wheel hubs with the cables (bay B12b).
+inline bool hidden_visual_part(const std::string& id){
+ auto starts=[&](const char* prefix){return id.rfind(prefix,0)==0;};
+ return (starts("W")&&!starts("W_bundle")&&!starts("W_tie"))||starts("motor_cable");
 }
 }

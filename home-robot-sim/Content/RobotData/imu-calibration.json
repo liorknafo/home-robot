@@ -82,5 +82,21 @@
         "none"
       ]
     }
-  ]
+  ],
+  "checks": {
+    "offsets_within_bounds": true,
+    "heading_residuals_agree": true,
+    "floor_level": true,
+    "yaw_coupling_within_bounds": true
+  },
+  "limits": {
+    "offset_m_s2": [
+      0.75,
+      0.75,
+      1.2
+    ],
+    "heading_residual_difference_m_s2": 0.2,
+    "floor_attitude_deg": 0.5,
+    "yaw_coupling": 0.05
+  }
 }

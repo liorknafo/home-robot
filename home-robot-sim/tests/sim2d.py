@@ -284,7 +284,8 @@ class Sim:
         if arm and not self.estop and (reason is None or (reason == 'bumper' and self.reverse_on_bump and pressed_motion_ok(*self.cmd, self.left, self.right))):
             self.armed = True
 
-    def power_on(self):
+    def clear_stop(self):
+        """Same as DriveCore::clear_stop (the motor_power_on / release_estop command): the stop latch released, disarmed."""
         self.estop = False; self.armed = False
 
     def _sticky(self):
@@ -428,7 +429,7 @@ class Bridge:
         raise RuntimeError('the IMU start-up calibration did not complete during power-on')
 
     def start_mapping(self):
-        self.b.start_mapping(self.sim.t); self.arm_pending = True; self.sim.power_on()
+        self.b.start_mapping(self.sim.t); self.arm_pending = True; self.sim.clear_stop()
 
     def run(self, seconds, stop_when_idle=True, on_tick=None):
         end = self.sim.t + seconds
@@ -592,7 +593,7 @@ if __name__ == '__main__':
         print(name, result, flush=True)
 
 
-def run_side_press(brain_factory, az_deg=70., seconds=30., seed=0, wall=False, firmware='spec', pressed_spin_pure=None):
+def run_side_press(brain_factory, az_deg=70., seconds=30., seed=0, wall=False, firmware='spec', pressed_spin_pure=None, give_up=False):
     """Pressed contact with no driven trail: a low post (bumper-only, LiDAR-blind)
     touches the skin at azimuth az_deg at start. Expected: the controller spins in
     place so the contact azimuth moves toward 0 (never past the skin end onto the
@@ -607,7 +608,9 @@ def run_side_press(brain_factory, az_deg=70., seconds=30., seed=0, wall=False, f
     firmware: Sim pressed rule; pressed_spin_pure: set on the brain if given. A brain that does NOT
     spin while pressed (the clamping DriveCore.h rule) must instead stand still: base_link may not move
     (< 1 mm), no spin command while pressed, the contact azimuth unchanged. Every run fails on any
-    tick whose TRUE base_link motion was backward (backward_tick: a reverse or a clamp-made pivot)."""
+    tick whose TRUE base_link motion was backward (backward_tick: a reverse or a clamp-made pivot).
+    give_up=True (run it longer than CONTACT_WAIT_S): the robot must instead end the session, standing still, with the
+    'Stuck against an obstacle' message (task G: bounded waiting, not until the time budget)."""
     walls = [((-1.5, -1.5), (1.5, -1.5)), ((1.5, -1.5), (1.5, 1.5)), ((1.5, 1.5), (-1.5, 1.5)), ((-1.5, 1.5), (-1.5, -1.5)),
              ((.6, .3), (.9, .3))]
     a = math.radians(az_deg); n = np.array([math.cos(a), math.sin(a)]); t = np.array([-n[1], n[0]])
@@ -637,6 +640,9 @@ def run_side_press(brain_factory, az_deg=70., seconds=30., seed=0, wall=False, f
     tail = [r for r in bridge.trace if r['t'] >= bridge.trace[-1]['t'] - 5.]
     waiting_safely = (brain.mode == 'mapping' and brain.phase == 'contact' and 'Waiting for the bumper to release' in brain.message
                       and all(r['v'] == 0 and r['w'] == 0 for r in tail))
+    gave_up = brain.mode == 'idle' and 'Stuck against an obstacle' in brain.message and all(r['v'] == 0 and r['w'] == 0 for r in tail)
+    if give_up:
+        waiting_safely = gave_up
     final_az = next((s[1] for s in reversed(pressed)), None)
     backward = sum(1 for r in bridge.trace if backward_tick(r)); moved = float(np.linalg.norm(sim.pose[:2]))
     pressed_spin = any(s[2] and s[4] == 0 and s[5] != 0 for s in seen)
@@ -645,11 +651,11 @@ def run_side_press(brain_factory, az_deg=70., seconds=30., seed=0, wall=False, f
               and (released is not None or (final_az is not None and abs(final_az) <= 20)))
     else:
         ok = waiting_safely and not pressed_spin and moved < .001 and final_az is not None and abs(final_az - az_deg) <= 2
-    ok = bool(ok and sim.contacts == 0 and not reversed_ and backward == 0 and audit['ok'])
+    ok = bool(ok and sim.contacts == 0 and not reversed_ and backward == 0 and audit['ok'] and (gave_up or not give_up))
     return dict(start_az=az_deg, firmware=firmware, pressed_spin_pure=getattr(brain, 'pressed_spin_pure', None), backward_ticks=backward, moved_m=round(moved, 4), pressed_spin=pressed_spin, contact_az_at_release=next((s[1] for s in reversed(seen) if s[2] and s[0] <= (released or 1e9)), None),
                 max_abs_contact_az_while_pressed=max((abs(s[1]) for s in pressed), default=None), final_contact_az=final_az, released_s=released,
                 body_contacts=sim.contacts, spun=any(s[4] == 0 and s[5] != 0 and s[3] == 'contact' for s in seen), reversed=reversed_,
-                waiting_safely=waiting_safely, reverse_audit=audit,
+                waiting_safely=waiting_safely, gave_up=gave_up, reverse_audit=audit,
                 passed=ok,
                 mode=brain.mode, message=brain.message, events=[e['message'] for e in brain.events][:6])
 
@@ -673,7 +679,7 @@ def overhang_world(kind, underside=.150):
     return World(room + _legs(*fp), overhangs=[top], overhang_z=underside)
 
 
-def run_overhang(brain_factory, kind, goals=(), seconds=800., goal_seconds=200., seed=0):
+def run_overhang(brain_factory, kind, goals=(), seconds=800., goal_seconds=200., seed=0, sensor_errors=None):
     """Map overhang_world(kind) (then Go-to each of `goals`). The overhang gives the controller no signal: no LiDAR
     return, no bumper, no cliff; only the LiDAR turret meets its edge, the body stops and the wheels still turn.
     Reports every hit episode (TRUE base_link position; consecutive blocked ticks are one episode) and the controller's
@@ -681,8 +687,8 @@ def run_overhang(brain_factory, kind, goals=(), seconds=800., goal_seconds=200.,
     Go-to 'Arrived' within 3 cm; the reverse audit is clean (no blind reverse, episodes within REVERSE_LIMIT); no
     rigid-body contact except the turret on the overhang and no bumper touch; every hit spot is recorded (a stall mark
     within .30 m of it); a marked spot is never hit again after its mark (no hit within .10 m of it later) and no spot
-    takes more than 3 hits (the jam retries)."""
-    brain = brain_factory(); sim = Sim(overhang_world(kind), seed=seed)
+    takes more than 3 hits (the jam retries). seed and sensor_errors: as Sim."""
+    brain = brain_factory(); sim = Sim(overhang_world(kind), seed=seed, sensor_errors=sensor_errors)
     bridge = Bridge(brain, sim, rearm_hook=lambda b: getattr(b, 'wants_arm', False))
     for _ in range(10):
         brain.predict(sim.state()); [sim.step(.01) for _ in range(5)]
@@ -705,7 +711,7 @@ def run_overhang(brain_factory, kind, goals=(), seconds=800., goal_seconds=200.,
             brain.begin_go_to(list(goal), sim.t)
         except ValueError as e:
             trips.append(dict(goal=goal, accepted=False, message=str(e))); continue
-        bridge.arm_pending = True; sim.power_on(); t0 = sim.t; bridge.run(goal_seconds, on_tick=tick)
+        bridge.arm_pending = True; sim.clear_stop(); t0 = sim.t; bridge.run(goal_seconds, on_tick=tick)
         trips.append(dict(goal=goal, accepted=True, message=brain.message, time_s=round(sim.t - t0, 1),
                           end_to_goal_cm=round(100 * float(np.linalg.norm(sim.pose[:2] - np.asarray(goal))), 1)))
     audit = reverse_audit(bridge.trace)
@@ -719,3 +725,70 @@ def run_overhang(brain_factory, kind, goals=(), seconds=800., goal_seconds=200.,
                 all_hits_recorded=recorded, rehit_after_mark=rehit, max_hits_per_spot=per_spot, body_blocks=sim.contacts,
                 overhang_block_ticks=sim.overhang_hits, bumps=sim.bump_events, contacts=len(brain.contacts), skips=len(brain.blacklist),
                 jams=len(brain.jams), reverse_audit=audit, mode=brain.mode)
+
+
+# ---- closed-loop scenario: bumper contact with no straight trail behind (task G) ---------------------------------
+# Scripted approaches, (v, w, seconds) each: the robot drives them under its own command() guard, then a low step
+# (6 cm shower-tray edge: bumper only, LiDAR-blind) appears `gap` ahead of its skin and it drives straight on until it
+# touches. 'weave': the last 4 s of the Unreal trial full-mapping-20261011T054731 (the local planner's +/-.4 rad/s
+# commits, 10 cm/s) before it met the shower tray; 'spin': 30 cm straight, then a quarter turn in place; 'spin_start':
+# a quarter turn in place before anything else (the trail behind is only the start position).
+CONTACT_APPROACHES = {'weave': [(.04, .4, .65), (.1, -.4, .65), (.1, -.4, .65), (.04, -.4, .65), (.04, 0., .65), (.1, .4, .65)],
+                      'spin': [(.1, 0., 3.), (0., .4, math.pi / 2 / .4)],
+                      'spin_start': [(0., .4, math.pi / 2 / .4)]}
+
+
+def run_contact_recovery(brain_factory, approach='weave', gap=.02, seconds=60., seed=0, sensor_errors=None, release_s=15., leave_m=.3):
+    """Mapping start, then the CONTACT_APPROACHES[approach] script; then a wide low step appears `gap` ahead of the skin
+    and the robot drives straight (10 cm/s) until its bumper touches the step. From the touch on the real controller
+    decides everything. PASS: the bumper releases within release_s of the touch; by the end the robot has left the contact
+    phase and is at least leave_m from where it touched (it got off the step and went on mapping); zero rigid-body
+    blocks; the reverse audit clean (no reverse off the TRUE driven trail, episodes within REVERSE_LIMIT); the touch is
+    on the map (a contact recorded, contact cells within 15 cm of the touched skin). Before task G the robot backed off
+    one tick or not at all and then waited for the bumper to release until the time budget ran out."""
+    brain = brain_factory(); sim = Sim(World([((-1, -1.5), (3, -1.5)), ((3, -1.5), (3, 1.5)), ((3, 1.5), (-1, 1.5)), ((-1, 1.5), (-1, -1.5)),
+                                              ((.5, -1.1), (.5, -.8)), ((2.3, -.9), (2.3, -.6))]), seed=seed, sensor_errors=sensor_errors)
+    bridge = Bridge(brain, sim, rearm_hook=lambda b: getattr(b, 'wants_arm', False))
+    for _ in range(10):
+        brain.predict(sim.state()); [sim.step(.01) for _ in range(5)]
+    script = CONTACT_APPROACHES[approach]; real = brain.drive_command; st = dict(t0=None, step=None, touched=None, touch_pose=None, released=None)
+
+    def scripted(state):
+        # The approach replaces only the motion choice; command() (the firmware and reverse guards) still applies.
+        if st['touched'] is not None or brain.phase == 'contact' or brain.phase not in ('plan', 'follow') or not brain.imu.ready_to_move():
+            return real(state)
+        t = state['sim_time_s']; st['t0'] = t if st['t0'] is None else st['t0']; k = t - st['t0']; brain.phase = 'follow'
+        for v, w, d in script:
+            if k < d:
+                return v, w
+            k -= d
+        if st['step'] is None:
+            # The step: 1.2 m wide, .5 m deep, its face `gap` ahead of the skin, square to the heading (TRUE pose).
+            p = sim.pose; u = np.array([math.cos(p[2]), math.sin(p[2])]); n = np.array([-u[1], u[0]]); c = p[:2] + (SKIN_R + gap) * u
+            st['step'] = np.array([c - .6 * n, c + .6 * n, c + .6 * n + .5 * u, c - .6 * n + .5 * u])
+            sim.w.low.append(st['step']); sim.w.low_segs = np.array([s for q in sim.w.low for s in poly_segments(q)], float).reshape(-1, 2, 2)
+        return .1, 0.
+
+    brain.drive_command = scripted
+
+    def tick(br):
+        if sim.bump and st['touched'] is None:
+            st['touched'] = sim.t; st['touch_pose'] = sim.pose.copy()
+        if st['touched'] is not None and st['released'] is None and not sim.bump:
+            st['released'] = sim.t
+    bridge.start_mapping(); bridge.run(seconds, on_tick=tick)
+    audit = reverse_audit(bridge.trace)
+    touched = st['touched'] is not None
+    after = [r for r in bridge.trace if touched and r['t'] >= st['touched']]
+    away = float(np.linalg.norm(sim.pose[:2] - st['touch_pose'][:2])) if touched else 0.
+    released = None if st['released'] is None else round(st['released'] - st['touched'], 2)
+    skin = st['touch_pose'][:2] + SKIN_R * np.array([math.cos(st['touch_pose'][2]), math.sin(st['touch_pose'][2])]) if touched else None
+    cells = np.argwhere(brain.grid.camera_obstacles) if touched else np.empty((0, 2))
+    marked = bool(len(brain.contacts)) and bool(len(cells)) and min(float(np.linalg.norm(brain.grid.world(c) - skin)) for c in cells) <= .15
+    reversed_m = sum(float(np.linalg.norm(np.diff(r['path'], axis=0), axis=1).sum()) for r in after if r['v'] < 0 and 'path' in r)
+    ok = (touched and released is not None and released <= release_s and brain.phase != 'contact' and away >= leave_m and sim.contacts == 0
+          and audit['ok'] and marked)
+    return dict(passed=bool(ok), approach=approach, gap_m=gap, seed=seed, touched_s=None if not touched else round(st['touched'], 2), released_after_s=released,
+                reversed_after_touch_m=round(reversed_m, 4), away_from_touch_m=round(away, 3), contact_marked=marked, contacts=len(brain.contacts),
+                bumps=sim.bump_events, body_blocks=sim.contacts, reverse_audit=audit, mode=brain.mode, phase=brain.phase, message=brain.message,
+                events=[e['message'] for e in brain.events][2:8])

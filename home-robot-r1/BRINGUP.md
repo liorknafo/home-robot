@@ -3,7 +3,8 @@
 How to solder, check, fit and first power the R1 power & I/O board (the 4-layer "bay board"), and the checks to make before the Jetson
 and the lid go on.
 
-**Where the numbers come from.** Written for commit 76232c4 (bay B10).
+**Where the numbers come from.** Written for commit 76232c4 (bay B10); the power connectors, the power rules and the assembly numbers
+updated in bay B12a.
 - The assembly order is `ASSY_ORDER` in `cad/build_robot.py`. Its resolved text is in `cad/component-manifest.json` (the `bay_board`
   note) and `design-review.html`. If this guide and `ASSY_ORDER` ever disagree, `ASSY_ORDER` wins. Section 6 follows its numbering.
 - Soldering and ordering: `pcb/fab/ORDERING.md`.
@@ -14,10 +15,22 @@ and the lid go on.
 
 ---
 
-## 0. Before anything: the battery connector J1
+## 0. Before anything: the battery connector J1 and the power rules
 
-> **J1 pin 1 = GND, pin 2 = BAT+** (silk "−" and "+" beside the housing; ruling PB20). This is the reverse of the usual "pin 1 = +"
-> habit. The battery lead W01 must carry **GND (battery −, black) in cavity 1** and **BAT+ (battery +, red) in cavity 2**.
+> **J1 pin 1 = GND, pin 2 = BAT+** (silk "−" and "+" beside each pin, on the side toward the fuses: the housing covers the pin ends;
+> ruling PB20). This is the reverse of the usual "pin 1 = +" habit.
+>
+> **J1 is an XT30 header:** the AMASS XT30UPB-M, a vertical PCB-mount male rated 15 A continuous, on the board's rear edge. It is
+> plugged from above with the lid off. The battery lead W01 runs from the battery's Tamiya plug, on 18 AWG silicone wire (red BAT+,
+> black GND), to an AMASS XT30U-F (the female half). The XT30 housing is D-shaped, so it mates only one way round. The lead must carry:
+> - **BAT+ (battery +, red) on the XT30U-F's "+" contact** (cavity 2), which mates J1 pin 2;
+> - **GND (battery −, black) on its "−" contact** (cavity 1), which mates J1 pin 1.
+>
+> The D shape stops the plug going in the wrong way round. It does not stop a lead with its two wires soldered the wrong way round, so
+> the meter check below still applies.
+>
+> **Three connector families: no lead fits a wrong header.** J1 (battery) is an XT30, J2 (rocker) a JST VH, J3 (Jetson 5 V) a Molex
+> Micro-Fit 3.0. Tag each lead anyway, with a heat-shrink label near its plug: "J1 BATT", "J2 ROCKER", "J3 JETSON 5V".
 >
 > **The board has no reverse-polarity protection.** A reversed lead with the fuses fitted puts the battery backwards across the whole
 > board. That is the costliest mistake you can make on it.
@@ -28,9 +41,20 @@ and the lid go on.
 > 3. Measure **F1's input clip** (its BAT+ side, F1 pin 1) against GND. For GND, use an M3 hole ring (H1–H4), or TP5 if the GY-521 is
 >    not yet plugged in (TP5 sits under it).
 > 4. It must read **positive, about the pack voltage (≥ 6 V)**. A part-discharged pack reads lower.
-> 5. A negative reading means the lead is reversed. With the fuses out, it has no current path: unplug it and re-pin the lead.
+> 5. A negative reading means the lead is reversed. With the fuses out, it has no current path: unplug it and swap the two wires at
+>    the XT30U-F.
 >
-> Only after a positive reading, fit the fuses.
+> Only after a positive reading may the fuses go in. **Fit a fuse only with the rocker off:** F1 first, F2 last (section 7, steps 1
+> and 5).
+>
+> **The same check for the Jetson lead W04, before it ever touches the Jetson** (after section 7 step 3, with the P03 set and
+> checked). The Micro-Fit only mates one way round, but its two crimps can still sit in the wrong cavities:
+> 1. Plug W04 into J3. Leave its barrel plug free (not in the Jetson).
+> 2. Rocker on. Measure the barrel plug's **centre against its sleeve**: it must read **positive, about 5.1 V**.
+> 3. A negative reading means the crimps are swapped: rocker off, unplug W04, swap the two crimps in the receptacle.
+>
+> **Everyday rule:** switch the rocker off before you plug or unplug the battery, and shut the Jetson down before you switch the
+> rocker off.
 
 ---
 
@@ -46,7 +70,7 @@ Order: **reflow SMD → inspect → iron THT, trimming leads to ≤ 1.4 mm → m
    - Check the GND joints for solder wicking into the tented vias beside them. The mask web there is only about 0.1 mm.
 3. **Iron the THT parts, lowest first:**
    - the sockets U1A / U1B, U2, U3L / U3P, U4L / U4P;
-   - the XH and VH connectors;
+   - the connectors: the XH headers, the VH (J2), the XT30 (J1) and the Micro-Fit (J3; push its plastic peg through its hole);
    - J4 / J5, U5A / U5B;
    - the FLR fuse holders, K1, and C1 ("+" on the silk).
 
@@ -54,7 +78,8 @@ Order: **reflow SMD → inspect → iron THT, trimming leads to ≤ 1.4 mm → m
    PB22): give it time to wet.
 
    **Trim every lead to ≤ 1.4 mm under the board.** The board sits on 2.4 mm spacers and printed ribs, which leaves 1.0 mm of air.
-4. **Modules come last** (section 4 onward): set the P03 first, then the Pico, the two DRV8874 carriers and the GY-521.
+4. **Modules come last** (section 4 onward): the Pico first, on USB (section 4), then the P03, set on the bench (section 5), then the
+   two DRV8874 carriers and the GY-521.
 
 ## 2. Unpowered checks
 
@@ -87,25 +112,37 @@ Do the fail-safe check in section 0 now, on the bench. It is ASSY step 0.
 1. Set the P03 on the bench, with a bench supply on its input: **trimpot to 5.1 V**.
 2. Then verify it at **6.6 V input, with the intended load and motor starts**. Its rating alone is not acceptance.
 3. Only then connect it to U5A (input) / U5B (output) and fit it (ASSY step 5).
+4. **Polarity: pin 1 is "+" on both terminals.**
+   - U5A pin 1 = P03 IN+ (VBAT_SW); U5B pin 1 = P03 OUT+ (5 V). Pin 2 is GND on both (IN− / OUT−).
+   - Pin 1 is the screw nearer the robot's centre line. The silk "+" for U5A sits on the board just behind the terminal (the side away
+     from the P03); for U5B, just past the terminal's end nearer the centre line.
+   - Before the first power, check each "+" lead end to end with the meter's continuity range: P03 IN+ to U5A pin 1, P03 OUT+ to U5B
+     pin 1. A swapped input lead puts the pack backwards on the P03 the moment the rocker goes on.
+   - Section 7 step 3 checks both with power on, before the Jetson is connected.
 
 Once the Jetson is on, its trimpot and tie cannot be reached.
 
 ## 6. Assembly into the robot (ASSY_ORDER, condensed)
 
-The numbers below are copied from the resolved `ASSY_ORDER` at 76232c4. The full text is the reference.
+The numbers below are copied from the resolved `ASSY_ORDER` (bay B12a build). The full text is the reference.
 
 ### Step 0. On the bench
 
 **Make the two motor pigtails (C18) and tag them at once.**
 - Tag one "**L / J4**" (left motor) and the other "**R / J5**" (right motor), right after making each one and before it is plugged on.
   They differ in length and in pin-1 order.
-- Pre-cut the six wires to **55 mm (J4) / 51 mm (J5)**: the drawn route, plus the terminations, plus half the 12.7 mm pin spread.
+- Pre-cut the six wires to **61 mm (J4) / 57 mm (J5)**: the drawn route, plus the terminations, plus the full 12.7 mm pin spread.
+  The six wires fan out 6.35 mm either side of the bundle's centre line at both ends: at the socket's sleeves and again at the male
+  housing's cavities.
 - Solder the socket end first: one wire on each tail of the right-angle socket, under a Ø1.8 sleeve. The red wire goes on pin 1, and
   the tails and wires point up.
 - Push the socket onto its header. Leave the male ends long; they are finished in step 4.
 - J4 pin 1 is at the rear end and J5 pin 1 at the front end (the square pads). The rule is the same for both: looking into the
   socket's mating face with its tails up, **the red wire (pin 1) is on the left**.
 - The pigtails stay with the board.
+
+**Tag the three power leads** "J1 BATT", "J2 ROCKER" and "J3 JETSON 5V". They are three different connector families and cannot be
+cross-plugged (section 0); the tags are there anyway.
 
 **Do the J1 fail-safe check** (section 0).
 
@@ -135,20 +172,21 @@ into the inserts.
 1. Dress each one as drawn, with no slack (it rides up with the board when the joint is unplugged). The route: straight up out of the
    socket, forward about 12 mm over the board beside U5A (beside J9 on the right), out between the P03 and the motor face, and down to
    the inline joint just ahead of the motor (x 15.2..17.8, |y| 38..60).
-2. Trim each wire to its own length at the male end. The rear pin's wire is the longest:
-   - J4: 41.8 mm (pin 6) to 54.5 mm (pin 1);
-   - J5: 37.4 mm (pin 1) to 50.1 mm (pin 6).
+2. Trim each wire at its own cavity of the male housing. Its finished length depends on where the wire sits at both ends:
+   - J4: 35.4–60.8 mm (about 48.1 mm on the bundle's centre line);
+   - J5: 31.1–56.5 mm (about 43.8 mm).
 3. Crimp the male pins into the 1×6 housing, red wire = pin 1.
 
 **Factory motor cables: measure, then coil.**
-1. Measure each cable from the encoder cap to the female housing's rear face (the wire entry). Readings of **186–200 mm** all fit.
-2. Lay the fixed path first, about 90 mm outside the coil:
+1. Measure each cable from the encoder cap to the female housing's rear face (the wire entry). Readings of **186–200 mm** all fit
+   (2–3 turns). A longer cable, up to **220 mm**, still fits (up to 3.5 turns).
+2. Lay the fixed path first, about 89 mm outside the coil:
    - a flat row along the motor's inner end face toward the rear;
    - round the motor's rear shoulder and forward over the motor top (never over the pigtail);
    - down the motor's front shoulder, under the bumper lead;
    - from the coil position into the housing.
-3. Wind the remainder (the measured length less the fixed path: **96–110 mm**) into the **coil** on the base ahead of the motor:
-   2–3 turns, about 16 mm across, at x 25, |y| 72. Tie it through its two slots.
+3. Wind the remainder (the measured length less the fixed path: **97–111 mm**) into the **coil** on the base ahead of the motor:
+   2–3.5 turns, about 16 mm across, at x 25, |y| 72. Tie it through its two slots.
 
 **Inline joints.**
 - Mate each motor's factory female housing onto its pigtail's male housing.
@@ -160,8 +198,9 @@ into the inserts.
 
 ### Step 5. The P03
 
-Set and verify it on the bench (section 5). Connect it to U5A / U5B. Fit it on its foam tape in the front bay, with the cable tie
-through the P_base slots at (28, ±33.3).
+Set and verify it on the bench (section 5). Connect it to U5A / U5B: pin 1 ("+", the screw nearer the robot's centre line) is IN+ on
+U5A and OUT+ on U5B; the red wires go on pin 1. Fit it on its foam tape in the front bay, with the cable tie through the P_base slots at
+(28, ±33.3). Before the Jetson is connected, check both terminals with the meter (section 7 step 3).
 
 ### Step 6. Rear standoffs
 
@@ -170,7 +209,8 @@ through the base, the clamp spacer and the board. These two stacks clamp the boa
 
 ### Step 7. The Jetson
 
-Fit the Jetson (four M2.5 top screws), then its six plugs.
+Fit the Jetson (four M2.5 top screws), then its six plugs. Its barrel-jack power needs the J48 jumper fitted (section 8). Before the
+5 V barrel plug goes in, check the Jetson lead W04 (section 0): its centre reads positive 5.1 V against its sleeve.
 
 Before step 7, do sections 7–9: the LEDs, the test pads and the under-carrier plugs can be reached only until the Jetson is on.
 
@@ -196,14 +236,19 @@ before the Jetson is fitted, so do this whole section with it off.
 
 Steps:
 
-1. **Battery in, F1 fitted, F2 out, rocker off.** Expect LED1 off and TP1 at 0 V.
+1. **Rocker off; then battery in, F1 fitted, F2 out.** Expect LED1 off and TP1 at 0 V.
 2. **Rocker on.** Expect:
    - LED1 on;
    - TP1 at about the pack voltage;
    - the Pico's VSENSE (GP26) at about 0.248 × TP1 (the R11 100 k / R12 33 k divider; 2.16 V at 8.7 V).
-3. **5 V rail** (P03 connected). Expect TP3 at 5.1 V and LED2 on.
+3. **5 V rail and the P03 polarity check** (P03 connected; the Jetson lead W04 unplugged from J3). Measure against a GND pad:
+   - U5A pin 1 ("+", P03 IN+) reads the pack voltage, positive;
+   - U5B pin 1 ("+", P03 OUT+) reads the set 5.1 V, positive. TP3 reads the same, and LED2 is on.
+
+   A negative or 0 V reading at U5B pin 1 means the P03 leads are swapped or loose: rocker off, battery out, fix them before going on.
 4. **Motor toggle on** (the J13 loop). K1 clicks, and MOTOR_ON_N (GP9) reads low. With F2 still out, VMOT stays dead.
-5. **F2 fitted.** Expect:
+5. **Rocker off, fit F2, rocker on.** F2 goes in only with the rocker off: fitted live, it would charge C1 + C3 (570 µF) through the
+   fuse contacts. Expect:
    - TP2 (or C1 "+") at about the pack voltage;
    - LED3 on.
 6. **Motors, wheels lifted.** Use the firmware limits in section 8.
@@ -230,6 +275,24 @@ Steps:
   - SLEEP (GP7) wakes both drivers; R17 pulls it low.
   - FAULT (GP8) is open drain and shared, with an R18 pull-up.
   - Each motor's IN1 / IN2 pair is on one PWM slice: GP16 / 17 left, GP18 / 19 right.
+- **Switch inputs need the internal pull-ups.** BUMP_L (GP6), BUMP_R (GP15) and ARM (GP14) have no pull-up resistors on the board; the
+  switches pull them to GND. Enable the RP2040's internal pull-ups on these three pins in firmware.
+- **I2C:** I2C1 on GP2 (SDA) / GP3 (SCL) at **100 kHz**. The board has 4.7 kΩ pull-ups (R19 / R20); the bus runs over cables to the
+  four ToF boards and the IMU.
+- **ToF addresses.** The four VL53L0X sensors all start at address 0x29.
+  1. At boot, hold all four in reset: XSHUT1–XSHUT4 (GP0, GP10, GP5, GP13) low.
+  2. Release one at a time, and give each a new address: **0x30, 0x31, 0x32, 0x33** for cliff 1–4 (J6, J7, J8, J9).
+  3. The IMU stays at 0x68.
+- **Battery low-voltage stop.** The pack is 6-cell NiMH: 7.2 V nominal, 8.7 V full.
+  - VSENSE (GP26, ADC0) = VBAT_SW × 33 kΩ / (100 kΩ + 33 kΩ) = **0.248 × VBAT_SW** (R11 100 k top, R12 33 k bottom, C2 100 nF).
+    Full charge (8.7 V) reads 2.16 V, inside the 3.3 V ADC range.
+  - **Warn at 6.6 V** (1.1 V per cell; VSENSE 1.64 V).
+  - **Stop at 6.0 V** (1.0 V per cell; VSENSE 1.49 V, an ADC count of about 1847 of 4095 at the 3.3 V reference).
+  - Average over about 2 s, so motor starts do not trip it.
+  - At the stop: stop the motors and tell the Jetson to shut down. Then switch the rocker off and charge the pack.
+  - Do not run NiMH below 1.0 V per cell.
+- **Jetson power:** barrel-jack power needs the Jetson Nano's **J48 jumper** fitted.
+- **IMU:** the MPU-6050 runs DLPF_CFG = 4 (about 20 Hz), with samples forwarded at 20 Hz (ruling PB27; see section 14).
 
 ## 9. Before fitting the Jetson: plugs and the gap under the carrier
 
@@ -240,8 +303,8 @@ Steps:
    - the P03 leads at U5A / U5B;
    - the spares J14 / J15, if fitted (DNP as delivered).
 
-   **J3 (Jetson 5 V)** is not under the carrier. It is on the rear band (robot (−43.0, −45.2)), reachable with the lid off.
-   (`pcb/fab/ORDERING.md` "Modules" still lists J3 with the under-carrier cables. Plugging it early does no harm.)
+   **J3 (Jetson 5 V)** is not under the carrier. It is in the rear band, behind the carrier (robot about (−43.9, −44.5)), with its
+   mating face at the board's right edge, reachable with the lid off. Plug the Jetson lead W04 into it after the section 7 checks.
 2. **Measure the gap.** The carrier PCB underside sits at z 57.0, which is **20.0 mm over the board top**. The plan's limit for any part
    under it, including a mated plug and its wire bend, is **16.27 mm over the board top** (z 53.27). That leaves 1.5 mm below the
    carrier's through-hole lead tails, which the CAD allows to reach 2.23 mm under the carrier PCB (`validation.carrier_lead_tail_slab`).
@@ -286,6 +349,11 @@ Then fit the Jetson (ASSY step 7).
 
 ## 11. Service
 
+**Step 0, every time, before you reach inside:** shut the Jetson down, switch the rocker off, then unplug the battery at its Tamiya
+plug. BAT+ is live and unfused at F1's input whenever the battery is plugged in: the rocker switches only what comes after F1.
+
+- **Everyday rule:** switch the rocker off before you plug or unplug the battery, and shut the Jetson down before you switch the
+  rocker off. Fit or pull a fuse only with the rocker off.
 - **With the lid off, these are reachable:** the board's rear band (Pico USB, the rear connector row, the Jetson 5 V lead J3, the
   fuses).
 - **These need the Jetson off:** the motor inline joints, the other under-carrier connectors and the P03 (tie, trimpot). To take the
@@ -293,7 +361,7 @@ Then fit the Jetson (ASSY step 7).
 - **To take the board out:**
   1. Jetson off.
   2. The two rear standoffs off (their M2.5 screws from under P_base).
-  3. The battery out (strap, Tamiya plug).
+  3. The battery out (undo the strap; its Tamiya plug is already out, step 0).
   4. The four tray screws out. Slide the tray 2 mm aft and lift it straight out.
   5. The four M3 board screws out.
   6. Unplug the rear-band plugs.
@@ -362,17 +430,20 @@ corners (`Content/RobotData/sensor-errors.json` in the simulator).
    **The real fault detectors:**
    - **Heading residuals.** The two headings' residuals must agree within 0.2 m/s² per axis. That is twice the floor's tilt times g,
      about 0.6°. A larger difference means the floor is not flat or the robot moved: move it and repeat.
-   - **Floor attitude.** The cliff floor-plane attitude at rest must be ≤ 0.5°. More means a tilted GY-521, a loose board or cliff
-     ToF offsets. Fix that rather than accept the numbers.
+   - **Floor attitude.** The cliff floor-plane attitude at rest must be ≤ 0.5°. More means the robot is not sitting flat on its wheels
+     and caster (debris, an uneven spot) or a cliff ToF sensor reads off. Fix that rather than accept the numbers. A tilted GY-521 does
+     not show here: it goes into the x / y offsets.
 
    **Gross-fault bounds:**
-   - **Offsets:** |x|, |y| ≤ 0.7 and |z| ≤ 1.1 m/s². The stored offsets also absorb the accelerometer's sensitivity (±3 % of g) and
-     cross-axis error (±2 % of g), so an in-spec MPU-6050 reaches ±0.69 / ±0.69 / ±1.08 m/s². Values beyond that mean a broken
-     sensor or a wrong range setting.
+   - **Offsets:** |x|, |y| ≤ 0.75 and |z| ≤ 1.2 m/s². The stored offsets also absorb the accelerometer's sensitivity (±3 % of g) and
+     cross-axis error (±2 % of g), so an in-spec MPU-6050 stores up to ±0.69 / ±0.69 / ±1.08 m/s² cold, and ±0.733 / ±0.733 /
+     ±1.158 m/s² after the preferred 10-min warm-up (the zero-g temperature drift). Values beyond the bounds mean a broken sensor or a
+     wrong range setting.
    - **Couplings:** ≤ 0.05 (cross-axis 2 % plus the mounting tilt).
 
 **At every power-on** the robot calibrates the gyro bias itself. It must stand still for 2 s with no motion command; the motors may
-be on. Do not touch it. It waits in its first measuring stop until this is done. After that, every stop re-estimates the bias (zero-velocity updates), and the
+be on. Do not touch it. It waits in its first measuring stop until this is done; if it never gets 2 s of stillness within 30 s it stops
+with a message (Mapping and Go-to). After that, every stop re-estimates the bias (zero-velocity updates), and the
 cliff floor plane keeps the accelerometer offsets right as the board warms.
 
 **Firmware requirement (ruling PB27).**

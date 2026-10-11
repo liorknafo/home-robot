@@ -510,7 +510,7 @@ class PcbTests(unittest.TestCase):
         rules = re.findall(r'\(rule "[^"]+"\s*\(constraint min_resolved_spokes (\d+)\)\s*\(condition "([^"]+)"\)\)', B.DRC_RULES)
         self.assertEqual([r[0] for r in rules], ['1'])
         self.assertEqual(set(B.PAD_SPOKE_ANGLE), {('U3P', '2')})
-        self.assertIn("A.memberOfFootprint('U3P') && A.Pad_Number == '2'", rules[0][1])
+        self.assertEqual(rules[0][1], "A.Type == 'Pad' && A.memberOfFootprint('U3P') && A.Pad_Number == '2'")     # B12a (carry 10): the whole condition
         sp = zone_check.pin_spokes(self.filled(), 'U3P', '2')
         self.assertEqual((sp['F.Cu'][0], sp['B.Cu'][0]), (1, 1))
         with tempfile.TemporaryDirectory() as t:
@@ -706,7 +706,13 @@ class PcbTests(unittest.TestCase):
         reach = max(box(s)[2] for r in ('U1A', 'U1B') for s in self.footprint_area(r))
         if reach >= B.CARRIER_U:
             self.assertLessEqual(effective_h('U1A'), B.UNDER_CARRIER_MAX_H)
-            self.assertLess(reach, B.CARRIER_U + 0.5, f'Pico reaches u {reach:.2f}')
+            self.assertLess(reach, B.CARRIER_U + 0.4, f'Pico reaches u {reach:.2f}')     # B12a (carry 8): PB7's 0.36 mm (u 28.38), was + 0.5
+
+    def test_under_carrier_flag_matches_the_placed_courtyards(self):
+        """B12a (carry 8): board_spec.UNDER_CARRIER (its own parse of the footprint file, placed by PLACEMENT) agrees with the saved board:
+        True exactly for the parts whose KiCad courtyard, as placed, reaches u >= CARRIER_U."""
+        kicad = {r for r, fp in self.fps.items() if box(fp.GetCourtyard(pcbnew.F_CrtYd))[2] >= B.CARRIER_U}
+        self.assertEqual(kicad, {r for r in self.fps if B.UNDER_CARRIER(r)})
 
     def test_dnp_spare_rows_fit_a_bare_header(self):
         """Ruling PB8: J14 / J15 are placed DNP pad rows (KiCad DNP attribute, out of the BOM); a bare 2.54 mm header fitted there later
@@ -879,27 +885,39 @@ class PcbTests(unittest.TestCase):
                 self.assertTrue(plus, f'{ref}: no + mark')
                 m = pt(plus[0][0].GetCenter())
                 self.assertLess(math.dist(m, p1), math.dist(m, p2), f'{ref}: + mark not at the + pad')
-        # Ruling PB20: connector pin marks (board_spec.PIN_MARKS, build_pcb): a '+' (two crossing PIN_MARK_LEN strokes) at the BAT+ pin
-        # and a '-' (one stroke) at the GND pin - J1's pinout changed, so the marks follow board_spec.J1_PINOUT. B6 fix 1: they must stay
-        # visible once J1 is soldered and mated - off its F.Fab housing (the body rectangle and the latch line work beside it) and off
-        # every other part's courtyard - and each must read as its pin's: no pad on the whole board nearer than that pin.
+        # Ruling PB20: connector pin marks (board_spec.PIN_MARKS, build_pcb): a '+' (two crossing PIN_MARK_LEN strokes) at a supply pin
+        # and a '-' (one stroke) at a GND pin - J1's pinout changed, so its marks follow board_spec.J1_PINOUT; B12a (final review N2) adds
+        # a '+' at pin 1 of the P03 terminals and of J3. B6 fix 1: they must stay visible once the part is soldered and mated - off its
+        # F.Fab housing (the bounding box of every F.Fab line of the footprint) and off every other part's body: each of its F.Fab
+        # drawings, its pads and, for J4 / J5, the C18 pigtail's right-angle socket on the pins (the pin row +- 7.62 mm, out to the plug
+        # zone's far end; B12a: U5A.1's mark sits in J4's courtyard margin, beside the end of J4's pin row) - and each must read as its
+        # pin's: no pad on the whole board nearer than that pin.
         from pcb.build_pcb import boxes_hit
-        self.assertEqual(set(B.PIN_MARKS), {'J1'})
+        self.assertEqual(set(B.PIN_MARKS), {'J1', 'U5A', 'U5B', 'J3'})
+        net = {p: n for n, pins in B.NETS.items() for p in pins}
         all_pads = [(fp.GetReference(), p.GetNumber(), pt(p.GetPosition())) for fp in self.fps.values() for p in fp.Pads()]
         def bbox(pts, grow=0.0): return (min(q[0] for q in pts) - grow, min(q[1] for q in pts) - grow, max(q[0] for q in pts) + grow, max(q[1] for q in pts) + grow)
+        def bb(it): r = it.GetBoundingBox(); return (TOMM(r.GetX()), TOMM(r.GetY()), TOMM(r.GetRight()), TOMM(r.GetBottom()))
+        def bodies(r2):
+            f2 = self.fps[r2]
+            out = [bb(it) for it in f2.GraphicalItems() if it.GetClass() == 'PCB_SHAPE' and it.GetLayer() == pcbnew.F_Fab] + [bb(q) for q in f2.Pads()]
+            if r2 in B.MATED_REACH:                                   # the C18 socket on J4 / J5's pins
+                pu = [pt(q.GetPosition()) for q in f2.Pads()]; u0, v0, u1, v1 = self.envelope(r2)
+                if max(q[0] for q in pu) - min(q[0] for q in pu) > 1.0: c = sum(q[0] for q in pu) / len(pu); out.append((c - 7.62, v0, c + 7.62, v1))
+                else: c = sum(q[1] for q in pu) / len(pu); out.append((u0, c - 7.62, u1, c + 7.62))
+            return out
+        others = {r2: bodies(r2) for r2 in self.fps}
         for ref, marks in B.PIN_MARKS.items():
             fp = self.fps[ref]
-            pads = {p.GetNumber(): pt(p.GetPosition()) for p in fp.Pads()}
+            pads = {p.GetNumber(): pt(p.GetPosition()) for p in fp.Pads() if p.GetNumber()}      # not J3's unnumbered NPTH peg
             segs = [s for s in fp.GraphicalItems() if s.GetClass() == 'PCB_SHAPE' and s.GetLayer() == pcbnew.F_SilkS
                     and s.GetShape() == pcbnew.SHAPE_T_SEGMENT and abs(TOMM(s.GetWidth()) - B.SILK_STROKE) < 1e-6
                     and abs(TOMM(s.GetLength()) - B.PIN_MARK_LEN) < 1e-3]
             fab = [s for s in fp.GraphicalItems() if s.GetClass() == 'PCB_SHAPE' and s.GetLayer() == pcbnew.F_Fab]
-            rects = [bbox([pt(s.GetStart()), pt(s.GetEnd())]) for s in fab if s.GetShape() == pcbnew.SHAPE_T_RECT]
-            self.assertTrue(rects, ref)
-            inside = lambda q: any(r[0] - 1e-6 <= q[0] <= r[2] + 1e-6 and r[1] - 1e-6 <= q[1] <= r[3] + 1e-6 for r in rects)
-            latch = [q for s in fab if s.GetShape() == pcbnew.SHAPE_T_SEGMENT for q in (pt(s.GetStart()), pt(s.GetEnd()))
-                     if not all(inside(x) for x in (pt(s.GetStart()), pt(s.GetEnd())))]
-            body = rects + ([bbox(latch)] if latch else [])
+            self.assertTrue(fab, ref)
+            bbs = [s.GetBoundingBox() for s in fab]          # B12a: one box round every F.Fab shape (the XT30's housing is drawn in lines)
+            body = [(min(TOMM(r.GetX()) for r in bbs), min(TOMM(r.GetY()) for r in bbs), max(TOMM(r.GetRight()) for r in bbs),
+                     max(TOMM(r.GetBottom()) for r in bbs))]
             count, strokes = {}, {}
             for s in segs:
                 c = tuple(round(x, 2) for x in pt(s.GetCenter())); count[c] = count.get(c, 0) + 1
@@ -909,12 +927,13 @@ class PcbTests(unittest.TestCase):
             for c, sign in signs.items():
                 near = min(pads, key=lambda n: math.dist(c, pads[n]))
                 self.assertEqual(marks[near], sign, (ref, c, sign, near))
-                self.assertIn((ref, near), B.NETS['BAT+' if sign == '+' else 'GND'])
+                other = next(n for n in pads if n != near)
+                self.assertEqual((net[(ref, near)] == 'GND', net[(ref, other)] == 'GND'), (sign == '-', sign == '+'), (ref, near, sign))
                 self.assertEqual(min(all_pads, key=lambda a: math.dist(c, a[2]))[:2], (ref, near), (ref, c, 'nearer another pad'))
                 for sb in strokes[c]:
                     self.assertFalse(any(boxes_hit(sb, bb) for bb in body), (ref, c, sign, 'under the housing'))
-                    for r2, f2 in self.fps.items():
-                        if r2 != ref: self.assertFalse(boxes_hit(sb, box(f2.GetCourtyard(pcbnew.F_CrtYd))), (ref, c, 'under', r2))
+                    for r2, bs in others.items():
+                        if r2 != ref: self.assertFalse(any(boxes_hit(sb, x) for x in bs), (ref, c, 'under', r2))
 
     def test_drc_reports_no_silk_problems(self):
         """kicad-cli DRC on a temp copy: no silk_overlap and no silk_edge_clearance (labels clear of each other, of the footprint silk and
@@ -947,12 +966,12 @@ class PcbTests(unittest.TestCase):
         self.assertEqual(drc['unconnected_items'][:5], [])
         self.assertTrue(all(str(fp.GetFPID().GetUniStringLibId()) == B.PARTS[fp.GetReference()]['fp'] for fp in self.b.GetFootprints()))
 
-    # build_pcb changes these 10 library footprints on purpose (module outlines on F.Fab, J1's +/- marks, inherited zone connections,
-    # U3P.2's spoke angle): the footprints lib_footprint_mismatch flags. make_schematic.DRC_SEVERITY ignores the check project-wide
+    # build_pcb changes these 13 library footprints on purpose (module outlines on F.Fab, the PIN_MARKS on J1 / J3 / U5A / U5B and J1's
+    # stock +/- texts moved to F.Fab, inherited zone connections, U3P.2's spoke angle): the footprints lib_footprint_mismatch flags. make_schematic.DRC_SEVERITY ignores the check project-wide
     # (kicad-cli 9.0.9 does not apply per-item DRC exclusions), so this test runs it on and pins the flagged set.
-    LIB_MISMATCH_REFS = {'F1', 'F2', 'J1', 'U1A', 'U1B', 'U2', 'U3L', 'U3P', 'U4L', 'U4P'}
+    LIB_MISMATCH_REFS = {'F1', 'F2', 'J1', 'J3', 'U1A', 'U1B', 'U2', 'U3L', 'U3P', 'U4L', 'U4P', 'U5A', 'U5B'}   # B12a: J3 / U5A / U5B '+' marks
 
-    def test_lib_footprint_mismatch_is_exactly_the_ten_modified_footprints(self):
+    def test_lib_footprint_mismatch_is_exactly_the_modified_footprints(self):
         """B7 fix 1 (ruling PB23, item 7): kicad-cli DRC on a temp copy with lib_footprint_mismatch back at its default (warning) flags
         exactly F1, F2, J1, U1A, U1B, U2, U3L, U3P, U4L and U4P - one report each - and nothing else; the committed project keeps the check
         ignored. A footprint that drifts from its library (or a new deliberate change) is a new mismatch and fails here."""

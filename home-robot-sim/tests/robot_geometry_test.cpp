@@ -1,6 +1,6 @@
 // Plain-C++ checks of RobotGeometry.h (no Unreal): clang++ -std=c++17 tests/robot_geometry_test.cpp -o /tmp/rg && /tmp/rg
 // Covers the LiDAR column collider and the principal-axes split RobotPawn uses to set the body inertia from
-// body_inertia_kg_m2 (bay B10).
+// body_inertia_kg_m2 (bay B10), and the parts left out of the robot visual (bay B12b).
 #include "../Source/HomeRobotSim/RobotGeometry.h"
 #include <cassert>
 #include <cmath>
@@ -48,5 +48,9 @@ int main(){
   double s[3]={e[0],e[1],e[2]};std::sort(s,s+3);for(int k=0;k<3;k++)assert(std::abs(s[k]-m[k])<1e-12);
   const double Bad[3][3]={{1,0,0},{0,1,0},{0,0,3}};assert(!principal_inertia(Bad,e,ax));
   const double Neg[3][3]={{1,0,0},{0,-1,0},{0,0,1}};assert(!principal_inertia(Neg,e,ax));}
+ // 5. Robot visual (assembly-meshes.json ids): the harness cables W01..W20 / W_bumper_* and the motor cables are left out, case-
+ //    sensitively. Unreal's StartsWith ignores case by default, which dropped wheel_left / wheel_right (the wheel hubs) too.
+ for(const char* id:{"W01","W20","W_bumper_left","motor_cable_left","motor_cable_right"})assert(hidden_visual_part(id));
+ for(const char* id:{"wheel_left","wheel_right","tire_left","W_bundle_1","W_tie_3","w01","Motor_cable","base","jetson"})assert(!hidden_visual_part(id));
  std::cout<<"robot_geometry_test: all checks passed\n";
 }

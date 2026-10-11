@@ -10,7 +10,10 @@ Gyro bias. The zero-rate offset of an MPU-6050 is up to +/-20 deg/s per axis and
     (LidarBrain 'sense', and a Go-to's relocalization).
   * Zero-velocity updates (ZUPT): every later stop that passes the same rest test refines the bias, after its first
     ZUPT_SKIP_S (the body still settling). The estimate is a per-axis Kalman filter: the bias is a random walk
-    (GYRO_Q, the warm-up drift) measured by every still sample (GYRO_R).
+    (GYRO_Q, the warm-up drift) measured by every still sample (GYRO_R). A 'still' sample far outside the bias
+    (GYRO_OUTLIER: a slow rotation the encoders cannot see, e.g. a hand tilting the robot) refuses the rest
+    (rest_vetoed): no bias update, no online accelerometer offset update and no at-rest attitude fusion, until the gyro
+    has been back inside the gate as it stood at the refusal for REST_VETO_RELEASE_S, or the robot drives again.
   * Yaw coupling (bring-up spin calibration): cross-axis sensitivity (+/-2 %) and the board's mounting misalignment
     make the x / y gyro follow the yaw rate. On a flat floor the robot spins in place one turn each way; the
     difference of the two directions' mean x / y readings over the difference of their z readings is that coupling
@@ -56,14 +59,18 @@ ZUPT_RECENT_S=3.           # the body is still settling (Unreal: 1-2 samples of 
 STILL_TICKS=1              # encoder ticks per wheel allowed between consecutive samples at rest
 STILL_GYRO_STEP=max(.01,25*GYRO_SAMPLE_SIGMA)   # rad/s: largest sample-to-sample change of any gyro axis at rest
 STILL_ACCEL_STEP=.3        # m/s2: the same for the accelerometer (noise sigma ~.018)
-# (rad/s)^2 per sample the bias filter assumes: 2 x the noise; samples closer than the filter's time scale are correlated, so
-# at most ~2 x bandwidth independent samples per second count.
-GYRO_R=(2*GYRO_SAMPLE_SIGMA)**2*max(1.,IMU_RATE_HZ/(2*IMU_BANDWIDTH_HZ))
+def gyro_r(rate_hz):
+    """(rad/s)^2 per sample the bias filter assumes: 2 x the noise; samples closer than the DLPF's time scale are
+    correlated, so at most ~2 x bandwidth independent samples per second count."""
+    return (2*GYRO_SAMPLE_SIGMA)**2*max(1.,rate_hz/(2*IMU_BANDWIDTH_HZ))
+GYRO_R=gyro_r(IMU_RATE_HZ)
 GYRO_Q=3e-7                # (rad/s)^2 per s: bias random walk, covers the warm-up drift (<= .004 deg/s per s)
 GYRO_P0=math.radians(20)**2   # initial ZRO tolerance, +/-20 deg/s (datasheet)
 GYRO_OUTLIER=5.            # a 'still' sample further than this many sigma from the bias is not rest (after start-up): a slow
                            # rotation the encoders cannot see (a hand tilting the robot) is not absorbed into the bias; the
-                           # rest stays refused until the robot drives again (rest_vetoed)
+                           # rest stays refused (rest_vetoed) until the robot drives again or REST_VETO_RELEASE_S below
+REST_VETO_RELEASE_S=1.     # s of steady rest with every gyro axis back inside the gate AS IT STOOD AT THE REFUSAL that end a
+                           # refused rest: P grows while refused, so the live gate would open on a slow tilt within ~3 s
 ACCEL_ONLINE_TAU=30.       # s: time constant of the online offset correction (at rest, floor plane valid)
 ACCEL_ONLINE_LIMIT=np.array([.5,.5,.8])   # m/s2: bound of the online correction per axis. NOTE: the floor plane is the
                            # reference, so a robot resting on a SLOPED floor (or with cliff ToF offsets) learns that slope as an
@@ -71,12 +78,17 @@ ACCEL_ONLINE_LIMIT=np.array([.5,.5,.8])   # m/s2: bound of the online correction
                            # tilt-stop margin in lidar_brain.drive_command)
 # Bring-up level-calibration checks (single source; BRINGUP section 14 quotes these numbers). The stored offsets also absorb
 # the accelerometer's sensitivity (+/-3 % of g, z) and cross-axis (+/-2 % of g, x / y) at level, so an in-spec MPU-6050
-# reaches +/-.69 / .69 / 1.08 m/s2: the offset bounds only catch gross faults. The real fault detectors are the two headings'
-# residual difference (floor not flat, robot moved) and the floor attitude (tilted board or cliff ToF offsets).
-LEVEL_OFFSET_LIMIT_M_S2=(.7,.7,1.1)
+# reaches +/-.69 / .69 / 1.08 m/s2 cold, and +/-.733 / .733 / 1.158 at the preferred calibration after ~10 min powered (the
+# zero-g temperature coefficient, +/-.5 / .5 / .857 mg per C, times the 9.5 C warm-up the simulator assumes by then). Fully warm
+# (15 C) only the extreme corner exceeds the bounds (.76 / .76 / 1.205; 1 in 100 000 drawn boards). The offset bounds only catch
+# gross faults. The real fault detectors are the two headings' residual difference (floor not flat, robot moved) and the
+# floor attitude: the cliff ToF plane at rest, i.e. the robot not sitting flat on its wheels and caster (debris, an uneven
+# spot) or cliff ToF range offsets. The cliff plane cannot see a tilted GY-521 on the robot: that goes into the x / y offsets.
+LEVEL_OFFSET_LIMIT_M_S2=(.75,.75,1.2)
 LEVEL_HEADING_DIFF_LIMIT_M_S2=.2   # per axis, |residual heading A - residual heading B| = 2 x floor tilt x g (.2 ~ .6 deg)
 LEVEL_FLOOR_ATTITUDE_LIMIT_DEG=.5  # cliff floor-plane roll / pitch at rest
 YAW_COUPLING_LIMIT=.05             # cross-axis 2 % + mounting tilt
+CALIBRATION_KEYS=('accel_offset_m_s2','gravity_m_s2','heading_residual_m_s2','floor_attitude_rad','gyro_yaw_coupling')   # a complete calibration
 HEADING_SCALE_UNC=.03      # rad per rad turned: gyro scale-factor tolerance (not calibrated)
 HEADING_BIAS_UNC=math.radians(.05)   # rad/s: gyro bias left after the start-up calibration / ZUPT
 
@@ -104,6 +116,11 @@ def calibration_checks(cal):
                 floor_level=bool(np.max(floor)<=LEVEL_FLOOR_ATTITUDE_LIMIT_DEG),
                 yaw_coupling_within_bounds=bool(np.all(np.abs(np.asarray(cal.get('gyro_yaw_coupling',[0.,0.]),float))<=YAW_COUPLING_LIMIT)))
 
+def calibration_limits():
+    """The limits calibration_checks applies, as stored with a calibration."""
+    return dict(offset_m_s2=list(LEVEL_OFFSET_LIMIT_M_S2),heading_residual_difference_m_s2=LEVEL_HEADING_DIFF_LIMIT_M_S2,
+                floor_attitude_deg=LEVEL_FLOOR_ATTITUDE_LIMIT_DEG,yaw_coupling=YAW_COUPLING_LIMIT)
+
 def level_calibration(headings,gravity=G_LOCAL,note='',spins=None):
     """Bring-up level calibration from rest samples at one or more headings (two, 180 deg apart, cancel the
     floor's own tilt). headings: list of sample lists; each sample is a dict with 'force' (3, m/s2), 'gyro'
@@ -127,9 +144,7 @@ def level_calibration(headings,gravity=G_LOCAL,note='',spins=None):
                 gyro_yaw_coupling=[0.,0.] if spins is None else yaw_coupling(spins).round(6).tolist(),
                 spin_samples=None if spins is None else [len(s) for s in spins],
                 spin_floor_attitude_rad=None if spins is None else [np.mean([s['floor'] for s in spin if s.get('floor') is not None] or [[0.,0.]],axis=0).round(6).tolist() for spin in spins],note=note,created=time.strftime('%Y-%m-%dT%H:%M:%S'))
-    cal['checks']=calibration_checks(cal)
-    cal['limits']=dict(offset_m_s2=list(LEVEL_OFFSET_LIMIT_M_S2),heading_residual_difference_m_s2=LEVEL_HEADING_DIFF_LIMIT_M_S2,
-                       floor_attitude_deg=LEVEL_FLOOR_ATTITUDE_LIMIT_DEG,yaw_coupling=YAW_COUPLING_LIMIT)
+    cal['checks']=calibration_checks(cal);cal['limits']=calibration_limits()
     return cal
 
 class ImuCalibration:
@@ -140,7 +155,7 @@ class ImuCalibration:
         self.online=np.zeros(3);self.online_updates=0
         self.bias=np.zeros(3);self.P=np.full(3,GYRO_P0);self.bias_valid=False;self.startup_done=False
         self.still=False;self.still_n=0;self.still_since=None;self.zupt_samples=0;self.samples=0
-        self.prev=None;self.motion_stamp=-1e9;self.last_stamp=None;self.rest_vetoed=False
+        self.prev=None;self.motion_stamp=-1e9;self.last_stamp=None;self.rest_vetoed=False;self.veto_gate=None;self.veto_clear_since=None
     def load(self):
         self.loaded=True
         if self.path is None or not self.path.exists():return
@@ -158,15 +173,22 @@ class ImuCalibration:
         off), both encoders unchanged, gyro and accelerometer steady sample to sample."""
         if armed and (abs(requested[0])>1e-6 or abs(requested[1])>1e-6):self.motion_stamp=stamp
         if self.prev is None:return False
-        # A rest the outlier gate refused stays refused until the robot drives again (a command or encoder motion): while
-        # it is refused no update happens, P grows and the gate would otherwise open within seconds (a slow hand tilt).
+        # A rest the outlier gate refused stays refused until the robot drives again (a command or encoder motion), or until
+        # every gyro axis has been back inside the gate as it stood at the refusal (veto_gate) for REST_VETO_RELEASE_S of
+        # steady rest. While it is refused no update happens and P grows: the live gate would open within seconds on a slow
+        # hand tilt, so the release does not use it.
         if stamp-self.motion_stamp<ZUPT_SETTLE_S:self.rest_vetoed=False;return False
         pt,pg,pf=self.prev
         if ticks is not None and pt is not None and (abs(ticks[0]-pt[0])>STILL_TICKS or abs(ticks[1]-pt[1])>STILL_TICKS):self.rest_vetoed=False;return False
-        if gyro is not None and pg is not None and np.max(np.abs(gyro-pg))>STILL_GYRO_STEP:return False
-        if force is not None and pf is not None and np.max(np.abs(force-pf))>STILL_ACCEL_STEP:return False
-        if getattr(self,'rest_vetoed',False):return False
-        if gyro is not None and self.startup_done and np.any(np.abs(gyro-self.bias)>GYRO_OUTLIER*np.sqrt(self.P+GYRO_R)):self.rest_vetoed=True;return False
+        if (gyro is not None and pg is not None and np.max(np.abs(gyro-pg))>STILL_GYRO_STEP) or (force is not None and pf is not None and np.max(np.abs(force-pf))>STILL_ACCEL_STEP):
+            self.veto_clear_since=None;return False
+        if self.rest_vetoed:
+            if gyro is not None and np.any(np.abs(gyro-self.bias)>self.veto_gate):self.veto_clear_since=None;return False
+            self.veto_clear_since=stamp if self.veto_clear_since is None else self.veto_clear_since
+            if stamp-self.veto_clear_since<REST_VETO_RELEASE_S-1e-9:return False
+            self.rest_vetoed=False;self.veto_clear_since=None
+        if gyro is not None and self.startup_done and np.any(np.abs(gyro-self.bias)>GYRO_OUTLIER*np.sqrt(self.P+GYRO_R)):
+            self.rest_vetoed=True;self.veto_gate=GYRO_OUTLIER*np.sqrt(self.P+GYRO_R);self.veto_clear_since=None;return False
         return True
     def update(self,stamp,sensors,armed=False,requested=(0.,0.),floor=None):
         """One sample. Returns (gyro, force) corrected (None where the sensor is absent). floor: (roll, pitch) of the
@@ -197,7 +219,7 @@ class ImuCalibration:
     def status(self):
         g=self.gravity;o=self.offsets
         return dict(gyro_bias_deg_s=np.degrees(self.bias).round(4).tolist(),gyro_bias_sigma_deg_s=np.degrees(np.sqrt(self.P)).round(4).tolist(),
-                    gyro_startup_calibrated=self.startup_done,gyro_bias_provisional=self.bias_valid,at_rest=self.still,zupt_samples=self.zupt_samples,
+                    gyro_startup_calibrated=self.startup_done,gyro_bias_provisional=self.bias_valid,at_rest=self.still,rest_vetoed=self.rest_vetoed,zupt_samples=self.zupt_samples,
                     level_calibration=self.level_source,accel_offset_m_s2=o.round(4).tolist(),accel_online_offset_m_s2=self.online.round(4).tolist(),
                     online_roll_pitch_offset_deg=[round(math.degrees(self.online[1]/g),3),round(math.degrees(-self.online[0]/g),3)],gravity_m_s2=g,
                     gyro_yaw_coupling=self.coupling.round(5).tolist())

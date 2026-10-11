@@ -11,7 +11,7 @@ The power & I/O "bay" board: 4 layers, 1.6 mm, 74 × 100 mm, routed and power-ch
 | `r1_power_io-bom.csv` | One row per part to buy, with its MPN (board_spec.PARTS). Quantities are per board. `Fit`: `yes`, `DNP` (J14 / J15), `no part` (bare test pads, holes), `plug-in` (the modules and fuses that plug into the board's parts). |
 | `r1_power_io-pos.csv` | Placement of every fitted part (mm; x = u, y = −v; DNP rows and bare pads left out). A guide for placing the SMD parts on the paste. |
 | `r1_power_io-1to1.pdf` | Four A4 pages at 1:1 (F.Fab with the pads sketched, F.Silkscreen, F.Cu, B.Cu, all seen from the top). Print at 100 % ("actual size") and check the 50 mm bar before laying parts on the paper. |
-| `r1_power_io.step` | The board with every fitted part, for the robot CAD (B8). The parts KiCad has no model for (the J1–J3 JST VH headers, the F1 / F2 FLR fuse holders with their fuses) are box envelopes, and so is C1 (its stock model is half the real height). Frame: STEP x = u, y = −v, z 0 = the board bottom, parts seated at z 1.6. Robot (x, y, z) = STEP (x − 66.5, y + 50, z + 35.4). The stock models show untrimmed leads (down to about 1.9 mm under the board). Heights: see "STEP heights" below. |
+| `r1_power_io.step` | The board with every fitted part, for the robot CAD (B8). The parts KiCad has no model for (the J1–J3 power headers: the XT30 J1, the JST VH J2 and the Micro-Fit J3; the F1 / F2 FLR fuse holders with their fuses) are box envelopes, and so is C1 (its stock model is half the real height). Frame: STEP x = u, y = −v, z 0 = the board bottom, parts seated at z 1.6. Robot (x, y, z) = STEP (x − 66.5, y + 50, z + 35.4). The stock models show untrimmed leads (down to about 1.9 mm under the board). Heights: see "STEP heights" below. |
 | `BRINGUP-NOTES.md` | Firmware and bring-up notes for B10 (BRINGUP.md). |
 
 ### STEP heights (for B8)
@@ -72,6 +72,15 @@ Buy from the BOM (`r1_power_io-bom.csv`; MPNs marked "verify before ordering" we
   1.5 mm" for their snap lock; this board is 1.6 mm. Press each holder flat while soldering all 8 pins; the solder holds it. Try the fit on
   the first board.
 - **Fuses:** ATO blade, 7.5 A (F1, main) and 5 A (F2, motor branch).
+- **Power connectors: three families that cannot be cross-plugged** (ruling PB30). No lead fits a wrong header; tag the leads anyway
+  ("J1 BATT", "J2 ROCKER", "J3 JETSON 5V").
+  - **J1 (battery):** AMASS XT30UPB-M, the vertical XT30 PCB male, 15 A continuous (verify before ordering). It mates an AMASS
+    XT30U-F (the female, verify before ordering) on the battery lead W01: Tamiya plug → 18 AWG silicone → XT30U-F.
+  - **J2 (rocker):** JST B2P-VH, unchanged. It mates a JST VHR-2N housing on the rocker lead W02.
+  - **J3 (Jetson 5 V):** Molex 43650-0200, the Micro-Fit 3.0 2-circuit right-angle through-hole header with a plastic locating peg
+    (verify before ordering). It mates a Molex 43645-0200 receptacle with two 43030-series female crimp terminals for 18 AWG on the
+    Jetson lead W04 (verify the exact crimp part number before ordering). Rating: 8.5 A per circuit for 2 circuits on 18 AWG (Molex
+    derating table, quoted from memory: verify), against the Jetson's 4.5 A.
 - **Pico:** the user's own (E02), not bought. If it has no headers (SC0915 comes bare), solder the two 1 × 20 male header strips on
   first, before it goes into the U1A / U1B sockets.
 - **Pico cable:** an up-angled micro-USB (micro-B, 90° up) plug. The Pico's receptacle faces the board's left edge; the plug goes in from
@@ -84,14 +93,16 @@ Buy from the BOM (`r1_power_io-bom.csv`; MPNs marked "verify before ordering" we
   other SMD parts.
 - **Mechanical:** M2.5 × 20 mm nylon F-F standoffs ×2 (the rear Jetson standoffs that clamp the board), M2.5 × 12 countersunk screws ×2
   (from under P_base through the clamp spacers and the board), M3 heat-set inserts ×4 in P_base, M3 × 8 pan-head screws ×4, and the
-  printed spacers (four 2.4 mm PETG spacers under the M3 holes, two 2.4 mm clamp spacers; the bearing ribs under the rear connector row
-  are part of P_base).
+  printed spacers (four 2.4 mm PETG spacers under the M3 holes, two 2.4 mm clamp spacers). The two bearing ribs under the rear connector
+  row are separate printed bars, not part of P_base: they are bonded with epoxy into 0.6 mm pockets in the P_base top.
 
 ## Assembly
 
-**J1 (battery): pin 1 = GND, pin 2 = BAT+ (silk "−" / "+", ruling PB20). The battery lead must match: GND in cavity 1, BAT+ in cavity 2.
-A reversed battery lead is the costliest assembly mistake on this board (there is no reverse-polarity protection): check it with a meter
-before the first plug-in.**
+**J1 (battery, the XT30UPB-M): pin 1 = GND, pin 2 = BAT+ (silk "−" / "+" beside each pin, ruling PB20). The battery lead's XT30U-F must
+match: GND in cavity 1 (its "−" contact, black wire), BAT+ in cavity 2 (its "+" contact, red wire). A reversed battery lead is the
+costliest assembly mistake on this board (there is no reverse-polarity protection): check it with a meter before the first plug-in.**
+The XT30 housing mates only one way round, but a lead with its two wires soldered the wrong way round still plugs in: do the meter check
+(BRINGUP.md section 0).
 
 Order: **reflow SMD → inspect → iron THT → modules.**
 
@@ -101,11 +112,18 @@ Order: **reflow SMD → inspect → iron THT → modules.**
 2. **Inspect.** Look for bridges on the SOT-23 and 0805 parts and check the polarity marks. Check the GND 0805 / SOT-23 joints for solder
    wicking into the tented vias beside them (the mask web there is about 0.1 mm). With a meter: no short from GND to BAT+,
    VBAT_SW, VMOT, 5V or 3V3.
-3. **Iron THT**, lowest first: the sockets (U1A / U1B, U2, U3L / U3P, U4L / U4P), the XH and VH connectors, J4 / J5, U5A / U5B, the FLR
-   holders, K1, C1 ("+" on silk). The power pads keep thermal-relief spokes (ruling R13), so a large tip solders them. **Trim every lead
+3. **Iron THT**, lowest first: the sockets (U1A / U1B, U2, U3L / U3P, U4L / U4P), the connectors (the XH headers, the VH J2, the XT30
+   J1 and the Micro-Fit J3, its plastic peg through its hole), J4 / J5, U5A / U5B, the FLR holders, K1, C1 ("+" on silk). The power pads keep thermal-relief spokes (ruling R13), so a large tip solders them. **Trim every lead
    to ≤ 1.4 mm** under the board: it sits on 2.4 mm spacers and printed ribs.
-4. **Modules.** Set the P03 first. Then plug in the Pico (USB toward the left edge), the two DRV8874 carriers and the GY-521, each as the
-   F.Fab outline in the PDF shows. Plug every under-carrier cable (J3, J4, J5, J8–J11, the P03 leads) before the Jetson is fitted.
+4. **Modules.** Plug in the Pico first (USB toward the left edge) and check it on USB. Set the P03 on the bench before it is wired to
+   U5A / U5B (pin 1 is "+" on both terminals: the screw nearer the robot's centre line). Then plug in the two DRV8874 carriers and the
+   GY-521, each as the F.Fab outline in the PDF shows. BRINGUP.md sections 4–5 give the details.
+5. **Under-carrier cables.** Plug them all before the Jetson is fitted: once it is on, none of them can be reached.
+   - J4 / J5: the motors connect through short C18 pigtails (a right-angle female socket on J4 / J5, plugged on at the bench) and inline
+     joints to the motors' factory cables (ruling PB25), not by plugging the factory cables straight onto the headers.
+   - J8–J11 and the P03 leads at U5A / U5B.
+
+   J3 (Jetson 5 V) is not under the carrier: it is in the rear band, behind the carrier, reachable with the lid off.
 
 ## Verify before ordering
 
@@ -134,9 +152,13 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **ToF sensors** (Pololu 2490, VL53L0X): about 40 mA peak each while ranging (ST: 19 mA average), from 3V3.
 - [ ] **Pico 3V3 regulator:** 300 mA for external loads (the 3V3 rail: IMU, ToF sensors, pull-ups).
 - [ ] **LED forward voltage:** at least 1.8 V (the lamp currents assume it).
-- [ ] **Envelope heights** (STEP for B8): JST B2P-VH header about 10 mm; FLR housing 17.5 mm with the ATO fuse body (19.1 × 5.1 mm) up
-      to 30 mm; C1 20 mm.
-- [ ] **The BOM MPNs marked "verify before ordering":** the Sullins sockets (U1A / U1B, U2, U3L / U3P, U4L / U4P), the Amphenol J4 / J5 headers, the
+- [ ] **Power connectors J1 / J3 and their mates:** AMASS XT30UPB-M (J1, vertical PCB male, 15 A continuous; pin 1 = its "−" pad) and
+      the XT30U-F on W01; Molex 43650-0200 (J3, Micro-Fit 3.0 right-angle header with peg), the 43645-0200 receptacle and the exact
+      43030-series crimp for 18 AWG on W04; the Micro-Fit 3.0 rating of 8.5 A per circuit for 2 circuits on 18 AWG (Molex derating
+      table) against 4.5 A.
+- [ ] **Envelope heights** (STEP for B8): JST B2P-VH header (J2) about 10 mm; AMASS XT30UPB-M (J1) about 11 mm; Molex 43650-0200 (J3)
+      about 10 mm; FLR housing 17.5 mm with the ATO fuse body (19.1 × 5.1 mm) up to 30 mm; C1 20 mm.
+- [ ] **The BOM MPNs marked "verify before ordering":** the AMASS J1 header, the Molex J3 header, the Sullins sockets (U1A / U1B, U2, U3L / U3P, U4L / U4P), the Amphenol J4 / J5 headers, the
       Phoenix U5A / U5B terminals, the Vishay D1, the Samsung C2, the Panasonic C3, the Lite-On LEDs, the Yageo R1–R23 and the Littelfuse
       ATO fuses.
 

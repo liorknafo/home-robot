@@ -13,7 +13,9 @@ R21 R23,2,yes,3.3k,"Yageo RC0805FR-073K3L (0805, 1 %, 0.125 W thick film; verify
 R22,1,yes,1k,"Yageo RC0805FR-071KL (0805, 1 %, 0.125 W thick film; verify before ordering)",Resistor_SMD:R_0805_2012Metric,SMD top (reflow),
 C1,1,yes,470uF 25V,Panasonic EEU-FR1E471,Capacitor_THT:CP_Radial_D10.0mm_P5.00mm,THT (iron),polarised: + on silk
 F1 F2,2,yes,ATO fuse holder (FLR),Littelfuse 178.6165.0001,Fuse:FuseHolder_Blade_ATO_Littelfuse_FLR_178.6165,THT (iron),"fuse holder only (the fuses are the plug-in rows: 7.5 A ATO in F1, 5 A ATO in F2); the KiCad footprint gives PCB <= 1.5 mm for its snap lock, this board is 1.6 mm: hold it flat and solder all 8 pins"
-J1 J2 J3,3,yes,Battery in / Master rocker / Jetson 5V,JST B2P-VH(LF)(SN),Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical,THT (iron),"battery: pin 1 = GND, pin 2 = BAT+ (PB20; silk - / +): the battery lead GND in cavity 1"
+J1,1,yes,Battery in,"AMASS XT30UPB-M (XT30 vertical PCB male, 2-pin, 15 A continuous; LCSC C428721; verify before ordering)",Connector_AMASS:AMASS_XT30UPB-M_1x02_P5.0mm_Vertical,THT (iron),"battery: pin 1 = GND, pin 2 = BAT+ (PB20; silk - / +): the battery lead GND in cavity 1"
+J2,1,yes,Master rocker,JST B2P-VH(LF)(SN),Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical,THT (iron),
+J3,1,yes,Jetson 5V,"Molex 43650-0200 (Micro-Fit 3.0 1x2 right-angle THT header with peg, 8.5 A/circuit on 18 AWG; verify before ordering)",Connector_Molex:Molex_Micro-Fit_3.0_43650-0200_1x02_P3.00mm_Horizontal,THT (iron),
 J4 J5,2,yes,Left motor / Right motor,Amphenol 68016-106HLF (1x6 2.54 mm right-angle pin header; verify before ordering),Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal,THT (iron),right-angle: the motor plug lies on the board
 J6 J7 J8 J9,4,yes,Cliff 1 / Cliff 2 / Cliff 3 / Cliff 4,JST B5B-XH-A(LF)(SN),Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical,THT (iron),
 J10 J11 J12 J13,4,yes,Bumper L / Bumper R / Arm button / Motor toggle loop,JST B2B-XH-A(LF)(SN),Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical,THT (iron),

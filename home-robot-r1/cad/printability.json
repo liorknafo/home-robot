@@ -28,13 +28,13 @@
     14.5
    ],
    "fits_bed": true,
-   "bed_contact_mm2": 42343.6,
+   "bed_contact_mm2": 42338.4,
    "overhang_mm2": 0.0,
-   "bridge_mm2": 163.2,
-   "overhang_total_mm2": 163.2,
+   "bridge_mm2": 168.4,
+   "overhang_total_mm2": 168.4,
    "bridge_regions": [
     {
-     "area_mm2": 32.1,
+     "area_mm2": 37.3,
      "max_dist_to_support_mm": 0.83,
      "supported_boundary": 1.0,
      "allowed": true
@@ -1215,11 +1215,11 @@
    "best_orientation": "+x down",
    "size_mm": [
     3.0,
-    17.9,
+    20.0,
     2.0
    ],
    "fits_bed": true,
-   "bed_contact_mm2": 50.3,
+   "bed_contact_mm2": 56.6,
    "overhang_mm2": 0.0,
    "bridge_mm2": 0.0,
    "overhang_total_mm2": 0.0,

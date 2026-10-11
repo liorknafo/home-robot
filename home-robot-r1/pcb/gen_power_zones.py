@@ -115,13 +115,13 @@ def zones():
         # VMOT, F.Cu trunk: the spine west of the driver rows, the bar over U3P.1, the bar by U4L.7 (DRV_R's VIN until PB15; it still feeds
         # R23), the bar west through C1.1 to K1's NO pin, and (PB15, DRV_R turned) a 4 mm lane across the gap to U4P.1.
         (dict(net='VMOT', layers=('F.Cu',)),
-         [(28.0, 59.0, 32.75, 86.3), (31.5, 56.4, 37.7, 63.0), (32.75, 81.5, 36.0, 86.3), (12.6, 80.75, 28.0, 89.6),
+         [(28.0, 59.0, 32.75, 86.3), (31.5, 56.4, 37.7, 63.0), (32.75, 81.5, 36.0, 86.3), (12.6, 80.75, 28.0, 88.9),     # B12a: bar 0.4 mm off J3's pads
           (37.7, 59.0, 48.0, 63.0), (44.9, 63.0, 48.5, 67.9),       # PB15: F.Cu lane across the gap to U4P.1 (DRV_R turned)
           (36.0, 41.4, 42.3, 59.0), (39.3, 38.6, 46.5, 43.0), (46.5, 39.4, 48.3, 43.0), (39.0, 35.0, 42.5, 38.6)], []),     # PB16: up DRV_L's interior and along its north end to U3P.1 and C3.1
         # VMOT, In2 helper (PB15): the spine and the bars, less the bar over U3P.1 - In2 stays free from the strip west of DRV_L down into
         # the gap, the Pico links' way to DRV_R's logic row (U4L, now on the west).
         (dict(net='VMOT', layers=('In2.Cu',), trunk=False),
-         [(28.0, 59.0, 32.75, 86.3), (32.75, 81.5, 36.0, 86.3), (12.6, 80.75, 28.0, 89.6)], []),
+         [(28.0, 59.0, 32.75, 86.3), (32.75, 81.5, 36.0, 86.3), (12.6, 80.75, 28.0, 88.9)], []),
         # 5V, B.Cu trunk: U5B.1, north between J4.6 and U5B.2 (the box keeps off U5B.2's south-east spoke), west north of J4's pins, south
         # through DRV_L, through the gap between the drivers, through DRV_R, out between U4P.1 and U4L.1, west to J3.1, with room for
         # U4P.2's GND stitching via. The column north of DRV_L starts at u 42.0; the exit lane south of DRV_R is 3.3 mm tall east of u 33.25
@@ -130,7 +130,7 @@ def zones():
          [(62.2, 37.4, 66.8, 43.0), (66.8, 38.2, 71.0, 43.0), (62.2, 25.5, 66.8, 37.4), (41.5, 25.5, 66.8, 31.5), (42.0, 31.5, 45.4, 41.0), (39.0, 33.0, 42.0, 41.0),
           (37.5, 41.0, 46.1, 58.5), (35.25, 68.3, 38.6, 70.8),    # PB17: an ear over U4L.2's east side (no one-spoke B.Cu thermal)
           (38.6, 56.7, 46.1, 61.1), (38.6, 61.1, 42.35, 83.6), (37.9, 78.0, 42.35, 83.6),
-          (33.25, 83.6, 41.1, 86.9), (24.0, 83.6, 33.25, 88.6), (23.3, 88.6, 28.9, 98.5)],
+          (33.25, 83.6, 41.1, 86.9), (24.0, 83.6, 33.25, 88.6), (22.3, 88.6, 28.9, 92.8)],
          # PB14 / PB16: DRV_L's strip u 37.5-46.1 (DRV_L turned; U3P.2's patch stitching via in a notch with its slot toward U3P.2, so
          # the B.Cu GND fill gives U3P.2 no one-spoke thermal; 2 mm left west of it for U3L.2's B.Cu spokes), a bar across the gap's
          # north end, then one 3.75 mm strip (u 38.6-42.35) through the gap and DRV_R; the B.Cu west of it is left to the Pico links.
@@ -142,7 +142,7 @@ def zones():
         # J1.2 - that strip is the GND pin's (J1.1) way into the main B.Cu GND fill; the block's north-west corner is cut back (no eroded
         # speck under R4's 3 mm erosion).
         (dict(net='BAT+', layers=('B.Cu',), spoke=SPOKE_POWER),
-         [(6.1, 64.0, 11.98, 80.0), (2.0, 63.5, 6.1, 69.4), (0.6, 65.0, 2.0, 69.4), (11.98, 71.6, 21.15, 80.0), (17.5, 66.2, 27.3, 77.9),
+         [(6.1, 64.0, 11.98, 80.0), (2.0, 63.5, 6.1, 69.8), (0.6, 65.0, 2.0, 69.8), (11.98, 71.6, 21.15, 80.0), (17.5, 66.2, 27.3, 77.9),
           (24.0, 77.9, 32.75, 80.0), (27.3, 64.1, 32.75, 80.0)], []),
         # BAT+, In2 copy (fix 1, ruling PB11): dropped by PB20 - with J1's pins swapped BAT+'s B.Cu trunk alone carries 8.6 A at its true
         # narrowest and J1.2's four B.Cu spokes 8.8 A, while the copy could reach J1.2 with one relief spoke only (KiCad: starved thermal):
@@ -161,7 +161,7 @@ def zones():
         # F2_OUT, F.Cu trunk: F2.2 (copper west of F2 and in the F2 / F1 gap), south between J1 and K1 to K1's COM pin; kept east of u 7.6
         # beside J1 and of u 6.3 south of it for the battery GND patch (PB20: J1.1's).
         (dict(net='F2_OUT', layers=('F.Cu',)),
-         [(7.6, 64.6, 21.6, 76.0), (6.3, 74.0, 12.1, 98.2)], []),
+         [(7.6, 64.6, 21.6, 76.0), (6.3, 74.5, 12.1, 98.2)], []),
         # 3V3, In2 pour (bay B5: a strip, not the whole Pico pocket): under the pull-up column (u 14.91 pads, via down) and a link over to
         # the Pico's 3V3 pin (U1B.5); the rest of In2 under the Pico is left to the signals that cross from U1A to U1B's pin gaps.
         (dict(net='3V3', layers=('In2.Cu',), trunk=False),
@@ -189,7 +189,7 @@ def gnd_patches():
     north) and U3P.3's Motor clearance (south); ruling PB21 (B6 fix 2) draws it to the pad's centre - it used to end at u 46.5, 0.05 mm
     short of the pad, so KiCad drew it no spoke - and U3P.2 takes 90 degree spokes (board_spec.PAD_SPOKE_ANGLE): the west one lands in
     the patch, the only free side (one spoke per outer layer: board_spec.DRC_RULES)."""
-    return [build([(0.6, 69.0, 7.1, 73.5), (0.6, 73.5, 5.8, 98.0)]),
+    return [build([(0.6, 69.4, 7.1, 74.0), (0.6, 74.0, 5.8, 98.0)]),
             build([(42.7, 43.65, pad('U3P', '2')[0], 45.2)])]
     # bay B5: U4P.2's patch is gone - R_M1 leaves U4P.3 across that corner; U4P.2 keeps 2 In1 + 2 B.Cu spokes (5.87 A >= 2.1)
 
@@ -203,7 +203,7 @@ def gnd_patches():
 # (37.0, 82.7) is gone - DRV_R's turn (PB15) moved U4P.2 to u 46.7 and left the via alone in a 34 mm2 B.Cu island that joined nothing
 # (ktest_pcb test_stitch_vias, carry item 8: a stitching via must tie live copper on >= 2 layers).
 STITCH = [('F1_OUT', (1.6, 60.4)), ('F1_OUT', (19.0, 63.2)), ('F1_OUT', (20.6, 63.2)),
-          ('GND', (1.2, 84.2)), ('GND', (4.6, 84.2)), ('GND', (1.2, 86.4)), ('GND', (4.6, 86.4)), ('GND', (1.2, 88.6)), ('GND', (4.6, 88.6)),
+          ('GND', (1.2, 84.7)), ('GND', (4.6, 84.7)), ('GND', (1.2, 86.9)), ('GND', (4.6, 86.9)), ('GND', (1.2, 89.1)), ('GND', (4.6, 89.1)),
           ('GND', (43.4, 44.25)), ('GND', (45.6, 44.25)), ('GND', (18.6, 94.0)), ('GND', (18.8, 96.6))]
 
 

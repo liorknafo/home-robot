@@ -7,7 +7,7 @@ POWER_ZONES trunk entries; GND: GND_TRUNK_LAYERS), take that layer's zone fill, 
 to the outline by zero-width cuts; eroding the raw list would split the copper along every cut), erode it by 1.5 mm and drop specks under
 0.05 mm2 (offset round-off). A power zone must erode to exactly ONE piece; the GND plane also leaves slivers between 2.54 mm pin rows, so
 for GND the largest eroded piece is the trunk. Every pad of every POWER_TRUNK pin must have >= 2 relief spokes (fill crossing the
-relief-gap ring) on that layer and its centre within pad radius + relief gap + 1.5 + 0.5 mm of that piece. A pin with several pads
+relief-gap ring that reaches the pad, _spokes_into) on that layer and its centre within pad radius + relief gap + 1.5 + 0.5 mm of that piece. A pin with several pads
 (fuse-holder contact: 4 pads) must meet this on every pad. A trunk net with no trunk layer, or a missing zone, is an error.
 
 GND plane integrity (`gnd_pads_off_main_piece`): every GND pad is joined to the largest piece of the (un-eroded) GND fill on the plane
@@ -104,10 +104,7 @@ def trunk_report(board):
             r['main_area'] = area_mm2(main)
             for ref, num, p in [(ref, num, p) for ref, num in pins for p in fps[ref].Pads() if p.GetNumber() == num]:
                 rad = TOMM(max(p.GetSize().x, p.GetSize().y)) / 2
-                ring = pcbnew.SHAPE_POLY_SET(); p.TransformShapeToPolygon(ring, layer, MM(gap - 0.05), MM(0.005), pcbnew.ERROR_INSIDE)
-                inner = pcbnew.SHAPE_POLY_SET(); p.TransformShapeToPolygon(inner, layer, MM(0.05), MM(0.005), pcbnew.ERROR_INSIDE)
-                ring.BooleanSubtract(inner); ring.BooleanIntersection(fill)          # what crosses the relief gap = the spokes
-                spokes = ring.OutlineCount()
+                spokes = _spokes_into(p, layer, fill, gap, TOMM(zone.GetThermalReliefSpokeWidth()))   # B12a (carry 10): real spokes (B6 fix 1), not fill that only crosses the ring
                 d, limit = dist_mm(main, p.GetPosition()), rad + gap + ERODE + SLACK
                 r['pads'].append((ref, num, spokes, round(d, 2), round(limit, 2)))
                 if spokes < 2: r['problems'].append(f'{net} {name}: {ref}.{num} has {spokes} relief spokes')

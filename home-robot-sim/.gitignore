@@ -4,3 +4,11 @@ DerivedDataCache/
 __pycache__/
 *.pyc
 Saved/Logs/
+# Added 2026-10-11 when the sim became a git repo (branch-per-task work). Runtime state, build output and reports stay out.
+Saved/
+Binaries/
+reports/
+.DS_Store
+*.log
+# Lock held by whichever task is using the live simulator (Unreal / autonomy service); see docs/WORKFLOW.md.
+.sim-lock/

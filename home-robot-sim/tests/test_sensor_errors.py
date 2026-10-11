@@ -138,19 +138,59 @@ class RobotImuCalibration(unittest.TestCase):
     def test_installed_and_in_spec_calibrations_pass_the_documented_bounds(self):
         # The bounds are imu.LEVEL_* (single source, BRINGUP section 14 quotes them). An in-spec board stores up to
         # .69 / .69 / 1.08 m/s2 (offset + 3 % sensitivity + 2 % cross-axis): every one must pass, the installed file too.
-        cal=json.loads((ROOT/imu.CALIBRATION_FILE).read_text());self.assertTrue(all(imu.calibration_checks(cal).values()),imu.calibration_checks(cal))
+        # The installed file carries the checks it passed and the limits they were made against: the current ones.
+        cal=json.loads((ROOT/imu.CALIBRATION_FILE).read_text())
+        self.assertEqual(cal.get('checks'),imu.calibration_checks(cal));self.assertTrue(all(cal['checks'].values()),cal['checks'])
+        self.assertEqual(cal.get('limits'),imu.calibration_limits())
         worst=np.array([.05,.05,.08])*G_UNIT+np.array([.02,.02,.03])*G;self.assertTrue(np.all(worst<=np.asarray(imu.LEVEL_OFFSET_LIMIT_M_S2)),worst)
         for s in range(300):
             m=model(seed=s);off=(m.accel_matrix-np.eye(3))@[0,0,G]+m.accel_offset
             self.assertTrue(imu.calibration_checks(dict(accel_offset_m_s2=off.tolist()))['offsets_within_bounds'],(s,off))
-        self.assertFalse(imu.calibration_checks(dict(accel_offset_m_s2=[0.,0.,1.2]))['offsets_within_bounds'])
+        self.assertFalse(imu.calibration_checks(dict(accel_offset_m_s2=[0.,0.,imu.LEVEL_OFFSET_LIMIT_M_S2[2]+.05]))['offsets_within_bounds'])
         bad=dict(accel_offset_m_s2=[0.,0.,0.],heading_residual_m_s2=[[0.,0.,0.],[.3,0.,0.]]);self.assertFalse(imu.calibration_checks(bad)['heading_residuals_agree'])
         self.assertFalse(imu.calibration_checks(dict(accel_offset_m_s2=[0.,0.,0.],floor_attitude_rad=[[0.,.02]]))['floor_level'])
-        bringup=ROOT.parent/'home-robot-r1/BRINGUP.md'
-        if bringup.exists():                                                                       # the guide quotes the same numbers
-            text=bringup.read_text();x,y,z=imu.LEVEL_OFFSET_LIMIT_M_S2
-            for quote in (f'|x|, |y| ≤ {x}',f'|z| ≤ {z} m/s²',f'{imu.LEVEL_HEADING_DIFF_LIMIT_M_S2} m/s²',f'{imu.LEVEL_FLOOR_ATTITUDE_LIMIT_DEG}°',f'≤ {imu.YAW_COUPLING_LIMIT}','DLPF_CFG = 4'):
-                self.assertIn(quote,text,quote)
+    def test_bringup_quotes_the_imu_numbers(self):
+        # The numbers live in imu.py; BRINGUP section 14 (R1 repo) quotes them. R1_ROOT picks the R1 checkout (default: the
+        # home-robot-r1 folder next to this SIM folder); without one the test is skipped, visibly (a SIM worktree has none).
+        bringup=Path(os.environ.get('R1_ROOT') or ROOT.parent/'home-robot-r1')/'BRINGUP.md'
+        if not bringup.exists():self.skipTest(f'no R1 BRINGUP.md at {bringup} (set R1_ROOT)')
+        text=bringup.read_text();x,y,z=imu.LEVEL_OFFSET_LIMIT_M_S2
+        for quote in (f'|x|, |y| ≤ {x}',f'|z| ≤ {z} m/s²',f'{imu.LEVEL_HEADING_DIFF_LIMIT_M_S2} m/s²',f'{imu.LEVEL_FLOOR_ATTITUDE_LIMIT_DEG}°',f'≤ {imu.YAW_COUPLING_LIMIT}','DLPF_CFG = 4'):
+            self.assertTrue(quote in text,f'{bringup} does not quote {quote!r}')
+    def test_warm_calibration_passes_the_documented_bounds(self):
+        # Carry 20: BRINGUP prefers a calibration after ~10 min powered. The stored offsets then also hold the zero-g
+        # temperature term (+/-.5 / .5 / .857 mg per C x the warm-up, 9.5 C after 10 min): a corner board stores .733 / .733 /
+        # 1.158 m/s2, beyond the old .7 / .7 / 1.1 on every axis. It must pass, through the robot's own procedure, in all 8
+        # sign patterns; so must 300 drawn boards, cold or warm.
+        lim=np.asarray(imu.LEVEL_OFFSET_LIMIT_M_S2);warm=600.
+        for signs in itertools.product((1.,-1.),repeat=3):
+            s=np.array(signs);cross=np.zeros((3,3));cross[:2,2]=s[:2]*.02                     # the cross-axis terms the level offsets see
+            m=model(accel_offset=s*np.array([50,50,80])*1e-3*G_UNIT,accel_scale=s*.03,accel_cross=cross,accel_tc=s*np.array([.5,.5,.857])*1e-3*G_UNIT)
+            expected=(m.accel_matrix-np.eye(3))@[0,0,G]+m.accel_bias(warm)
+            self.assertTrue(np.all(np.abs(expected)>[.7,.7,1.1]),expected)
+            board=clone(m,777);board.t_on=warm
+            with tempfile.TemporaryDirectory() as root:
+                path,cal=calibration_tool.synthetic(root,board)                                   # write() raises if a check fails
+            self.assertTrue(all(cal['checks'].values()),(signs,cal['checks']))
+            self.assertTrue(np.allclose(cal['accel_offset_m_s2'],expected,atol=.01),(signs,cal['accel_offset_m_s2'],expected))
+        for k in range(300):
+            m=model(seed=k)
+            for t_on in (0.,warm):
+                off=(m.accel_matrix-np.eye(3))@[0,0,G]+m.accel_bias(t_on);self.assertTrue(np.all(np.abs(off)<=lim),(k,t_on,off))
+    def test_write_installs_only_a_complete_passing_calibration(self):
+        # Carry 22: write() runs the checks itself (a dict's own 'checks' are not trusted, and a dict without them is not a
+        # pass), refuses an incomplete dict, and stores the checks with the limits they were made against.
+        with tempfile.TemporaryDirectory() as root:good=calibration_tool.synthetic(root,clone(model(),5))[1]
+        raw={k:v for k,v in good.items() if k not in ('checks','limits')};too_big=[0.,0.,imu.LEVEL_OFFSET_LIMIT_M_S2[2]+.05]
+        for label,cal in (('no checks',dict(raw,accel_offset_m_s2=too_big)),('checks that claim a pass',dict(good,accel_offset_m_s2=too_big)),
+                          ('incomplete',dict(accel_offset_m_s2=[0.,0.,0.],gravity_m_s2=9.8))):
+            with tempfile.TemporaryDirectory() as root:
+                with self.assertRaises(ValueError,msg=label):calibration_tool.write(cal,root)
+                self.assertFalse((Path(root)/imu.CALIBRATION_FILE).exists(),label)
+                self.assertTrue((Path(root)/imu.CALIBRATION_FILE).with_name('imu-calibration.rejected.json').exists(),label)
+        with tempfile.TemporaryDirectory() as root:
+            saved=json.loads(calibration_tool.write(raw,root).read_text())
+        self.assertEqual(saved['checks'],imu.calibration_checks(saved));self.assertTrue(all(saved['checks'].values()));self.assertEqual(saved['limits'],imu.calibration_limits())
     def test_level_calibration_recovers_the_board_and_cancels_floor_tilt(self):
         m=model();body=(.0012,-.0009)                                   # body attitude on its wheels vs the floor (cliff plane)
         for tilt in (np.zeros(2),np.array([.5,-.3])*DEG):              # the floor's own tilt (body frame, heading 0)
@@ -207,9 +247,11 @@ class RobotImuCalibration(unittest.TestCase):
         with_skip,without=run(imu.ZUPT_SKIP_S),run(0.)
         self.assertLess(with_skip,.05);self.assertGreater(without,.05);self.assertGreater(without,3*with_skip)   # measured .012 vs .073 deg/s
     def test_settling_skip_is_time_based(self):
-        # The skip covers >= .15 s of a rest after driving at any sample rate (20 Hz forwarded, or a firmware at 100 Hz).
+        # The skip covers >= .15 s of a rest after driving at any sample rate: 20 Hz (PB27), or samples arriving at 100 Hz.
+        # A timing test only: the samples come every 1 / rate s, while the robot's noise constants stay those of IMU_RATE_HZ
+        # (test_gyro_r_follows_the_sample_rate covers their rate law) and the model's noise that of its DLPF bandwidth.
         for rate in (20.,100.):
-            dt=1/rate;m=model(rise=0.);m.rate=rate;c=ImuCalibration();t=0.;ticks=np.zeros(2)
+            dt=1/rate;m=model(rise=0.);c=ImuCalibration();t=0.;ticks=np.zeros(2)
             for k in range(int(3*rate)):c.update(t,state(m,t)['sensors']);t+=dt                    # power-on rest
             for k in range(int(5*rate)):                                                             # 5 s turning
                 ticks+=np.array([-1,1])*.3*TRACK/2*dt/(2*math.pi*WHEEL_R)*CPR
@@ -222,6 +264,12 @@ class RobotImuCalibration(unittest.TestCase):
                 t+=dt
             self.assertIsNotNone(first_used);self.assertGreaterEqual(first_used-first_still,imu.ZUPT_SKIP_S-1e-9,rate)
             self.assertLess(first_used-first_still,imu.ZUPT_SKIP_S+dt+1e-9,rate)
+    def test_gyro_r_follows_the_sample_rate(self):
+        # PB27: samples closer than the DLPF's time scale are correlated, so at most ~2 x bandwidth of them per second count as
+        # independent: GYRO_R = (2 sigma)^2 x max(1, rate / (2 x bandwidth)). 20 Hz (the firmware rule) takes the first branch.
+        r=(2*imu.GYRO_SAMPLE_SIGMA)**2
+        self.assertEqual(imu.GYRO_R,imu.gyro_r(imu.IMU_RATE_HZ));self.assertAlmostEqual(imu.gyro_r(20.),r);self.assertAlmostEqual(imu.gyro_r(40.),r)
+        self.assertAlmostEqual(imu.gyro_r(100.),2.5*r);self.assertAlmostEqual(imu.gyro_r(200.),5*r)
     def test_wheels_turning_with_a_steady_gyro_is_not_rest(self):
         # STILL_TICKS: the wheels slip on the spot (encoders count, the body and the gyro do not move): not a ZUPT.
         m=model(rise=0.);c=ImuCalibration();t=0.
@@ -240,6 +288,30 @@ class RobotImuCalibration(unittest.TestCase):
         for k in range(100):
             roll=rate*k*DT;c.update(t,state(m,t,omega=(rate,0,0),force=G*gravity_direction(roll,0.))['sensors']);t+=DT
         self.assertLess(np.degrees(abs(c.bias[0]-bias[0])),.05);self.assertFalse(c.still)
+    def test_a_refused_rest_is_released_once_the_gyro_is_back_inside_the_gate(self):
+        # Carry 18: a hand tilts the standing robot for 10 s (GYRO_OUTLIER refuses the rest: rest_vetoed), then lets go and the
+        # robot stands still at its new attitude, motors off (handled once more for .2 s after .6 s). The refusal must hold
+        # through the whole tilt (its gate is the one at the refusal: P grows while refused, so the live gate would open after
+        # ~3 s) and end REST_VETO_RELEASE_S of steady rest inside that gate after the last handling, without driving: the bias
+        # updates (ZUPT) and the at-rest attitude fusion resume.
+        m=model(rise=0.);c=ImuCalibration();t=0.
+        for k in range(100):c.update(t,state(m,t)['sensors']);t+=DT
+        bias=c.bias.copy();rate=math.radians(.35);vetoed=[]
+        for k in range(200):
+            roll=rate*k*DT;c.update(t,state(m,t,omega=(rate,0,0),force=G*gravity_direction(roll,0.))['sensors']);t+=DT
+            vetoed.append(c.status()['rest_vetoed'])
+        self.assertTrue(all(vetoed[2:]),vetoed.index(False,2) if False in vetoed[2:] else None)
+        self.assertLess(np.degrees(abs(c.bias[0]-bias[0])),.05)
+        held=G*gravity_direction(roll,0.);n0=c.zupt_samples;released=None
+        for k in range(80):
+            wobble=12<=k<16;c.update(t,state(m,t,omega=(.05*(-1)**k,0.,0.) if wobble else (0.,0.,0.),force=held)['sensors'])
+            if released is None and not c.rest_vetoed:released=k*DT
+            t+=DT
+        self.assertIsNotNone(released,'the refused rest never ends')
+        steady=17*DT                                                     # the first steady sample after the handling
+        self.assertTrue(steady+imu.REST_VETO_RELEASE_S-1e-9<=released<=steady+imu.REST_VETO_RELEASE_S+2*DT,released)
+        self.assertTrue(c.still);self.assertGreater(c.zupt_samples,n0);self.assertFalse(c.status()['rest_vetoed'])
+        self.assertLess(np.degrees(np.abs(c.bias-m.gyro_bias(m.t_on))).max(),.05)
     def test_zupt_tracks_the_warm_up_drift_between_drives(self):
         for m in worst_boards()[:2]:
             c=ImuCalibration();t=0.;ticks=np.zeros(2);worst=0.;yaw_rate=.3
@@ -356,5 +428,45 @@ class RobotAttitude(unittest.TestCase):
             b,rows=self.run_brain(m,calibrated_root(m),[(3,0,0,level,level,True)]+segments)
             self.assertTrue(all(r['mode']=='mapping' for r in rows),next((r['message'] for r in rows if r['mode']!='mapping'),''))
             self.assertLess(math.degrees(max(r['tilt'] for r in rows if r['init'])),1.)
+
+class RobotStartupWait(unittest.TestCase):
+    """Ruling PB28, carry 19 and 22: the robot does not move before its start-up gyro calibration is done (imu.GYRO_STARTUP_S of
+    continuous rest), and says so when that rest never comes, in Mapping and in a Go-to's relocalization."""
+    def test_mapping_at_power_on_does_not_move_before_the_start_up_calibration(self):
+        from sim2d import World,Sim,Bridge
+        walls=[((-1,-1.5),(3,-1.5)),((3,-1.5),(3,1.5)),((3,1.5),(-1,1.5)),((-1,1.5),(-1,-1.5)),((1,-1.5),(1,.6))]
+        with tempfile.TemporaryDirectory() as tmp:
+            sim=Sim(World(walls),sensor_errors=True);br=Bridge(LidarBrain(tmp),sim,rearm_hook=lambda x:getattr(x,'wants_arm',False))
+            b=br.b=LidarBrain(tmp)          # a fresh power-on at the start pose: not the Bridge's PB28 pre-calibrated brain
+            self.assertFalse(b.imu.startup_done);rows=[]
+            br.start_mapping();t0=sim.t
+            br.run(15,on_tick=lambda x:rows.append((x.trace[-1]['t']-t0,x.trace[-1]['v'],x.trace[-1]['w'],b.imu.startup_done)))
+        moving=[r for r in rows if abs(r[1])>1e-6 or abs(r[2])>1e-6]
+        self.assertTrue(moving,'mapping never started moving')
+        self.assertTrue(all(r[3] for r in moving),next((r for r in moving if not r[3]),None))
+        ready=next(r[0] for r in rows if r[3]);self.assertGreaterEqual(ready,imu.GYRO_STARTUP_S);self.assertGreaterEqual(moving[0][0],ready)
+    def stand(self,b,m,seconds):
+        """predict + drive_command for a robot on a level floor that is handled now and then: 1 s still, .5 s wobbled (gyro
+        steps above STILL_GYRO_STEP), so the attitude initialises but 2 s of continuous rest never come. Returns (t, v, w)."""
+        rows=[];t=0.
+        for k in range(int(seconds/DT)):
+            s=state(m,t,omega=(.05*(-1)**k,0.,0.) if k%30>=20 else (0.,0.,0.),cliff=cliff_for(0.,0.),armed=True);b.requested_motion=(0.,0.);b.predict(s)
+            if b.mode!='idle':
+                b.frame=SimpleNamespace(stamp=t,index=k);b.camera.last_stamp=t;b.localizer.last_visual_time=t;b.localizer.uncertainty=.025
+                rows.append((t,)+tuple(b.drive_command(dict(s,armed=True,fault='none'))))
+            t+=DT
+        return rows
+    def test_mapping_idles_with_its_own_message_when_never_still(self):
+        m=model();b=LidarBrain(calibrated_root(m));b.mode='mapping';b.phase='sense';b.started=b.phase_started=0.;b.motor_seen_armed=True;b.scan_count=10
+        rows=self.stand(b,m,40.)
+        self.assertTrue(b.attitude_initialized);self.assertFalse(b.imu.startup_done);self.assertTrue(all(v==0 and w==0 for _,v,w in rows))
+        self.assertEqual(b.mode,'idle');self.assertIn('gyro start-up calibration needs the robot standing still',b.message)
+        self.assertTrue(30.<=rows[-1][0]<=31.,rows[-1][0])
+    def test_go_to_relocalization_idles_with_the_gyro_message_when_never_still(self):
+        m=model();b=LidarBrain(calibrated_root(m));b.mode='go_to';b.phase='relocalizing';b.started=b.phase_started=0.;b.motor_seen_armed=True;b.goal=np.array([1.,0.])
+        rows=self.stand(b,m,50.)
+        self.assertFalse(b.imu.startup_done);self.assertTrue(all(v==0 and w==0 for _,v,w in rows))
+        self.assertEqual(b.mode,'idle');self.assertIn('gyro start-up calibration needs the robot standing still',b.message,b.message)
+        self.assertTrue(30.<=rows[-1][0]<=31.,rows[-1][0])
 
 if __name__=='__main__':unittest.main()

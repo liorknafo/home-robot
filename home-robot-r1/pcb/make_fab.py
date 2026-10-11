@@ -15,8 +15,9 @@ Writes (pcb/fab/, committed; ORDERING.md and BRINGUP-NOTES.md there are hand-wri
                             centred on the sheet (a copy moved, so a printer's margin cannot clip it) with a SCALE_BAR_MM bar to check
                             the print scale;
  - r1_power_io.step         for B8: the board (KiCad's body, tracks and vias) and every fitted part's 3D model (--subst-models; the DNP
-                            spares left out), with box envelopes (envelope_boxes) for the parts KiCad has no model for - the JST VH
-                            headers J1-J3 and the FLR fuse holders F1 / F2 with their ATO fuses, and for C1 (ENVELOPE_OVER_MODEL: the
+                            spares left out), with box envelopes (envelope_boxes) for the parts KiCad has no model for - the board
+                            connectors J1 (AMASS XT30UPB-M), J2 (JST VH) and J3 (Molex Micro-Fit 43650-0200; B12a) and the FLR fuse
+                            holders F1 / F2 with their ATO fuses, and for C1 (ENVELOPE_OVER_MODEL: the
                             stock model is 10 mm tall, the part up to 20 mm). Frame: --user-origin 0x0mm, so STEP x = u,
                             y = -v (KiCad's board frame, y flipped), z 0 = the bottom of KiCad's laminate body (B.Cu copper -0.035, the
                             parts' seating plane z 1.595 = the board top): robot (x, y, z) = STEP (x + BOARD_X0, y + BOARD_Y0, z +
@@ -48,7 +49,8 @@ SCALE_BAR_MM = 50.0              # test_fab finds this bar on every page at this
 FLR_HOUSING_H = 17.5
 ATO_BODY = (19.1, 5.1)
 ENVELOPE_RGB = {'Connector_JST': (0.93, 0.92, 0.86), 'Fuse': (0.08, 0.08, 0.08),       # natural nylon VH; black FLR housing
-                'Capacitor_THT': (0.10, 0.10, 0.13)}                                     # black can
+                'Capacitor_THT': (0.10, 0.10, 0.13),                                     # black can
+                'Connector_AMASS': (0.95, 0.78, 0.10), 'Connector_Molex': (0.10, 0.10, 0.10)}   # B12a: yellow XT30 (J1); black Micro-Fit (J3)
 # Parts that have a KiCad model but get an envelope as well (instead of the model): the stock model is lower than the part. C1: the stock
 # CP_Radial_D10.0mm_P5.00mm model is 10 mm tall, the Panasonic EEU-FR1E471 (470 uF 25 V, D10) is up to 20 mm (PARTS h 20; the datasheet
 # height is on the verify list). The other parts whose model and PARTS h differ are listed in ORDERING.md "STEP heights" (B8).

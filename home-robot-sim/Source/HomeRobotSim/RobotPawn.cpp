@@ -299,16 +299,19 @@ bool ARobotPawn::PhysicsBodyInertia(double Out[3][3]) const {
  for(int I=0;I<3;I++)for(int J=0;J<3;J++){double V=0;for(int K=0;K<3;K++)V+=D[K]*Axis[K][I]*Axis[K][J];Out[I][J]=V*S[I]*S[J]/1e4;}
  return true;
 }
-// Normals and tangents exactly as UKismetProceduralMeshLibrary::CalculateTangentsForMesh produces them for this call (zero UVs:
-// its singular UV matrix falls back to identity, so tangent X / Y are the triangles' unit edges P1-P0 / P2-P0; the normal is the
-// sum of the unit normals (P1-P2) x (P0-P2) of every triangle touching a vertex at the same position), but with the same-position
-// groups found through a hash map (positions rounded to 1e-4 cm, its FVector::Equals tolerance) instead of its FindVertOverlaps
-// scan of every vertex per triangle corner. That scan is O(n^2): with the bay board's ~0.5 M-vertex assembly (bay B10) it kept
-// BeginPlay busy for minutes (the old 0.32 M-vertex assembly took about 70 s).
+// Normals and tangents as UKismetProceduralMeshLibrary::CalculateTangentsForMesh produces them for this call (zero UVs: its
+// singular UV matrix falls back to identity, so tangent X / Y are the triangles' unit edges P1-P0 / P2-P0; the normal is the sum
+// of the unit normals (P1-P2) x (P0-P2) of every triangle touching a vertex at the same position), but with the same-position
+// groups found through a hash map instead of its FindVertOverlaps scan of every vertex per triangle corner. That scan is O(n^2):
+// with the bay board's ~0.5 M-vertex assembly (bay B10) it kept BeginPlay busy for minutes (the old 0.32 M-vertex assembly took
+// about 70 s). The grouping is close to, not the same as, UE's: the hash map puts positions in cells of a 1e-4 cm grid, while
+// FindVertOverlaps pairs any two vertices within FVector::Equals' 1e-4 tolerance per axis. Two vertices less than 1e-4 apart
+// that straddle a cell edge stay apart here, and UE's pairing is not transitive. The CAD meshes repeat shared positions exactly,
+// so both group them the same way: a numpy port of both on 9,668 assembly vertices differed by at most 2.2e-16 (bay B10).
 static void SmoothNormals(const TArray<FVector>& V,const TArray<int32>& T,TArray<FVector>& Normals,TArray<FProcMeshTangent>& Tangents) {
  const int32 NV=V.Num(),NT=T.Num()/3;Normals.Reset();Tangents.Reset();if(!NV)return;
  TArray<int32> Group;Group.SetNumUninitialized(NV);TMap<FIntVector,int32> Index;Index.Reserve(NV);
- for(int32 I=0;I<NV;I++){const FIntVector Key(FMath::RoundToInt(V[I].X*1e4),FMath::RoundToInt(V[I].Y*1e4),FMath::RoundToInt(V[I].Z*1e4));const int32 Next=Index.Num();Group[I]=Index.FindOrAdd(Key,Next);}
+ for(int32 I=0;I<NV;I++){const FIntVector Key(FMath::RoundToInt32(V[I].X*1e4),FMath::RoundToInt32(V[I].Y*1e4),FMath::RoundToInt32(V[I].Z*1e4));const int32 Next=Index.Num();Group[I]=Index.FindOrAdd(Key,Next);}
  TArray<FVector3f> SumZ,SumX,SumY;SumZ.SetNumZeroed(Index.Num());SumX.SetNumZeroed(NV);SumY.SetNumZeroed(NV);
  for(int32 K=0;K<NT;K++){
   int32 C[3];FVector3f P[3];for(int32 J=0;J<3;J++){C[J]=FMath::Clamp(T[3*K+J],0,NV-1);P[J]=(FVector3f)V[C[J]];}
@@ -326,7 +329,7 @@ void ARobotPawn::BuildRobotVisual() {
  FString Text;FFileHelper::LoadFileToString(Text,*(FPaths::ProjectContentDir()/TEXT("RobotData/assembly-meshes.json")));
  TArray<TSharedPtr<FJsonValue>> Parts;FJsonSerializer::Deserialize(TJsonReaderFactory<>::Create(Text),Parts);
  struct MeshData {TArray<FVector> V;TArray<int32> T;TArray<FLinearColor> C;};MeshData M[3];FBox WheelBounds[3]={FBox(ForceInit),FBox(ForceInit),FBox(ForceInit)};
- for(auto& Value:Parts){auto P=Value->AsObject();const FString Id=P->GetStringField(TEXT("id"));if((Id.StartsWith(TEXT("W"))&&!Id.StartsWith(TEXT("W_bundle"))&&!Id.StartsWith(TEXT("W_tie")))||Id.StartsWith(TEXT("motor_cable")))continue;
+ for(auto& Value:Parts){auto P=Value->AsObject();const FString Id=P->GetStringField(TEXT("id"));if(RobotGeometry::hidden_visual_part(TCHAR_TO_UTF8(*Id)))continue;
   // Part-id based: tyre and wheel meshes ride on the wheel bodies, re-centred at the axle (drive_axle_x_m, +/-track/2, wheel radius).
   int G=0;if(Id==TEXT("tire_left")||Id==TEXT("wheel_left"))G=1;else if(Id==TEXT("tire_right")||Id==TEXT("wheel_right"))G=2;
   FVector Offset(0,0,BodyHeight);if(G==1)Offset=WheelOffset(true)+FVector(0,0,BodyHeight);if(G==2)Offset=WheelOffset(false)+FVector(0,0,BodyHeight);

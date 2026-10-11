@@ -216,26 +216,26 @@
   "com_estimate_note": "total COM including the wheels and the caster ball; body_com_mm excludes them (the simulator Body)",
   "body_com_mm": [
     -17.37,
-    -1.12,
+    -1.13,
     62.77
   ],
   "total_mass_estimate_kg": 2.422,
   "body_mass_kg": 2.284,
   "body_inertia_kg_m2": [
     [
-      0.011697,
-      8.9e-05,
+      0.0117,
+      8.7e-05,
       -0.000708
     ],
     [
-      8.9e-05,
+      8.7e-05,
       0.014611,
-      7.3e-05
+      7.2e-05
     ],
     [
       -0.000708,
-      7.3e-05,
-      0.021975
+      7.2e-05,
+      0.021978
     ]
   ],
   "skin_z": [
@@ -307,7 +307,7 @@
   "camera_lower_edge_bumper_clearance_mm": 4.07,
   "coast_safe_reverse_speed_mps": 0.095,
   "caster_load_fraction": 0.246,
-  "rear_caster_load_N": 5.85,
+  "rear_caster_load_N": 5.86,
   "rear_cliff_lead_over_caster_mm": 35,
   "rear_cliff_coast_at_reverse_limit_mm": {
     "speed_m_s": 0.06,
@@ -680,8 +680,8 @@
     "under_carrier_z_mm": 54.77,
     "connectors_mm": {
       "J1": [
-        -61.6,
-        -19.59
+        -62.35,
+        -20.5
       ],
       "J2": [
         -61.6,
@@ -704,8 +704,8 @@
         13.27
       ],
       "J3": [
-        -43.02,
-        -45.15
+        -43.9,
+        -44.47
       ],
       "J4": [
         -11.95,
@@ -772,10 +772,10 @@
         -4.655
       ],
       "J1": [
-        -66.395,
-        -56.805,
-        -24.065,
-        -15.115
+        -65.495,
+        -59.205,
+        -26.145,
+        -14.855
       ]
     },
     "ribs_mm": [
@@ -788,7 +788,7 @@
       [
         -59.8,
         -57.8,
-        -24.065,
+        -26.145,
         -6.175
       ]
     ],
@@ -874,34 +874,34 @@
       {
         "box_xyz": [
           -68.0,
-          -15.06,
+          -14.93,
           36.992,
           -64.45,
-          -13.66,
+          -13.53,
           39.65
         ],
         "contact_xy": [
           -66.0,
-          -14.36
+          -14.23
         ],
-        "gap_between_bodies_mm": 2.5,
+        "gap_between_bodies_mm": 2.24,
         "beam": {
-          "yc": -14.36,
-          "gap": 2.5,
+          "yc": -14.23,
+          "gap": 2.24,
           "d": -1,
-          "y_end": -13.66,
-          "y_root": -45.36,
+          "y_end": -13.53,
+          "y_root": -45.23,
           "posts": [
-            -14.31,
-            -17.61,
-            -20.91,
-            -24.21,
-            -27.51,
-            -30.81,
-            -34.11,
-            -37.41,
-            -40.71,
-            -44.01
+            -14.18,
+            -17.48,
+            -20.78,
+            -24.08,
+            -27.38,
+            -30.68,
+            -33.98,
+            -37.28,
+            -40.58,
+            -43.88
           ]
         },
         "finger_to_board_top_mm": -0.003,
