@@ -31,6 +31,7 @@ echo "R1 exported from $(git -C "$r1_src" rev-parse --short "$ref") ($(git -C "$
 mkdir -p "$here/home-robot-sim"
 rsync -a --delete \
   --exclude '/Saved/' --exclude '/Intermediate/' --exclude '/DerivedDataCache/' --exclude '/Binaries/' \
+  --exclude '/.git' --exclude '/.git/' --exclude '/.sim-lock/' \
   --exclude '/.venv/' --exclude '__pycache__/' --exclude '*.pyc' --exclude '.DS_Store' --exclude '*.log' \
   --exclude '/reports/' --exclude '/Content/RobotData/assembly-meshes.json' \
   "$sim_src/" "$here/home-robot-sim/"
