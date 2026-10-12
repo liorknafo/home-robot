@@ -1,7 +1,7 @@
 """Close-range obstacle evidence (task K, LIO-118): an obstacle cell seen from close by is not cleared by later beams that
 pass it from much farther away.
 
-Unreal trials (task H): the sofa base's bottom is 13 cm, the LiDAR plane 14.75 cm. From close by the LiDAR returns the
+Unreal trials (task H): the sofa base's bottom is 13 cm, the LiDAR plane was then 14.75 cm (task L lowers it). From close by the LiDAR returns the
 base's ends; from farther away the beams that reach them skim past at a grazing angle through the ends' partly free 5 cm
 cells, or pass under the base when the robot tilts (1 deg drops a beam 1.75 cm at 1 m). Re-cast offline against the house
 (tests/replay_unreal_lidar.py, trial full-mapping-20261012T013115), the sofa's north-end cells got 708 hits / 43 passes from

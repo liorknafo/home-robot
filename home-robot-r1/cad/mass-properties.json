@@ -1,35 +1,35 @@
 {
   "units": "kg, mm, robot frame (base_link at the axle centre on the floor)",
-  "body_mass_kg": 2.3062,
+  "body_mass_kg": 2.301,
   "body_com_mm": [
-    -14.71,
+    -14.93,
     -1.11,
-    63.04
+    62.01
   ],
-  "total_mass_kg": 2.4442,
+  "total_mass_kg": 2.439,
   "total_com_mm": [
-    -15.96,
+    -16.17,
     -1.05,
-    60.97
+    60.0
   ],
   "body_inertia_kg_m2": [
     [
-      0.011668,
-      7.9e-05,
-      -0.000994
+      0.011378,
+      8e-05,
+      -0.000841
     ],
     [
-      7.9e-05,
-      0.015452,
-      6.7e-05
+      8e-05,
+      0.01513,
+      7.1e-05
     ],
     [
-      -0.000994,
-      6.7e-05,
-      0.022788
+      -0.000841,
+      7.1e-05,
+      0.022776
     ]
   ],
-  "body_inertia_about": "body_com_mm (the inertia set was built from the same records: centre [-14.7, -1.1, 63.04] mm)",
+  "body_inertia_about": "body_com_mm (the inertia set was built from the same records: centre [-14.92, -1.11, 62.0] mm)",
   "caster_x_mm": -75,
   "wheel_x_mm": 0,
   "records": [
@@ -233,11 +233,11 @@
     },
     {
       "item": "P_lidar_tray",
-      "mass_kg": 0.04936,
+      "mass_kg": 0.04754,
       "position_mm": [
-        30.9,
-        -0.3,
-        106.1
+        25.2,
+        0.1,
+        104.9
       ],
       "separate_body": false,
       "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
@@ -387,10 +387,10 @@
     },
     {
       "item": "P_lid_front",
-      "mass_kg": 0.0745,
+      "mass_kg": 0.07274,
       "position_mm": [
-        87.9,
-        -17.8,
+        90.0,
+        -18.0,
         102.0
       ],
       "separate_body": false,
@@ -398,10 +398,10 @@
     },
     {
       "item": "P_lid_left",
-      "mass_kg": 0.06426,
+      "mass_kg": 0.06357,
       "position_mm": [
-        18.0,
-        91.1,
+        18.2,
+        92.0,
         102.0
       ],
       "separate_body": false,
@@ -409,10 +409,10 @@
     },
     {
       "item": "P_lid_rear",
-      "mass_kg": 0.06938,
+      "mass_kg": 0.06878,
       "position_mm": [
-        -90.8,
-        20.0,
+        -91.4,
+        20.2,
         102.0
       ],
       "separate_body": false,
@@ -420,10 +420,10 @@
     },
     {
       "item": "P_lid_right",
-      "mass_kg": 0.06447,
+      "mass_kg": 0.06402,
       "position_mm": [
         -19.3,
-        -91.5,
+        -92.1,
         102.0
       ],
       "separate_body": false,
@@ -431,10 +431,10 @@
     },
     {
       "item": "P_ld14_grommet",
-      "mass_kg": 0.00056,
+      "mass_kg": 0.0003,
       "position_mm": [
-        59.9,
-        22.0,
+        38.9,
+        18.0,
         103.4
       ],
       "separate_body": false,
@@ -543,20 +543,20 @@
       "item": "Wiring + connectors",
       "mass_kg": 0.1,
       "position_mm": [
-        6.5,
-        -0.9,
-        60.0
+        5.4,
+        -1.2,
+        59.1
       ],
       "separate_body": false,
       "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
     },
     {
       "item": "Fasteners",
-      "mass_kg": 0.0882,
+      "mass_kg": 0.0886,
       "position_mm": [
-        36.3,
+        36.2,
         -0.2,
-        42.1
+        42.5
       ],
       "separate_body": false,
       "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"
@@ -589,7 +589,7 @@
       "position_mm": [
         48.0,
         0.1,
-        142.4
+        122.4
       ],
       "separate_body": false,
       "basis": "simulator record mass at the CAD centroid (steel from CAD volume)"

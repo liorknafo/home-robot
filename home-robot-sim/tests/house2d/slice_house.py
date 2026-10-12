@@ -3,7 +3,8 @@ Usage: slice_house.py OUT.npz [lidar_z [robot_top_z]]
   lidar: the LiDAR scan plane (default .19, the pre-low-profile robot). low: slices at .03/.06/.10/.14/.17 m that lie
   below the LiDAR plane (bumper/body-only objects). overhang (only when robot_top_z is given): a slice midway between
   the LiDAR plane and the robot top, the blind band where only the LiDAR turret can touch (house_world subtracts
-  everything the LiDAR or the low slices already cover). The low-profile R1: slice_house.py house_slices_lp1475.npz .1475 .15515"""
+  everything the LiDAR or the low slices already cover). The R1 since task L: slice_house.py house_slices_lp1275.npz .1275 .13515
+  (before task L: house_slices_lp1475.npz .1475 .15515)"""
 import json,sys,numpy as np
 from pathlib import Path
 P=str(Path(__file__).resolve().parents[2])   # the sim root (this file lives in <sim>/tests/house2d)

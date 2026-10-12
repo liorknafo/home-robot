@@ -1,5 +1,5 @@
 """Make a robot-parameters variant tree for the 2D harness without touching the sim's own files.
-Usage: make_variant.py OUTDIR '{"lidar_mount_m":[0.06,0,0.1475],"lidar_turret_xy_m":[0.06,0]}'
+Usage: make_variant.py OUTDIR '{"lidar_mount_m":[0.06,0,0.1275],"lidar_turret_xy_m":[0.06,0]}'
 Copies controller/*.py (recursive), tests/sim2d.py, tests/score_full_mapping.py and Content/RobotData/{robot-parameters,
 sensor-errors,house-scene}.json into OUTDIR (same relative layout, so geometry.py, sim2d.py and sim_sensor_model.py find
 their files there), applies the overrides to the copied robot-parameters.json, and writes OUTDIR/variant.json (overrides

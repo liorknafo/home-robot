@@ -36,13 +36,20 @@ ZFAN_TOP=JO[2]+JS['heatsink']['top_z']+FAN_H           # 95.28
 ZLID=math.ceil((ZFAN_TOP+AIRGAP)*2)/2                   # lid underside 100.5
 ZLIDT=ZLID+LID_T                                        # lid top 103.5
 DZ=143.0-ZLID                                           # 42.5 mm drop from the deck-era lid
+# Task L (LIO-120, user's "option 2": as low as the rules allow): the LD14 laser plane sits where the scan-band rule puts its floor, the band
+# (plane ± 4 mm) 20 mm over the lid top (validation lidar_mount.scan_band_vertical): 127.5, 20 mm under task F's 147.5 (190 - DZ).
+SCAN_OVER_LID,SCAN_HALF_BAND=20.0,4.0
+LIDAR_H=ZLIDT+SCAN_OVER_LID+SCAN_HALF_BAND             # 127.5
+assert abs((190-DZ)-LIDAR_H-20.0)<1e-9
 PARAMS=dict(base_length=244,base_width=200,base_bottom=29,base_thickness=4,
             wheel_diameter=80,wheel_track=228,wheel_x=0,
-            camera_baseline=0,camera_height=80.0,camera_x=146,lidar_height=round(190-DZ,2),lidar_x=54,lidar_yaw_deg=180,
+            camera_baseline=0,camera_height=80.0,camera_x=146,lidar_height=LIDAR_H,lidar_x=54,lidar_yaw_deg=180,
             lidar_note='Task F (user decision 2026-10-11, option B): the LD14 is turned 180 deg about its spin axis (motor toward the back), spin axis x 54: the most forward position at which its '
                        '0.1 m minimum range (LD14P) stays inside the bumper skin with a half pressed to its stop, so the scan sees whatever the bumper touches (a trial at x 109, its front 10 mm inside '
                        'the skin, left a 5 cm blind strip ahead of the bumper). Its 0 deg (tail/motor) direction points along robot -x: a driver scan angle theta (REP-103, CCW, 0 = LD14 tail) maps to '
-                       'the robot-frame bearing wrap(theta + 180 deg) into (-180, 180]; a raw LD14 angle a (clockwise from the tail) maps to wrap(180 deg - a). The simulator reports scans in the robot frame already.',
+                       'the robot-frame bearing wrap(theta + 180 deg) into (-180, 180]; a raw LD14 angle a (clockwise from the tail) maps to wrap(180 deg - a). The simulator reports scans in the robot frame already. '
+                       'Task L (LIO-120, user request 2026-10-12): the LD14 sits 20 mm lower than in task F, laser plane 127.5 mm (was 147.5): the scan band (plane ± 4 mm) is then exactly 20 mm over '
+                       'the lid top, the floor the scan-band rule allows. Its lugs sit straight on the tray plate (no towers); its motor drops into the tray\'s fan intake duct, 1.4 mm over the fan frame.',
             outer_radius=158.9,shell_radius=157.4,rear_shell_radius=152.5,base_radius=148,bumper_tip_radius=152.7,
             bumper_axis_deg=30,bumper_travel=5.0,bumper_z=[18,ZLID-2],bumper_span_deg=90,
             rear_caster=[-75,0,0],caster_ball_radius=12.7,
@@ -992,9 +999,9 @@ for a in range(0,360,72):
 for x,y in JS['heatsink']['fan_screw_holes']:fan=hole(fan,*J(x,y)[:2],JFAN[2]-1,1.7,12)
 add('fan','40 mm Jetson cooling fan',fan,'black','E09','upper',note=f'40 × 40 × 10 mm (E09) on the heatsink fan-screw pattern ({JS["heatsink"]["fan_pitch"][0]:g} mm, holes Ø{JS["heatsink"]["fan_hole_d"]} in the fins), z {JFAN[2]:.2f}–{JFAN[2]+10:.2f}.')
 FSCREWS=[J(x,y)[:2] for x,y in JS['heatsink']['fan_screw_holes']]
-for i,(x,y) in enumerate(FSCREWS):   # M3 × 16 pan head on the fan frame corner, 6 mm into the heatsink fin hole (self-tapping); the head is what the lid skirt clears
+for i,(x,y) in enumerate(FSCREWS):   # M3 × 16 pan head on the fan frame corner, 6 mm into the heatsink fin hole (self-tapping); the head is what the tray's intake duct clears
     add(f'fan_screw_{i}','Fan M3 × 16 pan-head screw (E09 kit)',union(cyl(x,y,JFAN[2]-6,1.5,16),cyl(x,y,ZFAN_TOP,FS_HEAD[0],FS_HEAD[1])),'metal','E09','upper',allow=('fan','jetson_heatsink'),
-        note=f'Envelope of the usual fan screw: head Ø{2*FS_HEAD[0]:g} × {FS_HEAD[1]:g} mm on the frame (z {ZFAN_TOP:.2f}–{ZFAN_TOP+FS_HEAD[1]:.2f}); check the delivered screws, the lid skirt clears these heads (validation jetson_cooling.fan_skirt).')
+        note=f'Envelope of the usual fan screw: head Ø{2*FS_HEAD[0]:g} × {FS_HEAD[1]:g} mm on the frame (z {ZFAN_TOP:.2f}–{ZFAN_TOP+FS_HEAD[1]:.2f}); check the delivered screws, the LiDAR tray\'s intake duct clears these heads (validation jetson_cooling.fan_skirt).')
 add('usb_stack_0','Jetson stacked USB-A ports (right; NVIDIA STEP envelope)',jpart('usb_a_0'),'metal','E01','upper',allow=('J17_A','J27_A','jetson'))   # mated plugs
 add('usb_stack_1','Jetson stacked USB-A ports (left; NVIDIA STEP envelope)',jpart('usb_a_1'),'metal','E01','upper',allow=('J18_A','J19','jetson'))
 add('ethernet','Jetson RJ45 Ethernet port (NVIDIA STEP envelope)',jpart('rj45'),'metal','E01','upper',allow=('jetson',))
@@ -1123,44 +1130,100 @@ add('lidar_motor','LD14 spin motor (manufacturer STEP)',ld(5523.7),'metal','E15'
 add('lidar_cap','LD14 red top cap',ld(219.8),'red','E15','cover',tess=(.2,.3))
 add('lidar_lens','LD14 emitter and receiver windows',cq.Compound.makeCompound([ldp(sector(*w,28.2,29.3)) for w in win]),'lens','E15','cover',tess=(.2,.3),note='Window positions follow the STEP snapshot; the turret spins at about 6 Hz. Keep the band z '+f'{PARAMS["lidar_height"]-4:g}-{PARAMS["lidar_height"]+4:g}'+' mm clear all round.')
 add('lidar_connector','LD14 4-pin 1.25 mm side-entry socket (STEP)',ld(62.5),'connector','E15','cover')
-# LiDAR tray: flat plate on the lid's M3 holes with three printed towers under the LD14 lugs. Only the stationary lugs touch it; motor,
-# PCB parts and connector keep clearance. Task F: the LD14 is turned round (motor toward the back), its front lug tower at x 89.3.
-# Task I: the lid is closed over the front bay (its old camera-tower notch is gone), so the whole plate rests on the lid.
+# LiDAR tray (task L): a flat plate on the lid top whose top face is the LD14 lug seat (the lugs are the only part of the LD14 that touches it;
+# no towers: the LD14 sits 20 mm lower than in task F). M3 × 3 heat-set inserts flush with the plate top take the three lug screws (M3 × 5
+# socket heads from above, in the lugs' counterbores). Task F: the LD14 is turned round (motor toward the back), its front lug at x 89.3.
+# Task I: the lid is closed over the front bay, so the whole plate rests on the lid.
 LUGS=[lxy(-35.3,0),lxy(36,18),lxy(36,-18)]   # STEP lug holes (Ø3.24 through a 2 mm web, Ø5.96 counterbore from above) in the robot frame: front ear, two tail lugs
-lug_z=LZ-8.0                        # lug undersides (the LD14 housing underside)
+lug_z=LZ-8.0                        # lug undersides (the lowest points of the LD14 housing; its flat underside is 2.8 mm higher)
 TRAYH=[(-35,-38),(-35,38),(83,-35),(83,35)]   # rear pair clear of the fan window and the J27 USB socket; front pair on solid lid (behind the old front notch, task F)
 ZT0=ZLIDT                           # tray plate on the lid top
-# Jetson cooling (L2). The 40 mm fan (z ZFAN_TOP-10..ZFAN_TOP) sits under the rear of the tray, and the robot centre (0, 0), where the lid
-# seams meet, lies INSIDE the fan footprint, so lid vent slots over the fan would cross the seams. Instead the lid has one round fan window
-# (Ø35 about the fan centre, over the Ø34 fan bore; the four seams end in it, radial to it) and the tray plate over it carries the grille:
-# 4.5 mm slots on a 6.5 mm pitch inside the window. A 1.3 mm skirt under the lid round the window ends 1 mm above the fan frame, inside the
-# fan screw heads, so the fan cannot draw its own exhaust from the body through the 5.2 mm gap between the fan top and the lid.
-# Air path: room air over the tray -> grille -> window and skirt -> fan (task F: the turned-round LD14 stands ahead of the fan window; its motor
-# end overhangs the grille's front edge about 10 mm above the plate, task I counts that shadow). Numbers: validation jetson_cooling.
-FW=(JFAN[0],JFAN[1],17.5)           # lid fan window: centre and radius (the E09 bore is r 17)
-SK_T,SK_GAP=1.3,0.9                 # fan skirt wall (r FW..FW+SK_T, inside the fan screw heads) and its gap to the fan top (0.9: the fan bypass keeps >= 1 % margin under its 25 % limit; feeler go 0.5 / no-go 1.0)
-SK_FEELER=(0.5,1.0)                 # skirt-gap feelers at assembly: the go feeler passes (no contact), the no-go feeler must not (gap small enough for the bypass limit)
-GR_W,GR_P,GR_N,GR_R=4.5,6.5,2,FW[2]   # slot width, pitch, slots each side of the centre one, grille radius
-TRAYF=round(max(x for x,y in LUGS)+11,1)   # tray front edge: 4 mm ahead of the front lug tower's Ø14 flare; its rear edge stays at x -45 over the fan window
-tray=rounded((TRAYF-45)/2,0,ZT0,TRAYF+45,86,3,8)
-for x,y in TRAYH:tray=hole(tray,x,y,ZT0-1,1.7,5)
-GRILLE=union(*[box(FW[0]+k*GR_P,FW[1],ZT0-1,GR_W,2*GR_R+2,5) for k in range(-GR_N,GR_N+1)]).intersect(cyl(FW[0],FW[1],ZT0-1,GR_R,5))
-tray=tray.cut(GRILLE)               # fan grille over the lid window
-LD14_AP=(*lxy(-6,-22),10,14)   # LD14 lead aperture in the lid (centre x, y, size x, y): the lead runs 21 mm forward from the socket in the plenum and drops here,
-                                # clear of the 37 deg lid seam and its r 50 dovetail tab (straight under the socket it would cross the seam)
-tray=tray.cut(box(LD14_AP[0],LD14_AP[1],ZT0-1,LD14_AP[2]+4,LD14_AP[3]+2,5))   # LD14 lead opening in the tray plate (14 × 16: >= 1.1 mm round the grommet lip)
-for x,y in LUGS:
-    tray=union(tray,cq.Solid.makeCone(7,4.3,6,cq.Vector(x,y,ZT0+3)),cyl(x,y,ZT0+9,4.3,lug_z-ZT0-9))
-    tray=hole(tray,x,y,lug_z-8,1.3,9)   # Ø2.6 pilot, 8 deep: M3 × 10 thread-forming screw
-add('P_lidar_tray','LD14 three-point tray on the lid',tray,'print','F01','cover',printable=True,note=f'{TRAYF+45:g} × 86 × 3 mm plate on the lid top (x -45–{TRAYF:g}, z {ZT0:g}–{ZT0+3:g}; four M3 holes at (-35, ±38) and ({TRAYH[2][0]:g}, ±35), M3 × 10 + nyloc nuts under the lid). Fan grille over the lid fan window: {2*GR_N+1} × {GR_W} mm slots on a {GR_P} mm pitch inside r {GR_R:g} about the fan centre ({FW[0]:.1f}, {FW[1]:.1f}); 2 mm ribs, all vertical walls, open to the room above. Three Ø8.6 towers (flared to Ø14) carry the LD14 lugs at z {lug_z:g}: front ({LUGS[0][0]:g}, 0), tail ({LUGS[1][0]:g}, ±18) (task F: the LD14 is turned round, motor toward the back).'+' The lug holes are Ø3.24 (M3 clearance) with Ø5.96 counterbores for M3 socket heads: use M3 × 10 thread-forming screws in the Ø2.6 pilots (or open them to Ø4.0 for M3 heat-set inserts). Only the stationary lugs touch the tray. Print plate-down, no supports.')
-for i,(x,y) in enumerate(TRAYH):   # M3 × 10 from the tray top, nyloc nut under the lid (z ZLID-4..ZLID)
-    add(f'lidar_tray_screw_{i}','LiDAR tray M3 × 10 screw and nyloc nut',union(cyl(x,y,ZLID-4,1.5,10),cyl(x,y,ZT0+3,2.8,2.8),cyl(x,y,ZLID-4,3.2,4)),'metal','H09','cover',allow=LID_IDS+('P_lidar_tray',),note='Nut and washer seat on solid lid material (outside the fan window).')
+TRAY_T=round(lug_z-ZT0,3)           # 3.8: the plate top is the lug seat
+assert TRAY_T>=3.0,TRAY_T
+# Jetson cooling (L2, task L). The 40 mm fan (z ZFAN_TOP-10..ZFAN_TOP) sits under the rear of the tray, and the robot centre (0, 0), where the
+# lid seams meet, lies INSIDE the fan footprint, so lid vent slots over the fan would cross the seams. The tray plate carries the grille instead
+# (GR_W slots on a 6.5 mm pitch inside r 17.5 about the fan centre, over the Ø34 fan bore) and, under it, the intake duct that seals the
+# fan's suction side from the warm body: a 1.3 mm wall ending SK_GAP above the fan frame, inside the fan screw heads (until task L this was
+# a skirt under the lid). Task L: the LD14 motor (Ø24.4, bottom rim 1.4 mm over the fan frame) straddles the fan's front face and covers
+# 2.8 mm of the bore's edge, so the duct takes it in: its outline is the r 17.5 window circle united with a circle 1.0 mm round the motor,
+# and beyond the fan's front face a bowl closes the duct under the motor. The bowl's faces slope at 42 deg from vertical (the tray prints
+# top face down, so they print without supports); its back wall stands SLOT_G in front of the fan's front face. The lid has one opening
+# round the duct. Air path: room air over the tray -> grille and the ring round the motor -> duct -> fan. Numbers: validation jetson_cooling.
+FW=(JFAN[0],JFAN[1],17.5)           # fan window (now the duct's circle about the fan centre): centre and radius (the E09 bore is r 17)
+SK_T,SK_GAP=1.3,0.9                 # duct wall and its gap to the fan top (0.9: the fan bypass keeps >= 1 % margin under its 25 % limit; feeler go 0.5 / no-go 1.0)
+SK_FEELER=(0.5,1.0)                 # duct-gap limits at assembly (go / no-go; task L checks them with modelling clay, the duct edge is out of a feeler's reach): >= 0.5 no contact, <= 1.0 inside the bypass limit
+ZSK=ZFAN_TOP+SK_GAP                 # duct wall bottom over the fan frame
+GR_W,GR_P,GR_N,GR_R=4.8,6.5,2,FW[2]   # slot width (task L: 4.8, was 4.5: 1.7 mm ribs give back the open area the rib round the motor hole takes), pitch, slots each side of the centre one, grille radius
+_mb=shapes['lidar_motor'].BoundingBox()
+MOT=((_mb.xmin+_mb.xmax)/2,(_mb.ymin+_mb.ymax)/2,(_mb.xmax-_mb.xmin)/2,_mb.zmin)   # LD14 motor axis (x, y), radius, lowest point (the hub, beyond the fan's front face)
+MOT_CLR,SLOT_G,DUCT_FIT,BOWL_T,BOWL_DEG,BOWL_FLOOR=1.0,0.5,0.3,1.2,42.0,6.0   # motor to every printed part; bowl back wall to the fan's front face; duct walls in the lid opening; bowl wall; bowl slope from vertical; bowl floor under its rim
+XFAN=JFAN[0]+20.0                   # the fan's front face (40 mm frame)
+R_MI=MOT[2]+MOT_CLR                 # duct circle round the motor (inner face)
+ZBOWL=MOT[3]-MOT_CLR                # bowl rim: 1.0 mm under the motor hub
+def dprism(dr,z0,h):return union(cyl(FW[0],FW[1],z0,FW[2]+dr,h),cyl(MOT[0],MOT[1],z0,R_MI+dr,h))
+def halfspace_above(px,pz,tilt):   # everything above the plane through (px, *, pz) that falls toward +x at tilt deg from horizontal
+    return box(0,0,0,600,600,300).rotate((0,0,0),(0,1,0),tilt).translate((px,0,pz))
+_m=1/math.tan(math.radians(BOWL_DEG));_tv=BOWL_T*math.hypot(1,_m)   # drop per mm across a 42 deg face; vertical thickness of the bowl wall
+_tilt=90-BOWL_DEG
+X_BI=XFAN+SLOT_G-(ZBOWL-_tv-ZFAN_TOP)/_m   # inner top edge of the bowl's back wall, so its outer face clears the fan's front face by SLOT_G at the frame top
+def bowl_region(dz,zf):   # air side of the bowl face (dz = 0) or of its outer face (dz = wall thickness): over the cone about the motor axis, over the back plane and over a flat floor at zf
+    za=ZBOWL-dz-R_MI*_m
+    return cq.Solid.makeCone(0,(ZT0-za)/_m,ZT0-za,cq.Vector(MOT[0],MOT[1],za)).intersect(halfspace_above(X_BI,ZBOWL-dz,_tilt)).intersect(box(MOT[0],MOT[1],zf,100,100,ZT0-zf))
+ZBF=ZBOWL-BOWL_FLOOR                # the bowl's flat floor (a short bridge in print: the two 42 deg faces would otherwise meet in a knife-thin crease)
+bowl=bowl_region(_tv,ZBF-BOWL_T).cut(bowl_region(0.,ZBF)).intersect(cyl(MOT[0],MOT[1],ZFAN_TOP-40,R_MI+SK_T,ZBOWL-ZFAN_TOP+40)).intersect(box(XFAN+SLOT_G+100,0,ZFAN_TOP-40,200,200,ZBOWL-ZFAN_TOP+40))
+duct=dprism(SK_T,ZSK,ZT0-ZSK+.5).cut(dprism(0.,ZSK-1,ZT0-ZSK+3))   # the duct wall down to SK_GAP over the fan frame
+duct=union(duct,dprism(SK_T,ZBOWL-.01,ZSK-ZBOWL+.02).cut(dprism(0.,ZBOWL-1,ZSK-ZBOWL+2)).intersect(box(XFAN+SLOT_G+100,0,ZBOWL-1,200,200,ZSK-ZBOWL+2)),bowl)   # beyond the fan's front face: down to the bowl rim
+# Fan screw heads the duct wall would pass within 0.5 mm of in plan: a radial notch lifts the wall over the head (0.5 mm above its top).
+DUCT_NOTCH=[]
+for j,(hx,hy) in enumerate(FSCREWS):
+    for (cx,cy,ri) in ((FW[0],FW[1],FW[2]),(MOT[0],MOT[1],R_MI)):
+        d_=math.hypot(hx-cx,hy-cy);ro=ri+SK_T;rh=FS_HEAD[0]+.5
+        if d_-ro>=rh or d_+rh<=ri:continue
+        ph=math.degrees(math.acos(max(-1,min(1,(ro*ro+d_*d_-rh*rh)/(2*ro*d_)))))+2.0;ps=math.degrees(math.atan2(hy-cy,hx-cx))
+        zt=ZFAN_TOP+FS_HEAD[1]+.5
+        _a=np.linspace(-ph,ph,7)
+        wedge=prism([(cx+(ri-.5)*math.cos(math.radians(ps+a)),cy+(ri-.5)*math.sin(math.radians(ps+a))) for a in _a]+[(cx+(ro+2)*math.cos(math.radians(ps+a)),cy+(ro+2)*math.sin(math.radians(ps+a))) for a in _a[::-1]],ZSK-1,zt-ZSK+1)
+        duct=duct.cut(wedge);DUCT_NOTCH.append(dict(fan_screw=j,centre=(cx,cy),half_angle_deg=round(ph,2),z_mm=round(zt,2),arc_mm=round(math.radians(2*ph)*ri,2)))
+TRAYF=round(max(x for x,y in LUGS)+11,1)   # tray front edge 11 mm ahead of the front lug; its rear edge stays at x -45 behind the fan
+tray=rounded((TRAYF-45)/2,0,ZT0,TRAYF+45,86,TRAY_T,8)
+tray=union(tray,duct)
+for x,y in TRAYH:tray=hole(tray,x,y,ZT0-1,1.7,TRAY_T+2)
+GRILLE=union(*[box(FW[0]+k*GR_P,FW[1],ZT0-1,GR_W,2*GR_R+2,TRAY_T+2) for k in range(-GR_N,GR_N+1)]).intersect(cyl(FW[0],FW[1],ZT0-1,GR_R,TRAY_T+2))
+GR_RIB=1.5                          # rib between the grille slots and the motor's hole (a slot edge running into the hole would leave a sliver of plate)
+tray=tray.cut(GRILLE.cut(cyl(MOT[0],MOT[1],ZT0-2,R_MI+GR_RIB,TRAY_T+4))).cut(cyl(MOT[0],MOT[1],ZT0-1,R_MI,TRAY_T+2))   # fan grille over the duct and the motor's way through the plate (its 1.0 mm ring is room air too)
+LD14_AP=(39.0,18.0,10,8)            # LD14 lead aperture in the lid (centre x, y, size x, y): just past the J28 plug's lead exit (task L: the plug sits 1.4 mm into the tray,
+                                    # so the lead drops straight down beside it); 2.9 mm inside the 37 deg lid seam, clear of its r 50 dovetail tab; the plug passes it at assembly
+# The LD14's circuit-board parts hang below its lug plane (to 1.9 mm under it: a second side-entry socket, chips, standoffs), so the plate has
+# one opening under them, >= MOT_CLR round every part that comes within MOT_CLR of the plate top, merged with the opening round the J28 plug and
+# the grommet lip (>= 1.1 mm round the lip). The lid under it is solid (except the grommeted lead aperture): room air only.
+_low=[b_ for b_ in (ldp(x_).BoundingBox() for x_ in LDS if abs(x_.Volume()-7932.7)>1 and abs(x_.Volume()-5523.7)>1)
+      if b_.zmin<lug_z+MOT_CLR and math.hypot((b_.xmin+b_.xmax)/2-MOT[0],(b_.ymin+b_.ymax)/2-MOT[1])>R_MI]   # (the motor's screw heads lie in its own hole)
+TRAY_LEAD=(math.floor(10*min([32.0]+[b.xmin-MOT_CLR for b in _low]))/10,math.floor(10*min([4.5]+[b.ymin-MOT_CLR for b in _low]))/10,math.ceil(10*max([46.0]+[b.xmax+MOT_CLR for b in _low]))/10,math.ceil(10*max([23.0]+[b.ymax+MOT_CLR for b in _low]))/10)   # (x0, y0, x1, y1), rounded outward
+assert TRAY_LEAD[0]>MOT[0]+R_MI+3 and TRAY_LEAD[2]<LUGS[0][0]-7 and max(abs(TRAY_LEAD[1]),abs(TRAY_LEAD[3]))<43-12,TRAY_LEAD   # clear of the motor hole and the front lug, side strips >= 12 mm
+tray=tray.cut(rounded((TRAY_LEAD[0]+TRAY_LEAD[2])/2,(TRAY_LEAD[1]+TRAY_LEAD[3])/2,ZT0-1,TRAY_LEAD[2]-TRAY_LEAD[0],TRAY_LEAD[3]-TRAY_LEAD[1],TRAY_T+2,3))
+for x,y in LUGS:tray=tray.cut(cyl(x,y,ZT0-1,INS_R,TRAY_T+2))   # Ø4.0 bores for the lug inserts (insert flush with the plate top, 0.8 mm open below it)
+add('P_lidar_tray','LD14 tray and fan intake duct on the lid',tray,'print','F01','cover',printable=True,print_flip=True,allow=LID_IDS,
+    note=f'{TRAYF+45:g} × 86 × {TRAY_T:g} mm plate on the lid top (x -45–{TRAYF:g}, z {ZT0:g}–{ZT0+TRAY_T:g}; four M3 holes at (-35, ±38) and ({TRAYH[2][0]:g}, ±35), M3 × 12 + nyloc nuts under the lid). '
+         f'Its flat top is the LD14 seat (task L: no towers, the LD14 sits 20 mm lower than in task F): the three lugs rest on it at z {lug_z:g}, front ({LUGS[0][0]:g}, 0) and tail ({LUGS[1][0]:g}, ±18), each on an M3 × 3 brass heat-set insert pressed flush into the plate top '
+         f'(Ø4.0 bore through the plate), with an M3 × 5 socket-head screw from above through the lug\'s Ø3.24 hole (its head sits in the lug\'s Ø5.96 counterbore; reachable from above with the LD14 fitted). Only the lugs touch the tray. '
+         f'Fan grille over the fan: {2*GR_N+1} × {GR_W} mm slots on a {GR_P} mm pitch inside r {GR_R:g} about the fan centre ({FW[0]:.1f}, {FW[1]:.1f}); {GR_P-GR_W:.1f} mm ribs, stopped {GR_RIB:g} mm short of the motor hole, open to the room above. '
+         f'Under the plate the intake duct ({SK_T} mm wall) passes the lid opening and ends {SK_GAP:g} mm over the fan frame (z {ZSK:.2f}), round the fan window circle and 1.0 mm round the LD14 motor, which drops into it through a Ø{2*R_MI:g} hole in the plate; '
+         f'beyond the fan\'s front face a bowl under the motor closes it ({BOWL_DEG:g}° faces, back wall {SLOT_G:g} mm in front of the fan). At assembly check the duct gap to the fan frame with modelling clay (BRINGUP section 10; the duct edge cannot be reached with a feeler): {SK_FEELER[0]}–{SK_FEELER[1]} mm '
+         f'(thinner: sand the duct end; thicker: shim the fan or the bypass limit is lost); check that light shows between the bowl and the fan\'s front face ({SLOT_G:g} mm), and that the LD14 motor keeps >= 0.5 mm over the fan frame (else 0.5 mm washers under the LD14 lugs, not under the tray). '
+         f'Opening {TRAY_LEAD[2]-TRAY_LEAD[0]:g} × {TRAY_LEAD[3]-TRAY_LEAD[1]:g} mm at x {TRAY_LEAD[0]:g}–{TRAY_LEAD[2]:g}, y {TRAY_LEAD[1]:g}–{TRAY_LEAD[3]:g} under the LD14\'s circuit board (its parts hang up to 1.9 mm below the lugs), round the J28 plug and the lead grommet; the lid under it is solid. '
+         f'Print top face down (STL bed-ready): the duct and bowl rise from the plate, no supports; the bowl\'s flat floor ({BOWL_FLOOR:g} mm under its rim) is a short bridge and its back-wall top edge a 24 mm bridge between the duct walls.')
+for i,(x,y) in enumerate(LUGS):
+    add(f'lidar_lug_insert_{i}','M3 × 3 brass heat-set insert (LD14 lug)',cyl(x,y,lug_z-INS_L,INS_R,INS_L).cut(cyl(x,y,lug_z-INS_L-1,1.5,INS_L+2)),'metal','H12','cover',check=True,allow=('P_lidar_tray','lidar'),
+        note='Pressed flush into the tray plate top with a soldering iron (tray on a flat plate, top face up); the LD14 lug sits on it and an M3 × 5 socket-head screw from above takes 3 mm of thread.')
+for i,(x,y) in enumerate(TRAYH):   # M3 × 12 from the tray top, nyloc nut under the lid (z ZLID-4..ZLID)
+    add(f'lidar_tray_screw_{i}','LiDAR tray M3 × 12 screw and nyloc nut',union(cyl(x,y,ZLID-5.2,1.5,12),cyl(x,y,ZT0+TRAY_T,2.8,2.8),cyl(x,y,ZLID-4,3.2,4)),'metal','H09','cover',allow=LID_IDS+('P_lidar_tray',),note='Nut and washer seat on solid lid material (outside the fan window).')
 add('lidar_adapter','Included D200 USB serial adapter allowance',box(15,-40,132-DZ,35,16,7),'pcb','E15','upper',check=True,note='CP2102 adapter shape and connector orientation provisional; inspect supplied kit.')
 clip=union(box(16,-40,ZLID-3,34,22,3),box(16,-50,ZLID-14,34,2,11),box(9.5,-30,ZLID-14,21,2,11))   # side rails beside the adapter; the -x end stays open for the mated USB socket
 add('P_lidar_adapter_clip','USB adapter clip beneath lid',clip,'print','F01','cover',printable=True,note='Secure below lid with two ties. Verify adapter fit; keep exposed contacts insulated.')
 add('J27_A','LiDAR extension USB-A plug (aft stack, upper port)',usbplug(U0,1),'black','C16','upper')
 add('J27_socket','LiDAR extension USB-A female allowance (mated on the adapter plug)',box(-13,-40,ZLID-10,22,17,10),'black','C16','upper',allow=('lidar_adapter',))
-add('J28','LD14 lead plug, 1.25 mm 4-pin, mated',box(*lxy(15.02,-13.3),LZ-9.4,6.8,5,3.2),'connector','E15','cover',note=f'Plugs along -y (the LD14 is turned round) into the side-entry socket under the LD14 PCB; the lead runs forward in the plenum and drops through the tray and lid openings at ({LD14_AP[0]:g}, {LD14_AP[1]:g}).')
+add('J28','LD14 lead plug, 1.25 mm 4-pin, mated',box(*lxy(15.02,-13.3),LZ-9.4,6.8,5,3.2),'connector','E15','cover',note=f'Plugs along -y (the LD14 is turned round) into the side-entry socket under the LD14 PCB; task L: the plug sits in the tray opening (its underside {ZT0+TRAY_T-(LZ-9.4):.1f} mm under the lug seat) and its lead turns straight down through the grommet in the lid aperture at ({LD14_AP[0]:g}, {LD14_AP[1]:g}). '
+    'Assembly: lead up through the lid aperture from below, grommet round it, plug it into the LD14 before the LD14 goes onto the tray, then feed the slack down through the grommet as the LD14 is set down.')
 
 # Round front bumper: two independently floating 90 deg arc halves about (0,0), outer shell R157.4, 2.4 mm wall (WALL2 above ZW2, 41 mm under the top: interlayer
 # strength for hits at the top rim) with a 6 mm 45 deg inner top rim (stiffening ring), z 18..ZB1 (2 mm under the lid; 98.5 in the low profile), full
@@ -1379,9 +1442,12 @@ for i,(x,y) in enumerate(LIDPOSTS):
     add(f'insert_lid_top_{i+1}','M3 × 3 brass heat-set insert (lid post top)',cyl(x,y,ZLID-INS_L,INS_R,INS_L).cut(cyl(x,y,ZLID-INS_L-1,1.5,INS_L+2)),'metal','H12','upper',check=True,allow=('P_lid_post_'+str(i+1),)+LID_IDS,
         note='Pressed flush into the post top with a soldering iron (post standing on a flat plate); the lid screw takes 3 mm of thread.')
 # Round cover matching the rear shell (R_RS), printed as four sectors: one disc would be 305 mm across (MK3S bed 250 x 210).
-# The seams radiate from the centre at LID_SEAMS (deg) and start at the central fan window (L2: the centre lies inside the fan footprint);
-# within R_KNEE of the window centre each seam turns radial to the window, so every sector meets the window and its skirt square-on (a seam
-# ray from (0, 0) would cut the window edge at 30 deg on two sectors: a sliver tip in print). Two dovetail tabs per seam (0.15 mm clearance, glue them with CA) and the LiDAR tray, which bridges the window, hold the sectors together.
+# The seams radiate from the centre at LID_SEAMS (deg) and start at the central opening round the tray's fan intake duct (L2: the centre lies
+# inside the fan footprint). The 120 and 215 deg seams meet its fan-window circle: within R_KNEE of the window centre they turn radial to it,
+# so those sectors meet the opening square-on (a seam ray from (0, 0) would cut that circle at 30 deg: a sliver tip in print). Task L: the
+# opening also takes the duct round the LD14 motor, which contains (0, 0), so the 37 and 300 deg seams run straight along their rays from it
+# (they meet its motor circle 24 and 36 deg from square). Two dovetail tabs per seam (0.15 mm clearance, glue them with CA) and the LiDAR tray,
+# which bridges the opening, hold the sectors together.
 LID_R=R_RS;LID_SEAMS=[37,120,215,300];LID_TABS=(50,95)   # inner tabs at r 50: beyond the 215 deg seam's knee (r 41.4 from the centre)
 lid=cyl(0,0,ZLID,LID_R,LID_T)   # task I: closed over the front bay too (the deck-era notch at x 88..rim, |y| <= 58 held the camera tower and guard, which task F removed)
 # Seam relief (task I): over the 7.5 mm bumper seam the closed rim (R152.5) would stand ahead of the seam backer (front face XSTEP), so a rod
@@ -1391,18 +1457,19 @@ lid=cyl(0,0,ZLID,LID_R,LID_T)   # task I: closed over the front bay too (the dec
 # stop clear of the lid. A pocket, not a slot: a slot that deep would open over the camera lens (the backer is only 1.8 mm thick).
 LID_SEAM_RELIEF=(round(XSTEP+BT*ft[0]-1.0,2),G+.75,1.5)   # (x where the pocket starts, half width, depth into the lid underside)
 lid=lid.cut(box((LID_SEAM_RELIEF[0]+LID_R+6)/2,0,ZLID-1,LID_R+6-LID_SEAM_RELIEF[0],2*LID_SEAM_RELIEF[1],1+LID_SEAM_RELIEF[2]))
-ZSK=ZFAN_TOP+SK_GAP                                    # fan skirt bottom: SK_GAP over the fan frame
-lid=union(lid,cyl(FW[0],FW[1],ZSK,FW[2]+SK_T,ZLID-ZSK+.01))   # fan skirt under the lid, r FW..FW+SK_T (clear of the fan screw heads)
-lid=lid.cut(cyl(FW[0],FW[1],ZSK-1,FW[2],ZLIDT-ZSK+2))   # Ø35 fan window over the Ø34 fan bore, through lid and skirt; the LiDAR tray grille closes it
+lid=lid.cut(dprism(SK_T+DUCT_FIT,ZLID-1,LID_T+2))   # task L: one opening round the tray's intake duct (its window and motor circles + the wall + 0.3 mm); the tray plate covers it (until task L: a Ø35 window with a skirt under the lid)
 lid=hole(lid,*TOG,ZLID-1,3.3,LID_T+4);lid=hole(lid,*ARM,ZLID-1,6.3,LID_T+4);lid=lid.cut(box(*MS,ZLID-1,13.2,20.4,LID_T+4)).cut(box(MS[0]-.75,MS[1],ZLID-1,15.7,24.4,2.5))   # switch cut-outs 0.3 mm per side over each body (PETG holes print undersize; ream to the datasheet panel cut-out); 1.5 mm relief pocket under the rocker (1.5 mm panel for its snap tabs)
 for x,y in LIDPOSTS+TRAYH:lid=hole(lid,x,y,ZLID-1,1.7,LID_T+4)
 lid=lid.cut(box(LD14_AP[0],LD14_AP[1],ZLID-1,LD14_AP[2],LD14_AP[3],LID_T+4))   # LD14 lead aperture under the tray opening (closed by P_ld14_grommet round the lead)
-R_KNEE=28.0   # each seam runs radially from the fan-window centre out to R_KNEE (so it meets the window and the skirt square-on), then along its ray from (0, 0)
+R_KNEE=28.0   # the 120 / 215 deg seams run radially from the fan-window centre out to R_KNEE (so they meet the opening square-on), then along their rays from (0, 0)
+KNEE_SEAMS=(120,215)   # the 37 / 300 deg seams start at (0, 0), inside the opening's motor circle, and run along their rays
 def seam_knee(a):   # the point of the ray from (0, 0) at angle a that lies R_KNEE from the window centre (the origin is inside the window)
     u=(math.cos(math.radians(a)),math.sin(math.radians(a)));uc=u[0]*FW[0]+u[1]*FW[1];t=uc+math.sqrt(uc*uc-FW[0]**2-FW[1]**2+R_KNEE**2);return (t*u[0],t*u[1])
-def lid_sector(a0,a1,r=LID_R+6):   # prism over the sector a0..a1 (deg, CCW), z ZSK-1..ZLIDT+4
-    n=max(4,int((a1-a0)/2));pts=[FW[:2],seam_knee(a0)]+[(r*math.cos(math.radians(a0+(a1-a0)*k/n)),r*math.sin(math.radians(a0+(a1-a0)*k/n))) for k in range(n+1)]+[seam_knee(a1)]
-    return cq.Workplane('XY').polyline(pts).close().extrude(ZLIDT+5-ZSK).translate((0,0,ZSK-1)).val()
+def seam_in(a):return [FW[:2],seam_knee(a)] if a % 360 in KNEE_SEAMS else [(0.,0.)]   # a seam's inner end(s), inside the opening
+def lid_sector(a0,a1,r=LID_R+6):   # prism over the sector a0..a1 (deg, CCW), z ZLID-1..ZLIDT+4
+    n=max(4,int((a1-a0)/2));pts=seam_in(a0)+[(r*math.cos(math.radians(a0+(a1-a0)*k/n)),r*math.sin(math.radians(a0+(a1-a0)*k/n))) for k in range(n+1)]+seam_in(a1)[::-1]
+    if pts[-1]==pts[0]:pts=pts[:-1]   # both seams start at (0, 0)
+    return cq.Workplane('XY').polyline(pts).close().extrude(LID_T+6).translate((0,0,ZLID-1)).val()
 def lid_tab(a,rc,c=0.):   # dovetail across the seam at angle a, centred at radius rc, protruding 5 mm into the CCW sector; c: clearance
     u=(math.cos(math.radians(a)),math.sin(math.radians(a)));nv=(-u[1],u[0]);P=lambda sv,t:(sv*u[0]+t*nv[0],sv*u[1]+t*nv[1])
     pts=[P(rc-3-c,-1),P(rc+3+c,-1),P(rc+3+c,0),P(rc+4.5+c,5+c),P(rc-4.5-c,5+c),P(rc-3-c,0)]
@@ -1416,14 +1483,14 @@ for k,(a0,a1) in enumerate(spans):
     mid=(a0+a1)/2
     add(LID_IDS[k],f'Round cover sector {k+1} of 4 ({a0 % 360:.0f}–{a1:.0f} deg)',tidy(piece),'cover','F01','cover',printable=True,print_rot_z=-mid,print_flip=True,
         note=f'Round removable cover (R{LID_R:g}, z {ZLID:g}–{ZLIDT:g}, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. '
-             f'Seams at 37/120/215/300 deg from the centre; inside r {R_KNEE:g} of the central Ø{2*FW[2]:g} fan window they turn radial to it (the window is closed by the LiDAR tray grille). '
-             f'Under the lid a {SK_T} mm skirt round the window ends {SK_GAP:g} mm above the fan frame (z {ZSK:.2f}–{ZLID:g}, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: '
-             f'at assembly check the gap to the fan frame with feelers: {SK_FEELER[0]} mm must pass (sand the skirt end if it touches), {SK_FEELER[1]} mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r {LID_TABS[0]} and {LID_TABS[1]} (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; '
+             f'Seams at 37/120/215/300 deg from the centre. The sectors meet round one central opening for the LiDAR tray\'s fan intake duct (task L: the duct and the LD14 motor in it pass through; {DUCT_FIT:g} mm round the duct wall); '
+             f'the 120 and 215 deg seams turn radial to its fan-window circle inside r {R_KNEE:g} of the fan centre, the 37 and 300 deg seams meet its motor circle along their rays. The tray plate covers the opening. '
+             f'Two dovetails per seam at r {LID_TABS[0]} and {LID_TABS[1]} (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; '
              'the LiDAR tray and the four lid posts (one M3 × 6 screw into the insert in each post top) also tie the sectors. '
              f'The front sector covers the front bay (task I); over the bumper seam a {2*LID_SEAM_RELIEF[1]:g} mm wide, {LID_SEAM_RELIEF[2]:g} mm deep pocket in its underside runs from the rim back to x {LID_SEAM_RELIEF[0]:g}, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. '
-             'The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.')
-# LD14 lead grommet (deferred L2 item): the lid aperture would let warm body air out under the LD14, beside the fan grille's intake (about 140 mm2
-# against the 25 % bypass limit of the grille), so a printed grommet fills it round the lead: a body in the aperture (GROM clr a side), a lip on the
+             'The STL is written bed-ready: top face down on the bed, no supports.')
+# LD14 lead grommet (deferred L2 item): the lid aperture would let warm body air out under the LD14, beside the fan grille's intake (80 mm2 since
+# task L, against the 25 % bypass limit of the grille), so a printed grommet fills it round the lead: a body in the aperture (GROM clr a side), a lip on the
 # lid top over the aperture's x sides, a hole snug on the Ø2.4 lead and a slit to fit it round the lead (the J28 plug cannot pass). Its residual
 # leak (validation jetson_cooling.fan_skirt.ld14_aperture_leak_mm2) is counted in the bypass term.
 GROM=dict(clr=.1,hole_d=2.6,slit=.6,lip=1.4,lip_over=.8,z0=1.2)   # z0: the body starts 1.2 mm over the lid underside
@@ -1462,7 +1529,7 @@ for i,(x,y) in enumerate(CLIFF_IDS):   # rear pair to the rear connector row (J6
 wire('W16','Pico USB cable (left stack → Pico on the bay board)',[(XE-1,P_PICO[1],P_PICO[2]),(XE+4.5,P_PICO[1],P_PICO[2]),(XE+4.5,58,64),(25,58,64),(25,97,60),(USB_FACE[0],97,58),(USB_FACE[0],97,USB_FACE[2]),(USB_FACE[0],USB_FACE[1]+PICO_PLUG[1]-1,USB_FACE[2])],2,'usb','C02','upper')   # round the carrier's left side and over the left motor, into the micro-B plug along -y
 wire('W17','Single-camera USB cable',[(XE-1,P_CAM[1],P_CAM[2]),(XE+3.5,P_CAM[1],P_CAM[2]),(88,-10,66),(110,-12,CH-2),(XPCB-13,-12,CH-2)],2,'usb','C01','camera')   # task F: forward from the plug, rising gently under the camera mount crossbar into the USB-C plug behind the camera
 wire('W19','LiDAR USB extension',[(XE-1,P_LIDAR[1],P_LIDAR[2]),(XE+3.5,P_LIDAR[1],P_LIDAR[2]),(82,-24,80),(60,-62,84),(-35,-62,86),(-35,-40,ZLID-9),(-22,-40,ZLID-6)],2,'usb','C16','upper')   # over the right motor lane, outside the carrier edge; passes 3 mm under the tray nut at (-35,-38)
-wire('W20','LiDAR matched replacement / extension lead',[(28,-40,136-DZ),(30,-28,136-DZ),(LD14_AP[0],LD14_AP[1],139-DZ),(LD14_AP[0],LD14_AP[1],ZLID+LID_T/2),(LD14_AP[0],LD14_AP[1],152-DZ),(*lxy(15,-19.5),163-DZ),(*lxy(15,-16),LZ-7.8)],1.2,'signal','C17','cover')   # task F: up through the lid aperture, then back in the plenum to the turned-round LD14's socket
+wire('W20','LiDAR matched replacement / extension lead',[(28,-40,136-DZ),(30,-28,136-DZ),(33,4,ZLID-5.5),(LD14_AP[0],LD14_AP[1],ZLID-4),(LD14_AP[0],LD14_AP[1],ZLID+LID_T/2),(LD14_AP[0],LD14_AP[1],ZLIDT+GROM['lip']),(*lxy(15,-16),LZ-7.8)],1.2,'signal','C17','cover')   # task L: forward under the lid, straight up through the grommet beside the J28 plug and into its lead exit
 wire('W02','Master rocker pair (J2, bay board rear edge ↔ lid rocker)',[(MS[0],5,ZLIDT-25),(MS[0],12,ZLIDT-29.5),(-67,12,ZLIDT-29.5),(-67,BAY_CONN['J2'][1],56),bc('J2')],2,'power','C10','cover')   # over the pack top beside the Tamiya pair, then down the x -67 lane onto the rear edge
 wire('W14','Motor-toggle loop (J13, bay board rear edge ↔ lid toggle)',[(TOG[0],TOG[1],ZLID-15),(TOG[0],TOG[1],ZLID-22),(-66,62,68),bc('J13')],1.2,'signal','C08','cover')
 _j1y=(BCONN['J1']['body_xy'][1],BCONN['J1']['body_xy'][3])   # B12a: past J1's XT30 (mated top z 59) at x -57.5, between its plug and F2
@@ -2228,9 +2295,13 @@ for i in MESH:
         r=np.hypot(P[:,0]-LX_,P[:,1]).max()
         if r>30.2:band.append(dict(part=i,max_r_from_spin_axis_mm=round(float(r),2)))
 ldall=cq.Compound.makeCompound([ldp(x) for x in LDS if abs(x.Volume()-7932.7)>1]+[shapes['lidar_turret']])
+def _ldgap(a,b):   # task L: OCC's distance returns 0 for a threaded STEP screw (spline faces) of the LD14 motor that does not touch the tray; then use its bounding box (a lower bound)
+    d=a.distance(b)
+    if d<1e-6 and a.intersect(b).Volume()<1e-6:bb=b.BoundingBox();d=a.distance(box((bb.xmin+bb.xmax)/2,(bb.ymin+bb.ymax)/2,bb.zmin,bb.xlen,bb.ylen,bb.zlen))
+    return d
 lidar_check=dict(optical_plane_z_mm=LH_,step_window_band_z=[8.41,16.0],placement_offset_mm=[LX,0,round(LZ,2)],rotation_deg=LYAW,
     lug_underside_z_mm=round(lug_z,2),tray_overlap_with_lidar_mm3=round(shapes['P_lidar_tray'].intersect(cq.Compound.makeCompound([ldall,shapes['lidar']])).Volume(),3),
-    tray_gap_to_non_lug_lidar_parts_mm=round(shapes['P_lidar_tray'].distance(ldall),2),tray_gap_to_motor_mm=round(shapes['P_lidar_tray'].distance(shapes['lidar_motor']),2),
+    tray_gap_to_non_lug_lidar_parts_mm=round(min(_ldgap(shapes['P_lidar_tray'],x_) for x_ in ldall.Solids()),2),tray_gap_to_motor_mm=round(shapes['P_lidar_tray'].distance(shapes['lidar_motor']),2),
     lead_gap_to_turret_mm=round(shapes['W20'].distance(shapes['lidar_turret']),2),parts_in_scan_band=band,
     method=f'Triangle samples of every part except the rotating turret, cap and windows, in z {LH_-4:g}..{LH_+4:g}, outside r 30.2 about the spin axis.')
 tf=[]
@@ -2250,26 +2321,27 @@ _fg=min((round(shapes[n].distance(SKIN_),2),n) for n in ('lidar','lidar_motor','
 lidar_check['front_gap']=dict(required_mm=10.0,gap_to_skin_mm=_fg[0],nearest_part=_fg[1],ok=_fg[0]>=10.0,
     rule='every LD14 part (housing, motor, turret, connector) stays >= 10 mm inside the bumper skin R_SKIN')
 _bt=max(shapes[i].BoundingBox().zmax for i in ('P_bumper_left','P_bumper_right'))
-lidar_check['scan_band_vertical']=dict(band_z_mm=[LH_-4,LH_+4],lid_top_z_mm=ZLIDT,bumper_top_z_mm=round(_bt,2),tray_plate_top_z_mm=ZT0+3,
+lidar_check['scan_band_vertical']=dict(band_z_mm=[LH_-4,LH_+4],lid_top_z_mm=ZLIDT,bumper_top_z_mm=round(_bt,2),tray_plate_top_z_mm=ZT0+TRAY_T,
     band_above_lid_mm=round(LH_-4-ZLIDT,2),band_above_bumper_mm=round(LH_-4-_bt,2),ok=LH_-4-ZLIDT>=20 and LH_-4-_bt>=20)
-# Jetson cooling (L2): lid underside >= fan top + 5 mm; a Ø35 lid window over the fan bore, closed by the tray grille; room air over the tray
-# feeds the grille (task F: the LD14 stands ahead of the fan, nothing over the grille). Areas from a 0.25 mm plan grid over the fan bore (annulus r 7..17
-# of the E09 model), cross-checked with the built tray: open area = (bore annulus through the 3 mm plate - tray material in it) / 3.
-# Bypass: the skirt under the lid round the window ends SK_GAP over the fan frame; air from inside the body can only reach the window through
-# that gap, so its narrowest section is the gap times the skirt's inner circumference (the skirt lies on the frame land, r 17..20). Measured
-# on the built lid: skirt bottom, an unbroken skirt section, and its clearance to the fan screw heads.
+# Jetson cooling (L2, task L): lid underside >= fan top + 5 mm; the LiDAR tray's intake duct encloses the fan bore (its fan-window circle r 17.5)
+# and the LD14 motor; room air over the tray feeds the grille and the 1.0 mm ring round the motor. Areas from a 0.25 mm plan grid over the fan bore
+# (annulus r 7..17 of the E09 model), cross-checked with the built tray: open area = (bore annulus through the plate - tray material in it) / plate.
+# Bypass (warm body air reaching the fan's suction side), measured on the built tray: along the duct's inner outline over the fan frame the wall
+# ends SK_GAP over the frame (gap x outline length); where a fan screw head forced a notch, the notch height x its arc; beyond the fan's front face
+# the bowl closes the duct and only the SLOT_G slot between its back wall and the fan's front face is open below (gap x the duct's width there);
+# plus the LD14 lead aperture round its grommet. Until task L the duct was a skirt under the lid round the window alone.
 FB=(17.0,7.0)
 gx,gy=np.meshgrid(np.arange(-21,21.001,.25),np.arange(-21,21.001,.25));GX,GY=FW[0]+gx,FW[1]+gy;GR=np.hypot(gx,gy);CELL=.25**2
 inbore=(GR<=FB[0])&(GR>=FB[1]);slot=np.zeros_like(GR,bool)
 for k in range(-GR_N,GR_N+1):slot|=np.abs(GX-(FW[0]+k*GR_P))<=GR_W/2
-gopen=inbore&slot&(GR<=GR_R)
-# Task I: the plan shadow over the grille of every part above the tray plate (the turned-round LD14's motor end overhangs the window's front
-# edge), from the mesh triangles, with the lowest overhanging surface over the open slots. The gate counts shadowed slots as closed; the
-# side-entry curtain (clear height under the overhang × the shadow's width across the window) shows how freely they still draw room air.
+_dm=np.hypot(GX-MOT[0],GY-MOT[1]);gopen=inbore&((slot&(GR<=GR_R)&(_dm>R_MI+GR_RIB))|(_dm<=R_MI))   # grille slots (stopped GR_RIB short of the motor's hole) and that hole
+# Plan shadow over the bore of every part above the fan top (tray, lid, fan and its screws excluded): task I's overhang of the turned-round
+# LD14, and since task L the motor itself, which hangs in the duct 1.4 mm over the bore's front edge. The gate counts shadowed open cells as
+# closed; the side-entry curtain (clear height over the fan frame under the overhang × the shadow's width) is reported.
 under=np.zeros(GX.shape,bool);ZUN=np.full(GX.shape,np.inf);_ov=[]
 for i in MESH:
-    if i in ('P_lidar_tray',)+LID_IDS:continue
-    T=MESH[i][MESHF[i]];T=T[(T[:,:,2].min(1)>=ZT0+3)&(T[:,:,0].min(1)<=GX.max())&(T[:,:,0].max(1)>=GX.min())&(T[:,:,1].min(1)<=GY.max())&(T[:,:,1].max(1)>=GY.min())]
+    if i in ('P_lidar_tray','fan')+LID_IDS or i.startswith('fan_screw'):continue
+    T=MESH[i][MESHF[i]];T=T[(T[:,:,2].min(1)>=ZFAN_TOP)&(T[:,:,0].min(1)<=GX.max())&(T[:,:,0].max(1)>=GX.min())&(T[:,:,1].min(1)<=GY.max())&(T[:,:,1].max(1)>=GY.min())]
     for t in T:
         (x0,y0,z0),(x1,y1,z1),(x2,y2,z2)=t;d=(y1-y2)*(x0-x2)+(x2-x1)*(y0-y2)
         if abs(d)<1e-9:continue
@@ -2280,44 +2352,65 @@ for i in MESH:
         k=np.flatnonzero(m.ravel())[h];under.flat[k]=True;ZUN.flat[k]=np.minimum(ZUN.flat[k],(a*z0+b*z1+c*z2)[h])
         if i not in _ov:_ov.append(i)
 A_bore=float(inbore.sum()*CELL);A_open=float(gopen.sum()*CELL);A_shad=float((gopen&under).sum()*CELL)
-_sh=under&(GR<=FW[2]);H_UN=float(ZUN[gopen&under].min()-(ZT0+3)) if A_shad else None;W_UN=float(GY[_sh].max()-GY[_sh].min()+.25) if _sh.any() else 0.
+_sh=under&(GR<=FW[2]);H_UN=float(ZUN[gopen&under].min()-ZFAN_TOP) if A_shad else None;W_UN=float(GY[_sh].max()-GY[_sh].min()+.25) if _sh.any() else 0.
 A_curt=round(H_UN*W_UN,1) if A_shad else None
-ANN=cyl(FW[0],FW[1],ZT0,FB[0],3).cut(cyl(FW[0],FW[1],ZT0-1,FB[1],5));A_open_cad=(ANN.Volume()-ANN.intersect(shapes['P_lidar_tray']).Volume())/3
-LIDS_=[shapes[i] for i in LID_IDS];ZSK_=min(v.Z for q in LIDS_ for v in q.Vertices());GAP_=min(q.distance(shapes['fan']) for q in LIDS_)   # exact (bounding boxes are padded)
-SKSEC=sum(q.intersect(cyl(FW[0],FW[1],(ZSK_+ZLID)/2-.25,25,.5)).Volume() for q in LIDS_)/.5;SKSEC0=math.pi*((FW[2]+SK_T)**2-FW[2]**2)
-A_skirt=GAP_*2*math.pi*FW[2]
+ANN=cyl(FW[0],FW[1],ZT0,FB[0],TRAY_T).cut(cyl(FW[0],FW[1],ZT0-1,FB[1],TRAY_T+2));A_open_cad=(ANN.Volume()-ANN.intersect(shapes['P_lidar_tray']).Volume())/TRAY_T
+TRAY_=shapes['P_lidar_tray'];_rear=TRAY_.intersect(box(XFAN-100,0,ZFAN_TOP-50,200,200,ZT0-ZFAN_TOP+50));_front=TRAY_.intersect(box(XFAN+100,0,ZFAN_TOP-50,200,200,ZT0-ZFAN_TOP+50))
+ZSK_=min(v.Z for v in _rear.Vertices());GAP_=_rear.distance(shapes['fan']);GAP_SLOT=_front.distance(shapes['fan'])   # duct wall over the fan frame; bowl back wall (exact distances: bounding boxes are padded)
+_zm=(ZSK_+ZLID)/2;SKSEC=TRAY_.intersect(dprism(SK_T+.5,_zm-.25,.5)).Volume()/.5;SKSEC0=dprism(SK_T,0,1).cut(dprism(0.,-1,3)).Volume()   # duct section at mid-height vs the unbroken outline
+FSG=min(TRAY_.distance(shapes[f'fan_screw_{j}']) for j in range(len(FSCREWS)))
+MGAP=shapes['lidar_motor'].distance(shapes['fan'])
+def _outline_len():   # the duct's inner outline over the fan frame (x <= XFAN), without the notched arcs
+    L=0.;st=.05
+    for (cx,cy,ri),(ox,oy,orr) in (((FW[0],FW[1],FW[2]),(MOT[0],MOT[1],R_MI)),((MOT[0],MOT[1],R_MI),(FW[0],FW[1],FW[2]))):
+        for a in np.arange(0,360,st):
+            px,py=cx+ri*math.cos(math.radians(a)),cy+ri*math.sin(math.radians(a))
+            if px>XFAN or math.hypot(px-ox,py-oy)<orr:continue
+            if any((cx,cy)==tuple(n_['centre']) and abs((a-math.degrees(math.atan2(FSCREWS[n_['fan_screw']][1]-cy,FSCREWS[n_['fan_screw']][0]-cx))+180)%360-180)<=n_['half_angle_deg'] for n_ in DUCT_NOTCH):continue
+            L+=math.radians(st)*ri
+    return L
+L_WALL=_outline_len();A_wall=GAP_*L_WALL
+A_notch=sum((n_['z_mm']-ZFAN_TOP)*n_['arc_mm'] for n_ in DUCT_NOTCH)
+_xs=XFAN+SLOT_G/2;L_SLOT=2*math.sqrt((R_MI+SK_T)**2-(_xs-MOT[0])**2);A_slot=GAP_SLOT*L_SLOT
 _GS=shapes['P_ld14_grommet'].intersect(box(LD14_AP[0],LD14_AP[1],ZLID+LID_T/2-.25,LD14_AP[2]+4,LD14_AP[3]+4,.5)).Volume()/.5   # grommet section at mid-lid
 A_ld14=round(LD14_AP[2]*LD14_AP[3]-_GS-math.pi*1.2**2,2)   # open area left in the aperture: round the lead, the slit, the side clearances
-A_byp=A_skirt+A_ld14;FSG=min(q.distance(shapes[f'fan_screw_{j}']) for q in LIDS_ for j in range(len(FSCREWS)))
+A_byp=A_wall+A_notch+A_slot+A_ld14
 _ldw=min(shapes[n].distance(cyl(FW[0],FW[1],ZT0,GR_R,60)) for n in ('lidar','lidar_motor','lidar_turret'))   # plan gap from the LD14 to the column over the grille
 # Exhaust (task I, the lid closed over the front bay): the warm air leaves under the lid rim through the ring gap over the bumper and
 # rear-shell tops; its narrowest section is the gap times the circumference at the rear-shell rim's inner edge (the smaller of the two rims).
 _rtop=max(float(MESH[i][:,2].max()) for i in ('P_bumper_left','P_bumper_right','P_rear_shell_left','P_rear_shell_right'))
 EX_GAP=round(ZLID-_rtop,2);EX_R=R_RS-RWALL-10;A_ex=round(EX_GAP*2*math.pi*EX_R,1)
 jetson_cooling=dict(fan_top_z_mm=round(ZFAN_TOP,2),lid_underside_z_mm=ZLID,lid_top_z_mm=ZLIDT,air_gap_fan_to_lid_mm=round(ZLID-ZFAN_TOP,2),required_air_gap_mm=AIRGAP,
-    air_gap_fan_to_tray_grille_mm=round(ZT0-ZFAN_TOP,2),lid_fan_window=dict(centre_mm=[round(FW[0],2),round(FW[1],2)],diameter_mm=2*FW[2],area_mm2=round(math.pi*FW[2]**2)),
-    grille=dict(slots=f'{2*GR_N+1} × {GR_W} mm on a {GR_P} mm pitch inside r {GR_R:g}, no hub (task F: no lug tower over the fan)',fan_bore_annulus_mm2=round(A_bore),open_area_over_bore_mm2=round(A_open),open_area_cad_mm2=round(A_open_cad),
+    air_gap_fan_to_tray_grille_mm=round(ZT0-ZFAN_TOP,2),lid_fan_window=dict(centre_mm=[round(FW[0],2),round(FW[1],2)],diameter_mm=2*FW[2],area_mm2=round(math.pi*FW[2]**2),
+        note=f'Task L: the fan-window circle is the tray duct\'s circle about the fan centre; the lid has one opening round the whole duct (the window and motor circles + the {SK_T} mm wall + {DUCT_FIT} mm).'),
+    grille=dict(slots=f'{2*GR_N+1} × {GR_W} mm on a {GR_P} mm pitch inside r {GR_R:g}, no hub (task F: no lug tower over the fan); task L: the LD14 motor drops through a Ø{2*R_MI:g} hole in the plate, its 1.0 mm ring is open to the room',
+        fan_bore_annulus_mm2=round(A_bore),open_area_over_bore_mm2=round(A_open),open_area_cad_mm2=round(A_open_cad),
         open_fraction_of_bore=round(A_open/A_bore,3),open_area_shadowed_in_plan_mm2=round(A_shad,1),open_area_not_shadowed_mm2=round(A_open-A_shad),
         open_fraction_of_bore_not_shadowed=round((A_open-A_shad)/A_bore,3),bore_fraction_shadowed_in_plan=round(float((inbore&under).sum()/inbore.sum()),3)),
-    intake=dict(over_grille=f'open room air: the turned-round LD14 stands ahead of the fan window (task F); its motor end overhangs the grille\'s front edge by {FW[0]+FW[2]-float(GX[_sh].min())+.125:.1f} mm, '
-                            f'{H_UN:.1f} mm above the plate, shadowing {A_shad:.0f} mm2 ({A_shad/A_open:.1%}) of the open slots in plan. The gate counts that shadow as closed; '
-                            f'those slots still draw room air sideways under the overhang through a curtain about {A_curt:.0f} mm2 ({H_UN:.1f} mm clear × {W_UN:.1f} mm across the window), {A_curt/A_shad:.0f} × their own area, so the overhang does not throttle the intake.'
-                            if A_shad else 'open room air: nothing above the tray plate overhangs the grille in plan',
+    intake=dict(over_grille=f'Room air through the grille and the 1.0 mm ring round the LD14 motor. Task L: the motor hangs in the intake duct, its rim {MGAP:.1f} mm over the fan frame, and covers the bore\'s front edge: '
+                            f'{A_shad:.0f} mm2 ({A_shad/A_open:.1%}) of the open area over the bore lies under it in plan (the LD14 housing and motor together). The gate counts that shadow as closed; '
+                            f'those cells still draw air sideways from inside the duct under the motor through a curtain about {A_curt:.0f} mm2 ({H_UN:.1f} mm clear over the fan frame × {W_UN:.1f} mm across the window).'
+                            if A_shad else 'open room air: nothing above the fan overhangs the bore in plan',
                 lidar_gap_to_column_over_grille_mm=round(_ldw,2),parts_over_grille=_ov,clear_height_under_overhang_mm=round(H_UN,2) if A_shad else None,
-                shadow_width_across_window_mm=round(W_UN,2),side_entry_curtain_mm2=A_curt,
-                method='plan shadow of the mesh triangles of every part above the tray plate top (tray and lid excluded) on the 0.25 mm grille grid; clear height = lowest overhanging surface over a shadowed open slot minus the plate top'),
-    fan_skirt=dict(inner_r_mm=FW[2],wall_mm=SK_T,bottom_z_mm=round(ZSK_,2),gap_to_fan_frame_mm=round(GAP_,2),section_area_mm2=round(SKSEC,1),section_area_unbroken_mm2=round(SKSEC0,1),
-        clearance_to_fan_screw_heads_mm=round(FSG,2),bypass_area_skirt_mm2=round(A_skirt,1),ld14_aperture_leak_mm2=A_ld14,ld14_aperture_open_without_grommet_mm2=LD14_AP[2]*LD14_AP[3],bypass_area_mm2=round(A_byp,1),bypass_fraction_of_grille_open_area=round(A_byp/A_open_cad,3),bypass_limit_fraction=.25,
-        feeler_go_nogo_mm=list(SK_FEELER),gap_at_bypass_limit_mm=round((.25*A_open_cad-A_ld14)/(2*math.pi*FW[2]),2),bypass_margin_fraction=round(.25-A_byp/A_open_cad,3),
-        rule='bypass (gap × skirt inner circumference + the LD14 lead aperture left open round its grommet) <= 25 % of the grille open area over the bore (CAD), with >= 1 % margin; the no-go feeler is under the gap at the limit; skirt unbroken (section within 1 %); >= 0.5 mm to the fan screw heads; window >= the fan bore'),
+                shadow_width_across_window_mm=round(W_UN,2),side_entry_curtain_mm2=A_curt,ld14_motor_gap_to_fan_mm=round(MGAP,2),
+                method='plan shadow of the mesh triangles of every part above the fan top (tray, lid, fan and fan screws excluded) on the 0.25 mm grid over the bore; clear height = lowest overhanging surface over a shadowed open cell minus the fan top'),
+    fan_skirt=dict(kind=f'intake duct under the LiDAR tray (task L; until then a skirt under the lid round the window): its fan-window circle r {FW[2]:g} and a circle r {R_MI:g} round the LD14 motor, {SK_T} mm wall; a bowl under the motor beyond the fan\'s front face',
+        inner_r_mm=FW[2],wall_mm=SK_T,bottom_z_mm=round(ZSK_,2),gap_to_fan_frame_mm=round(GAP_,2),section_area_mm2=round(SKSEC,1),section_area_unbroken_mm2=round(SKSEC0,1),
+        clearance_to_fan_screw_heads_mm=round(FSG,2),notches_over_fan_screw_heads=DUCT_NOTCH,
+        wall_outline_over_frame_mm=round(L_WALL,1),bypass_area_skirt_mm2=round(A_wall,1),bypass_area_notches_mm2=round(A_notch,1),
+        bowl_slot=dict(gap_to_fan_front_face_mm=round(GAP_SLOT,2),width_mm=round(L_SLOT,1),area_mm2=round(A_slot,1),rule=f'the bowl\'s back wall stays >= {SLOT_G} mm in front of the fan\'s front face'),
+        ld14_aperture_leak_mm2=A_ld14,ld14_aperture_open_without_grommet_mm2=LD14_AP[2]*LD14_AP[3],bypass_area_mm2=round(A_byp,1),bypass_fraction_of_grille_open_area=round(A_byp/A_open_cad,3),bypass_limit_fraction=.25,
+        feeler_go_nogo_mm=list(SK_FEELER),gap_at_bypass_limit_mm=round((.25*A_open_cad-(A_byp-A_wall))/L_WALL,2),bypass_margin_fraction=round(.25-A_byp/A_open_cad,3),
+        rule='bypass (wall gap × the duct\'s inner outline over the fan frame + the notches + the bowl slot + the LD14 lead aperture left open round its grommet) <= 25 % of the grille open area over the bore (CAD), with >= 1 % margin; the no-go feeler is under the gap at the limit; duct unbroken (section within 1 %); >= 0.5 mm to the fan screw heads and the fan\'s front face; the duct circle >= the fan bore; the LD14 motor >= 1.0 mm from the fan'),
     bring_up_test='Lid-on load test before the robot is used: lid, LiDAR and tray fitted, sustained full CPU + GPU load for 20 min, log tegrastats (CPU/GPU/SoC temperatures and clocks) and compare with a lid-off run; the lid passes if the clocks never throttle. Carry into pcb/BRINGUP.md (L11).',
     exhaust=dict(path=f'The fan blows down through the heatsink fins; the warm air leaves the body through the {EX_GAP:g} mm ring gap between the bumper / rear-shell tops and the lid underside, the 7.5 mm bumper seam and the open ring between the base edge and the shells. '
                       'Task I closed the lid over the front bay (until then an open notch of about 7050 mm2, left from the old camera tower): the ring gap alone stays several times the grille\'s open area.',
         ring_gap_mm=EX_GAP,ring_gap_section_mm2=A_ex,ring_gap_section_radius_mm=EX_R,ring_gap_to_grille_open_area=round(A_ex/A_open_cad,2),
         rule='the ring gap section (gap × circumference at the rear-shell rim\'s inner edge) >= 2 × the grille open area (CAD); the seam, the camera window and the base ring are extra'),
-    choice='The lid seams all meet near the centre (0, 0), which lies inside the fan footprint, so slots in the lid over the fan would cross them; so the grille is in the tray plate over a lid window (task F: with the LD14 turned round ahead of the fan, room air reaches the grille directly). The skirt closes the 5.2 mm gap between the fan top and the lid, which would otherwise be a ~670 mm2 side inlet from inside the warm body.')
+    choice='The lid seams all meet near the centre (0, 0), which lies inside the fan footprint, so slots in the lid over the fan would cross them; so the grille is in the tray plate over the fan. The duct closes the 5.2 mm gap between the fan top and the lid, which would otherwise be a ~670 mm2 side inlet from inside the warm body. '
+           'Task L: the lowered LD14\'s motor straddles the fan\'s front face, so the duct moved from the lid to the tray (one printed part, no joint) and takes the motor in, with a bowl under it beyond the fan.')
 jetson_cooling['ok']=(jetson_cooling['air_gap_fan_to_lid_mm']>=AIRGAP and FB[0]<FW[2] and (A_open-A_shad)/A_bore>=.5 and abs(A_open-A_open_cad)<=.05*A_bore and A_ex>=2*A_open_cad
-    and A_byp<=.24*A_open_cad and SK_FEELER[1]<=(.25*A_open_cad-A_ld14)/(2*math.pi*FW[2]) and abs(SKSEC-SKSEC0)<=.01*SKSEC0 and FSG>=.5)
+    and A_byp<=.24*A_open_cad and SK_FEELER[1]<=(.25*A_open_cad-(A_byp-A_wall))/L_WALL and abs(SKSEC-SKSEC0)<=.01*SKSEC0 and FSG>=.5 and GAP_SLOT>=SLOT_G-.01 and MGAP>=1.0)
 # Lid switches: each hangs inside the lid over the pack; gaps to the battery top, the Tamiya pair and the bay board modules.
 lid_switches={}
 for i in ('master_switch','motor_switch','arm_button'):
@@ -2695,7 +2788,8 @@ BP['H11']['notes']=(f'Radial dowels through the rear-shell lap joint at 180° (a
     'pressed in from outside to 0.1 mm under the shell surface (validation.json rear_shell.dowels; lap radial clearance 0.4 mm); teardrop holes print without support. Ream to size if the print is tight.')
 BP['H12']['item']='M3 brass heat-set inserts, 3 mm long (for Ø4.0 mm holes)'
 BP['H12']['notes']=('Pressed into Ø4.0 through holes in the 4 mm P_base with a soldering iron, flush with the face the screw enters, with the plate on a flat steel backing plate: the last 1 mm of each hole stays open and takes the displaced PETG (deburr or countersink the far face afterwards). '
-    'From the top for the four bay-board spacers, four battery-tray corners and the eight lid-post foot screws; from below for the three caster screws; plus one pressed flush into the top of each of the four lid posts (lid screws). Buy a pack of 50 (spares for the coupon). Follow the insert maker\'s hole size if it differs from Ø4.0.')
+    'From the top for the four bay-board spacers, four battery-tray corners and the eight lid-post foot screws; from below for the three caster screws; plus one pressed flush into the top of each of the four lid posts (lid screws) '
+    'and three pressed flush into the LiDAR tray\'s plate top under the LD14 lugs (task L; the tray\'s 3.8 mm plate is too thin for thread-forming screws). Buy a pack of 50 (spares for the coupon). Follow the insert maker\'s hole size if it differs from Ø4.0.')
 BP['H13']['notes']=('Into the H12 inserts (3 mm of thread in each, validation.json blind_pilots): four M3 × 8 pan head (bay board, through the board and a 2.4 mm printed spacer), four M3 × 6 countersunk (battery tray), three M3 × 5 pan head (caster), eight M3 × 6 pan head (lid-post feet), four M3 × 6 pan head (lid, into the inserts in the post tops). '
     'Plus four M3 × 10 socket head screws for the camera-mount feet (nuts H03; the old camera tower holes).')
 BP['F01']['notes']=(f'Structural base, round bumper arcs, rear shell, riders, mounts, ventilated cover and the bay board\'s spacers and bearing ribs (no deck: low-profile layout) (about {com["printed_mass_kg"]} kg as modelled: solid walls ≤ 3 mm, 62 % from 3.6 mm (4 perimeters), linear between), plus the test coupon (print-parts/coupons/P_coupon.stl, about 12 g) and one failed arc (120–150 g each). '
@@ -2708,8 +2802,8 @@ BP['P08']['notes']=('Select a documented DC-rated snap-in rocker whose datasheet
     'with a 15.7 × 24.4 × 1.5 mm relief pocket under the lid so the panel is 1.5 mm at the opening (check the fit on P_coupon first; file to the datasheet panel cut-out so the snap tabs hold), plus a 24 × 21 × 3 mm bezel on the lid. The old rear panel is now inside the rear shell. Switch off after the Jetson has shut down.')
 BP['E09']['notes']=('Use existing cooler if present. Fan header/plug depends on board revision. '
     f'CAD: 40 × 40 × 10 mm fan (Ø{2*FB[0]:g} bore) on the heatsink {JS["heatsink"]["fan_pitch"][0]:g} mm screw pattern with four M3 pan-head screws (heads ≤ Ø{2*FS_HEAD[0]:g} × {FS_HEAD[1]:g} mm). '
-    f'The lid seals its intake: a {SK_T} mm skirt round the Ø{2*FW[2]:g} lid window ends {SK_GAP:g} mm above the fan frame, {jetson_cooling["fan_skirt"]["clearance_to_fan_screw_heads_mm"]} mm inside the screw heads '
-    f'(check the gap with feelers at assembly: {SK_FEELER[0]} mm passes, {SK_FEELER[1]} mm does not; a fan with a bore over Ø35 or larger screw heads needs the skirt re-checked). '+jetson_cooling['bring_up_test'])
+    f'The LiDAR tray seals its intake (task L; until then a skirt under the lid): its {SK_T} mm duct round the Ø{2*FW[2]:g} fan window and the LD14 motor ends {SK_GAP:g} mm above the fan frame, {jetson_cooling["fan_skirt"]["clearance_to_fan_screw_heads_mm"]} mm from the screw heads '
+    f'(check the gap at assembly with modelling clay, BRINGUP section 10: {SK_FEELER[0]}–{SK_FEELER[1]} mm; a fan with a bore over Ø35 or larger screw heads needs the duct re-checked). '+jetson_cooling['bring_up_test'])
 _jh=', '.join(f'({x:g}, {y:g})' for x,y in JHOLES)
 BP['E01']['notes']=(f'Keep the existing carrier, module and heatsink. CAD = NVIDIA\'s official Jetson Nano Developer Kit P3450 B01 STEP (reference-models/jetson-nano-b01, simplified by cad/simplify_jetson.py): carrier 100 × 79 mm, heatsink top {JS["heatsink"]["top_z"]:.1f} mm above the PCB, I/O row (barrel jack, HDMI + DP, 2 × stacked USB-A, RJ45, micro-USB) '
     f'on the 100 mm edge facing forward (+x), barrel jack on the right; carrier PCB underside z {JO[2]:g} over the motors. Four Ø{JS["mounting_holes"]["d"]} mounting holes on 86 × 58 mm (hole pattern from the STEP) at {_jh} on H05 standoffs: two 24 mm stacks from P_base (front) and two 20 mm F-F standoffs on the bay board, which they clamp (rear). '

@@ -9,10 +9,10 @@
   "camera_baseline": 0,
   "camera_height": 80.0,
   "camera_x": 146,
-  "lidar_height": 147.5,
+  "lidar_height": 127.5,
   "lidar_x": 54,
   "lidar_yaw_deg": 180,
-  "lidar_note": "Task F (user decision 2026-10-11, option B): the LD14 is turned 180 deg about its spin axis (motor toward the back), spin axis x 54: the most forward position at which its 0.1 m minimum range (LD14P) stays inside the bumper skin with a half pressed to its stop, so the scan sees whatever the bumper touches (a trial at x 109, its front 10 mm inside the skin, left a 5 cm blind strip ahead of the bumper). Its 0 deg (tail/motor) direction points along robot -x: a driver scan angle theta (REP-103, CCW, 0 = LD14 tail) maps to the robot-frame bearing wrap(theta + 180 deg) into (-180, 180]; a raw LD14 angle a (clockwise from the tail) maps to wrap(180 deg - a). The simulator reports scans in the robot frame already.",
+  "lidar_note": "Task F (user decision 2026-10-11, option B): the LD14 is turned 180 deg about its spin axis (motor toward the back), spin axis x 54: the most forward position at which its 0.1 m minimum range (LD14P) stays inside the bumper skin with a half pressed to its stop, so the scan sees whatever the bumper touches (a trial at x 109, its front 10 mm inside the skin, left a 5 cm blind strip ahead of the bumper). Its 0 deg (tail/motor) direction points along robot -x: a driver scan angle theta (REP-103, CCW, 0 = LD14 tail) maps to the robot-frame bearing wrap(theta + 180 deg) into (-180, 180]; a raw LD14 angle a (clockwise from the tail) maps to wrap(180 deg - a). The simulator reports scans in the robot frame already. Task L (LIO-120, user request 2026-10-12): the LD14 sits 20 mm lower than in task F, laser plane 127.5 mm (was 147.5): the scan band (plane \u00b1 4 mm) is then exactly 20 mm over the lid top, the floor the scan-band rule allows. Its lugs sit straight on the tray plate (no towers); its motor drops into the tray's fan intake duct, 1.4 mm over the fan frame.",
   "outer_radius": 158.9,
   "shell_radius": 157.4,
   "rear_shell_radius": 152.5,
@@ -108,33 +108,33 @@
     "note": "task F: the camera looks out through a window cut across the bumper seam (half in each half); the bumper is full height (z 98.5) everywhere else"
   },
   "com_estimate_mm": [
-    -16.0,
-    -1.0,
-    61.0
+    -16.2,
+    -1.1,
+    60.0
   ],
   "com_estimate_note": "total COM including the wheels and the caster ball; body_com_mm excludes them (the simulator Body)",
   "body_com_mm": [
-    -14.71,
+    -14.93,
     -1.11,
-    63.04
+    62.01
   ],
-  "total_mass_estimate_kg": 2.444,
-  "body_mass_kg": 2.306,
+  "total_mass_estimate_kg": 2.439,
+  "body_mass_kg": 2.301,
   "body_inertia_kg_m2": [
     [
-      0.011668,
-      7.9e-05,
-      -0.000994
+      0.011378,
+      8e-05,
+      -0.000841
     ],
     [
-      7.9e-05,
-      0.015452,
-      6.7e-05
+      8e-05,
+      0.01513,
+      7.1e-05
     ],
     [
-      -0.000994,
-      6.7e-05,
-      0.022788
+      -0.000841,
+      7.1e-05,
+      0.022776
     ]
   ],
   "skin_z": [
@@ -195,7 +195,7 @@
   "envelope_worst_case_r_mm": 159.761,
   "floor_clearance_mm": 14.0,
   "floor_clearance_note": "bumper, rear shell and pins z 18; caster housing z 14",
-  "height_mm": 155.2,
+  "height_mm": 135.2,
   "rear_caster_ball_centre": [
     -75,
     0,
@@ -205,8 +205,8 @@
   "base_x_note": "P_base spans x -124..120 (centre x -2), R148 disc clipped to |y| <= 100",
   "camera_lower_edge_bumper_clearance_mm": 4.17,
   "coast_safe_reverse_speed_mps": 0.095,
-  "caster_load_fraction": 0.213,
-  "rear_caster_load_N": 5.1,
+  "caster_load_fraction": 0.216,
+  "rear_caster_load_N": 5.16,
   "rear_cliff_lead_over_caster_mm": 35,
   "rear_cliff_coast_at_reverse_limit_mm": {
     "speed_m_s": 0.06,

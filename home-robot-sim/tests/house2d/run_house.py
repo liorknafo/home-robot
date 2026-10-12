@@ -1,11 +1,11 @@
-"""Closed-loop whole-house mapping run in the 2D harness. Usage: run_house.py LABEL [seconds] [seed] [cam]
+"""Closed-loop whole-house mapping run in the 2D harness. Usage: run_house.py LABEL [seconds] [seed] [cam] [ovcam]
 Outputs (LABEL.log, LABEL.json, map-LABEL/) go to $HOUSE2D_OUT (default <sim>/reports/house2d).
 CTRL / TESTS (env) point at another controller / tests tree, e.g. a robot-parameters variant made by make_variant.py.
 Evaluation only (bay B13 additions, the brain is not touched): time per target kind (frontier vs coverage, read from the
 brain's goal_kind), the unvisited floor every 25 s, and at the end which mapping_complete() condition fails."""
 import sys,time,json,tempfile,numpy as np,os
 from pathlib import Path
-from house_world import load_world,HouseSim,P,low_samples,camera_view
+from house_world import load_world,HouseSim,P,low_samples,camera_view,overhang_samples,overhang_view
 from sim2d import Bridge,reverse_audit
 import sim2d
 sys.path.insert(0,os.environ.get('TESTS',P+'/tests'))
@@ -13,9 +13,9 @@ import importlib.util
 spec=importlib.util.spec_from_file_location('score',os.environ.get('TESTS',P+'/tests')+'/score_full_mapping.py');score=importlib.util.module_from_spec(spec);spec.loader.exec_module(score)
 from autonomy.lidar_brain import LidarBrain,UNVISITED_DONE
 import autonomy.geometry as geometry
-label=sys.argv[1];limit=float(sys.argv[2]) if len(sys.argv)>2 else 1600;seed=int(sys.argv[3]) if len(sys.argv)>3 else 0;cam='cam' in sys.argv[4:]
+label=sys.argv[1];limit=float(sys.argv[2]) if len(sys.argv)>2 else 1600;seed=int(sys.argv[3]) if len(sys.argv)>3 else 0;cam='cam' in sys.argv[4:];ovcam='ovcam' in sys.argv[4:]   # ovcam: the camera's band pass on overhangs (task M)
 OUT=Path(os.environ.get('HOUSE2D_OUT',P+'/reports/house2d'));OUT.mkdir(parents=True,exist_ok=True)
-tmp=tempfile.TemporaryDirectory();b=LidarBrain(tmp.name);world=load_world();sim=HouseSim(world,seed=seed);samples=low_samples(world)
+tmp=tempfile.TemporaryDirectory();b=LidarBrain(tmp.name);world=load_world();sim=HouseSim(world,seed=seed);samples=low_samples(world);ov_samples=overhang_samples(world)
 br=Bridge(b,sim,rearm_hook=lambda brain:getattr(brain,'wants_arm',False))
 for _ in range(10):b.predict(sim.state());[sim.step(.01) for _ in range(5)]
 log=open(OUT/f'{label}.log','w');t0=time.time();seen=set();last={'goal':None,'ev':0,'print':0,'phase':None}
@@ -35,6 +35,11 @@ def tick(br):
         last['cam']=sim.t;q=camera_view(sim,samples)
         if len(q):
             e=b.localizer.pose;c,s_=np.cos(e[2]),np.sin(e[2]);b.grid.add_camera_obstacles(q@np.array([[c,s_],[-s_,c]])+e[:2],margin=0)
+        if ovcam:
+            q=overhang_view(sim,*ov_samples,moving=b.requested_motion[0]>.02)
+            if len(q):
+                e=b.localizer.pose;c,s_=np.cos(e[2]),np.sin(e[2]);w=q@np.array([[c,s_],[-s_,c]])+e[:2];b.grid.add_camera_obstacles(w,margin=0);b.next_plan=0
+                b.grid.add_overhang_shadow(w,e[:2]+geometry.CAMERA_MOUNT[0]*np.array([c,s_]))   # as LidarBrain.observe does for band-pass edges
     dt=sim.t-lt[0];lt[0]=sim.t
     if b.mode=='mapping':
         k=getattr(b,'goal_kind',None) or 'none';stage[k]=stage.get(k,0.)+dt

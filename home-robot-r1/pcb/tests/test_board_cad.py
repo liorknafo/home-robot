@@ -5,7 +5,8 @@ the module sockets, the Pico USB receptacle) and against board_outline.json (hol
 CAD outputs (cad/validation.json, cad/component-manifest.json, cad/printability.json) and re-derive the B8 facts independently: the real
 board and modules sit where board_cad.json puts them, the ribs keep 1.0 mm off every THT pad, every rear-edge connector has a rib and a
 fixing within 35 mm, and the B8 validation keys are true. Task I adds the closed lid front and the cooling model's LD14 overhang and exhaust
-(two of these also read the per-part meshes in cad/assembly-meshes.json)."""
+(two of these also read the per-part meshes in cad/assembly-meshes.json). Task L adds the LD14 20 mm lower on a flat tray and the tray's
+fan intake duct round the LD14 motor."""
 import json, math, unittest
 from pathlib import Path
 try: import numpy as np
@@ -297,7 +298,7 @@ class RobotCadTests(unittest.TestCase):
         self.assertTrue(self.v['bay_board']['edge_connector_support']['ok'])
 
     def test_lid_sector_stls_are_bed_ready(self):
-        """Deferred L2 item: the lid sectors are written in print orientation (top face on the bed, skirt up)."""
+        """Deferred L2 item: the lid sectors are written in print orientation (top face on the bed; task L moved the fan skirt to the tray)."""
         pr = {p['part']: p for p in json.loads((CAD / 'printability.json').read_text())['parts']}
         for i in ('P_lid_front', 'P_lid_left', 'P_lid_rear', 'P_lid_right'):
             self.assertEqual(pr[i]['best_orientation'], 'as exported', i)
@@ -353,8 +354,10 @@ class RobotCadTests(unittest.TestCase):
 
     def test_cooling_counts_the_ld14_overhang_and_the_exhaust(self):
         """Task I: the turned-round LD14's motor end overhangs the fan grille's front edge (task F open item); the cooling gate counts its plan
-        shadow as closed and still keeps half the fan bore open, the shadowed slots keep a side-entry curtain larger than themselves, and the
-        exhaust ring gap under the now closed lid is at least twice the grille's open area."""
+        shadow as closed and still keeps half the fan bore open, and the exhaust ring gap under the now closed lid is at least twice the grille's
+        open area. Task I also required the shadowed slots' side-entry curtain to exceed their area (the motor then stood 10 mm over the plate);
+        since task L the motor hangs 1.4 mm over the fan frame inside the intake duct, so its shadow is simply closed (the curtain is reported,
+        and test_lowered_ld14_motor_sits_in_the_tray_duct checks the duct)."""
         jc = self.v['jetson_cooling']; g, it, ex = jc['grille'], jc['intake'], jc['exhaust']
         M = {m['id']: m for m in json.loads((CAD / 'assembly-meshes.json').read_text())}
         front_edge = jc['lid_fan_window']['centre_mm'][0] + jc['lid_fan_window']['diameter_mm'] / 2
@@ -362,9 +365,52 @@ class RobotCadTests(unittest.TestCase):
         self.assertEqual(overhangs, g['open_area_shadowed_in_plan_mm2'] > 0)
         self.assertGreaterEqual(g['open_fraction_of_bore_not_shadowed'], 0.5)
         if overhangs:
-            self.assertGreater(it['side_entry_curtain_mm2'], g['open_area_shadowed_in_plan_mm2'])
+            self.assertGreater(it['side_entry_curtain_mm2'], 0)
             self.assertNotIn('models only the turret circle', it['over_grille'])
         self.assertGreaterEqual(ex['ring_gap_section_mm2'], 2 * g['open_area_cad_mm2'])
+        self.assertTrue(jc['ok'])
+
+    def test_ld14_sits_at_the_scan_band_floor_on_a_flat_tray(self):
+        """Task L (LIO-120, user request): the LD14 is as low as the scan-band rule allows, its band (plane ± 4 mm) exactly 20 mm over the lid
+        top: plane 127.5 mm, 20 mm under task F's 147.5. Its three lugs rest straight on the tray plate (no towers: the tray's top is the lug
+        seat and nothing else of the LD14 touches it), on M3 heat-set inserts; the robot top drops by the same 20 mm."""
+        lm, jc = self.v['lidar_mount'], self.v['jetson_cooling']
+        self.assertAlmostEqual(lm['optical_plane_z_mm'], jc['lid_top_z_mm'] + 20.0 + 4.0, places=6)
+        self.assertAlmostEqual(lm['scan_band_vertical']['band_above_lid_mm'], 20.0, places=6)
+        self.assertTrue(lm['scan_band_vertical']['ok']); self.assertEqual(lm['parts_in_scan_band'], [])
+        self.assertTrue(lm['min_range']['ok']); self.assertTrue(lm['front_gap']['ok'])
+        self.assertAlmostEqual(self.man['P_lidar_tray']['bounds'][5], lm['lug_underside_z_mm'], places=2)       # the plate top is the lug seat
+        self.assertAlmostEqual(lm['scan_band_vertical']['tray_plate_top_z_mm'], lm['lug_underside_z_mm'], places=2)
+        self.assertEqual(lm['tray_overlap_with_lidar_mm3'], 0.0)
+        ins = [i for i in self.man if i.startswith('lidar_lug_insert_')]
+        self.assertEqual(len(ins), 3)
+        for i in ins:
+            self.assertEqual(self.man[i]['bom'], 'H12')
+            self.assertAlmostEqual(self.man[i]['bounds'][5], lm['lug_underside_z_mm'], places=2)              # flush with the plate top
+        self.assertAlmostEqual(self.v['robot_top']['height_mm'], 155.15 - 20.0, places=1)
+        self.assertTrue(self.v['robot_top']['ok'])
+
+    def test_lowered_ld14_motor_sits_in_the_tray_duct(self):
+        """Task L: 20 mm lower, the LD14 motor straddles the fan's front face and covers the bore's edge. The fan intake duct moved from a
+        skirt under the lid to the tray: one printed wall round the fan window and 1.0 mm round the motor, SK_GAP over the fan frame, with a bowl
+        under the motor beyond the fan's front face. The lid has no skirt any more (its lowest point is its underside), the motor clears the fan
+        by at least 1 mm, the bowl clears the fan's front face, the duct clears the fan screw heads, the bypass keeps its margin and the tray
+        prints without supports in its exported orientation."""
+        jc = self.v['jetson_cooling']; fs, it = jc['fan_skirt'], jc['intake']
+        for i in ('P_lid_front', 'P_lid_left', 'P_lid_rear', 'P_lid_right'):
+            self.assertAlmostEqual(self.man[i]['bounds'][2], jc['lid_underside_z_mm'], places=2, msg=i)
+        self.assertIn('intake duct under the LiDAR tray', fs['kind'])
+        self.assertAlmostEqual(fs['bottom_z_mm'], jc['fan_top_z_mm'] + fs['gap_to_fan_frame_mm'], places=1)
+        self.assertLess(self.man['P_lidar_tray']['bounds'][2], jc['fan_top_z_mm'])                               # the bowl reaches below the fan top
+        self.assertGreaterEqual(it['ld14_motor_gap_to_fan_mm'], 1.0)
+        self.assertGreaterEqual(fs['bowl_slot']['gap_to_fan_front_face_mm'], 0.49)
+        self.assertGreaterEqual(fs['clearance_to_fan_screw_heads_mm'], 0.5)
+        self.assertGreater(jc['lid_fan_window']['diameter_mm'] / 2, 17.0)                                        # the duct circle covers the Ø34 bore
+        self.assertLessEqual(abs(fs['section_area_mm2'] - fs['section_area_unbroken_mm2']), 0.01 * fs['section_area_unbroken_mm2'])
+        self.assertGreaterEqual(fs['bypass_margin_fraction'], 0.01)
+        self.assertIn('lidar_motor', it['parts_over_grille'])
+        pr = {p['part']: p for p in json.loads((CAD / 'printability.json').read_text())['parts']}
+        self.assertTrue(pr['P_lidar_tray']['pass']); self.assertEqual(pr['P_lidar_tray']['best_orientation'], 'as exported')
         self.assertTrue(jc['ok'])
 
     def test_jetson_placement_names_the_current_com_rule(self):

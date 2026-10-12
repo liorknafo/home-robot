@@ -106,6 +106,10 @@ CLIFF_XY = tuple(tuple(float(v) for v in xy) for xy in
 CLIFF_Z = float(_P.get('cliff_z_m', .0425))              # sensor origin height above the floor (= nominal range)
 CAMERA_MOUNT = tuple(float(v) for v in _P.get('camera_mount_m', [.117, 0., .15]))   # x, y, height above floor
 LIDAR_MOUNT = tuple(float(v) for v in _P.get('lidar_mount_m', [.02, 0., .19]))      # x, y, scan-plane height
+# Whole-robot top (the LiDAR turret cap), synced from the CAD (sync_robot_data.py robot_top_z_m). Furniture whose underside lies
+# between LIDAR_MOUNT z and this gives no LiDAR return and meets the turret. Old files lack it: 2 cm above the scan plane is
+# higher than the LD14's cap (7.65 mm above its scan line), so the camera's overhang band is never too low.
+ROBOT_TOP = float(_P.get('robot_top_z_m', LIDAR_MOUNT[2] + .02))
 BASE_Z = float(_P.get('base_link_height_m', _P.get('base_link_z_m', .085)))            # nominal base_link height above the floor (RobotPawn BodyHeight)
 
 # Bumper zones about base_link, bit 0 right .. bit 4 left: edges +/-20, +/-55, +/-90 give

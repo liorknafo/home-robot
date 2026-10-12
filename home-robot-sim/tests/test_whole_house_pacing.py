@@ -1031,7 +1031,7 @@ class RoundBodyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             for bit,(lo,hi) in enumerate(BUMP_ZONES):
                 b=LidarBrain(tmp);b.mode='mapping';marks=[]
-                b.grid.add_camera_obstacles=lambda world,margin=1:marks.append(np.asarray(world))
+                b.grid.add_camera_obstacles=lambda world,margin=1,contact=False:marks.append(np.asarray(world))
                 b.note_contact(1.,'test',1<<bit);m=np.vstack(marks)
                 az=np.degrees(np.arctan2(m[:,1],m[:,0]));r=np.linalg.norm(m,axis=1)
                 self.assertTrue(((az>=lo-1e-6)&(az<=hi+1e-6)).all(),f'zone {bit} marks outside {lo}..{hi} deg about base_link')

@@ -31,12 +31,14 @@ Emulates the simulator <-> autonomy_service boundary without Unreal or UDP:
   * Unicycle kinematics about the drive axle, drive_axle_x_m ahead of base_link
     (0 on the round robot: a turn in place leaves base_link where it is).
   * Optional 'overhangs': furniture whose UNDERSIDE lies in the blind band between the LiDAR scan plane
-    (lidar_mount_m z) and the robot top (robot_top_z_m), e.g. a sofa or bed frame at 150 mm. The beam passes
+    (lidar_mount_m z) and the robot top (robot_top_z_m), e.g. the Unreal sofa base (underside 130 mm) if the plane drops below
+    it (task L's 20 mm candidate: plane 127.5, top 135.15 mm; at 147.5 / 155.15 mm no house furniture is there). The beam passes
     under it (no return), it is above the bumper skin (no trip) and not a cliff: the controller gets NO signal.
     Only the LiDAR turret (lidar_turret_*), the one part above the scan plane, hits its edge: the body stops
     there (counted in contacts and overhang_hits) while the wheels may still tick.
   * Optional 'ledges' (task K): furniture whose UNDERSIDE lies just BELOW the LiDAR scan plane (ledge_drop, default
-    1.75 cm: the Unreal sofa base, bottom 13 cm, plane 14.75 cm). Unreal's scan plane tilts with the body; each scan here
+    1.75 cm: the Unreal sofa base, bottom 13 cm, under task K's 14.75 cm plane; a lower plane (task L) brings the house's bed
+    frame and TV console, bottoms 12.5 / 12.46 cm, closer to it). Unreal's scan plane tilts with the body; each scan here
     draws a tilt (LEDGE_TILT: a level robot most of the time, 1-3.5 deg of pitch and up to 1.5 deg of roll about 1 scan in 7,
     as the truth pitch / roll of trial full-mapping-20261012T013115), and a beam returns from a ledge edge only while it is
     not more than ledge_drop below the plane there: close beams return, far ones may pass under (and on to the wall). The
@@ -708,9 +710,10 @@ def _legs(x0, x1, y0, y1, s=.04):
     return out
 
 
-def overhang_world(kind, underside=.150):
-    """A 4 x 3 m room with furniture whose underside is `underside` (150 mm: between the LiDAR plane and the robot top)
-    on 4 cm corner legs. 'sofa': 2 x .85 m against the top wall (the LiDAR sees the legs and the wall under it);
+def overhang_world(kind, underside=None):
+    """A 4 x 3 m room with furniture whose underside is `underside` (default: midway between the LiDAR plane and the robot
+    top; it was a fixed 150 mm for the 147.5 / 155.15 mm robot, which task L's lower candidates put above the robot top) on 4 cm
+    corner legs. 'sofa': 2 x .85 m against the top wall (the LiDAR sees the legs and the wall under it);
     'table': a 1 x .6 m island (coffee table). Start pose (0, 0, 0) = map frame."""
     room = [((-1, -1.5), (3, -1.5)), ((3, -1.5), (3, 1.5)), ((3, 1.5), (-1, 1.5)), ((-1, 1.5), (-1, -1.5))]
     fp = {'sofa': (.3, 2.3, .65, 1.5), 'table': (.8, 1.8, -.3, .3)}[kind]

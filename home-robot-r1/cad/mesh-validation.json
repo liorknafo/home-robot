@@ -275,52 +275,52 @@
     "file": "P_ld14_grommet.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 442.9,
+    "volume_mm3": 239.6,
     "size_mm": [
       11.6,
-      13.8,
+      7.8,
       3.2
     ],
     "center_mass_mm": [
-      59.94,
-      22.0,
+      38.89,
+      18.0,
       103.37
     ],
-    "area_mm2": 508.3
+    "area_mm2": 330.7
   },
   {
     "file": "P_lid_front.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 58641.1,
+    "volume_mm3": 57258.6,
     "size_mm": [
-      155.237,
+      147.105,
       210.272,
-      7.32
+      3.0
     ],
     "center_mass_mm": [
-      87.93,
-      -17.76,
+      90.0,
+      -18.04,
       102.0
     ],
-    "area_mm2": 41400.1
+    "area_mm2": 40346.6
   },
   {
     "file": "P_lid_left.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 50575.2,
+    "volume_mm3": 50037.0,
     "size_mm": [
-      148.599,
+      143.2,
       186.033,
-      7.32
+      3.0
     ],
     "center_mass_mm": [
-      17.99,
-      91.07,
-      101.99
+      18.16,
+      91.93,
+      102.0
     ],
-    "area_mm2": 35602.4
+    "area_mm2": 35113.1
   },
   {
     "file": "P_lid_post_1.stl",
@@ -394,35 +394,35 @@
     "file": "P_lid_rear.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 54611.1,
+    "volume_mm3": 54135.5,
     "size_mm": [
       143.482,
       203.801,
-      7.32
+      3.0
     ],
     "center_mass_mm": [
-      -90.83,
-      20.04,
-      101.99
+      -91.37,
+      20.19,
+      102.0
     ],
-    "area_mm2": 38919.6
+    "area_mm2": 38370.8
   },
   {
     "file": "P_lid_right.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 50742.6,
+    "volume_mm3": 50387.7,
     "size_mm": [
-      143.179,
+      142.183,
       186.749,
-      7.32
+      3.0
     ],
     "center_mass_mm": [
-      -19.29,
-      -91.53,
-      101.99
+      -19.34,
+      -92.05,
+      102.0
     ],
-    "area_mm2": 35917.3
+    "area_mm2": 35509.6
   },
   {
     "file": "P_lidar_adapter_clip.stl",
@@ -445,18 +445,18 @@
     "file": "P_lidar_tray.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 38860.7,
+    "volume_mm3": 37436.2,
     "size_mm": [
       145.3,
       86.0,
-      23.8
+      19.2
     ],
     "center_mass_mm": [
-      30.88,
-      -0.28,
-      106.12
+      25.21,
+      0.13,
+      104.89
     ],
-    "area_mm2": 27543.3
+    "area_mm2": 26456.2
   },
   {
     "file": "P_motor_mount_left.stl",

@@ -2428,7 +2428,7 @@
     ],
     "printable": false,
     "check": false,
-    "note": "Envelope of the usual fan screw: head \u00d85.6 \u00d7 2.1 mm on the frame (z 95.28\u201397.38); check the delivered screws, the lid skirt clears these heads (validation jetson_cooling.fan_skirt).",
+    "note": "Envelope of the usual fan screw: head \u00d85.6 \u00d7 2.1 mm on the frame (z 95.28\u201397.38); check the delivered screws, the LiDAR tray's intake duct clears these heads (validation jetson_cooling.fan_skirt).",
     "explode": [
       0,
       0,
@@ -2452,7 +2452,7 @@
     ],
     "printable": false,
     "check": false,
-    "note": "Envelope of the usual fan screw: head \u00d85.6 \u00d7 2.1 mm on the frame (z 95.28\u201397.38); check the delivered screws, the lid skirt clears these heads (validation jetson_cooling.fan_skirt).",
+    "note": "Envelope of the usual fan screw: head \u00d85.6 \u00d7 2.1 mm on the frame (z 95.28\u201397.38); check the delivered screws, the LiDAR tray's intake duct clears these heads (validation jetson_cooling.fan_skirt).",
     "explode": [
       0,
       0,
@@ -2476,7 +2476,7 @@
     ],
     "printable": false,
     "check": false,
-    "note": "Envelope of the usual fan screw: head \u00d85.6 \u00d7 2.1 mm on the frame (z 95.28\u201397.38); check the delivered screws, the lid skirt clears these heads (validation jetson_cooling.fan_skirt).",
+    "note": "Envelope of the usual fan screw: head \u00d85.6 \u00d7 2.1 mm on the frame (z 95.28\u201397.38); check the delivered screws, the LiDAR tray's intake duct clears these heads (validation jetson_cooling.fan_skirt).",
     "explode": [
       0,
       0,
@@ -2500,7 +2500,7 @@
     ],
     "printable": false,
     "check": false,
-    "note": "Envelope of the usual fan screw: head \u00d85.6 \u00d7 2.1 mm on the frame (z 95.28\u201397.38); check the delivered screws, the lid skirt clears these heads (validation jetson_cooling.fan_skirt).",
+    "note": "Envelope of the usual fan screw: head \u00d85.6 \u00d7 2.1 mm on the frame (z 95.28\u201397.38); check the delivered screws, the LiDAR tray's intake duct clears these heads (validation jetson_cooling.fan_skirt).",
     "explode": [
       0,
       0,
@@ -3483,14 +3483,14 @@
     "bounds": [
       -2.461,
       -28.852,
-      127.3,
+      107.3,
       93.829,
       28.852,
-      138.0
+      118.0
     ],
     "printable": false,
     "check": true,
-    "note": "LDROBOT LD14 manufacturer STEP (reference-models/LD14.step), turned 180 deg about its spin axis (motor toward the back, task F user decision): spin axis x=54, y=0; laser plane z=147.5 = STEP window-band centre z=12.2 (windows z 8.4-16.0) + 135.3 mm. LD14 0 deg (tail/motor direction) points along robot -x. LD14 angles increase clockwise seen from above: robot bearing = wrap(180 deg - raw angle); for a driver scan already in REP-103 form (CCW, 0 = tail) the bearing is wrap(scan angle + 180 deg), wrapped into (-180, 180]. The D200 kit ships the LD14P: confirm lug positions and window height on the delivered unit.",
+    "note": "LDROBOT LD14 manufacturer STEP (reference-models/LD14.step), turned 180 deg about its spin axis (motor toward the back, task F user decision): spin axis x=54, y=0; laser plane z=127.5 = STEP window-band centre z=12.2 (windows z 8.4-16.0) + 115.3 mm. LD14 0 deg (tail/motor direction) points along robot -x. LD14 angles increase clockwise seen from above: robot bearing = wrap(180 deg - raw angle); for a driver scan already in REP-103 form (CCW, 0 = tail) the bearing is wrap(scan angle + 180 deg), wrapped into (-180, 180]. The D200 kit ships the LD14P: confirm lug positions and window height on the delivered unit.",
     "explode": [
       0,
       0,
@@ -3507,10 +3507,10 @@
     "bounds": [
       24.078,
       -29.922,
-      138.25,
+      118.25,
       83.922,
       29.922,
-      155.15
+      135.15
     ],
     "printable": false,
     "check": true,
@@ -3531,10 +3531,10 @@
     "bounds": [
       -2.2,
       -12.2,
-      116.3,
+      96.3,
       22.2,
       12.2,
-      135.9
+      115.9
     ],
     "printable": false,
     "check": true,
@@ -3555,10 +3555,10 @@
     "bounds": [
       48.1,
       -5.9,
-      152.3,
+      132.3,
       59.9,
       5.9,
-      155.15
+      135.15
     ],
     "printable": false,
     "check": false,
@@ -3579,14 +3579,14 @@
     "bounds": [
       32.959,
       -27.653,
-      143.71,
+      123.71,
       77.276,
       -17.128,
-      151.3
+      131.3
     ],
     "printable": false,
     "check": false,
-    "note": "Window positions follow the STEP snapshot; the turret spins at about 6 Hz. Keep the band z 143.5-151.5 mm clear all round.",
+    "note": "Window positions follow the STEP snapshot; the turret spins at about 6 Hz. Keep the band z 123.5-131.5 mm clear all round.",
     "explode": [
       0,
       0,
@@ -3603,10 +3603,10 @@
     "bounds": [
       34.979,
       5.672,
-      125.9,
+      105.9,
       42.979,
       10.772,
-      129.1
+      109.1
     ],
     "printable": false,
     "check": false,
@@ -3619,7 +3619,7 @@
   },
   {
     "id": "P_lidar_tray",
-    "name": "LD14 three-point tray on the lid",
+    "name": "LD14 tray and fan intake duct on the lid",
     "category": "print",
     "color": "#49768a",
     "bom": "F01",
@@ -3627,32 +3627,104 @@
     "bounds": [
       -45.0,
       -43.0,
-      103.5,
+      88.1,
       100.3,
       43.0,
-      127.3
+      107.3
     ],
     "printable": true,
     "check": false,
-    "note": "145.3 \u00d7 86 \u00d7 3 mm plate on the lid top (x -45\u2013100.3, z 103.5\u2013106.5; four M3 holes at (-35, \u00b138) and (83, \u00b135), M3 \u00d7 10 + nyloc nuts under the lid). Fan grille over the lid fan window: 5 \u00d7 4.5 mm slots on a 6.5 mm pitch inside r 17.5 about the fan centre (-16.3, -2.0); 2 mm ribs, all vertical walls, open to the room above. Three \u00d88.6 towers (flared to \u00d814) carry the LD14 lugs at z 127.3: front (89.3, 0), tail (18, \u00b118) (task F: the LD14 is turned round, motor toward the back). The lug holes are \u00d83.24 (M3 clearance) with \u00d85.96 counterbores for M3 socket heads: use M3 \u00d7 10 thread-forming screws in the \u00d82.6 pilots (or open them to \u00d84.0 for M3 heat-set inserts). Only the stationary lugs touch the tray. Print plate-down, no supports.",
+    "note": "145.3 \u00d7 86 \u00d7 3.8 mm plate on the lid top (x -45\u2013100.3, z 103.5\u2013107.3; four M3 holes at (-35, \u00b138) and (83, \u00b135), M3 \u00d7 12 + nyloc nuts under the lid). Its flat top is the LD14 seat (task L: no towers, the LD14 sits 20 mm lower than in task F): the three lugs rest on it at z 107.3, front (89.3, 0) and tail (18, \u00b118), each on an M3 \u00d7 3 brass heat-set insert pressed flush into the plate top (\u00d84.0 bore through the plate), with an M3 \u00d7 5 socket-head screw from above through the lug's \u00d83.24 hole (its head sits in the lug's \u00d85.96 counterbore; reachable from above with the LD14 fitted). Only the lugs touch the tray. Fan grille over the fan: 5 \u00d7 4.8 mm slots on a 6.5 mm pitch inside r 17.5 about the fan centre (-16.3, -2.0); 1.7 mm ribs, stopped 1.5 mm short of the motor hole, open to the room above. Under the plate the intake duct (1.3 mm wall) passes the lid opening and ends 0.9 mm over the fan frame (z 96.18), round the fan window circle and 1.0 mm round the LD14 motor, which drops into it through a \u00d826.4 hole in the plate; beyond the fan's front face a bowl under the motor closes it (42\u00b0 faces, back wall 0.5 mm in front of the fan). At assembly check the duct gap to the fan frame with modelling clay (BRINGUP section 10; the duct edge cannot be reached with a feeler): 0.5\u20131.0 mm (thinner: sand the duct end; thicker: shim the fan or the bypass limit is lost); check that light shows between the bowl and the fan's front face (0.5 mm), and that the LD14 motor keeps >= 0.5 mm over the fan frame (else 0.5 mm washers under the LD14 lugs, not under the tray). Opening 41.9 \u00d7 46.4 mm at x 30.4\u201372.3, y -23.4\u201323 under the LD14's circuit board (its parts hang up to 1.9 mm below the lugs), round the J28 plug and the lead grommet; the lid under it is solid. Print top face down (STL bed-ready): the duct and bowl rise from the plate, no supports; the bowl's flat floor (6 mm under its rim) is a short bridge and its back-wall top edge a 24 mm bridge between the duct walls.",
     "explode": [
       0,
       0,
       170
     ],
     "export": {
-      "rot_x_deg": 0,
+      "rot_x_deg": 180,
       "rot_z_deg": 0,
       "translate_mm": [
         -27.65,
-        -0.0,
-        -103.5
+        0.0,
+        107.3
       ]
     }
   },
   {
+    "id": "lidar_lug_insert_0",
+    "name": "M3 \u00d7 3 brass heat-set insert (LD14 lug)",
+    "category": "metal",
+    "color": "#b5bcc3",
+    "bom": "H12",
+    "group": "cover",
+    "bounds": [
+      87.3,
+      -2.0,
+      104.3,
+      91.3,
+      2.0,
+      107.3
+    ],
+    "printable": false,
+    "check": true,
+    "note": "Pressed flush into the tray plate top with a soldering iron (tray on a flat plate, top face up); the LD14 lug sits on it and an M3 \u00d7 5 socket-head screw from above takes 3 mm of thread.",
+    "explode": [
+      0,
+      0,
+      170
+    ]
+  },
+  {
+    "id": "lidar_lug_insert_1",
+    "name": "M3 \u00d7 3 brass heat-set insert (LD14 lug)",
+    "category": "metal",
+    "color": "#b5bcc3",
+    "bom": "H12",
+    "group": "cover",
+    "bounds": [
+      16.0,
+      -20.0,
+      104.3,
+      20.0,
+      -16.0,
+      107.3
+    ],
+    "printable": false,
+    "check": true,
+    "note": "Pressed flush into the tray plate top with a soldering iron (tray on a flat plate, top face up); the LD14 lug sits on it and an M3 \u00d7 5 socket-head screw from above takes 3 mm of thread.",
+    "explode": [
+      0,
+      0,
+      170
+    ]
+  },
+  {
+    "id": "lidar_lug_insert_2",
+    "name": "M3 \u00d7 3 brass heat-set insert (LD14 lug)",
+    "category": "metal",
+    "color": "#b5bcc3",
+    "bom": "H12",
+    "group": "cover",
+    "bounds": [
+      16.0,
+      16.0,
+      104.3,
+      20.0,
+      20.0,
+      107.3
+    ],
+    "printable": false,
+    "check": true,
+    "note": "Pressed flush into the tray plate top with a soldering iron (tray on a flat plate, top face up); the LD14 lug sits on it and an M3 \u00d7 5 socket-head screw from above takes 3 mm of thread.",
+    "explode": [
+      0,
+      0,
+      170
+    ]
+  },
+  {
     "id": "lidar_tray_screw_0",
-    "name": "LiDAR tray M3 \u00d7 10 screw and nyloc nut",
+    "name": "LiDAR tray M3 \u00d7 12 screw and nyloc nut",
     "category": "metal",
     "color": "#b5bcc3",
     "bom": "H09",
@@ -3660,10 +3732,10 @@
     "bounds": [
       -38.2,
       -41.2,
-      96.5,
+      95.3,
       -31.8,
       -34.8,
-      109.3
+      110.1
     ],
     "printable": false,
     "check": false,
@@ -3676,7 +3748,7 @@
   },
   {
     "id": "lidar_tray_screw_1",
-    "name": "LiDAR tray M3 \u00d7 10 screw and nyloc nut",
+    "name": "LiDAR tray M3 \u00d7 12 screw and nyloc nut",
     "category": "metal",
     "color": "#b5bcc3",
     "bom": "H09",
@@ -3684,10 +3756,10 @@
     "bounds": [
       -38.2,
       34.8,
-      96.5,
+      95.3,
       -31.8,
       41.2,
-      109.3
+      110.1
     ],
     "printable": false,
     "check": false,
@@ -3700,7 +3772,7 @@
   },
   {
     "id": "lidar_tray_screw_2",
-    "name": "LiDAR tray M3 \u00d7 10 screw and nyloc nut",
+    "name": "LiDAR tray M3 \u00d7 12 screw and nyloc nut",
     "category": "metal",
     "color": "#b5bcc3",
     "bom": "H09",
@@ -3708,10 +3780,10 @@
     "bounds": [
       79.8,
       -38.2,
-      96.5,
+      95.3,
       86.2,
       -31.8,
-      109.3
+      110.1
     ],
     "printable": false,
     "check": false,
@@ -3724,7 +3796,7 @@
   },
   {
     "id": "lidar_tray_screw_3",
-    "name": "LiDAR tray M3 \u00d7 10 screw and nyloc nut",
+    "name": "LiDAR tray M3 \u00d7 12 screw and nyloc nut",
     "category": "metal",
     "color": "#b5bcc3",
     "bom": "H09",
@@ -3732,10 +3804,10 @@
     "bounds": [
       79.8,
       31.8,
-      96.5,
+      95.3,
       86.2,
       38.2,
-      109.3
+      110.1
     ],
     "printable": false,
     "check": false,
@@ -3861,14 +3933,14 @@
     "bounds": [
       35.58,
       10.8,
-      125.9,
+      105.9,
       42.38,
       15.8,
-      129.1
+      109.1
     ],
     "printable": false,
     "check": false,
-    "note": "Plugs along -y (the LD14 is turned round) into the side-entry socket under the LD14 PCB; the lead runs forward in the plenum and drops through the tray and lid openings at (60, 22).",
+    "note": "Plugs along -y (the LD14 is turned round) into the side-entry socket under the LD14 PCB; task L: the plug sits in the tray opening (its underside 1.4 mm under the lug seat) and its lead turns straight down through the grommet in the lid aperture at (39, 18). Assembly: lead up through the lid aperture from below, grommet round it, plug it into the LD14 before the LD14 goes onto the tray, then feed the slack down through the grommet as the LD14 is set down.",
     "explode": [
       0,
       0,
@@ -6271,16 +6343,16 @@
     "bom": "F01",
     "group": "cover",
     "bounds": [
-      -0.753,
+      8.501,
       -132.069,
-      96.18,
+      100.5,
       152.5,
       91.777,
       103.5
     ],
     "printable": true,
     "check": false,
-    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
+    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre. The sectors meet round one central opening for the LiDAR tray's fan intake duct (task L: the duct and the LD14 motor in it pass through; 0.3 mm round the duct wall); the 120 and 215 deg seams turn radial to its fan-window circle inside r 28 of the fan centre, the 37 and 300 deg seams meet its motor circle along their rays. The tray plate covers the opening. Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed, no supports.",
     "explode": [
       0,
       0,
@@ -6290,7 +6362,7 @@
       "rot_x_deg": 180,
       "rot_z_deg": 11.5,
       "translate_mm": [
-        -74.881,
+        -78.9474,
         -39.4832,
         103.5
       ]
@@ -6305,15 +6377,15 @@
     "group": "cover",
     "bounds": [
       -76.25,
-      3.969,
-      96.18,
+      9.685,
+      100.5,
       121.792,
       152.5,
       103.5
     ],
     "printable": true,
     "check": false,
-    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
+    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre. The sectors meet round one central opening for the LiDAR tray's fan intake duct (task L: the duct and the LD14 motor in it pass through; 0.3 mm round the duct wall); the 120 and 215 deg seams turn radial to its fan-window circle inside r 28 of the fan centre, the 37 and 300 deg seams meet its motor circle along their rays. The tray plate covers the opening. Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed, no supports.",
     "explode": [
       0,
       0,
@@ -6323,7 +6395,7 @@
       "rot_x_deg": 180,
       "rot_z_deg": -78.5,
       "translate_mm": [
-        78.1799,
+        80.8796,
         44.6276,
         103.5
       ]
@@ -6339,14 +6411,14 @@
     "bounds": [
       -152.5,
       -87.47,
-      96.18,
+      100.5,
       -14.993,
       132.069,
       103.5
     ],
     "printable": true,
     "check": false,
-    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
+    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre. The sectors meet round one central opening for the LiDAR tray's fan intake duct (task L: the duct and the LD14 motor in it pass through; 0.3 mm round the duct wall); the 120 and 215 deg seams turn radial to its fan-window circle inside r 28 of the fan centre, the 37 and 300 deg seams meet its motor circle along their rays. The tray plate covers the opening. Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed, no supports.",
     "explode": [
       0,
       0,
@@ -6372,14 +6444,14 @@
     "bounds": [
       -124.921,
       -152.5,
-      96.18,
+      100.5,
       76.25,
-      -10.033,
+      -11.266,
       103.5
     ],
     "printable": true,
     "check": false,
-    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
+    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre. The sectors meet round one central opening for the LiDAR tray's fan intake duct (task L: the duct and the LD14 motor in it pass through; 0.3 mm round the duct wall); the 120 and 215 deg seams turn radial to its fan-window circle inside r 28 of the fan centre, the 37 and 300 deg seams meet its motor circle along their rays. The tray plate covers the opening. Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed, no supports.",
     "explode": [
       0,
       0,
@@ -6389,7 +6461,7 @@
       "rot_x_deg": 180,
       "rot_z_deg": -257.5,
       "translate_mm": [
-        80.9076,
+        81.4054,
         47.517,
         103.5
       ]
@@ -6403,16 +6475,16 @@
     "bom": "F01",
     "group": "cover",
     "bounds": [
-      54.2,
-      15.1,
+      33.2,
+      14.1,
       101.7,
-      65.8,
-      28.9,
+      44.8,
+      21.9,
       104.9
     ],
     "printable": true,
     "check": false,
-    "note": "Fills the 10 \u00d7 14 mm lid aperture at (60, 22) round the LD14 lead (W20): 0.1 mm clearance a side, a 1.4 mm lip resting on the lid top, a \u00d82.6 hole snug on the \u00d82.4 lead and a 0.6 mm slit to slip it round the lead after the J28 plug is through (cut the slit open with a knife if it prints closed). It keeps warm body air from leaking out beside the fan grille's intake. Printed lip down (STL bed-ready).",
+    "note": "Fills the 10 \u00d7 8 mm lid aperture at (39, 18) round the LD14 lead (W20): 0.1 mm clearance a side, a 1.4 mm lip resting on the lid top, a \u00d82.6 hole snug on the \u00d82.4 lead and a 0.6 mm slit to slip it round the lead after the J28 plug is through (cut the slit open with a knife if it prints closed). It keeps warm body air from leaking out beside the fan grille's intake. Printed lip down (STL bed-ready).",
     "explode": [
       0,
       0,
@@ -6422,8 +6494,8 @@
       "rot_x_deg": 180,
       "rot_z_deg": 0,
       "translate_mm": [
-        -60.0,
-        22.0,
+        -39.0,
+        18.0,
         104.9
       ]
     }
@@ -6751,9 +6823,9 @@
       26.816,
       -40.197,
       92.3,
-      61.2,
-      23.2,
-      128.037
+      40.2,
+      19.2,
+      108.232
     ],
     "printable": false,
     "check": false,

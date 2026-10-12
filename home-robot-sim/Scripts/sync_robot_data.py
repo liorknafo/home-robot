@@ -34,11 +34,13 @@ COM_WORST_LIMIT_M = -.010                               # ... and the CAD's wors
 # Values the code relies on (DriveCore.h, controller odometry): a change needs a code edit first. camera_height / lidar_x /
 # lidar_height are the R1 mounts (low-profile spec 2026-10-06 sec. 2: LiDAR plane 147.5 mm; task F 2026-10-11: camera in the
 # bumper band at 80 mm, chosen with tests/camera_height_sweep.py and the Unreal shower-tray drives, and the LD14 turned round,
-# spin axis x 54: as far forward as its 0.1 m blind circle stays inside the pressed bumper, user decision); RobotPawn and the
-# controller read them from robot-parameters.json, so this guard only makes a further CAD move a deliberate step. The LD14's
-# 180 deg turn (parameters.json lidar_yaw_deg) only matters to a real-robot driver: the simulator reports scans in the robot frame.
+# spin axis x 54: as far forward as its 0.1 m blind circle stays inside the pressed bumper, user decision; task L 2026-10-12
+# (LIO-120, user request): the LD14 20 mm lower, LiDAR plane 127.5 mm, robot top 135.15 mm, the lowest the CAD scan-band rule
+# allows); RobotPawn and the controller read them from robot-parameters.json, so this guard only makes a further CAD move a
+# deliberate step. The LD14's 180 deg turn (parameters.json lidar_yaw_deg) only matters to a real-robot driver: the simulator
+# reports scans in the robot frame.
 GUARDED = {'wheel_diameter': 80, 'wheel_track': 228, 'wheel_x': 0, 'camera_baseline': 0, 'camera_height': 80.0,
-           'lidar_x': 54, 'lidar_height': 147.5}
+           'lidar_x': 54, 'lidar_height': 127.5}
 REQUIRED = ['outer_radius', 'shell_radius', 'rear_caster', 'cliff_sensors', 'cliff_z', 'camera_x']
 MASS_PROPERTIES = 'mass-properties.json'
 SEPARATE_BODIES = ('Wheels', 'Caster ball')            # mass-properties.json records the simulator models as their own bodies
@@ -387,10 +389,12 @@ def main(argv=None):
     rt = round(1000 * geometry.get('robot_top_z_m', geometry['lidar_mount_m'][2]), 2)
     lim.append(f'Sensing blind band: thin objects confined to {bt:g}-{lz:g} mm (above the bumper skin top, bumper_top_z_m, and '
                f'below the LiDAR scan plane) and object undersides at {lz:g}-{rt:g} mm (between the LiDAR plane and the robot top, '
-               'robot_top_z_m) are invisible to the LiDAR and above the bumper, so nothing senses them; the upper structure '
-               '(lid, LiDAR tray and turret; above the LiDAR plane only the turret) collides with them. The '
-               'controller handles them only through stall marks (lidar_brain.mark_stall: the wheels turn, the LiDAR shows no '
-               'motion, nothing is sensed), at most STALL_MARK_LIMIT per session.')
+               'robot_top_z_m) are invisible to the LiDAR and above the bumper; the upper structure (lid, LiDAR tray and turret; '
+               'above the LiDAR plane only the turret) collides with them. The forward camera marks them on the map '
+               '(floor_parallax: 3 cm up to robot_top_z_m + 2 cm, within 1.2 m ahead, while the robot drives toward them); stall '
+               'marks (lidar_brain.mark_stall: the wheels turn, the LiDAR shows no motion, nothing is sensed), at most '
+               'STALL_MARK_LIMIT per session, stay the backstop for what it misses (beside or behind the robot, a plain edge '
+               'seen obliquely, floor too plain to measure the robot\'s motion).')
     cw = prm.get('camera_window')
     if cw:
         lim.append(f"Camera window (task F): the real bumper has a {cw['at_skin']['width_mm']:g} mm wide window at z "

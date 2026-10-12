@@ -95,7 +95,7 @@
       "status": "Buy",
       "new_cost_usd": 9.95,
       "source": "https://www.pololu.com/product/2692",
-      "notes": "ONE rear caster (no front support): ball centre at x = -75 mm behind the axle; the caster carries about 0.21 of the weight and the rear cliff sensors (-110, ±81) lead it by 35 mm in reverse. DriveCore disarms on a hazard and the robot coasts on the motor dynamic brake: from the 0.06 m/s firmware reverse speed limit (parameters.json reverse_speed_limit_m_s; required) that needs 23.4 mm (14.7 mm coast, no rolling drag, conservative), so no active brake is required (validation caster_layout.stopping); reversing faster than 0.095 m/s would not be covered. 29 mm assembled height. CAD housing is a conservative envelope; three M3 × 5 pan-head machine screws (H13) on a 16.5 mm bolt circle, outside the Ø25.4 ball, through the 2 mm flange tabs into M3 brass heat-set inserts (H12) pressed into P_base from below. Drill the flange tabs to this pattern if the purchased caster differs.",
+      "notes": "ONE rear caster (no front support): ball centre at x = -75 mm behind the axle; the caster carries about 0.22 of the weight and the rear cliff sensors (-110, ±81) lead it by 35 mm in reverse. DriveCore disarms on a hazard and the robot coasts on the motor dynamic brake: from the 0.06 m/s firmware reverse speed limit (parameters.json reverse_speed_limit_m_s; required) that needs 23.4 mm (14.7 mm coast, no rolling drag, conservative), so no active brake is required (validation caster_layout.stopping); reversing faster than 0.095 m/s would not be covered. 29 mm assembled height. CAD housing is a conservative envelope; three M3 × 5 pan-head machine screws (H13) on a 16.5 mm bolt circle, outside the Ø25.4 ball, through the 2 mm flange tabs into M3 brass heat-set inserts (H12) pressed into P_base from below. Drill the flange tabs to this pattern if the purchased caster differs.",
       "model": "caster"
     },
     {
@@ -251,7 +251,7 @@
       "status": "Check existing; budget to buy",
       "new_cost_usd": 8,
       "source": "https://developer.nvidia.com/embedded/learn/jetson-nano-2gb-devkit-user-guide",
-      "notes": "Use existing cooler if present. Fan header/plug depends on board revision. CAD: 40 × 40 × 10 mm fan (Ø34 bore) on the heatsink 32 mm screw pattern with four M3 pan-head screws (heads ≤ Ø5.6 × 2.1 mm). The lid seals its intake: a 1.3 mm skirt round the Ø35 lid window ends 0.9 mm above the fan frame, 1.03 mm inside the screw heads (check the gap with feelers at assembly: 0.5 mm passes, 1.0 mm does not; a fan with a bore over Ø35 or larger screw heads needs the skirt re-checked). Lid-on load test before the robot is used: lid, LiDAR and tray fitted, sustained full CPU + GPU load for 20 min, log tegrastats (CPU/GPU/SoC temperatures and clocks) and compare with a lid-off run; the lid passes if the clocks never throttle. Carry into pcb/BRINGUP.md (L11).",
+      "notes": "Use existing cooler if present. Fan header/plug depends on board revision. CAD: 40 × 40 × 10 mm fan (Ø34 bore) on the heatsink 32 mm screw pattern with four M3 pan-head screws (heads ≤ Ø5.6 × 2.1 mm). The LiDAR tray seals its intake (task L; until then a skirt under the lid): its 1.3 mm duct round the Ø35 fan window and the LD14 motor ends 0.9 mm above the fan frame, 0.51 mm from the screw heads (check the gap at assembly with modelling clay, BRINGUP section 10: 0.5–1.0 mm; a fan with a bore over Ø35 or larger screw heads needs the duct re-checked). Lid-on load test before the robot is used: lid, LiDAR and tray fitted, sustained full CPU + GPU load for 20 min, log tegrastats (CPU/GPU/SoC temperatures and clocks) and compare with a lid-off run; the lid passes if the clocks never throttle. Carry into pcb/BRINGUP.md (L11).",
       "model": "fan"
     },
     {
@@ -527,7 +527,7 @@
       "status": "Buy",
       "new_cost_usd": 2,
       "source": "",
-      "notes": "Three M3 × 10 thread-forming screws for the LD14 lugs into the tray towers' Ø2.6 pilots (the lugs' Ø3.24 holes are M3 clearance; or M3 heat-set inserts in Ø4.0 holes with M3 × 10 machine screws; confirm on the delivered LD14P), four M3 × 10 screws and nyloc nuts for the tray on the lid (holes at (-35, ±38) and (83, ±35)), two M2.5 × 12 thread-forming screws (camera holder arms into the mount crossbar, from its rear face) and four M2 × 6 thread-forming screws (camera board corners onto the holder; confirm the board's hole pattern).",
+      "notes": "Three M3 × 5 socket-head screws for the LD14 lugs, from above through the lugs' Ø3.24 holes (heads in their Ø5.96 counterbores) into M3 heat-set inserts (H12) pressed flush into the LiDAR tray's plate top (task L: the LD14 sits straight on the plate, no towers; confirm the lug web is 2 mm on the delivered LD14P, else pick the length that gives 3 mm of thread), four M3 × 12 screws and nyloc nuts for the tray on the lid (holes at (-35, ±38) and (83, ±35)), two M2.5 × 12 thread-forming screws (camera holder arms into the mount crossbar, from its rear face) and four M2 × 6 thread-forming screws (camera board corners onto the holder; confirm the board's hole pattern).",
       "model": "fasteners"
     },
     {
@@ -558,13 +558,13 @@
       "id": "H12",
       "category": "Fasteners",
       "item": "M3 brass heat-set inserts, 3 mm long (for Ø4.0 mm holes)",
-      "quantity": 23,
+      "quantity": 26,
       "unit": "inserts",
       "status": "Buy",
       "new_cost_usd": 6,
       "source": "",
       "model": "fasteners",
-      "notes": "Pressed into Ø4.0 through holes in the 4 mm P_base with a soldering iron, flush with the face the screw enters, with the plate on a flat steel backing plate: the last 1 mm of each hole stays open and takes the displaced PETG (deburr or countersink the far face afterwards). From the top for the four bay-board spacers, four battery-tray corners and the eight lid-post foot screws; from below for the three caster screws; plus one pressed flush into the top of each of the four lid posts (lid screws). Buy a pack of 50 (spares for the coupon). Follow the insert maker's hole size if it differs from Ø4.0."
+      "notes": "Pressed into Ø4.0 through holes in the 4 mm P_base with a soldering iron, flush with the face the screw enters, with the plate on a flat steel backing plate: the last 1 mm of each hole stays open and takes the displaced PETG (deburr or countersink the far face afterwards). From the top for the four bay-board spacers, four battery-tray corners and the eight lid-post foot screws; from below for the three caster screws; plus one pressed flush into the top of each of the four lid posts (lid screws) and three pressed flush into the LiDAR tray's plate top under the LD14 lugs (task L; the tray's 3.8 mm plate is too thin for thread-forming screws). Buy a pack of 50 (spares for the coupon). Follow the insert maker's hole size if it differs from Ø4.0."
     },
     {
       "id": "H13",
@@ -599,7 +599,7 @@
       "status": "Check existing; budget",
       "new_cost_usd": 40,
       "source": "",
-      "notes": "Structural base, round bumper arcs, rear shell, riders, mounts, ventilated cover and the bay board's spacers and bearing ribs (no deck: low-profile layout) (about 0.982 kg as modelled: solid walls ≤ 3 mm, 62 % from 3.6 mm (4 perimeters), linear between), plus the test coupon (print-parts/coupons/P_coupon.stl, about 12 g) and one failed arc (120–150 g each). User has Prusa MK3S (250 × 210 × 210 mm); every part and the coupon pass cad/check_printability.py. P_base (244 × 200 mm): no brim, skirt 1 mm or off. Arcs and shells: 4 perimeters, about 245 °C, part cooling ≤ 30 % up to the rim, then a 50–60 % fan height-range modifier for the inner top rims; brim on the arc ends. Bay board printed parts: four 2.4 mm spacers (bay_spacer_0–3) and two clamp spacers (bay_clamp_spacer_1 / _3), 100 % infill; two bearing ribs (bay_rib_0 / _1, bonded with epoxy F04); the battery tray carries the three hold-down springs (bay_holddown, printed with P_battery_tray, beams freed with a razor saw); the LD14 lead grommet (P_ld14_grommet).",
+      "notes": "Structural base, round bumper arcs, rear shell, riders, mounts, ventilated cover and the bay board's spacers and bearing ribs (no deck: low-profile layout) (about 0.977 kg as modelled: solid walls ≤ 3 mm, 62 % from 3.6 mm (4 perimeters), linear between), plus the test coupon (print-parts/coupons/P_coupon.stl, about 12 g) and one failed arc (120–150 g each). User has Prusa MK3S (250 × 210 × 210 mm); every part and the coupon pass cad/check_printability.py. P_base (244 × 200 mm): no brim, skirt 1 mm or off. Arcs and shells: 4 perimeters, about 245 °C, part cooling ≤ 30 % up to the rim, then a 50–60 % fan height-range modifier for the inner top rims; brim on the arc ends. Bay board printed parts: four 2.4 mm spacers (bay_spacer_0–3) and two clamp spacers (bay_clamp_spacer_1 / _3), 100 % infill; two bearing ribs (bay_rib_0 / _1, bonded with epoxy F04); the battery tray carries the three hold-down springs (bay_holddown, printed with P_battery_tray, beams freed with a razor saw); the LD14 lead grommet (P_ld14_grommet).",
       "model": "printed_parts"
     },
     {
@@ -671,7 +671,7 @@
       "status": "Buy",
       "new_cost_usd": 3,
       "source": "",
-      "notes": "Planning allowance. Task F: the LD14 is turned round (spin axis x 54), so its side-entry socket faces the other way; the modeled route from the adapter under the lid, up through the lid aperture (grommet) and back in the plenum to the socket, is about 115 mm (cable-cut-list.json W20), so the supplied ~90 mm lead does not reach: fit this 0.2 m lead. Confirm exact latch, mating gender and pin order; do not substitute a lookalike JST connector without checking.",
+      "notes": "Planning allowance. Task F turned the LD14 round (spin axis x 54), so its side-entry socket faces the other way. Task L (LD14 20 mm lower): the lead now drops straight down from the J28 plug through the lid aperture (grommet) beside it and runs forward under the lid to the adapter; the modelled route is about 71 mm (cable-cut-list.json W20). The supplied ~90 mm lead would leave only about 20 mm of slack for plugging J28 with the LD14 lifted off the tray, so keep this 0.2 m lead. Confirm exact latch, mating gender and pin order; do not substitute a lookalike JST connector without checking.",
       "model": "lidar_lead"
     },
     {
@@ -1604,8 +1604,8 @@
         "name": "LiDAR matched replacement / extension lead",
         "board_end": null,
         "wire": null,
-        "route_mm": 115,
-        "cut_mm": 200,
+        "route_mm": 71,
+        "cut_mm": 150,
         "pinout": []
       },
       {

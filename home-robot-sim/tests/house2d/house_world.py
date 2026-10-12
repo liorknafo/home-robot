@@ -1,8 +1,9 @@
 """Whole-house 2D world for tests/sim2d.py, sliced from the Blender house meshes.
-HOUSE_SLICES (env): the slices file (default house_slices_lp1475.npz, the low-profile R1: LiDAR plane .1475 m, robot top
-.15515 m; house_slices.npz is the pre-low-profile LiDAR plane .19 m, see slice_house.py). Its optional 'overhang' slice (the blind band between the LiDAR plane
+HOUSE_SLICES (env): the slices file (default house_slices_lp1275.npz, task L: LiDAR plane .1275 m, robot top .13515 m;
+house_slices_lp1475.npz is the low-profile R1 before task L, plane .1475 m / top .15515 m; house_slices.npz the pre-low-profile
+LiDAR plane .19 m; see slice_house.py). Its optional 'overhang' slice (the blind band between the LiDAR plane
 and the robot top) becomes sim2d overhangs: what lies there and not in the LiDAR or low slices touches only the turret.
-The emulated camera (camera_view) sits at geometry.CAMERA_MOUNT."""
+The emulated camera (camera_view) sits at geometry.CAMERA_MOUNT; overhang_view emulates its band pass (task M) for the overhangs."""
 import sys,math,numpy as np,cv2
 from types import SimpleNamespace
 import os
@@ -11,7 +12,7 @@ P=str(Path(__file__).resolve().parents[2])   # the sim root (this file lives in 
 sys.path.insert(0,os.environ.get('CTRL',P+'/controller'));sys.path.insert(0,os.environ.get('TESTS',P+'/tests'))
 from sim2d import World,Sim,seg_point_distance
 HERE=__file__.rsplit('/',1)[0]
-SLICES=os.environ.get('HOUSE_SLICES',HERE+'/house_slices_lp1475.npz')
+SLICES=os.environ.get('HOUSE_SLICES',HERE+'/house_slices_lp1275.npz')
 if not SLICES.startswith('/'):SLICES=HERE+'/'+SLICES
 def load_world():
     s=np.load(SLICES);walls=s['lidar'];low=s['low']
@@ -84,3 +85,32 @@ def _local_walls_cam(self,cam,rng):
     near=seg_point_distance(self.w.walls,cam)<rng+.05
     return self.w.walls[near]
 HouseSim.local_walls_cam=_local_walls_cam
+def overhang_samples(world,step=.02):
+    """Outline points of the overhangs and each point's outward edge normal (away from the overhang's centre)."""
+    pts=[];nrm=[]
+    for poly in getattr(world,'overhangs',[]):
+        c=poly.mean(0)
+        for i in range(len(poly)):
+            a,b=poly[i],poly[(i+1)%len(poly)];e=b-a;L=np.linalg.norm(e)
+            if L<1e-6:continue
+            n=np.array([e[1],-e[0]])/L;n=n if n@((a+b)/2-c)>0 else -n;k=max(1,int(L/step))
+            pts+=[a+e*j/k for j in range(k)];nrm+=[n]*k
+    return np.array(pts).reshape(-1,2),np.array(nrm).reshape(-1,2)
+# The camera's band pass on an overhang's bottom edge, from task M's Unreal drives at the sofa base (underside 130 mm): it
+# confirmed the edge first 0.42-0.79 m from the lens (5/5 drives, straight on and up to 26 deg off), nothing when the robot
+# passed it obliquely (an edge seen along its length moves along itself) or stood still. So: edge points between OV_NEAR (the
+# edge enters the 27 deg upper half of the field of view: (.13 - .08) / tan(27 deg) = .10 m) and OV_RANGE (.45 m, under every
+# first detection), seen within OV_ANGLE of face-on, while driving forward, not behind walls. Not emulated: the short ranging
+# of oblique views (cells up to 25 cm in front of the edge in Unreal) and floor too plain for the camera to measure motion.
+OV_NEAR,OV_RANGE,OV_ANGLE=.10,.45,math.radians(40)
+def overhang_view(sim,samples,normals,moving,fov=math.radians(84),near=OV_NEAR,rng=OV_RANGE,max_angle=OV_ANGLE):
+    """Emulated band-pass detections of overhang edges (see above), in the robot base frame; nothing unless moving."""
+    if not moving or not len(samples):return np.zeros((0,2))
+    p=sim.pose;c,s=math.cos(p[2]),math.sin(p[2]);cam=p[:2]+CAMERA_MOUNT[0]*np.array([c,s])
+    d=samples-cam;r=np.linalg.norm(d,axis=1);ang=np.arctan2(d[:,1],d[:,0])-p[2];ang=(ang+math.pi)%(2*math.pi)-math.pi
+    facing=-np.sum(d*normals,1)/np.maximum(r,1e-9)
+    keep=(r<rng)&(r>near)&(np.abs(ang)<fov/2)&(facing>math.cos(max_angle))
+    if not keep.any():return np.zeros((0,2))
+    q=samples[keep];dirs=(q-cam)/r[keep,None];hit=_seg_hits(cam,dirs,sim.local_walls_cam(cam,rng))
+    q=q[hit>r[keep]-.02]
+    return (q-p[:2])@np.array([[c,-s],[s,c]])

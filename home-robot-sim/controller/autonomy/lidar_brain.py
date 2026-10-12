@@ -164,6 +164,7 @@ STALL_MARK_SPACING=.10   # m; a second unexplained stall this close to a marked 
 STALL_BACKOFF=.05        # m; back-off after a marked stall: its nearest mark (R + .05 ahead) ends R + .10 = .259 away, outside PLAN_RADIUS,
                          # and the LiDAR turret (its far edge, LIDAR_MOUNT x + turret radius, is about .07 from base_link since task F) can spin again. It can follow up to two .035 jam retreats
                          # in the same reverse episode (the retries end where the retreats began), so it stays short.
+PUSH_STALL_S=2.;PUSH_V=.02   # pushed_stalled: forward commands of at least PUSH_V for PUSH_STALL_S with no LiDAR motion (task M)
 STALL_MARK_LIMIT=8       # unexplained stalls marked per session; the 8th is marked and ends the session (mark_stall). Each mark costs
                          # at most three pushes (often the LiDAR turret against furniture: note_jam's three jams), so <= 24 per session.
                          # The overhang scenarios need 5 (sofa: 2 m long, three open edges) and 1 per Go-to (table); the caster-catch
@@ -252,7 +253,7 @@ class LidarBrain(Brain):
     def reset_recovery(self,stamp):
         # Driven trail (1 cm spacing) is the only ground known clear behind the robot.
         self.relaxed_exit=False;self.contact_spin=None;self.spin_commit=None;self.scan_pose=None;self.spin_wait_from=None;self.spin_scans=deque(maxlen=SPIN_SCANS);self.bumper_sides=(False,False);self.reverse_refused=False;self.reverse_episode=None;self.last_reverse_stamp=-1e9;self.trail_break=False;self.trail_breaks=deque(maxlen=600);self.reversed_since_forward=False;self.forward_mark=None;self.pressed_refused=False;self.pressed_spin_odo=None;self.close_spin_blocked=None;self.close_spin_stall=None;self.gyro_z=0.;self.stuck_skips=0;self.stuck_anchor=None;self.trail=deque(maxlen=600);self.contacts=[];self.trouble=[];self.jams=[];self.stall_marks=[];self.wants_arm=False;self.bump_events=None;self.bumper_pressed=False;self.disarmed_since=None;self.tilted_since=None
-        self.odometry=deque(maxlen=240);self.lidar_track=deque(maxlen=40);self.jam_reset=stamp;self.skips=0;self.coverage_mark=0.
+        self.odometry=deque(maxlen=240);self.lidar_track=deque(maxlen=40);self.sent_v=deque(maxlen=200);self.jam_reset=stamp;self.skips=0;self.coverage_mark=0.
         self.margin_anchor=None;self.margin_attempts=0;self.stall_position=None;self.stall_attempts=0;self.retreat_after_localization=False;self.translation_anchor=None;self.translation_since=stamp
         # Contact recovery (CONTACT_*): net forward wheel travel since the last turn in place, the back-offs tried for this contact, and since when a pressed robot with no legal motion has waited for the release.
         self.forward_run=0.;self.run_ticks=None;self.contact_attempts=0;self.backoff_v=.05;self.waiting_since=None;self.contact_xy=None;self.creep_until=0.;self.wait_retried=False
@@ -312,7 +313,7 @@ class LidarBrain(Brain):
             # The round body is standing on this cell, so a camera or contact
             # obstacle recorded here was wrong or has moved.
             cell=self.grid.cell(pose[:2])
-            if self.grid.valid(cell) and self.grid.camera_obstacles[cell]:self.grid.camera_obstacles[cell]=self.grid.camera_core[cell]=False;self.grid.logodds[cell]=-1.
+            if self.grid.valid(cell) and self.grid.camera_obstacles[cell]:self.grid.camera_obstacles[cell]=self.grid.camera_core[cell]=self.grid.camera_backed[cell]=self.grid.contact_core[cell]=self.grid.overhang_shadow[cell]=False;self.grid.logodds[cell]=-1.
         if self.phase=='confirm_arrival':
             self.arrival_frames=self.arrival_frames+1 if good and np.linalg.norm(pose[:2]-self.arrival_point())<.10 else 0
             if self.arrival_frames>=5:self.mode='idle';self.phase='idle';self.path=[];self.event(self.arrival_message(pose))
@@ -337,7 +338,7 @@ class LidarBrain(Brain):
         # (the surface is at the skin), so 5 cm grid snapping cannot pull a mark in front of it.
         if isinstance(zones,(list,tuple)):zones=(zones[2] and 3)|(zones[1] and 4)|(zones[0] and 24) if any(zones) else 0
         known=[i for i in range(5) if int(zones or 0)>>i&1];bits=known or [1,2,3]
-        self.grid.add_camera_obstacles(transform(contact_marks(bits),p),margin=0)
+        self.grid.add_camera_obstacles(transform(contact_marks(bits),p),margin=0,contact=True)
         self.contacts.append(p[:2].copy());near=sum(np.linalg.norm(c-p[:2])<.5 for c in self.contacts)
         if self.mode=='mapping' and self.goal is not None and (np.linalg.norm(self.goal-p[:2])<.6 or near>=2):self.blacklist.append(self.goal.copy())
         if near>=4 or len(self.contacts)>=15:self.idle('Repeated contacts in one area. Stopped safely; partial map saved.');return
@@ -525,6 +526,17 @@ class LidarBrain(Brain):
         travel=abs(float(wheels.mean()));turn=abs(float(wheels[1]-wheels[0]))/WHEEL_TRACK
         moved=float(np.linalg.norm(track[-1][1][:2]-track[0][1][:2]));rotated=abs(wrap(track[-1][1][2]-track[0][1][2]))
         return moved<.012 and (travel>.06 or (turn>.35 and rotated<.05))
+    def pushed_stalled(self,stamp):
+        """Driven forward (every command at least PUSH_V for the last PUSH_STALL_S) yet the LiDAR shows no motion, with the bumper
+        released: the robot is pushing against something, with its wheels stopped (jammed() needs them turning). In Unreal the
+        LiDAR turret meeting the underside of furniture in the blind band stops the wheels (task M, full-mapping-20261012T144002:
+        pressed against the sofa base's end for 270 s, no jam, no stall mark). Handled as a jam (note_jam, then mark_stall)."""
+        if self.bumper_pressed:return False
+        sent=[x for x in getattr(self,'sent_v',()) if x[0]>=max(stamp-PUSH_STALL_S,self.jam_reset)]
+        track=[x for x in self.lidar_track if x[0]>=max(stamp-PUSH_STALL_S,self.jam_reset)]
+        if len(sent)<10 or sent[-1][0]-sent[0][0]<PUSH_STALL_S-.3 or min(v for _,v in sent)<PUSH_V:return False
+        if len(track)<5 or track[-1][0]-track[0][0]<1.2:return False
+        return float(np.linalg.norm(track[-1][1][:2]-track[0][1][:2]))<.012 and abs(wrap(track[-1][1][2]-track[0][1][2]))<.05
     def predict(self,state):
         sensors=state.get('sensors',{});stamp=state['sim_time_s'];fault=state.get('fault','none')
         if 'left_ticks' in sensors:self.odometry.append((stamp,sensors['left_ticks'],sensors['right_ticks']));self.encoder_cpr=sensors.get('encoder_cpr',self.encoder_cpr)
@@ -644,6 +656,8 @@ class LidarBrain(Brain):
             # Confirmed cells (two views, two points each); the planner's 25 cm
             # clearance already pads them, so no extra cell margin is added.
             self.grid.add_camera_obstacles(points,margin=0);self.next_plan=0
+            # Overhang edges (the camera's band pass): the free floor right behind them is under the overhang.
+            if len(self.low_camera.new_overhangs):self.grid.add_overhang_shadow(self.low_camera.new_overhangs,self.low_camera.camera_xy)
             if self.map_folder is not None:
                 self.map_folder.mkdir(parents=True,exist_ok=True)
                 with (self.map_folder/'camera-observations.jsonl').open('a') as log:log.write(json.dumps(dict(stamp=meta['sim_time_s'],estimated_pose=self.camera_pose(meta['sim_time_s']).tolist(),points=points.tolist(),checks=self.low_camera.status))+'\n')
@@ -805,7 +819,7 @@ class LidarBrain(Brain):
         line=p[:2]+sign*offsets[:,None]*np.array([math.cos(p[2]),math.sin(p[2])])
         if any(not self.grid.valid(self.grid.cell(xy)) or not free[self.grid.cell(xy)] for xy in line):return False
         # Rear low obstacles are invisible to the forward camera and the LiDAR
-        # (scan plane geometry.LIDAR_MOUNT[2], 19 cm), so reversing may only
+        # (scan plane geometry.LIDAR_MOUNT[2]), so reversing may only
         # retrace ground the body has covered.
         if previously_traversed and self.reverse_room(distance+.005,step=step)<distance-.005:return False
         cloud=self.obstacle_points()
@@ -849,7 +863,7 @@ class LidarBrain(Brain):
         if any(np.linalg.norm(q-p[:2])<STALL_MARK_SPACING for q in self.stall_marks):return False
         lidar=self.live_lidar_points()
         if len(lidar) and ((np.linalg.norm(lidar,axis=1)<R+.01)&(lidar[:,0]>0)).any():return False   # the LiDAR explains it: already mapped
-        self.grid.add_camera_obstacles(transform(contact_marks([1,2,3]),p),margin=0);self.stall_marks.append(p[:2].copy());self.trouble.append(p[:2].copy())
+        self.grid.add_camera_obstacles(transform(contact_marks([1,2,3]),p),margin=0,contact=True);self.stall_marks.append(p[:2].copy());self.trouble.append(p[:2].copy())
         self.event('Pushing forward does not move the robot here, yet the bumper is released and the LiDAR sees nothing: '
                    'probably an overhang above the LiDAR beam or something under the body.')
         if len(self.stall_marks)>=STALL_MARK_LIMIT:
@@ -1554,7 +1568,7 @@ class LidarBrain(Brain):
         a=self.approach;p=self.localizer.pose
         if a is None:self.begin_approach(t);a=self.approach
         if t-a['started']>APPROACH_TIMEOUT_S:return self.finish_approach(t,'time')
-        if self.jammed(t):return self.finish_approach(t,'jam')
+        if self.jammed(t) or self.pushed_stalled(t):return self.finish_approach(t,'jam')
         d=self.goal-p[:2];dist=float(np.linalg.norm(d))
         if dist<=APPROACH_REACHED:return self.finish_approach(t,'goal')
         error=wrap(math.atan2(d[1],d[0])-p[2])
@@ -1648,7 +1662,7 @@ class LidarBrain(Brain):
                 # (turning does not end it): forward / back cycles cannot walk the robot back along its trail.
                 if v>0 and ep['forward_from'] is None:ep['forward_from']=p[:2].copy()
                 if ep['forward_from'] is not None and np.linalg.norm(p[:2]-ep['forward_from'])>=max(REVERSE_EPISODE_RESET,ep['travelled']):self.reverse_episode=None
-        self.reverse_refused=False;return v,w
+        self.reverse_refused=False;self.sent_v.append((state.get('sim_time_s',0.),v));return v,w
     def drive_command(self,state):
         t=state['sim_time_s'];loc=self.localizer;p=loc.pose
         if self.mode=='idle':self.wants_arm=False;return 0.,0.
@@ -1818,7 +1832,7 @@ class LidarBrain(Brain):
         if self.phase=='recovery_advance':
             distance=np.linalg.norm(p[:2]-self.escape_origin[:2])
             if distance>=.28:self.phase='plan';self.plan_not_before=t;self.last_progress=t;self.progress_pose=p.copy();self.translation_anchor=None;return 0.,0.
-            if self.jammed(t):self.begin_jam_settle(t,'The straight retry did not get through.');return 0.,0.
+            if self.jammed(t) or self.pushed_stalled(t):self.begin_jam_settle(t,'The straight retry did not get through.');return 0.,0.
             if t-self.phase_started>7:
                 if not self.begin_retreat(t):self.skip_goal('The straight retry did not get through.',t)
                 return 0.,0.
@@ -1843,6 +1857,10 @@ class LidarBrain(Brain):
             # Typically the caster or a wheel caught on a rug edge or threshold:
             # back off a little on the driven trail, then retry straight.
             self.begin_jam_settle(t,'Wheels turn but the robot does not move.')
+            return 0.,0.
+        if self.pushed_stalled(t):
+            # Pushing against something no sensor reports (wheels stopped): the same handling as a jam.
+            self.begin_jam_settle(t,'Pushing forward does not move the robot.')
             return 0.,0.
         if self.translation_stalled(t):
             if self.grid.radius<PLAN_RADIUS:

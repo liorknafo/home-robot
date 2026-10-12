@@ -99,8 +99,8 @@ KG={'kitchen_corner_3mm_slip_s4_give_up':dict(diagonal=True,gap=.003,spin_slip_m
 # reverse audit clean, the contact on the map.
 CR={'contact_weave':dict(approach='weave',gap=.02),'contact_after_spin_3mm':dict(approach='spin',gap=.003),'contact_after_spin_5mm':dict(approach='spin',gap=.005),'contact_after_spin_10mm':dict(approach='spin',gap=.01),
     'contact_after_spin_20mm':dict(approach='spin',gap=.02),'contact_spin_start_10mm':dict(approach='spin_start',gap=.01),'contact_spin_start_30mm':dict(approach='spin_start',gap=.03)}
-# Overhang in the LiDAR's blind band (low-profile R1: LiDAR plane 147.5 mm, robot top 155 mm): furniture on legs with its
-# underside at 150 mm gives no LiDAR return, no bumper touch and no cliff; only the LiDAR turret meets its edge (sim2d
+# Overhang in the LiDAR's blind band (between the LiDAR plane and the robot top; 147.5-155.15 mm until task L): furniture on legs
+# with its underside in the band (sim2d overhang_world: midway) gives no LiDAR return, no bumper touch and no cliff; only the LiDAR turret meets its edge (sim2d
 # overhang_world / run_overhang). overhang_sofa: mapping beside a 2 x .85 m sofa against a wall; overhang_table: mapping
 # around a 1 x .6 m coffee table; overhang_table_goto: the same room mapped, then Go-to targets straight across the
 # table (the shortest route passes between its legs, under it), each must end 'Arrived'. PASS: see run_overhang
@@ -128,7 +128,8 @@ OH={'overhang_sofa':dict(kind='sofa'),'overhang_table':dict(kind='table'),'overh
 # report complete (a robot boxed out by its own margins never reports the house done). Both: stopped on its own, no contact.
 PK={'pocket_posts':dict(kind='posts'),'pocket_door':dict(kind='door')}
 # Furniture whose edges the LiDAR returns only from close by (task K, sim2d ledge_world / run_ledge): a 2.1 x .85 m sofa base against
-# a wall, its underside 1.75 cm below the scan plane like the Unreal sofa's (13 cm vs 14.75 cm). Each scan's plane tilts (sim2d
+# a wall, its underside 1.75 cm below the scan plane like the Unreal sofa's under task K's plane (13 cm vs 14.75 cm; task L lowers
+# the plane). Each scan's plane tilts (sim2d
 # LEDGE_TILT, the Unreal trial's pitch / roll spread), so far beams may pass under the base, and beams skimming past its ends
 # cross their cells. ledge_sofa: mapping must complete; every outline cell mapped from a hit within 0.5 m stays an obstacle for
 # the rest of mapping; nothing under the base is planner-reachable at the end (before task K far beams erased what close scans

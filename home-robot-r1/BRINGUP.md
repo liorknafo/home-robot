@@ -293,14 +293,14 @@ Steps:
   - Do not run NiMH below 1.0 V per cell.
 - **Jetson power:** barrel-jack power needs the Jetson Nano's **J48 jumper** fitted.
 - **IMU:** the MPU-6050 runs DLPF_CFG = 4 (about 20 Hz), with samples forwarded at 20 Hz (ruling PB27; see section 14).
-- **Braking: keep the ramp, never short-brake** (task F; numbers updated in task I). With the LD14 turned round at x 54 and the lid
-  closed over the front bay, the robot's balance point is 16.0 mm behind the axle (13.5 mm in the CAD's worst case). Braking harder
-  than about 1.3 m/s² down a 5° slope in that worst case (1.7 m/s² nominal) would lift the caster and rock the robot onto its bumper.
-  DriveCore ramps every wheel setpoint, braking included, at 0.25 m/s², well below that. The firmware must keep that ramp. On a disarm
-  (bumper, cliff, tilt, timeout) it must let the motors **coast**: drive both DRV8874 inputs of each motor low (IN-IN mode coast),
-  never both high (short brake). The motor torque cap alone would allow about 1.63 m/s², 0.3 m/s² above the worst-case downhill onset
-  (task F had 0.06): only the firmware ramp keeps a hard stop on a downhill from rocking the robot forward, so it must not be removed
-  or raised.
+- **Braking: keep the ramp, never short-brake** (task F; numbers updated in tasks I and L). With the LD14 turned round at x 54, the lid
+  closed over the front bay and the LD14 20 mm lower (task L), the robot's balance point is 16.2 mm behind the axle (13.7 mm in
+  the CAD's worst case). Braking harder than about 1.4 m/s² down a 5° slope in that worst case (1.8 m/s² nominal) would
+  lift the caster and rock the robot onto its bumper. DriveCore ramps every wheel setpoint, braking included, at 0.25 m/s², well below
+  that. The firmware must keep that ramp. On a disarm (bumper, cliff, tilt, timeout) it must let the motors **coast**: drive both
+  DRV8874 inputs of each motor low (IN-IN mode coast), never both high (short brake). The motor torque cap alone would allow about
+  1.63 m/s², 0.2 m/s² above the worst-case downhill onset (task F had 0.06): only the firmware ramp keeps a hard stop on a
+  downhill from rocking the robot forward, so it must not be removed or raised.
 
 ## 9. Before fitting the Jetson: plugs and the gap under the carrier
 
@@ -339,14 +339,21 @@ Then fit the Jetson (ASSY step 7).
 
 ## 10. Lid-on checks
 
-1. **Fan skirt feeler** (the lid note in `cad/component-manifest.json`).
-   - Do this when the lid is first fitted, before the LiDAR tray is bolted onto it: the tray's grille closes the lid's fan window.
-   - Set the lid on its posts. Put the feeler in through the Ø35 fan window, lay it flat on the fan frame, and slide it outward under the
-     bottom edge of the skirt, all round.
-   - A **0.5 mm feeler must pass** (no contact). If it touches, sand the skirt end.
-   - A **1.0 mm feeler must not pass.** If it passes, shim the fan: otherwise the fan's bypass limit is lost. The bypass is 20.4 % of the
-     grille's open area, against a 25 % limit that is reached at a 1.12 mm gap.
-   - The nominal gap is 0.9 mm (`validation.jetson_cooling.fan_skirt`).
+1. **Fan duct check** (the LiDAR tray note in `cad/component-manifest.json`). Task L moved the seal round the fan's intake from a
+   skirt under the lid to a duct under the LiDAR tray: it passes through the lid's central opening, ends 0.9 mm above the fan
+   frame and, ahead of the fan, closes under the LD14 motor with a bowl.
+   - Do this with the lid on its posts and the tray screwed onto it, before the LD14 goes on. The duct's lower edge cannot be reached
+     from above, so use modelling clay: press four small balls (about 4 mm across) onto the fan frame just outside the round fan
+     opening (front left, front right, rear left, rear right), fit the lid and the tray, lift them off again and measure the squashed
+     clay with a caliper.
+   - Every ball must be **0.5–1.0 mm** thick. Thinner: sand the duct end where it touched. Thicker than 1.0 mm: shim the fan,
+     otherwise the bypass limit is lost (the bypass is 22.1 % of the grille's open area, against a 25 % limit that is
+     reached at a 1.05 mm gap).
+   - Through the tray's Ø26.4 hole for the LD14 motor, look down past the front of the fan: light must show between the
+     bowl's back wall and the fan's front face (0.5 mm by design).
+   - **LD14 motor over the fan.** The motor's rim sits 1.4 mm above the fan frame. Repeat the clay check with one ball on the
+     fan frame's front edge, under where the motor will be, with the LD14 fitted: it must stay at least 0.5 mm thick. If not, put
+     0.5 mm washers under the LD14's three lugs (not under the tray: that would open the duct gap).
 2. **Lid-on tegrastats test.**
    - Everything is fitted and the lid and LiDAR tray are on.
    - Run the Jetson under its real load (the autonomy stack, or a CPU + GPU stress) until the temperatures settle, about 30 minutes, and
@@ -355,10 +362,13 @@ Then fit the Jetson (ASSY step 7).
    - Record the peak CPU / GPU / thermal-zone values.
    - Also record the air temperature under the carrier, near the drivers: the DRV8874 figures in section 8 assume 40 °C.
 3. **LD14 orientation and scan direction** (task F: the LD14 is turned round, spin axis 54 mm ahead of the axle).
-   - The LD14 sits on its tray with its **round turret toward the front and its motor toward the back**. The tray takes four M3 × 10
-     screws with nyloc nuts under the lid: (−35, ±38) and (83, ±35).
-   - The LD14 lead (W20, the 0.2 m C17 lead) plugs in under the LD14, runs forward under it to the tray opening, drops through the lid
-     aperture there (fit the grommet `P_ld14_grommet` round it) and runs under the lid to the USB adapter.
+   - The LD14 sits on its tray with its **round turret toward the front and its motor toward the back**. Task L: it sits 20 mm lower,
+     straight on the tray plate (no towers): its three lugs rest on M3 heat-set inserts pressed flush into the plate top and take
+     M3 × 5 socket-head screws from above (heads in the lugs' counterbores). Its motor drops through the tray into the fan duct. The
+     tray takes four M3 × 12 screws with nyloc nuts under the lid: (−35, ±38) and (83, ±35).
+   - The LD14 lead (W20, the 0.2 m C17 lead) runs from the USB adapter forward under the lid and straight up through the lid aperture
+     at (39, 18), beside the J28 plug. Pass the plug up through the aperture, fit the grommet `P_ld14_grommet` round the lead, plug J28
+     into the LD14 while the LD14 is still off the tray, then set the LD14 down and feed the slack back down through the grommet.
    - **Scan offset.** The LD14's 0° direction (its motor end) now points **backward**. In the LiDAR driver, add 180° to every scan
      angle and wrap the result into (−180°, 180°]: robot bearing = wrap(scan angle + 180°), for a scan in the usual counter-clockwise
      (REP-103) form whose 0° is the motor end. A raw LD14 angle, which runs clockwise, maps to wrap(180° − raw angle).
@@ -377,6 +387,16 @@ Then fit the Jetson (ASSY step 7).
      camera board sits flat on the holder (the lens must point straight ahead and level).
    - With the bumper at rest, the lens face sits about 12 mm behind the bumper skin. Check by eye that a flat card held against the
      bumper front, pushed until the bumper stops, does not touch the lens.
+5. **Camera top-edge check** (task M, LIO-121: the camera now also finds furniture whose underside is between the LiDAR's scan line
+   and the robot top, which the LiDAR passes under and only the LiDAR turret would hit).
+   - The controller needs the top of the image to see the band up to 2 cm above the robot top, about 75 mm above the lens, from
+     0.15 m ahead. The OV2735 camera (A) is sold as 96° diagonal with almost no distortion, which is about 88° × 57° at 16:9
+     (top edge 28.6° above level). The simulator uses 84° × 54° (top edge 26.9°).
+   - Jetson on, camera streaming in the mode the controller will use. Lay a ruler across the floor 0.15 m in front of the lens and
+     hold a card edge level 135 mm above the floor over it (the robot top with the LiDAR 20 mm lower).
+   - Pass: the card edge shows in the image, below the top edge. If it does not, the mode crops the sensor (some 4:3 modes do) or the
+     lens points down: use a 16:9 mode and check that the holder sits flat. Each degree the lens points down costs about 3 mm at
+     0.15 m.
 
 ## 11. Service
 
@@ -385,6 +405,9 @@ plug. BAT+ is live and unfused at F1's input whenever the battery is plugged in:
 
 - **Everyday rule:** switch the rocker off before you plug or unplug the battery, and shut the Jetson down before you switch the
   rocker off. Fit or pull a fuse only with the rocker off.
+- **The lid comes off with the LiDAR tray and the LD14 on it** (four lid screws). Lift it straight up. Task L: the tray's fan duct
+  hangs through the lid; when you refit it, lower it straight down: the bowl under the LD14 motor passes 0.5 mm in front of the fan's
+  front face.
 - **With the lid off, these are reachable:** the board's rear band (Pico USB, the rear connector row, the Jetson 5 V lead J3, the
   fuses).
 - **These need the Jetson off:** the motor inline joints, the other under-carrier connectors and the P03 (tie, trimpot). To take the
@@ -446,6 +469,11 @@ On 2026-10-11 (task I) the lid was closed over the front bay (a 1.5 mm pocket un
 seam sensed) and the simulator was re-synced at e068608: robot 2.4442 kg (+26.7 g), COM x −15.96 mm (the CAD's worst case
 −13.48 mm). The scenario suites, errors on and off, and goto_wall gave the same results as before the change. Unreal was not re-run for
 this 1 % mass change; it reads the new mass and inertia at its next launch.
+
+On 2026-10-12 (task L, LIO-120, the user's request) the LD14 was lowered 20 mm, the most the scan-band rule allows: laser plane
+127.5 mm (was 147.5), robot top 135.15 mm (was 155.15). The simulator was re-synced from task L's final CAD: robot 2.4390 kg (was 2.4442), COM x −16.17 mm (the CAD's worst case −13.68 mm); the LiDAR scan plane is at 0.1275 m and the Unreal LiDAR column reaches 0.13515 m. Both sim2d scenario suites and goto_wall give logs byte-identical to main's; the 2D house completes 6 of 6 runs (median 790 s, main 763 s). sim2d has no camera, so in the 2D house the sofa base (underside 130 mm,
+now between the scan line and the turret top) is found only by stall marks after the turret meets it; the front camera's overhang
+detection is task M (LIO-121).
 
 ## 14. IMU calibration at bring-up
 
