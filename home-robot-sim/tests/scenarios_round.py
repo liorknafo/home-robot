@@ -14,7 +14,7 @@ from pathlib import Path
 P=str(Path(__file__).resolve().parents[1])   # project root
 sys.path.insert(0,P+'/controller');sys.path.insert(0,P+'/tests')
 from autonomy.lidar_brain import LidarBrain,STALL_MARK_SPACING
-from sim2d import World,Sim,Bridge,box,inside,poly_segments,seg_point_distance,run_kitchen_corner,run_side_press,run_overhang,reverse_audit,run_contact_recovery,run_pocket
+from sim2d import World,Sim,Bridge,box,inside,poly_segments,seg_point_distance,run_kitchen_corner,run_side_press,run_overhang,reverse_audit,run_contact_recovery,run_pocket,run_ledge
 walls=[((-1,-1.5),(3,-1.5)),((3,-1.5),(3,1.5)),((3,1.5),(-1,1.5)),((-1,1.5),(-1,-1.5)),((1,-1.5),(1,.6)),((-.6,.9),(-.4,.9)),((2.3,-.9),(2.3,-.6)),((.5,-1.1),(.5,-.8))]
 SC={'tray':dict(low=[box(.45,0.,.5,.5)]),'tray_far':dict(low=[box(.75,-.9,.5,.4)]),'bath':dict(low=[box(2.3,1.1,.8,.4)]),'curb':dict(curbs=[box(.5,.6,.06,.8)]),'empty':{},'sticky':dict(sticky=[(box(.4,0,.3,.3),'turn'),(box(1.8,0,.3,.3),'stop')]),
     'clutter':dict(low=[box(1.8,-.3,.25,.12),box(-.3,.9,.06,.06),box(2.4,.8,.4,.3)],curbs=[box(.3,-.9,.3,.04)])}
@@ -127,6 +127,13 @@ OH={'overhang_sofa':dict(kind='sofa'),'overhang_table':dict(kind='table'),'overh
 # pocket_door: one gap of 34 cm, which the body fits but the planner never plans through: the pen counts and mapping must NOT
 # report complete (a robot boxed out by its own margins never reports the house done). Both: stopped on its own, no contact.
 PK={'pocket_posts':dict(kind='posts'),'pocket_door':dict(kind='door')}
+# Furniture whose edges the LiDAR returns only from close by (task K, sim2d ledge_world / run_ledge): a 2.1 x .85 m sofa base against
+# a wall, its underside 1.75 cm below the scan plane like the Unreal sofa's (13 cm vs 14.75 cm). Each scan's plane tilts (sim2d
+# LEDGE_TILT, the Unreal trial's pitch / roll spread), so far beams may pass under the base, and beams skimming past its ends
+# cross their cells. ledge_sofa: mapping must complete; every outline cell mapped from a hit within 0.5 m stays an obstacle for
+# the rest of mapping; nothing under the base is planner-reachable at the end (before task K far beams erased what close scans
+# had mapped: the floor under the base was reachable for most of the run, 10-22 outline cells open at the end).
+LG={'ledge_sofa':{}}
 CT={'catch_transient':dict(sticky=[(box(.5,.6,.03,.8),'catch',3.)]),'catch_rug_edge':dict(sticky=[(box(1.9,.3,.03,.8),'catch')])}
 CATCH_FREE_BOUND=.25
 CATCH_NEAR_M=.30    # m: 'near the edge' (note_jam's spot radius)
@@ -174,7 +181,7 @@ def stat_verdict(name,results):
     return ok,(f"{name} {'PASS' if ok else 'FAIL'} statistical (rulings PB29, PB32), Sim seeds {STAT_SEEDS[0]}-{STAT_SEEDS[-1]}: errors on passed {n['on']}/{len(STAT_SEEDS)}, "
                f"errors off {n['off']}/{len(STAT_SEEDS)}; fails only if on < off - 1"+(f"; '{key}' seeds: on {covered['on']}, off {covered['off']} (>= 1 each)" if key else '')
                +(f'; crashed: {crashed}' if crashed else ''))
-names=sys.argv[1:] or list(SC)+list(KC)+list(SP)+list(GU)+list(KG)+list(CR)+list(OH)+list(CT)+list(PK)
+names=sys.argv[1:] or list(SC)+list(KC)+list(SP)+list(GU)+list(KG)+list(CR)+list(OH)+list(CT)+list(PK)+list(LG)
 runs=[r for n in names for r in (stat_runs(n) if n in STAT else [n])]
 if len(runs)>1:
     # One fresh process per scenario run (module-level state cannot leak between scenarios).
@@ -225,6 +232,9 @@ for name in runs:
         print(name,'PASS' if r['passed'] else 'FAIL',{k:v for k,v in r.items() if k!='passed'},flush=True);continue
     if name in PK:
         r=run_pocket(lambda:LidarBrain(tmp.name),**PK[name]);ok&=r['passed']
+        print(name,'PASS' if r['passed'] else 'FAIL',{k:v for k,v in r.items() if k!='passed'},flush=True);continue
+    if name in LG:
+        r=run_ledge(lambda:LidarBrain(tmp.name),**LG[name]);ok&=r['passed']
         print(name,'PASS' if r['passed'] else 'FAIL',{k:v for k,v in r.items() if k!='passed'},flush=True);continue
     if name in OH:
         r=run_overhang(lambda:LidarBrain(tmp.name),**OH[name]);ok&=r['passed']

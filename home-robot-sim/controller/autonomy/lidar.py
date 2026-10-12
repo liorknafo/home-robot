@@ -37,6 +37,18 @@ GLOBAL_ACCEPT=.80;GLOBAL_MARGIN=.10
 # A verified pose stays the relocalization starting point while odometry has carried the
 # robot less than this since the fix (e.g. idle between Go-to targets).
 PRIOR_TRAVEL_M=.5
+# Close-range obstacle evidence (task K, LIO-118; LidarGrid.integrate_scan). The robot cannot tell a beam's height (its pitch
+# estimate is off by up to ~1.3 deg, 2-7 cm at 1-3 m). From about 1 m on, the beams that reach the sofa's ends skim past
+# through their partly free 5 cm cells, or pass under its 13 cm base (the scan plane is 14.75 cm) when the robot tilts, and
+# erased what scans from 20-50 cm had measured (hit in 94-99 % of scans within 0.5 m, 5-15 % beyond 1 m at the north end):
+# the floor under the sofa reopened. So a beam passing a cell more than NEAR_SLACK_M farther than the closest range the cell
+# was hit from cannot lower it; a beam passing about as close as that, the robot's body standing there, or HOLD_S without
+# any hit on the cell (a person or chair that moved away) clears it as before. Chosen on replays of six Unreal trials
+# (tests/replay_unreal_lidar.py) and sim2d's ledge_sofa: .25 m let close beams that pass under the ledge clear cells seen
+# from 30-50 cm. With 300 s an end the robot had seen at 0.27 m at 180 s reopened after ~550 s in Unreal trial
+# full-mapping-20261012T054232 (a target under the sofa at 766 s); 600 s kept it closed all run there and kept the sofa closed
+# more often mid-run in 2 more of 5 replayed trials (as often in the other 2). The price: a moved object stays up to 10 min.
+NEAR_SLACK_M=.10;HOLD_S=600.
 def relocalization_failure_message(q):
     if q.get('ambiguous'):return 'Two places in the saved map fit the LiDAR view about equally (%d%% and %d%% of points); not moving.'%(100*q['best'],100*q['second'])
     best=q.get('best')
@@ -62,6 +74,9 @@ class LidarGrid(Grid):
         # NARROW_BLOCK_S (LidarBrain prunes older ones, so one stall does not close a real
         # doorway for the rest of the run); narrow_block_times holds when each was added.
         self.narrow_blocks=[];self.narrow_block_times=[]
+        # Close-range obstacle evidence (integrate_scan): per cell, the closest range from the LiDAR it was hit from while it
+        # holds obstacle evidence (inf otherwise), and the sim time of its last hit.
+        self.hit_range=np.full(self.seen.shape,np.inf,np.float32);self.hit_time=np.full(self.seen.shape,-np.inf);self.near_slack=NEAR_SLACK_M;self.hold_s=HOLD_S
     def masks(self):
         free,occupied,unknown,safe,clearance=super().masks()
         if self.radius<PLAN_RADIUS and getattr(self,'narrow_blocks',None):
@@ -95,20 +110,34 @@ class LidarGrid(Grid):
         self.logodds[self.camera_obstacles]=5
     def image(self,*args,**kwargs):
         im=super().image(*args,**kwargs);im[np.flipud(self.camera_obstacles)]=[40,125,225];return im
-    def integrate_scan(self,points,pose):
+    def integrate_scan(self,points,pose,stamp=None):
+        """One scan at the robot's pose: each cell a beam crosses -0.7, each cell a beam ends in +1.0 (clamped to +-5). A
+        crossing beam does not lower a cell holding obstacle evidence when it passes the cell more than near_slack farther
+        from the LiDAR than the closest range the cell was hit from (NEAR_SLACK_M), until the cell has gone hold_s without a
+        hit (HOLD_S; stamp is the scan's sim time, None: never). The cells under the robot's body are lowered regardless."""
         if len(points)<60:return
         if self.last_pose is not None and np.linalg.norm(pose[:2]-self.last_pose[:2])<.025 and abs(wrap(pose[2]-self.last_pose[2]))<.06 and self.updates>=5:return
         self.last_pose=pose.copy();self.updates+=1
         # Free rays start at the LiDAR origin (scan sensor_in_base_m, stored by LidarBrain.observe_scan).
-        free=np.zeros_like(self.seen,np.uint8);occupied=np.zeros_like(free);start=self.cell(transform(np.array([getattr(self,'sensor_xy',LIDAR_MOUNT[:2])]),pose)[0]);world=transform(points,pose)
+        free=np.zeros_like(self.seen,np.uint8);occupied=np.zeros_like(free);sensor=transform(np.array([getattr(self,'sensor_xy',LIDAR_MOUNT[:2])]),pose)[0];start=self.cell(sensor);world=transform(points,pose)
         for point in world:
             end=self.cell(point)
             if not self.valid(end):continue
             cv2.line(free,(start[1],start[0]),(end[1],end[0]),1,1);occupied[end]=1
         # The measured robot footprint is known occupied by the robot itself.
-        center=self.cell(pose[:2]);cv2.circle(free,(center[1],center[0]),2,1,-1)
+        body=np.zeros_like(free);center=self.cell(pose[:2]);cv2.circle(body,(center[1],center[0]),2,1,-1)
         f=(free>0)&(occupied==0)&~self.camera_obstacles;o=occupied>0
+        # Range from the LiDAR to each marked cell's centre: the range a beam crosses or ends in it (within half a cell).
+        ys,xs=np.nonzero(f|o);r=np.full(self.seen.shape,np.inf,np.float32)
+        r[ys,xs]=np.hypot(self.origin[0]+(xs+.5)*self.res-sensor[0],self.origin[1]+(ys+.5)*self.res-sensor[1])
+        held=f&(r>self.hit_range+self.near_slack)
+        if stamp is not None:held&=stamp-self.hit_time<=self.hold_s
+        f=(f&~held)|((body>0)&(occupied==0)&~self.camera_obstacles)
         self.logodds[f]=np.maximum(-5,self.logodds[f]-.7);self.logodds[o]=np.minimum(5,self.logodds[o]+1.0)
+        self.hit_range[o]=np.minimum(self.hit_range[o],r[o])
+        if stamp is not None:self.hit_time[o]=stamp
+        # A cell that no longer holds obstacle evidence forgets its range: an obstacle seen there later is judged afresh.
+        self.hit_range[self.logodds<=0]=np.inf
         seen=f|o;self.seen[seen]=np.minimum(65534,self.seen[seen])+1
 
 class LidarLocalizer(Localizer):

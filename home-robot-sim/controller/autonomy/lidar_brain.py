@@ -39,7 +39,7 @@ from .lidar import inverse
 from .local_planner import choose_velocity,turn_clear,NEARBY
 from .geometry import (AXLE_X,LIDAR_MOUNT,PLAN_RADIUS,TRACK as WHEEL_TRACK,WHEEL_R,CLIFF_XY,CLIFF_Z,BASE_Z,BUMP_ZONES,shell_point as _shell_point,
                        DRIVE_CLEARANCE,BODY_CLEAR,TURN_CLEAR,TURN_MARGIN,SPIN_DRIFT,NARROW_RADIUS,R,R_RIGID,CLOSE_SPIN_CLEAR,BUMPER_SPAN_DEG,
-                       DRIVE_CLEARANCE_LIDAR,GOAL_CLEAR)
+                       DRIVE_CLEARANCE_LIDAR,GOAL_CLEAR,FIT_CLEAR)
 SQRT2=math.sqrt(2)
 REVERSE_LIMIT=.15   # metres; reversing only ever retraces the driven path
 # NARROW_RADIUS (geometry: DRIVE_CLEARANCE = R + 4 cm -> .20) is the fallback planning clearance for narrow
@@ -263,7 +263,7 @@ class LidarBrain(Brain):
         self.near_goal=near;self.staging=None;self.approach=None;self.approach_stop=None;self.approach_result=None;self.approach_contact=False
     def start_mapping(self,stamp):
         self.reset_recovery(stamp);self.reset_approach()
-        super().start_mapping(stamp);self.localizer=LidarLocalizer();self.grid=LidarGrid();self.phase='sense';self.scan_count=0;self.last_scan=-1;self.visits=[];self.camera_index=None;self.current_cloud=np.empty((0,2));self.camera=MonoObserver();self.low_camera=LowObstacleCamera();self.failed_views=None;self.frontier_target=None;self.event('Mapping: measuring the room with LiDAR, then choosing unexplored space.')
+        super().start_mapping(stamp);self.localizer=LidarLocalizer();self.grid=LidarGrid();self.inspected=[];self.phase='sense';self.scan_count=0;self.last_scan=-1;self.visits=[];self.camera_index=None;self.current_cloud=np.empty((0,2));self.camera=MonoObserver();self.low_camera=LowObstacleCamera();self.failed_views=None;self.frontier_target=None;self.event('Mapping: measuring the room with LiDAR, then choosing unexplored space.')
     def begin_go_to(self,goal,stamp):
         self.reset_recovery(stamp)
         if self.mode=='mapping':self.save_map(False,'Switched to navigation')
@@ -303,7 +303,7 @@ class LidarBrain(Brain):
         # that predict() advances with odometry between scans; spin_points averages in it.
         self.scan_pose=np.asarray(pose,float).copy()
         if good and locating and self.imu.ready_to_move():self.phase='plan';self.phase_started=stamp;self.plan_not_before=stamp;self.last_progress=stamp;self.progress_pose=pose.copy();self.translation_anchor=None;self.event('Position verified across three LiDAR scans. Planning a route.')
-        if good and self.mode=='mapping':self.grid.integrate_scan(points,pose)
+        if good and self.mode=='mapping':self.grid.integrate_scan(points,pose,stamp)
         if good and (not self.visits or np.linalg.norm(pose[:2]-self.visits[-1])>.15):self.visits.append(pose[:2].copy())
         if good:
             self.note_spin_scan(points,pose,stamp)
@@ -693,6 +693,35 @@ class LidarBrain(Brain):
                 nd=d+step*self.grid.res
                 if nd<dist.get(n,math.inf):dist[n]=nd;heapq.heappush(queue,(nd,n))
         return dist
+    def inspection_viewpoints(self,pose):
+        """When more floor the body might enter than mapping_complete allows (grid.unreached_enterable, 1.5 m2) is all that
+        is left: for each such pocket not looked at yet, the last cell the planner reaches on the shortest way of body-fit cells
+        into it, i.e. just short of its opening. Looked at from there, from close by, furniture whose edge the LiDAR returns
+        only from close by (the sofa's ends: task K) is mapped closed and its floor stops counting; a real opening stays open
+        and its floor still counts. Each viewpoint is used once (self.inspected). [(score, xy, route)] like the others."""
+        free,occupied,_,safe,clearance=self.grid.masks();reach=self.grid.reachable(pose[:2],safe);res=self.grid.res
+        pockets=self.grid.unreached_enterable(pose[:2],safe)
+        if pockets.sum()*res**2<=1.5:return []
+        body=(~occupied&(clearance>=FIT_CLEAR))|reach;n=self.grid.n
+        # Breadth-first through body-fit cells from the reachable floor: each cell's step count and the cell it came from.
+        steps=np.full(body.shape,-1,np.int32);came={};queue=deque()
+        for c in zip(*np.nonzero(reach)):steps[c]=0;queue.append(c)
+        while queue:
+            c=queue.popleft()
+            for dy,dx in ((1,0),(-1,0),(0,1),(0,-1),(1,1),(1,-1),(-1,1),(-1,-1)):
+                m=(c[0]+dy,c[1]+dx)
+                if 0<=m[0]<n and 0<=m[1]<n and body[m] and steps[m]<0:steps[m]=steps[c]+1;came[m]=c;queue.append(m)
+        count,labels=cv2.connectedComponents(pockets.astype(np.uint8),connectivity=8);views=[]
+        for i in range(1,count):
+            cells=np.argwhere(labels==i);s=steps[cells[:,0],cells[:,1]];s=np.where(s>=0,s,np.iinfo(np.int32).max)
+            c=tuple(cells[int(np.argmin(s))])
+            if steps[c]<0:continue
+            while steps[c]>0:c=came[c]
+            xy=self.grid.world(c)
+            if any(np.linalg.norm(xy-q)<.35 for q in getattr(self,'inspected',[])+self.blacklist):continue
+            route=self.grid.path(pose[:2],xy)
+            if route:views.append((len(cells)*res**2/(1+float(np.linalg.norm(np.diff(np.asarray(route),axis=0),axis=1).sum())),xy,route))
+        return views
     def coverage_viewpoints(self,pose):
         cells=np.argwhere(self.unvisited_mask()&self.grid.reachable(pose[:2]));proposals=[]
         # Filter connectivity before limiting expensive A* calls. Previously
@@ -914,10 +943,16 @@ class LidarBrain(Brain):
                     if candidates:self.normal_radius=normal;self.event('Remaining space lies behind a narrow passage. Planning through it with 20 cm clearance, slowly.')
                     else:self.grid.radius=normal
             if not candidates:
+                # Before reporting the map incomplete because of floor the body might enter: look at each pocket's opening
+                # from close by, once (an end of the sofa may be mapped open only because it was never seen from close by).
+                candidates=self.inspection_viewpoints(pose);kind='inspect'
+                if candidates:self.event('Floor the robot might enter keeps the map open. Looking at its opening from close by.')
+            if not candidates:
                 self.no_frontier_scans+=1
                 if self.no_frontier_scans<3:self.phase='sense';self.phase_started=stamp;self.event('Checking remaining uncertainty before finishing.');return
                 self.finish_mapping('No further reachable observation viewpoints');return
             _,self.goal,self.path=max(candidates,key=lambda x:x[0]);self.goal_kind=kind;self.no_frontier_scans=0;self.event('Exploring a viewpoint chosen from the LiDAR map.')
+            if kind=='inspect':self.inspected=getattr(self,'inspected',[])+[self.goal.copy()]
             self.frontier_target=self.unknown_edge(self.goal) if kind=='frontier' else None
         self.phase='follow';self.phase_started=stamp;self.next_plan=stamp+1;self.last_progress=stamp;self.progress_pose=pose.copy()
     def mapping_complete(self):

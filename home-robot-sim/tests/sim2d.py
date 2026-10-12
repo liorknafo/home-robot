@@ -35,6 +35,12 @@ Emulates the simulator <-> autonomy_service boundary without Unreal or UDP:
     under it (no return), it is above the bumper skin (no trip) and not a cliff: the controller gets NO signal.
     Only the LiDAR turret (lidar_turret_*), the one part above the scan plane, hits its edge: the body stops
     there (counted in contacts and overhang_hits) while the wheels may still tick.
+  * Optional 'ledges' (task K): furniture whose UNDERSIDE lies just BELOW the LiDAR scan plane (ledge_drop, default
+    1.75 cm: the Unreal sofa base, bottom 13 cm, plane 14.75 cm). Unreal's scan plane tilts with the body; each scan here
+    draws a tilt (LEDGE_TILT: a level robot most of the time, 1-3.5 deg of pitch and up to 1.5 deg of roll about 1 scan in 7,
+    as the truth pitch / roll of trial full-mapping-20261012T013115), and a beam returns from a ledge edge only while it is
+    not more than ledge_drop below the plane there: close beams return, far ones may pass under (and on to the wall). The
+    turret meets the edge as for an overhang; the body passes under it. Without ledges no tilt is drawn.
   * Optional 'sticky' strips where translation or turning slips (encoders tick,
     body does not move, gyro ~0) to emulate rug-edge / threshold stalls. Kind 'catch': a rug-edge strip the rear
     caster (rear_caster_xy_m) cannot climb onto: FORWARD translation that would carry the caster point from outside
@@ -86,6 +92,15 @@ PRESSED_SPIN_MAX = .5                                       # rad/s, spec-firmwa
 DRIVECORE_BUMP_YAW = .3                                     # DriveCore.h bump_yaw: |w| limit for re-arming while pressed
 
 
+def LEDGE_TILT(rng):
+    """(pitch, roll) rad of one scan's plane, for ledges: level within 0.15 deg 6 scans in 7; else 1-3.5 deg of pitch and up to
+    1.5 deg of roll, either sign (trial full-mapping-20261012T013115's truth: |pitch| > 1 deg in 10 % of samples, > 2 deg in 5 %,
+    p99 4 deg; |roll| > 0.3 deg in 10 %, p99 1.5 deg)."""
+    if rng.random() < 6 / 7:
+        return tuple(np.radians(rng.normal(0, .15, 2)))
+    return (math.radians(rng.choice((-1, 1)) * rng.uniform(1., 3.5)), math.radians(rng.uniform(-1.5, 1.5)))
+
+
 def pressed_motion_ok(v, w, left=True, right=True):
     """DriveCore (round robot): commands accepted while the bumper is pressed. A pure spin only
     toward the pressed side (left switch: w >= 0, right switch: w <= 0, both: either)."""
@@ -110,8 +125,13 @@ BODY = BODY_R * np.c_[np.cos(np.radians(np.arange(0, 360, 5))), np.sin(np.radian
 
 def _seg_hits(origin, dirs, segs, max_range=8.):
     """Ray/segment intersection; returns range per ray (inf if none)."""
+    return _seg_ranges(origin, dirs, segs, max_range).min(axis=1) if len(segs) else np.full(len(dirs), np.inf)
+
+
+def _seg_ranges(origin, dirs, segs, max_range=8.):
+    """Ray/segment intersection; (rays, segments) ranges, inf where a ray misses a segment."""
     if not len(segs):
-        return np.full(len(dirs), np.inf)
+        return np.full((len(dirs), 0), np.inf)
     a = segs[:, 0, :]; b = segs[:, 1, :]
     e = b - a                                     # (S,2)
     d = dirs[:, None, :]                          # (R,1,2)
@@ -121,8 +141,7 @@ def _seg_hits(origin, dirs, segs, max_range=8.):
         t = (w[..., 0] * e[None, :, 1] - w[..., 1] * e[None, :, 0]) / den
         u = (w[..., 0] * d[..., 1] - w[..., 1] * d[..., 0]) / den
     ok = (np.abs(den) > 1e-12) & (t > 0) & (u >= 0) & (u <= 1) & (t <= max_range)
-    t = np.where(ok, t, np.inf)
-    return t.min(axis=1)
+    return np.where(ok, t, np.inf)
 
 
 def box(cx, cy, sx, sy):
@@ -150,7 +169,7 @@ def seg_point_distance(segs, p):
 
 
 class World:
-    def __init__(self, walls, low=(), sticky=(), cliffs=(), curbs=(), overhangs=(), overhang_z=None):
+    def __init__(self, walls, low=(), sticky=(), cliffs=(), curbs=(), overhangs=(), overhang_z=None, ledges=(), ledge_drop=.0175):
         """walls: list of ((x0,y0),(x1,y1)) tall segments (LiDAR-visible).
         low: list of polygons for objects below the LiDAR plane (bumper-visible only).
         overhangs: list of polygons (footprints) of furniture whose underside is at overhang_z (default: midway
@@ -159,7 +178,9 @@ class World:
         sticky: list of (polygon, kind) or (polygon, kind, hold_s) with kind in {'turn','stop','catch'}
           ('catch': see the module notes; hold_s None = permanent):
           'turn' -> in-place turns slip (no yaw), 'stop' -> translation < 6 cm/s slips.
-        cliffs: list of polygons where the floor is missing (cliff sensors)."""
+        cliffs: list of polygons where the floor is missing (cliff sensors).
+        ledges: list of polygons (footprints) of furniture whose underside is ledge_drop BELOW the LiDAR plane (module
+          notes): LiDAR-visible edges while the tilted beam is high enough there; the turret collides with them."""
         self.walls = np.array(walls, float).reshape(-1, 2, 2)
         self.low = [np.asarray(p, float) for p in low]
         self.low_segs = np.array([s for p in self.low for s in poly_segments(p)], float).reshape(-1, 2, 2)
@@ -169,6 +190,9 @@ class World:
         # curbs: low objects the wheels/caster cannot climb; block motion and touch the skin, no LiDAR
         self.curbs = [np.asarray(p, float) for p in curbs]
         self.overhangs = [np.asarray(p, float) for p in overhangs]
+        self.ledges = [np.asarray(p, float) for p in ledges]
+        self.ledge_segs = np.array([s for p in self.ledges for s in poly_segments(p)], float).reshape(-1, 2, 2)
+        self.ledge_drop = float(ledge_drop)
         self.overhang_z = (LIDAR_MOUNT[2] + ROBOT_TOP) / 2 if overhang_z is None else float(overhang_z)
         if self.overhangs and not LIDAR_MOUNT[2] < self.overhang_z < ROBOT_TOP:
             raise ValueError(f'overhang underside {self.overhang_z} m must lie between the LiDAR plane {LIDAR_MOUNT[2]} m and the robot top '
@@ -191,6 +215,7 @@ class Sim:
         self.scan = None; self.bump = False; self.fault = 'disarmed'; self.contacts = 0
         self.bump_events = 0; self.zones = 0; self.left = self.right = False; self.overhang_hits = 0
         self.catch_ticks = 0; self.catch_entered = {}
+        self.tilt = (0., 0.); self.tilt_rng = np.random.default_rng(seed + 7919)   # ledges only (own stream: other scenarios unchanged)
         self.truth_log = []
 
     # ---- simulator side -------------------------------------------------
@@ -246,8 +271,8 @@ class Sim:
         return self.overhang_blocked(pose)
 
     def overhang_blocked(self, pose):
-        """The LiDAR turret disc (lidar_turret_xy_m / lidar_turret_radius_m) overlaps an overhang footprint."""
-        overhangs = getattr(self.w, 'overhangs', ())
+        """The LiDAR turret disc (lidar_turret_xy_m / lidar_turret_radius_m) overlaps an overhang or ledge footprint."""
+        overhangs = list(getattr(self.w, 'overhangs', ())) + list(getattr(self.w, 'ledges', ()))
         if not len(overhangs):
             return False
         c = self.base_to_world(TURRET_XY[None, :], pose)[0]
@@ -376,6 +401,13 @@ class Sim:
         origin = self.pose[:2] + np.array([c * LIDAR_MOUNT[0] - s * LIDAR_MOUNT[1], s * LIDAR_MOUNT[0] + c * LIDAR_MOUNT[1]])
         dirs = np.c_[np.cos(angles + self.pose[2]), np.sin(angles + self.pose[2])]
         r = _seg_hits(origin, dirs, self.w.walls)
+        if len(getattr(self.w, 'ledge_segs', ())):
+            if self.lidar_index == 0:
+                self.tilt = LEDGE_TILT(self.tilt_rng)
+            # Height of the beam at each ledge edge relative to the level plane: range x slope along the beam's azimuth.
+            t = _seg_ranges(origin, dirs, self.w.ledge_segs)
+            slope = math.tan(self.tilt[0]) * np.cos(angles) + math.tan(self.tilt[1]) * np.sin(angles)
+            r = np.minimum(r, np.where(t * slope[:, None] >= -self.w.ledge_drop, t, np.inf).min(axis=1))
         r = r + self.rng.normal(0, self.noise, len(r))
         if self.lidar_index == 0:
             self.lidar_start = self.t
@@ -770,6 +802,82 @@ def run_pocket(brain_factory, kind, seconds=900., seed=0, sensor_errors=None):
     return dict(passed=bool(ok), kind=kind, t=round(sim.t), complete=bool(brain.complete), unreached_m2=round(unreached, 2), enterable_m2=round(enterable, 2),
                 free=round(g.summary()['free_area_m2'], 2), contacts=len(brain.contacts), skips=len(brain.blacklist), body_blocks=sim.contacts,
                 bumps=sim.bump_events, reverse_audit=audit, message=brain.message, events=[e['message'] for e in brain.events][-4:])
+
+
+# ---- closed-loop scenario: furniture whose edges the LiDAR returns only from close by (task K) --------------------------
+LEDGE_FOOTPRINT = (.9, 3.0, 1.15, 2.0)       # x0, x1, y0, y1: a 2.1 x 0.85 m sofa base, its back against the north wall
+
+
+def ledge_world():
+    """A 5 x 4 m room (x -1..4, y -2..2) with a sofa-like ledge against its north wall (LEDGE_FOOTPRINT): its underside is
+    1.75 cm below the LiDAR plane (World ledges), like the Unreal sofa base, so beams return from its edges from close by
+    and pass under them from farther away when the robot tilts; beams skimming past its ends cross their cells too. The floor
+    under it is seen through but never enterable: the turret meets its edge. Start pose (0, 0, 0) = map frame."""
+    room = [((-1, -2), (4, -2)), ((4, -2), (4, 2)), ((4, 2), (-1, 2)), ((-1, 2), (-1, -2))]
+    x0, x1, y0, y1 = LEDGE_FOOTPRINT
+    return World(room, ledges=[box((x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0)])
+
+
+def ledge_outline(g):
+    """The map cells of the ledge's outline on its three free sides (the fourth is against the wall)."""
+    x0, x1, y0, y1 = LEDGE_FOOTPRINT
+    return sorted({g.cell((xx, y0 + .001)) for xx in np.arange(x0 + .01, x1, .01)} | {g.cell((xe, yy)) for xe in (x0 + .001, x1 - .001)
+                                                                                  for yy in np.arange(y0 + .01, y1 - .05, .01)})
+
+
+def ledge_floor(g, pose):
+    """The robot's map of the floor under the ledge (its footprint less 5 cm all round): safe cells the planner reaches
+    ('reachable_m2': coverage targets it can never reach), safe cells the body could enter by the task H rule
+    ('enterable_m2': they hold the map open), and the outline's open cells (log-odds <= 0.8)."""
+    x0, x1, y0, y1 = LEDGE_FOOTPRINT
+    n = g.n; ii, jj = np.mgrid[0:n, 0:n]; x = g.origin[0] + (jj + .5) * g.res; y = g.origin[1] + (ii + .5) * g.res
+    under = (x > x0 + .05) & (x < x1 - .05) & (y > y0 + .05) & (y < y1 - .05)
+    safe = g.masks()[3]; reach = g.reachable(pose[:2], safe); ent = g.unreached_enterable(pose[:2], safe); outline = ledge_outline(g)
+    return dict(reachable_m2=round(float((reach & under).sum() * g.res ** 2), 3), enterable_m2=round(float((ent & under).sum() * g.res ** 2), 3),
+                outline_open=int(sum(g.logodds[c] <= .8 for c in outline)), outline_cells=len(outline))
+
+
+LEDGE_CLOSE_M = .5     # an outline cell mapped occupied with its closest hit within this range counts as 'seen from close by'
+LEDGE_NEAR_M = .75     # reported only: the same within .75 m (Unreal trial 4 replay: hits still outnumber passes there)
+
+
+def run_ledge(brain_factory, seconds=900., seed=0, sensor_errors=None):
+    """Map ledge_world(). PASS: mapping complete, the robot stopped on its own within `seconds` (less than the brain's time
+    budget); every outline cell the map holds as occupied from a hit within LEDGE_CLOSE_M (grid.hit_range) stays occupied
+    for the rest of mapping ('lost': those that did not; before task K far beams passing under the ledge or skimming past its
+    ends erased them) and at least one was (else 'not exercised'); at the end no floor under the ledge is reachable by the
+    planner (no target the robot can never reach); clean reverse audit, no rigid-body contact (the turret never met the
+    edge), no bumper touch. Also reported: the end state of the outline and of the floor under it ('enterable_m2' counts
+    toward mapping_complete's 1.5 m2 when an end was never seen from close by and is mapped narrowly open) and 'timeline':
+    (t, open outline cells, reachable m2, enterable m2) every 25 s. seed and sensor_errors: as Sim."""
+    brain = brain_factory(); sim = Sim(ledge_world(), seed=seed, sensor_errors=sensor_errors)
+    bridge = Bridge(brain, sim, rearm_hook=lambda b: getattr(b, 'wants_arm', False))
+    for _ in range(10):
+        brain.predict(sim.state()); [sim.step(.01) for _ in range(5)]
+    timeline = []; nxt = [25.]; close = {}; lost = {}; near = {}; near_lost = {}
+
+    def tick(br):
+        if brain.mode != 'mapping':
+            return
+        g = brain.grid
+        for c in ledge_outline(g):
+            for seen, gone, limit in ((close, lost, LEDGE_CLOSE_M), (near, near_lost, LEDGE_NEAR_M)):
+                if c not in seen and g.logodds[c] > .8 and g.hit_range[c] <= limit:
+                    seen[c] = round(sim.t, 1)
+                elif c in seen and c not in gone and g.logodds[c] <= .8:
+                    gone[c] = round(sim.t, 1)
+        if sim.t >= nxt[0]:
+            nxt[0] += 25.; f = ledge_floor(g, brain.localizer.pose); timeline.append((round(sim.t), f['outline_open'], f['reachable_m2'], f['enterable_m2']))
+    bridge.start_mapping(); trace = bridge.run(seconds, on_tick=tick)
+    floor = ledge_floor(brain.grid, brain.localizer.pose)
+    audit = reverse_audit(trace); clean = audit['ok'] and sim.contacts == 0 and sim.bump_events == 0
+    ok = clean and brain.mode == 'idle' and brain.complete and len(close) > 0 and not lost and floor['reachable_m2'] == 0
+    return dict(passed=bool(ok), t=round(sim.t), complete=bool(brain.complete), close_seen_cells=len(close), first_close_s=min(close.values(), default=None),
+                lost=len(lost), lost_cells=sorted((t, [round(float(v), 3) for v in brain.grid.world(c)]) for c, t in lost.items())[:6],
+                near_seen_cells=len(near), near_lost=len(near_lost),
+                verdict=None if close else 'not exercised: no outline cell seen from close by', **floor, unvisited_m2=round(brain.unvisited_area(), 3),
+                contacts=len(brain.contacts), skips=len(brain.blacklist), body_blocks=sim.contacts, turret_hits=sim.overhang_hits,
+                bumps=sim.bump_events, reverse_audit=audit, message=brain.message, timeline=timeline, events=[e['message'] for e in brain.events][-4:])
 
 
 # ---- closed-loop scenario: bumper contact with no straight trail behind (task G) ---------------------------------
