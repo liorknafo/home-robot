@@ -7,7 +7,8 @@ Usage: analyze_full_mapping.py REPORT_DIR [--json OUT]
   the robot's observed area reached 98 % / 99 % of its final value.
 - End state: the robot's own saved map (Saved/Maps/<saved_map>) and exploration.json are loaded into a LidarBrain to
   re-evaluate the mapping_complete() conditions and locate the unvisited floor (map -> world with the trial's
-  evaluation-only origin). unvisited(t): the same mask with the final map and the visits rebuilt from the trace poses up
+  evaluation-only origin), with the current controller's rule (mapping_complete_recomputed; task H: the pockets the body could
+  enter, recomputed_unreached_enterable_m2 and each disconnected cluster's 'enterable'). unvisited(t): the same mask with the final map and the visits rebuilt from the trace poses up
   to t (an approximation: the map at t was smaller)."""
 from pathlib import Path
 import json,math,sys,tempfile
@@ -88,11 +89,14 @@ def analyze(D):
         clusters=sorted([dict(area_m2=round(float(stt[i,4]*res**2),3),centre_world_xy=np.round(to_world(g.world((int(round(cen[i][1])),int(round(cen[i][0]))))),2).tolist(),
                               room=room_of(to_world(g.world((int(round(cen[i][1])),int(round(cen[i][0]))))))) for i in range(1,n)],key=lambda q:-q['area_m2'])[:8]
         dsafe=(safe&~rch).astype(np.uint8);n2,lab2,st2,cen2=cv2.connectedComponentsWithStats(dsafe,connectivity=8)
+        # Task H: which of those pockets the round body could enter (grid.unreached_enterable; None for a controller without it).
+        enter=g.unreached_enterable(pose[:2],safe) if hasattr(g,'unreached_enterable') else None
         dclusters=sorted([dict(area_m2=round(float(st2[i,4]*res**2),3),centre_world_xy=np.round(to_world(g.world((int(round(cen2[i][1])),int(round(cen2[i][0]))))),2).tolist(),
-                               room=room_of(to_world(g.world((int(round(cen2[i][1])),int(round(cen2[i][0]))))))) for i in range(1,n2)],key=lambda q:-q['area_m2'])[:8]
+                               room=room_of(to_world(g.world((int(round(cen2[i][1])),int(round(cen2[i][0])))))),enterable=None if enter is None else bool(enter[lab2==i].any())) for i in range(1,n2)],key=lambda q:-q['area_m2'])[:8]
         end=dict(saved_map=folder.name,disconnected_safe_clusters=dclusters,manifest_complete=man['complete'],manifest_reason=man['reason'],manifest_unvisited_m2=round(man['unvisited_navigable_area_m2'],3),
                  manifest_disconnected_safe_m2=round(man['disconnected_safe_area_m2'],3),recomputed_unvisited_m2=round(float(uv.sum()*res**2),3),unvisited_done_m2=UNVISITED_DONE,
                  frontiers_left=len(g.frontiers(pose,b.blacklist+b.scanned_positions+b.trouble)),recomputed_disconnected_safe_m2=round(float((safe&~rch).sum()*res**2),3),
+                 recomputed_unreached_enterable_m2=None if enter is None else round(float(enter.sum()*res**2),3),mapping_complete_recomputed=bool(b.mapping_complete()),
                  final_pose_uncertainty=final.get('pose_uncertainty_indicator_m'),planning_radius_m=g.radius,skipped=len(b.blacklist),trouble=len(b.trouble),viewpoints=len(b.scanned_positions),
                  unvisited_by_room=byroom,unvisited_clusters=clusters)
         # unvisited(t) with the final map and visits rebuilt from the trace poses (15 cm rule, as LidarBrain.observe_scan)

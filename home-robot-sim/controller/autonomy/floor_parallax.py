@@ -1,6 +1,6 @@
 """Camera low-obstacle detector: dense floor-plane parallax plus multi-view cell voting.
 
-Finds objects 3-19 cm tall that the 19 cm LiDAR plane passes over (shower tray, slippers, toy
+Finds objects 3 cm tall up to the LiDAR plane (LIDAR_MOUNT z, 14.75 cm) that the LiDAR passes over (shower tray, slippers, toy
 blocks). Inputs: one camera image, its calibration and timestamp, and the robot's OWN estimated
 pose at the image time (LidarBrain.camera_pose: x,y,yaw,roll,pitch,height_offset,floor_valid).
 No simulator depth, labels, house geometry or ground-truth pose is read.
@@ -13,7 +13,7 @@ Per frame (5 Hz):
    (rotation <.04 rad, |t| within 30 %, direction cos>.9). Otherwise nothing: unknown, never free.
  4 aperture-safe parallax: the residual against the fitted floor is measured only along the local
    image gradient, converted to displacement along the epipolar line and triangulated. Height
-   above the fitted floor must be 3-19 cm with h-2*sigma_h>2.5 cm, sigma_range<5 cm, range<1.2 m; near-vertical
+   above the fitted floor must be 3 cm..LIDAR_MOUNT z with h-2*sigma_h>2.5 cm, sigma_range<5 cm, range<1.2 m; near-vertical
    image edges are not used (occlusion edges of legs and door frames, wall shadows).
    Floor-level things (8-10 mm thresholds, rugs, bath mat) stay far below these gates.
  5 vote: a 5 cm map cell is confirmed once >=2 frames whose camera centres are >=3 cm apart each
@@ -23,7 +23,7 @@ import math,time,cv2,numpy as np
 from concurrent.futures import ThreadPoolExecutor
 from .mono import camera
 from .geometry import CAMERA_MOUNT,LIDAR_MOUNT
-# Plausible camera height: the calibrated mount (geometry.CAMERA_MOUNT, 15 cm) +/- 3 cm of body motion.
+# Plausible camera height: the calibrated mount (geometry.CAMERA_MOUNT z, 8 cm since task F) +/- 3 cm of body motion.
 CAMERA_HEIGHT_RANGE=(CAMERA_MOUNT[2]-.03,CAMERA_MOUNT[2]+.03)
 from .stereo import wrap
 _POOL=[]

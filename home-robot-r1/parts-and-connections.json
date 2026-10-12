@@ -95,7 +95,7 @@
       "status": "Buy",
       "new_cost_usd": 9.95,
       "source": "https://www.pololu.com/product/2692",
-      "notes": "ONE rear caster (no front support): ball centre at x = -75 mm behind the axle; the caster carries about 0.25 of the weight and the rear cliff sensors (-110, ±81) lead it by 35 mm in reverse. DriveCore disarms on a hazard and the robot coasts on the motor dynamic brake: from the 0.06 m/s firmware reverse speed limit (parameters.json reverse_speed_limit_m_s; required) that needs 23.3 mm (14.6 mm coast, no rolling drag, conservative), so no active brake is required (validation caster_layout.stopping); reversing faster than 0.095 m/s would not be covered. 29 mm assembled height. CAD housing is a conservative envelope; three M3 × 5 pan-head machine screws (H13) on a 16.5 mm bolt circle, outside the Ø25.4 ball, through the 2 mm flange tabs into M3 brass heat-set inserts (H12) pressed into P_base from below. Drill the flange tabs to this pattern if the purchased caster differs.",
+      "notes": "ONE rear caster (no front support): ball centre at x = -75 mm behind the axle; the caster carries about 0.21 of the weight and the rear cliff sensors (-110, ±81) lead it by 35 mm in reverse. DriveCore disarms on a hazard and the robot coasts on the motor dynamic brake: from the 0.06 m/s firmware reverse speed limit (parameters.json reverse_speed_limit_m_s; required) that needs 23.4 mm (14.7 mm coast, no rolling drag, conservative), so no active brake is required (validation caster_layout.stopping); reversing faster than 0.095 m/s would not be covered. 29 mm assembled height. CAD housing is a conservative envelope; three M3 × 5 pan-head machine screws (H13) on a 16.5 mm bolt circle, outside the Ø25.4 ball, through the 2 mm flange tabs into M3 brass heat-set inserts (H12) pressed into P_base from below. Drill the flange tabs to this pattern if the purchased caster differs.",
       "model": "caster"
     },
     {
@@ -467,7 +467,7 @@
       "status": "Buy / reuse stock",
       "new_cost_usd": 3,
       "source": "",
-      "notes": "Through-bolted joints, including the nuts under P_base for the four camera-tower M3 × 10 socket screws (H13) (inside the bumper-rail keep-out, checked against the moving rails). The bay-board spacers, the battery tray, the caster, the lid-post feet and the lid screws use H12 inserts; the rear shell uses H10.",
+      "notes": "Through-bolted joints, including the nuts under P_base for the four camera-mount M3 × 10 socket screws (H13) (inside the bumper-rail keep-out, checked against the moving rails). The bay-board spacers, the battery tray, the caster, the lid-post feet and the lid screws use H12 inserts; the rear shell uses H10.",
       "model": "fasteners"
     },
     {
@@ -521,13 +521,13 @@
     {
       "id": "H09",
       "category": "Fasteners",
-      "item": "LiDAR tray and camera guard hardware",
+      "item": "LiDAR tray and camera holder hardware",
       "quantity": 1,
       "unit": "set",
       "status": "Buy",
       "new_cost_usd": 2,
       "source": "",
-      "notes": "Three M2.5 × 10 thread-forming screws for the LD14 lugs (or M2.5 heat-set inserts in Ø3.6 holes with M2.5 × 10 machine screws), four M3 × 10 screws and nyloc nuts for the tray on the lid (holes at (-35, ±38) and (66, ±35)), two M2.5 × 10 screws and nuts for the camera guard.",
+      "notes": "Three M3 × 10 thread-forming screws for the LD14 lugs into the tray towers' Ø2.6 pilots (the lugs' Ø3.24 holes are M3 clearance; or M3 heat-set inserts in Ø4.0 holes with M3 × 10 machine screws; confirm on the delivered LD14P), four M3 × 10 screws and nyloc nuts for the tray on the lid (holes at (-35, ±38) and (83, ±35)), two M2.5 × 12 thread-forming screws (camera holder arms into the mount crossbar, from its rear face) and four M2 × 6 thread-forming screws (camera board corners onto the holder; confirm the board's hole pattern).",
       "model": "fasteners"
     },
     {
@@ -569,14 +569,14 @@
     {
       "id": "H13",
       "category": "Fasteners",
-      "item": "M3 stainless machine screws for the inserts and the camera tower",
+      "item": "M3 stainless machine screws for the inserts and the camera mount",
       "quantity": 27,
       "unit": "screws",
       "status": "Buy",
       "new_cost_usd": 4,
       "source": "",
       "model": "fasteners",
-      "notes": "Into the H12 inserts (3 mm of thread in each, validation.json blind_pilots): four M3 × 8 pan head (bay board, through the board and a 2.4 mm printed spacer), four M3 × 6 countersunk (battery tray), three M3 × 5 pan head (caster), eight M3 × 6 pan head (lid-post feet), four M3 × 6 pan head (lid, into the inserts in the post tops). Plus four M3 × 10 socket head screws for the camera-tower feet (nuts H03)."
+      "notes": "Into the H12 inserts (3 mm of thread in each, validation.json blind_pilots): four M3 × 8 pan head (bay board, through the board and a 2.4 mm printed spacer), four M3 × 6 countersunk (battery tray), three M3 × 5 pan head (caster), eight M3 × 6 pan head (lid-post feet), four M3 × 6 pan head (lid, into the inserts in the post tops). Plus four M3 × 10 socket head screws for the camera-mount feet (nuts H03; the old camera tower holes)."
     },
     {
       "id": "H14",
@@ -599,7 +599,7 @@
       "status": "Check existing; budget",
       "new_cost_usd": 40,
       "source": "",
-      "notes": "Structural base, round bumper arcs, rear shell, riders, mounts, ventilated cover and the bay board's spacers and bearing ribs (no deck: low-profile layout) (about 0.96 kg as modelled: solid walls ≤ 3 mm, 62 % from 3.6 mm (4 perimeters), linear between), plus the test coupon (print-parts/coupons/P_coupon.stl, about 12 g) and one failed arc (120–150 g each). User has Prusa MK3S (250 × 210 × 210 mm); every part and the coupon pass cad/check_printability.py. P_base (244 × 200 mm): no brim, skirt 1 mm or off. Arcs and shells: 4 perimeters, about 245 °C, part cooling ≤ 30 % up to the rim, then a 50–60 % fan height-range modifier for the inner top rims; brim on the arc ends. Bay board printed parts: four 2.4 mm spacers (bay_spacer_0–3) and two clamp spacers (bay_clamp_spacer_1 / _3), 100 % infill; two bearing ribs (bay_rib_0 / _1, bonded with epoxy F04); the battery tray carries the three hold-down springs (bay_holddown, printed with P_battery_tray, beams freed with a razor saw); the LD14 lead grommet (P_ld14_grommet).",
+      "notes": "Structural base, round bumper arcs, rear shell, riders, mounts, ventilated cover and the bay board's spacers and bearing ribs (no deck: low-profile layout) (about 0.982 kg as modelled: solid walls ≤ 3 mm, 62 % from 3.6 mm (4 perimeters), linear between), plus the test coupon (print-parts/coupons/P_coupon.stl, about 12 g) and one failed arc (120–150 g each). User has Prusa MK3S (250 × 210 × 210 mm); every part and the coupon pass cad/check_printability.py. P_base (244 × 200 mm): no brim, skirt 1 mm or off. Arcs and shells: 4 perimeters, about 245 °C, part cooling ≤ 30 % up to the rim, then a 50–60 % fan height-range modifier for the inner top rims; brim on the arc ends. Bay board printed parts: four 2.4 mm spacers (bay_spacer_0–3) and two clamp spacers (bay_clamp_spacer_1 / _3), 100 % infill; two bearing ribs (bay_rib_0 / _1, bonded with epoxy F04); the battery tray carries the three hold-down springs (bay_holddown, printed with P_battery_tray, beams freed with a razor saw); the LD14 lead grommet (P_ld14_grommet).",
       "model": "printed_parts"
     },
     {
@@ -647,7 +647,7 @@
       "status": "Buy",
       "new_cost_usd": 54.99,
       "source": "https://www.waveshare.com/product/robotics/drivers-sensors/d200-lidar-kit.htm",
-      "notes": "Kit includes LD14P, USB serial adapter and approximately 90 mm 4-pin lead. 5 V, <=300 mA, 360 degrees, 6 Hz default, 0.1-8 m rated range. Body envelope 96.3 x 59.8 x 38.8 mm, 101 g. CAD uses the manufacturer LD14 STEP (reference-models/LD14.step): laser plane at the window-band centre, 0 deg (tail) along robot +x, three lugs (Ø3.24 mm holes) screwed to P_lidar_tray with M2.5. Confirm the LD14P matches the LD14 STEP. Never obscure scanner window.",
+      "notes": "Kit includes LD14P, USB serial adapter and approximately 90 mm 4-pin lead. 5 V, <=300 mA, 360 degrees, 6 Hz default, 0.1-8 m rated range. Body envelope 96.3 x 59.8 x 38.8 mm, 101 g. CAD uses the manufacturer LD14 STEP (reference-models/LD14.step): laser plane at the window-band centre, turned 180 deg (task F: motor toward the back, 0 deg / tail along robot -x; the driver adds 180 deg, see BRINGUP), three lugs (Ø3.24 mm holes) screwed to P_lidar_tray with M3 (H09). Confirm the LD14P matches the LD14 STEP. Never obscure scanner window.",
       "model": "lidar"
     },
     {
@@ -671,7 +671,7 @@
       "status": "Buy",
       "new_cost_usd": 3,
       "source": "",
-      "notes": "Planning allowance. The modeled route from the adapter under the lid up through the lid and tray openings to the LD14 side-entry socket is now about 52 mm, so the supplied ~90 mm lead may reach; keep this lead as the fallback. Confirm exact latch, mating gender and pin order; do not substitute a lookalike JST connector without checking.",
+      "notes": "Planning allowance. Task F: the LD14 is turned round (spin axis x 54), so its side-entry socket faces the other way; the modeled route from the adapter under the lid, up through the lid aperture (grommet) and back in the plenum to the socket, is about 115 mm (cable-cut-list.json W20), so the supplied ~90 mm lead does not reach: fit this 0.2 m lead. Confirm exact latch, mating gender and pin order; do not substitute a lookalike JST connector without checking.",
       "model": "lidar_lead"
     },
     {
@@ -1586,7 +1586,7 @@
         "name": "Single-camera USB cable",
         "board_end": null,
         "wire": null,
-        "route_mm": 59,
+        "route_mm": 56,
         "cut_mm": 150,
         "pinout": []
       },
@@ -1604,8 +1604,8 @@
         "name": "LiDAR matched replacement / extension lead",
         "board_end": null,
         "wire": null,
-        "route_mm": 53,
-        "cut_mm": 150,
+        "route_mm": 115,
+        "cut_mm": 200,
         "pinout": []
       },
       {

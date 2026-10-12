@@ -12,7 +12,7 @@ prints=[]
 byid={p['id']:p for p in P}
 for v in V['printed_parts']:
     p=byid[v['part']];sizes=' × '.join(str(round(x,1)) for x in v['size_mm'])
-    note=p['note'] or ('Print flat; check holes and fit before final assembly.' if p['id'] not in ['P_camera_tower','P_camera_guard'] else 'Prototype fit; orient in slicer.')
+    note=p['note'] or ('Print flat; check holes and fit before final assembly.' if p['id'] not in ['P_camera_mount','P_camera_holder'] else 'Prototype fit; orient in slicer.')
     prints.append(row([e(p['name'])+'<br><span class="small muted">'+p['id']+'</span>',sizes,f'<a href="print-parts/{p["id"]}.stl" download>STL</a> / <a href="print-parts/{p["id"]}.step" download>STEP</a>',e(note)]))
 tc=V.get('test_coupon')
 if tc:prints.append(row([e(tc['name'])+'<br><span class="small muted">'+tc['id']+'</span>',' × '.join(str(x) for x in tc['size_mm']),f'<a href="print-parts/coupons/{tc["id"]}.stl" download>STL</a> / <a href="print-parts/coupons/{tc["id"]}.step" download>STEP</a>',e('Print first: '+'; '.join(tc['features'])+'.')]))
@@ -47,13 +47,15 @@ vd=lambda k:f"{'an 8' if k=='step_8mm' else 'a 10'} mm step {th[k]['forward']['v
 PA=json.loads((R/'cad/parameters.json').read_text());bt_=V['bumper_travel'];rs_=V['rear_shell'];com_=V['com_estimate']
 fx=lambda v:f'{v:g}'
 extra={'DIAM':f"{2*PA['outer_radius']:.0f}",'RSKIN':fx(PA['outer_radius']),'RSH':fx(PA['shell_radius']),'RTIP':fx(PA['bumper_tip_radius']),'RRS':fx(PA['rear_shell_radius']),'ENVWORST':f"{V['envelope']['worst_case_r_mm']:.1f}",
-    'NOTCHHW':fx(PA['bumper_notch']['half_width_deg_at_skin']),'SEAM':fx(PA['seam_mm']),'SEAMINTR':f"{bt_['seam_intrusion']['max_intrusion_before_trip_mm']:.1f}",'RSGAP':f"{PA['outer_radius']-PA['rear_shell_radius']:.1f}",
+    'WINW':fx(PA['camera_window']['at_skin']['width_mm']),'WINZ':'–'.join(fx(z) for z in PA['camera_window']['at_skin']['z_mm']),'WINREC':fx(PA['camera_window']['lens_recess_mm']),'SEAM':fx(PA['seam_mm']),'SEAMINTR':f"{bt_['seam_intrusion']['max_intrusion_before_trip_mm']:.1f}",'RSGAP':f"{PA['outer_radius']-PA['rear_shell_radius']:.1f}",
     'FLGAP':f"{PA['outer_radius']-PA['rear_shell_flange_r_mm'][1]:.1f}",'NINSERTS':str(sum(1 for q in P if q['id'].startswith('insert_'))),'VREV':fx(PA['reverse_speed_limit_m_s']),'VSAFE':fx(cl['stopping']['max_coast_safe_reverse_speed_mps']),'COAST':str(cl['stopping']['coast_without_rolling_drag']['distance_mm']),'PITCHDOWN':f"{com_['forward_pitch_onset_on_5deg_downhill_m_s2']:.2f}",'BRAKEMAX':f"{cl['stopping']['active_brake_limit']['max_decel_with_torque_cap_m_s2']:.2f}",'SLOTRANGE':f"8.1–{bt_['planar_play']['slot_width_max_mm']}",'CASTERX':fx(PA['rear_caster'][0]),
     'RCLIFF':f"({fx(PA['cliff_sensors'][2][0])}, ±{fx(abs(PA['cliff_sensors'][2][1]))})"}
+_lid=max((sorted(q['size_mm'][:2],reverse=True) for q in V['printed_parts'] if q['part'] in ('P_lid_front','P_lid_left','P_lid_rear','P_lid_right')),key=lambda d:d[0]*d[1])
+extra['LIDMAX']=f'{_lid[0]:.0f} × {_lid[1]:.0f}'   # the largest of the four lid sectors (task I: the 240 × 200 deck-era cover text was stale)
 repl={'COSTNOTE':costnote,'MUCRIT':str(fl['min_mu_vert_crit']),'MUEQ':str(fl['min_mu_crit_bearing_and_ball_equal']),'COMX':f"{-c['com_mm'][0]:.1f}",'COMMIN':f"{-max(v['com_x_mm'] for v in c['sensitivity'].values()):.1f}",
     'CASTERPCT':f"{100*c['caster_load_fraction']:.0f}",'PITCH':f"{c['forward_pitch_onset_decel_m_s2']:.2f}",'THRESH':vd('step_8mm')+', and '+vd('step_10mm'),
     'LEAD':str(cl['rear_cliff_lead_over_caster_reverse_mm']),'COASTLEAD':str(cl['stopping']['coast_without_rolling_drag']['required_lead_mm']),**extra,'NLINES':str(len(D['parts'])),
-    'OPTIONS':''.join(f'<option value="{p["id"]}">{e(p["name"])} · {p["id"]}</option>' for p in P),'BOM':''.join(bom),'SPARES':''.join(row([e(c) for c in a]) for a in D['spares']),'CONNECTORS':''.join(conn),'PINS':''.join(row([e(c) for c in a]) for a in D['pico_pins']),'CABLES':''.join(cables),'PRINTS':''.join(prints),'MESH':(R/'cad/assembly-meshes.json').read_text(),'CHECKSUMMARY':summary(),'COST':f"${D['base_new_cost_usd']:.2f}",'NPRINT':str(len(V['printed_parts']))}
+    'OPTIONS':''.join(f'<option value="{p["id"]}">{e(p["name"])} · {p["id"]}</option>' for p in P),'BOM':''.join(bom),'SPARES':''.join(row([e(c) for c in a]) for a in D['spares']),'CONNECTORS':''.join(conn),'PINS':''.join(row([e(c) for c in a]) for a in D['pico_pins']),'CABLES':''.join(cables),'PRINTS':''.join(prints),'MESH':(R/'cad/assembly-meshes.json').read_text(),'CHECKSUMMARY':summary(),'COST':f"${D['base_new_cost_usd']:.2f}",'W20ROUTE':str(next(c['route_mm'] for c in C if c['id']=='W20')),'LIDARX':fx(PA['lidar_x']),'CAMH':fx(PA['camera_height']),'BUMPZ':'–'.join(fx(z) for z in PA['bumper_z']),'BUMPTOP':fx(PA['bumper_z'][1]),'HEIGHT':f"{V['summary']['robot_height_mm']:.0f}",'NPRINT':str(len(V['printed_parts']))}
 for png in ['robot-assembled.png','robot-exploded.png','robot-internal.png']:   # the review images must be rendered from the current build
     if (R/png).stat().st_mtime<(R/'cad/assembly-meshes.json').stat().st_mtime:raise SystemExit(f'{png} is older than cad/assembly-meshes.json: re-render it (cad/render_review_images.py) before rebuilding the review')
 s=Path(__file__).with_name('review-template.html').read_text()

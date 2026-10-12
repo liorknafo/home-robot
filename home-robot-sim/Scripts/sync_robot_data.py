@@ -14,8 +14,9 @@ solids: printed parts at their fill, bought parts at their CAD centroids, no bal
 is true ('Wheels': both drive wheels; 'Caster ball') are the simulator's own wheel / caster bodies; every other record
 is the chassis Body. The file's body / total masses and COMs are re-derived from its records and from the wheel and
 caster positions (parameters.json) and must agree; a missing or inconsistent file is an error (no fallback to the
-older id-based estimate, whose part ids no longer exist in the CAD). The whole-robot COM must stay at least 15 mm
-behind the drive axle (COM_LIMIT_M).
+older id-based estimate, whose part ids no longer exist in the CAD). The whole-robot COM must stay at least 12 mm
+behind the drive axle (COM_LIMIT_M), and the CAD's worst sensitivity case (cad/validation.json com_estimate) at least 10 mm
+(COM_WORST_LIMIT_M); user decision 2026-10-11, task F (was 15 mm, nominal only).
 
 CAD contract (parameters.json, mm): rear_caster = [x, y, z] where z is the BALL BOTTOM above the floor with the robot at
 rest (0 = touching; 0..3 mm accepted, anything else raises). bump_zone_edges_deg (optional, default
@@ -28,12 +29,16 @@ from pathlib import Path
 import argparse, json, math, shutil, subprocess, sys
 
 ROOT = Path(__file__).resolve().parents[1]
-COM_LIMIT_M = -.015                                     # robot COM must be at least 15 mm behind the drive axle
-# Values the code relies on (DriveCore.h, controller odometry): a change needs a code edit first. camera_height / lidar_height
-# are the low-profile R1 mounts (spec 2026-10-06 sec. 2: LiDAR plane 147.5 mm, camera 107.5 mm); RobotPawn and the
-# controller read them from robot-parameters.json, so this guard only makes a further CAD move a deliberate step.
-GUARDED = {'wheel_diameter': 80, 'wheel_track': 228, 'wheel_x': 0, 'camera_baseline': 0, 'camera_height': 107.5,
-           'lidar_x': 20, 'lidar_height': 147.5}
+COM_LIMIT_M = -.012                                     # robot COM (nominal) must be at least 12 mm behind the drive axle
+COM_WORST_LIMIT_M = -.010                               # ... and the CAD's worst sensitivity case at least 10 mm (task F, user decision 2026-10-11)
+# Values the code relies on (DriveCore.h, controller odometry): a change needs a code edit first. camera_height / lidar_x /
+# lidar_height are the R1 mounts (low-profile spec 2026-10-06 sec. 2: LiDAR plane 147.5 mm; task F 2026-10-11: camera in the
+# bumper band at 80 mm, chosen with tests/camera_height_sweep.py and the Unreal shower-tray drives, and the LD14 turned round,
+# spin axis x 54: as far forward as its 0.1 m blind circle stays inside the pressed bumper, user decision); RobotPawn and the
+# controller read them from robot-parameters.json, so this guard only makes a further CAD move a deliberate step. The LD14's
+# 180 deg turn (parameters.json lidar_yaw_deg) only matters to a real-robot driver: the simulator reports scans in the robot frame.
+GUARDED = {'wheel_diameter': 80, 'wheel_track': 228, 'wheel_x': 0, 'camera_baseline': 0, 'camera_height': 80.0,
+           'lidar_x': 54, 'lidar_height': 147.5}
 REQUIRED = ['outer_radius', 'shell_radius', 'rear_caster', 'cliff_sensors', 'cliff_z', 'camera_x']
 MASS_PROPERTIES = 'mass-properties.json'
 SEPARATE_BODIES = ('Wheels', 'Caster ball')            # mass-properties.json records the simulator models as their own bodies
@@ -45,6 +50,15 @@ BASE_LINK_HEIGHT_MM = 85                                # RobotPawn BodyHeight (
 
 def fail(msg):
     raise ValueError(msg)
+
+
+def cad_worst_com(cad):
+    """(worst sensitivity-case COM x in mm, case name) from cad/validation.json com_estimate, or None when it is missing."""
+    try:
+        c = json.loads((cad / 'validation.json').read_text())['com_estimate']
+        return float(c['sensitivity_worst_com_x_mm']), c.get('sensitivity_worst_case', '?')
+    except (OSError, KeyError, ValueError, TypeError):
+        return None
 
 
 def bbox_centre(b):
@@ -330,9 +344,18 @@ def main(argv=None):
             print(f'CAD com_estimate_mm {est} vs synced robot COM: dx {robot_com[0] - est[0]:+.2f} mm')
         else:
             print(f'warning: com_estimate_mm {est!r} is not a number or a list of numbers; not compared', file=sys.stderr)
-    if margin > COM_LIMIT_M:
-        fail(f'robot COM x is {margin * 1000:+.1f} mm from the drive axle; it must be <= {COM_LIMIT_M * 1000:.0f} mm '
-             '(behind the axle, so the robot rests on the rear caster). Move mass rearward or add ballast; nothing written.')
+    worst = cad_worst_com(cad)
+    if worst is None:                                     # no worst case to check: hold the one COM we have to the worst-case limit
+        print(f'warning: no worst-case COM in {cad / "validation.json"} (com_estimate.sensitivity_worst_com_x_mm); checking the nominal '
+              f'COM against the worst-case limit {COM_WORST_LIMIT_M * 1000:.0f} mm only', file=sys.stderr)
+        checks = [('robot COM x', margin, COM_WORST_LIMIT_M)]
+    else:
+        print(f'CAD worst-case COM x {worst[0]:+.2f} mm ({worst[1]})')
+        checks = [('robot COM x', margin, COM_LIMIT_M), (f'worst-case COM x ({worst[1]})', worst[0] / 1000 - axle, COM_WORST_LIMIT_M)]
+    for name, value, limit in checks:
+        if value > limit:
+            fail(f'{name} is {value * 1000:+.1f} mm from the drive axle; it must be <= {limit * 1000:.0f} mm '
+                 '(behind the axle, so the robot rests on the rear caster). Move mass rearward or add ballast; nothing written.')
 
     data.pop('sync_status', None)                         # clears the pre-sync marker
     data.update(geometry)
@@ -359,22 +382,28 @@ def main(argv=None):
                       'Masses kg, positions mm: records = the chassis Body (sum = body_mass_kg); separate_body_records = the '
                       'drive-wheel pair (wheel_mass_kg each) and the caster ball; body_inertia_kg_m2 is about estimated_body_com_mm.')
     lim = [x for x in data.get('limitations', []) if not x.startswith(('Chassis inertia', 'Printed-part masses', 'Masses, centre of mass',
-                                                                       'Sensing blind band'))]
+                                                                       'Sensing blind band', 'Camera window'))]
     bt, lz = round(1000 * geometry['bumper_top_z_m'], 2), round(1000 * geometry['lidar_mount_m'][2], 2)
     rt = round(1000 * geometry.get('robot_top_z_m', geometry['lidar_mount_m'][2]), 2)
     lim.append(f'Sensing blind band: thin objects confined to {bt:g}-{lz:g} mm (above the bumper skin top, bumper_top_z_m, and '
                f'below the LiDAR scan plane) and object undersides at {lz:g}-{rt:g} mm (between the LiDAR plane and the robot top, '
                'robot_top_z_m) are invisible to the LiDAR and above the bumper, so nothing senses them; the upper structure '
-               '(lid, camera guard, LiDAR tray and turret; above the LiDAR plane only the turret) collides with them. The '
+               '(lid, LiDAR tray and turret; above the LiDAR plane only the turret) collides with them. The '
                'controller handles them only through stall marks (lidar_brain.mark_stall: the wheels turn, the LiDAR shows no '
                'motion, nothing is sensed), at most STALL_MARK_LIMIT per session.')
+    cw = prm.get('camera_window')
+    if cw:
+        lim.append(f"Camera window (task F): the real bumper has a {cw['at_skin']['width_mm']:g} mm wide window at z "
+                   f"{cw['at_skin']['z_mm'][0]:g}-{cw['at_skin']['z_mm'][1]:g} mm round the camera lens, across the bumper seam "
+                   '(cad/parameters.json camera_window). The bumper probes here are uniform, so an object small enough to pass that '
+                   'window, which would reach the lens unsensed on the real robot, trips the simulated bumper instead.')
     lim += ['Masses, centre of mass and body_inertia_kg_m2 come from the CAD (cad/mass-properties.json): printed parts at CAD volume x '
             'PETG 1.27 g/cm3 x a per-part fill, bought parts at their recorded masses at CAD solid centroids, each group a uniform '
             'solid of its CAD envelope for the inertia. Not weighed or measured.',
             'Chassis inertia and upper collider in Unreal: RobotPawn sets the Body inertia from body_inertia_kg_m2 (principal moments '
             'and axes, after the COM nudge; log INERTIA_FIX, state physics_body_inertia_kg_m2), not from its collider. Above the body '
             'collider (up to the lid top, body_top_z_m) only the LiDAR column collides: a 32-gon prism circumscribing the turret '
-            'cylinder (lidar_turret_xy_m, lidar_turret_radius_m) from the lid top to the robot top; the camera guard and the parts of '
+            'cylinder (lidar_turret_xy_m, lidar_turret_radius_m) from the lid top to the robot top; the parts of '
             'the LiDAR tray and LD14 housing outside the turret footprint are not colliders.']
     data['limitations'] = lim
     if args.dry_run:

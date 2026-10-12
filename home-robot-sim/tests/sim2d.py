@@ -13,10 +13,14 @@ Emulates the simulator <-> autonomy_service boundary without Unreal or UDP:
     trips 1.5 mm outside the skin, reported on a 4 deg grid), reporting bumper_left/right (+/-20 deg centre band trips both), a
     latched 5-bit bump_zones mask (bump_zone_edges_deg) and a touch counter. It
     senses walls, low objects and curbs (>= 2 cm). A bump disarms the drive.
-  * Pressed rule, firmware='spec' (default; Source/HomeRobotSim/DriveCore.h since the round robot): while the bumper is
-    pressed the drive may be armed / stay armed only for a reverse (v <= 0 with |w| <= 2|v|/track,
-    i.e. neither wheel forward) or a pure spin (v == 0, |w| <= .5) TOWARD the
+  * Pressed rule, firmware='spec' (default; Source/HomeRobotSim/DriveCore.h since the round robot): every new press
+    disarms the drive, whatever the current command (DriveCore.h update(): press=bumper&&!bump -> disarm(); the wheel
+    setpoints restart from 0). While the bumper stays pressed, command() may re-arm it only for a reverse (v <= 0 with
+    |w| <= 2|v|/track, i.e. neither wheel forward) or a pure spin (v == 0, |w| <= .5) TOWARD the
     pressed side: left switch w >= 0, right switch w <= 0, both either.
+    Known remaining simplifications against DriveCore.h (Unreal runs DriveCore.h itself): any disarm stops the wheels at once
+    (DriveCore cuts the torque and the robot coasts); a forward command while pressed disarms here (DriveCore stays armed and
+    ramps both setpoints to 0 at 0.25 m/s2); a pure spin here is v == 0 (DriveCore: |v| < 1e-4).
     firmware='drivecore': the PREVIOUS (box-robot) DriveCore.h, kept as a negative control: a press rising edge
     disarms; while pressed command() re-arms only for v <= 0 and |w| <= bump_yaw (.3) and never
     disarms on a later command; update() clamps BOTH wheel setpoints to <= 0 while pressed (a
@@ -319,8 +323,11 @@ class Sim:
             if (reason not in (None, 'bumper')) or press or self.estop or self.t - self.cmd_time > .35:
                 self.armed = False
         else:
+            # DriveCore::update (DriveCore.h:46): every press rising edge disarms, whatever the current command; the wheel
+            # setpoints restart from 0 (below) and only command() re-arms, for a pressed-allowed motion.
+            press = self.bump and not self.fw_bump; self.fw_bump = self.bump
             bump_reverse_ok = reason == 'bumper' and self.reverse_on_bump and pressed_motion_ok(*self.cmd, self.left, self.right)
-            if (reason and not bump_reverse_ok) or self.estop or self.t - self.cmd_time > .35:
+            if press or (reason and not bump_reverse_ok) or self.estop or self.t - self.cmd_time > .35:
                 self.armed = False
         if not self.armed:
             self.wl = self.wr = 0.
@@ -725,6 +732,44 @@ def run_overhang(brain_factory, kind, goals=(), seconds=800., goal_seconds=200.,
                 all_hits_recorded=recorded, rehit_after_mark=rehit, max_hits_per_spot=per_spot, body_blocks=sim.contacts,
                 overhang_block_ticks=sim.overhang_hits, bumps=sim.bump_events, contacts=len(brain.contacts), skips=len(brain.blacklist),
                 jams=len(brain.jams), reverse_audit=audit, mode=brain.mode)
+
+
+# ---- closed-loop scenario: floor the robot can see but never enter (task H) ------------------------------------------
+def pocket_world(kind):
+    """A 5 x 4 m room (x -1..4, y -2..2) with a 2 x 2 m pen in its corner (x 2..4, y 0..2), fenced on its two open sides by
+    4 cm posts that reach the floor; the LiDAR sees between them into the pen. 'posts': 25 cm apart, 21 cm between faces
+    (the body is 2 x body_radius_m = 32 cm wide): the pen can never be entered, like the floor under the sofa in the Unreal
+    house (task H). 'door': the same with one 34 cm gap between faces: the body fits (1 cm each side) but the planner never
+    plans through it, not even at the narrow-passage clearance (40 cm). Start pose (0, 0, 0) = map frame."""
+    room = [((-1, -2), (4, -2)), ((4, -2), (4, 2)), ((4, 2), (-1, 2)), ((-1, 2), (-1, -2))]
+    south = {'posts': [2. + .25 * k for k in range(8)], 'door': [2., 2.25, 2.5, 2.88, 3.13, 3.38, 3.63, 3.88]}[kind]
+    centres = [(x, 0.) for x in south] + [(2., .25 * k) for k in range(1, 8)]
+    posts = []
+    for c in centres:
+        b = box(c[0], c[1], .04, .04); posts += [(tuple(b[i]), tuple(b[(i + 1) % 4])) for i in range(4)]
+    return World(room + posts)
+
+
+def run_pocket(brain_factory, kind, seconds=900., seed=0, sensor_errors=None):
+    """Map pocket_world(kind). At the end, on the robot's own map: the safe floor its planner cannot reach (the pen,
+    'unreached_m2') and how much of it the body could enter ('enterable_m2', grid.unreached_enterable). PASS, 'posts':
+    mapping complete although more than 1.5 m2 of safe floor is unreached (the scenario exercises the rule), less than 1.5 m2
+    of it enterable. 'door': mapping NOT complete, with more than 1.5 m2 of the pen counted as enterable (a robot boxed out
+    by its own margins never reports the house done). Both: the robot stopped on its own within `seconds` (less than the
+    brain's time budget), clean reverse audit, no rigid-body contact, no bumper touch. seed and sensor_errors: as Sim."""
+    brain = brain_factory(); sim = Sim(pocket_world(kind), seed=seed, sensor_errors=sensor_errors)
+    bridge = Bridge(brain, sim, rearm_hook=lambda b: getattr(b, 'wants_arm', False))
+    for _ in range(10):
+        brain.predict(sim.state()); [sim.step(.01) for _ in range(5)]
+    bridge.start_mapping(); trace = bridge.run(seconds)
+    g = brain.grid; pose = brain.localizer.pose; safe = g.masks()[3]; reach = g.reachable(pose[:2], safe)
+    unreached = float((safe & ~reach).sum() * g.res ** 2); enterable = float(g.unreached_enterable(pose[:2], safe).sum() * g.res ** 2)
+    audit = reverse_audit(trace); clean = audit['ok'] and sim.contacts == 0 and sim.bump_events == 0
+    finished = brain.mode == 'idle'                     # stopped on its own: `seconds` is less than the brain's time budget
+    ok = clean and finished and (brain.complete and unreached > 1.5 and enterable < 1.5 if kind == 'posts' else not brain.complete and enterable > 1.5)
+    return dict(passed=bool(ok), kind=kind, t=round(sim.t), complete=bool(brain.complete), unreached_m2=round(unreached, 2), enterable_m2=round(enterable, 2),
+                free=round(g.summary()['free_area_m2'], 2), contacts=len(brain.contacts), skips=len(brain.blacklist), body_blocks=sim.contacts,
+                bumps=sim.bump_events, reverse_audit=audit, message=brain.message, events=[e['message'] for e in brain.events][-4:])
 
 
 # ---- closed-loop scenario: bumper contact with no straight trail behind (task G) ---------------------------------

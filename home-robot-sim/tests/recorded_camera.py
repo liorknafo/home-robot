@@ -2,10 +2,11 @@
 
 The image fixtures under tests/fixtures were recorded in Unreal. slipper-approach and slipper-side-approach are still the
 2026-10-03 recordings, made before the low-profile redesign with the camera at RECORDED_CAMERA_MOUNT (x, y, height above
-the floor, metres; base_link at BASE_Z). bedroom-edges, floor-rejection and floor_parallax were re-recorded on 2026-10-09
-(bay B10 phase 2) at the low-profile mount; a fixture's inputs.json names its mount in 'camera_mount_m' (fixture_mount), and
-a fixture without that key is a RECORDED_CAMERA_MOUNT recording. The detectors take their extrinsics from
-geometry.CAMERA_MOUNT (robot-parameters.json camera_mount_m), which is now the low-profile mount (z 0.1075). Replaying
+the floor, metres; base_link at BASE_Z). floor-rejection and floor_parallax are the 2026-10-09 (bay B10 phase 2) recordings
+at the low-profile mount (0.117, 0, 0.1075); bedroom-edges was re-recorded on 2026-10-11 (task F) at the bumper-band mount
+(0.146, 0, 0.08). A fixture's inputs.json names its mount in 'camera_mount_m' (fixture_mount), and a fixture without that key
+is a RECORDED_CAMERA_MOUNT recording. The detectors take their extrinsics from geometry.CAMERA_MOUNT (robot-parameters.json
+camera_mount_m), which is now the bumper-band mount (0.146, 0, 0.08). Replaying
 images with another mount than the one they were taken with would put every pixel ray at the wrong height, so every
 replay uses the mount its images were taken with: recorded_mount() swaps it in for mono.camera() (used by MonoObserver and
 FloorParallax) and FloorParallax's plausible camera-height band, and restores the current mount afterwards. The

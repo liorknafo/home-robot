@@ -3,7 +3,7 @@ Unknown cells remain blocked. No house model or simulator depth is consulted.
 """
 import math,heapq,json,cv2,numpy as np
 from .stereo import optical_to_world
-from .geometry import PLAN_RADIUS,BODY_CLEAR
+from .geometry import PLAN_RADIUS,BODY_CLEAR,FIT_CLEAR
 class Grid:
     def __init__(self,resolution=.05,size=320):
         self.res=resolution;self.n=size;self.origin=np.array([-size*resolution/2]*2);self.logodds=np.zeros((size,size),np.float32);self.seen=np.zeros((size,size),np.uint16);self.last_pose=None;self.updates=0
@@ -161,6 +161,32 @@ class Grid:
         traversable=self.traversable(start,free,safe,clearance).copy();traversable[start]=True
         _,labels=cv2.connectedComponents(traversable.astype(np.uint8),connectivity=4)
         return (labels==labels[start])&safe
+    def route_open(self,start_xy,route):
+        """path() could still follow `route` (world points of consecutive cells, as path() returns) from start_xy: the
+        same traversable mask, no diagonal step past a blocked corner, and its first cell joined to the start (4-connected,
+        as reachable)."""
+        free,_,_,safe,clearance=self.masks();start=self.cell(start_xy)
+        if not len(route) or not self.valid(start) or self.logodds[start]>.8:return False
+        mask=self.traversable(start,free,safe,clearance).copy();mask[start]=True;cells=[self.cell(xy) for xy in route]
+        if not all(self.valid(c) and mask[c] for c in cells):return False
+        if any(a[0]!=b[0] and a[1]!=b[1] and not (mask[a[0],b[1]] and mask[b[0],a[1]]) for a,b in zip(cells,cells[1:])):return False
+        _,labels=cv2.connectedComponents(mask.astype(np.uint8),connectivity=4)
+        return labels[cells[0]]==labels[start]
+    def unreached_enterable(self,start_xy,safe=None,fit=FIT_CLEAR):
+        """Safe cells the planner cannot reach from start_xy that the round body itself could: joined to the robot by a
+        path of cells at least `fit` from every occupied cell (LiDAR returns, camera and contact marks; cell centres).
+        Unknown cells count as open, so an unmeasured gap is never a wall. What is left out is floor walled in for the
+        body (between obstacles or marked steps closer together than it is wide, e.g. seen under a sofa, or inside a
+        shower tray marked all round), never floor cut off only by the planning margins or a failed route."""
+        free,occupied,_,all_safe,clearance=self.masks()
+        if safe is None:safe=all_safe
+        reach=self.reachable(start_xy,safe);left=safe&~reach;start=self.cell(start_xy)
+        # No reachable floor at all (no valid start, or the robot on an occupied cell): every unreached cell counts.
+        if not left.any() or not self.valid(start) or not reach.any():return left
+        body=(~occupied&(clearance>=fit))|reach;body[start]=True
+        _,labels=cv2.connectedComponents(body.astype(np.uint8),connectivity=8)
+        robot=np.setdiff1d(np.unique(np.r_[labels[reach],labels[start]]),[0])
+        return left&np.isin(labels,robot)
     def summary(self):
         free,occupied,unknown,safe,_=self.masks();observed=self.seen>0
         p=1/(1+np.exp(-self.logodds));entropy=-(p*np.log2(np.clip(p,1e-8,1))+(1-p)*np.log2(np.clip(1-p,1e-8,1)))

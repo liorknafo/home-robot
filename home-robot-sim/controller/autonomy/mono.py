@@ -5,7 +5,7 @@ No simulator depth, object labels, house geometry or ground-truth pose is used.
 Relative geometry comes from observed floor motion, with calibrated camera
 height supplying metric scale and measured motion checking the solution.
 Stationary monocular images do not establish depth. The calibrated mount is
-nominally 15 cm above the floor; downward ranges compensate small body movements.
+at geometry.CAMERA_MOUNT (8 cm above the floor since task F, in the bumper band); downward ranges compensate small body movements.
 """
 import math
 import cv2

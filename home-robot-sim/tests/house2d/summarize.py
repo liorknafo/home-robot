@@ -1,7 +1,7 @@
 """Summarize run_house.py results: summarize.py DIR [GROUP_REGEX] -> a markdown table per run and per group (stdout),
 plus DIR/summary.json. GROUP_REGEX (default '^(.*)_s\\d+$') takes the group name from each label.
-The disconnected safe floor (one of the mapping_complete() conditions: at most 1.5 m2 of safe floor the robot cannot
-reach) is located from each run's saved grid (map-LABEL) at the final true pose (extra.pkl; evaluation only).
+The disconnected safe floor (safe floor the planner cannot reach; mapping_complete() allows at most 1.5 m2 of the part the
+body could enter, task H) is located from each run's saved grid (map-LABEL) at the final true pose (extra.pkl; evaluation only).
 Run it with the same CTRL as the runs (the grid classes come from the controller)."""
 import json,os,pickle,re,sys
 from pathlib import Path
@@ -29,12 +29,13 @@ for p in sorted(D.glob('*.json')):
     if p.name=='summary.json':continue
     r=json.loads(p.read_text());r['disconnected_by_room']=pockets(r['label']);rows.append(r)
 ROOMS=[n for n,_ in S.ROOMS]
-print('| run | complete | mapping s | rooms (L/K/B/S/Ba) | frontier s | coverage s | none s | 1st coverage s | unvisited m2 | disconnected safe m2 | frontiers left | contacts | body blocks | skips |')
-print('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|')
+print('| run | complete | mapping s | rooms (L/K/B/S/Ba) | frontier s | coverage s | none s | 1st coverage s | unvisited m2 | disconnected safe m2 | of it enterable m2 | covered on the way (> 1.2 m) | frontiers left | contacts | body blocks | skips |')
+print('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|')
 for r in rows:
     b=r['blockers'];st=r['stage_s']
     print(f"| {r['label']} | {'yes' if r['complete'] else 'no'} | {r['mapping_s']:.0f} | {' / '.join(f'{r['rooms'][n][1]:.3f}' for n in ROOMS)} | {st['frontier']:.0f} | {st['coverage']:.0f} | {st['none']:.0f} | "
-          f"{r['first_coverage_s'] if r['first_coverage_s'] is not None else '-'} | {b['unvisited_m2']:.2f} | {b['disconnected_safe_m2']:.2f} | {b['frontiers_left']} | {r['contacts']} | {r['body_blocks']} | {r['skips']} |")
+          f"{r['first_coverage_s'] if r['first_coverage_s'] is not None else '-'} | {b['unvisited_m2']:.2f} | {b['disconnected_safe_m2']:.2f} | {'-' if b.get('unreached_enterable_m2') is None else format(b['unreached_enterable_m2'],'.2f')} | "
+          f"{'-' if r.get('covered_on_the_way_m') is None else f"{len(r['covered_on_the_way_m'])} ({sum(d>1.2 for d in r['covered_on_the_way_m'])})"} | {b['frontiers_left']} | {r['contacts']} | {r['body_blocks']} | {r['skips']} |")
 groups={}
 for r in rows:
     m=pat.match(r['label']);groups.setdefault(m.group(1) if m else r['label'],[]).append(r)

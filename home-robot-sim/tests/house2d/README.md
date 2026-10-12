@@ -38,7 +38,10 @@ cd tests/house2d
 - `stage_s`: seconds on frontier targets, on coverage targets, and on none;
 - `first_coverage_s`: the end of the first LiDAR frontier stage;
 - `unvisited_timeline`;
-- `blockers`: the `mapping_complete()` conditions at the end;
+- `blockers`: the `mapping_complete()` conditions at the end, with `disconnected_safe_m2` (safe floor the planner cannot reach)
+  and `unreached_enterable_m2` (the part of it the body could enter; only this counts against the 1.5 m² limit, task H);
+- `covered_on_the_way_m`: for each "Target area covered on the way", the robot's distance to that target (beyond 1.2 m the
+  camera did not pass it: the target only dropped out of reach, which task H stopped counting as covered);
 - `unvisited_by_room` and `unvisited_clusters`;
 - `contact_phases`, `contact_phase_s` and `longest_contact_phase_s`: how often and how long the robot was in its bumper-contact
   phase (task G: a robot that cannot get off a contact used to stay in it until the time budget);

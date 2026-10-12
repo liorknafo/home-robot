@@ -11,9 +11,15 @@ from recorded_camera import RECORDED_CAMERA_MOUNT,recorded_mount,fixture_mount
 FIXTURE=Path(__file__).parent/'fixtures/floor_parallax'
 # Offline annotations from Content/RobotData/house-scene.json boxes (map frame of this run is within ~2 cm of it).
 # Assertions only; never detector inputs. The fixture was re-recorded on 2026-10-09 (bay B10 phase 2) with the round,
-# low-profile robot at geometry.CAMERA_MOUNT (inputs.json camera_mount_m, z 0.1075): its front bumper met the tray at
-# inputs.json contact_frame (1544, after a turn), after the bathroom clip ends. Every replay runs under
+# low-profile robot at the camera mount of that time (inputs.json camera_mount_m, (0.117, 0, 0.1075)): its front bumper met
+# the tray at inputs.json contact_frame (1544, after a turn), after the bathroom clip ends. Every replay runs under
 # recorded_mount(MOUNT), the recording's extrinsics (the 2026-10-03 clip was taken at the 0.15 m mount, contact ~1381).
+# Sensitivity (carry item 4, task F): the bathroom clip 1450-1480 is a narrow pass. Started at each of frames 1450-1457 it
+# meets the tray rules (>= 3 cells, one >= 0.40 m away) from 5 of the 8 starts, with 2-6 tray cells and never a cell
+# elsewhere. Task F's Unreal run at the bumper-band mount (0.146, 0, 0.08) could not replace it: the cutter's own episode
+# (the longest ready run toward the tray before contact) gave 2 tray cells (first 1.03 m away), and ten straight drives at
+# the tray a median of 2 cells (found 10/10, first a median 0.94 m away). The 3-cell rule is at the edge of what the
+# detector gives at that mount: a perception-margin item.
 TRAY=((3.25,4.99),(-3.00,-2.04))        # 6 cm shower tray footprint (front face y=-2.13) plus cell slack
 BATH_FREE=((3.84,4.28),(-1.98,-1.10))   # bath mat (0.7 cm), its far edge and bare floor between toilet and vanity
 THRESHOLD_FREE=((.40,1.60),(-.28,.28))  # 10 mm hardwood threshold at x=1.0 and the open floor around it
@@ -114,13 +120,17 @@ class FloorParallaxTests(unittest.TestCase):
 
     @unittest.expectedFailure
     def test_fixtures_match_the_current_camera_mount(self):
-        """OPEN GAP (L11, bay B10): every camera image fixture must be recorded at the robot's camera mount (camera_mount_m,
-        geometry.CAMERA_MOUNT, z .1075). B10 phase 2 re-recorded bedroom-edges, floor-rejection and floor_parallax (bathroom
-        and threshold) in Unreal at that mount (inputs.json camera_mount_m). slipper-approach and slipper-side-approach are
-        still the 2026-10-03 recordings at RECORDED_CAMERA_MOUNT (.117, 0, .15): in the B10 benchmark run the robot passed
-        the slipper only head-on (closest 0.43 m) and the mono observer first marked it at 0.54 m, short of the 0.60 m their
-        tests require, and there was no side approach from a tracker reseed. This test fails on purpose (an expected
-        failure) and turns into an 'unexpected success' once all five sets are at the current mount."""
+        """OPEN GAP (L11): every camera image fixture must be recorded at the robot's camera mount (camera_mount_m,
+        geometry.CAMERA_MOUNT: (0.146, 0, 0.08) since task F, in the bumper band). Task F re-recorded in Unreal
+        (full-mapping-20261011T183022, tests/cut_camera_fixtures.py) and only bedroom-edges passed its test at that mount;
+        it was replaced. floor-rejection and floor_parallax stay the B10 recordings at (0.117, 0, 0.1075); slipper-approach and
+        slipper-side-approach the 2026-10-03 recordings at RECORDED_CAMERA_MOUNT (.117, 0, .15). Why: the run passed the
+        slipper at 0.44 m closest and the mono observer never marked it (slipper-approach, and floor-rejection, which needs a
+        hit at the slipper, fail); there was no side approach after a tracker reseed; the bathroom episode gave 2 tray cells
+        (3 needed); the threshold episode confirmed 2 cells on the 10 mm threshold (none allowed). In three straight drives
+        at the slipper at that mount the floor-parallax detector marked it 0.89-1.07 m ahead (>= 0.60 m), but the mono
+        observer never did (once in 18 such drives at 75-107.5 mm). This test fails on purpose (an expected failure) and
+        turns into an 'unexpected success' once all five sets are at the current mount."""
         for name in ('bedroom-edges','floor-rejection','floor_parallax','slipper-approach','slipper-side-approach'):
             doc=json.loads((FIXTURE.parent/name/'inputs.json').read_text())
             np.testing.assert_allclose(fixture_mount(doc),CAMERA_MOUNT,atol=1e-9,err_msg=f'{name}: re-record this camera fixture at camera_mount_m')

@@ -103,6 +103,11 @@ CLOSE_SPIN_ENTRY_DEG=20;CLOSE_SPIN_EXIT=.15;CLOSE_SPIN_EXIT_V=.06
 # SENSOR: a rear touch of a few mm is below the 4 mm single-scan range noise, so only (2) reveals it.
 # A close spin that ended in a contact or stall is not retried in the same direction from the same
 # spot (CLOSE_SPIN_RETRY_M, CLOSE_SPIN_RETRY_S) while the other direction is allowed.
+# A press on the side the spin turns toward does not end it where there is no back-off room (task J,
+# close_spin_through_press): the contact phase would turn that same way, the firmware executes the spin
+# pressed, and it carries the contact toward 0 deg; at the front centre the contact phase takes over.
+# Ending the turn there instead (sim2d slip stress, 3 mm side corner) left the robot at the skin's trip
+# point, and the next close spin, the other way round, pressed again at once: four presses in 4 s.
 CLOSE_SPIN_STALL_S=.8;CLOSE_SPIN_STALL_FRACTION=.3;CLOSE_SPIN_RETRY_M=.03;CLOSE_SPIN_RETRY_S=60.
 # Reverse permission (the user rule: reverse only over ground the body has already driven over).
 # The driven trail is base_link's position every 1 cm while driving FORWARD or turning. After any reverse
@@ -154,9 +159,10 @@ REVERSE_GUARD_M=.02;REVERSE_SETTLE_S=.5;REVERSE_EPISODE_RESET=.05;FORWARD_CLEAR_
 # None of them reverses off the driven trail: command()'s guard and the episode budget apply to all of them.
 CONTACT_ATTEMPTS=4;CONTACT_CREEP_V=.02;CONTACT_CREEP_GUARD_M=.008;CONTACT_CREEP_MIN=.0005;CONTACT_WAIT_S=60.;CONTACT_SETTLE_S=1.;CONTACT_SAME_M=.05
 NARROW_BLOCK_S=300  # seconds a narrow-passage stall keeps narrow planning away from that pinch
+ROUTE_DETOUR_M=1.   # m; a blocked route whose only replacement is this much longer counts as closed (detour_only)
 STALL_MARK_SPACING=.10   # m; a second unexplained stall this close to a marked one is skipped, not marked again (mark_stall)
 STALL_BACKOFF=.05        # m; back-off after a marked stall: its nearest mark (R + .05 ahead) ends R + .10 = .259 away, outside PLAN_RADIUS,
-                         # and the LiDAR turret (it reaches .05 from base_link) can spin again. It can follow up to two .035 jam retreats
+                         # and the LiDAR turret (its far edge, LIDAR_MOUNT x + turret radius, is about .07 from base_link since task F) can spin again. It can follow up to two .035 jam retreats
                          # in the same reverse episode (the retries end where the retreats began), so it stays short.
 STALL_MARK_LIMIT=8       # unexplained stalls marked per session; the 8th is marked and ends the session (mark_stall). Each mark costs
                          # at most three pushes (often the LiDAR turret against furniture: note_jam's three jams), so <= 24 per session.
@@ -335,9 +341,14 @@ class LidarBrain(Brain):
         self.contacts.append(p[:2].copy());near=sum(np.linalg.norm(c-p[:2])<.5 for c in self.contacts)
         if self.mode=='mapping' and self.goal is not None and (np.linalg.norm(self.goal-p[:2])<.6 or near>=2):self.blacklist.append(self.goal.copy())
         if near>=4 or len(self.contacts)>=15:self.idle('Repeated contacts in one area. Stopped safely; partial map saved.');return
-        # A close spin that ended in this contact is not retried in the same direction from this spot.
         m=getattr(self,'maneuver',None)
-        if m and m.get('kind')=='close_spin':self.close_spin_blocked=dict(xy=p[:2].copy(),direction=m['direction'],stamp=stamp);self.maneuver=None
+        if m and m.get('kind')=='close_spin':
+            if self.close_spin_through_press(m,known):
+                m['through']=True
+                self.event(f'Contact (front bumper) recorded on the map at {contact_azimuth(known):.0f} deg, on the side the slow turn turns toward: '
+                           'continuing the turn, which the bumper allows and which brings the contact to the front.');return
+            # A close spin that ended in this contact is not retried in the same direction from this spot.
+            self.close_spin_blocked=dict(xy=p[:2].copy(),direction=m['direction'],stamp=stamp);self.maneuver=None
         self.start_contact_phase(stamp,kind,known)
     def start_contact_phase(self,stamp,kind,known,recorded=True,max_backoff=.12):
         """Contact phase: a short straight back-off along the driven trail if there is trail room (pressed,
@@ -380,18 +391,20 @@ class LidarBrain(Brain):
         the trail allows under the creep's command guard (CONTACT_CREEP_GUARD_M look-ahead beyond its end, 1 mm steps;
         it ends where forward_run reaches creep_until). The first of them that passes the back-off's own per-tick check
         (straight_corridor_clear) is taken; each one taken counts toward CONTACT_ATTEMPTS."""
+        plan=self.backoff_plan(max_backoff);self.backoff,self.backoff_v=plan or (0.,.05)
+        if plan:self.contact_attempts=getattr(self,'contact_attempts',0)+1;self.creep_until=getattr(self,'forward_run',0.)-self.backoff
+        return self.backoff
+    def backoff_plan(self,max_backoff=.12):
+        """The back-off contact_backoff takes from here, without taking it: (distance m, speed m/s), or None."""
         budget=min(max_backoff,self.reverse_budget());plans=[]
         straight=min(budget,self.reverse_room(REVERSE_LIMIT)-.015)
         if straight>=.02:plans.append((straight,.05,.01))
         if self.bumper_pressed:
             creep=min(budget,getattr(self,'forward_run',0.),self.reverse_room(.04,step=.001)-CONTACT_CREEP_GUARD_M)
             if creep>=CONTACT_CREEP_MIN:plans.append((creep,CONTACT_CREEP_V,.001))
-        self.backoff=0.;self.backoff_v=.05
         for distance,v,step in plans:
-            if self.straight_corridor_clear(-1,max(step,distance),True,step=step):
-                self.backoff=float(distance);self.backoff_v=v;self.contact_attempts=getattr(self,'contact_attempts',0)+1
-                self.creep_until=getattr(self,'forward_run',0.)-distance;break
-        return self.backoff
+            if self.straight_corridor_clear(-1,max(step,distance),True,step=step):return float(distance),v
+        return None
     def backoff_message(self):
         if self.backoff_v<.05:return f'Backing off {1000*self.backoff:.0f} mm slowly, undoing the last forward drive along the path just driven, then replanning.'
         return f'Reversing {100*self.backoff:.0f} cm along the path just driven, then replanning.'
@@ -525,7 +538,10 @@ class LidarBrain(Brain):
         # The bumper event counter catches touches shorter than one 20 Hz sample.
         events=sensors.get('bumper_events');missed=events is not None and self.bump_events is not None and events>self.bump_events
         if events is not None:self.bump_events=events
-        pressed=bool(sensors.get('bumper')) or fault=='bumper';touched=(pressed and not self.bumper_pressed) or missed;self.bumper_pressed=pressed
+        pressed=bool(sensors.get('bumper')) or fault=='bumper';touched=(pressed and not self.bumper_pressed) or missed;released=self.bumper_pressed and not pressed;self.bumper_pressed=pressed
+        m=getattr(self,'maneuver',None)
+        if released and m and m.get('through') and m.get('start') is None and self.phase=='follow':
+            m['through']=False;self.event('Bumper released. Finishing the slow turn in place, then driving out.')
         self.bumper_sides=self.pressed_sides(sensors) if pressed else (False,False)
         self.check_pressed_pivot(sensors)
         if self.mode!='idle' and fault not in HAZARDS and (pressed or missed):
@@ -534,7 +550,8 @@ class LidarBrain(Brain):
             if not zones and ('bumper_left' in sensors or 'bumper_right' in sensors):
                 left,right=bool(sensors.get('bumper_left')),bool(sensors.get('bumper_right'));zones=[left and not right,left and right,right and not left]
             if touched:self.note_contact(stamp,'front bumper',zones)
-            elif pressed and self.mode in ('mapping','go_to') and self.phase not in ('contact','relocalizing','recover_localization','idle'):
+            elif (pressed and self.mode in ('mapping','go_to') and self.phase not in ('contact','relocalizing','recover_localization','idle')
+                  and not self.close_spin_through_press(getattr(self,'maneuver',None))):
                 # Still pressed outside the contact phase (pressed at the start, or a missed edge): only the
                 # contact phase's motions are legal while pressed, so go back to it (no new contact record).
                 if isinstance(zones,(list,tuple)):zones=(zones[2] and 3)|(zones[1] and 4)|(zones[0] and 24) if any(zones) else 0
@@ -635,13 +652,14 @@ class LidarBrain(Brain):
         if self.map_folder is None:return
         self.localizer.save(self.map_folder);self.grid.save(self.map_folder)
         safe=self.grid.masks()[3];reachable=self.grid.reachable(self.localizer.pose[:2],safe)
-        manifest=dict(sensor_configuration='d200_single_camera',complete=complete,reason=reason,unresolved_frontier_count=len(self.blacklist),camera_role='multi-view sparse low-obstacle map and motion consistency check',camera_obstacle_cells=int(self.grid.camera_obstacles.sum()),unvisited_navigable_area_m2=self.unvisited_area(),disconnected_safe_area_m2=float((safe&~reachable).sum()*self.grid.res**2),planning_radius_m=self.grid.radius,scope='observed reachable space; sparse camera coverage does not guarantee all low objects or cables',pose_confidence_is_heuristic=True,keyframes=len(self.localizer.keyframes),contacts=len(self.contacts),skipped_targets=len(self.blacklist),trouble_spots=len(self.trouble),**self.grid.summary())
+        manifest=dict(sensor_configuration='d200_single_camera',complete=complete,reason=reason,unresolved_frontier_count=len(self.blacklist),camera_role='multi-view sparse low-obstacle map and motion consistency check',camera_obstacle_cells=int(self.grid.camera_obstacles.sum()),unvisited_navigable_area_m2=self.unvisited_area(),disconnected_safe_area_m2=float((safe&~reachable).sum()*self.grid.res**2),unreached_enterable_area_m2=float(self.grid.unreached_enterable(self.localizer.pose[:2],safe).sum()*self.grid.res**2),planning_radius_m=self.grid.radius,scope='observed reachable space; sparse camera coverage does not guarantee all low objects or cables',pose_confidence_is_heuristic=True,keyframes=len(self.localizer.keyframes),contacts=len(self.contacts),skipped_targets=len(self.blacklist),trouble_spots=len(self.trouble),**self.grid.summary())
         (self.map_folder/'manifest.json').write_text(json.dumps(manifest,indent=2))
         (self.map_folder/'exploration.json').write_text(json.dumps(dict(visits=[p.tolist() for p in self.visits],viewpoints=[p.tolist() for p in self.scanned_positions],blocked_goals=[p.tolist() for p in self.blacklist],contacts=[p.tolist() for p in self.contacts],trouble_spots=[p.tolist() for p in self.trouble]),indent=2))
         for name in ['latest-map.json','latest-lidar-map.json']:(self.root/'Saved/Maps'/name).write_text(json.dumps({'directory':self.map_folder.name}))
-    def unvisited_mask(self):
-        free,_,_,safe,_=self.grid.masks()
-        covered=np.zeros_like(safe,np.uint8)
+    def covered_mask(self,free=None):
+        """Floor within VISIT_RADIUS of travel from a visit: passed within the low-obstacle camera's range."""
+        if free is None:free=self.grid.masks()[0]
+        covered=np.zeros(free.shape,np.uint8)
         for v in self.visits:
             y,x=self.grid.cell(v)
             if self.grid.valid((y,x)):covered[y,x]=1
@@ -650,7 +668,10 @@ class LidarBrain(Brain):
         kernel=np.array([[0,1,0],[1,1,1],[0,1,0]],np.uint8)
         for _ in range(int(VISIT_RADIUS/self.grid.res)):
             covered=cv2.dilate(covered,kernel)&free.astype(np.uint8)
-        unvisited=safe&~covered.astype(bool)&self.grid.reachable(self.localizer.pose[:2],safe);r=int(.35/self.grid.res)
+        return covered.astype(bool)
+    def unvisited_mask(self):
+        free,_,_,safe,_=self.grid.masks()
+        unvisited=safe&~self.covered_mask(free)&self.grid.reachable(self.localizer.pose[:2],safe);r=int(.35/self.grid.res)
         # Targets skipped after contacts or stalls are reported, not chased forever.
         for xy in self.blacklist+self.trouble:
             y,x=self.grid.cell(xy);unvisited[max(0,y-r):y+r+1,max(0,x-r):x+r+1]=False
@@ -884,8 +905,9 @@ class LidarBrain(Brain):
                 # Known open floor cut off from the robot is often behind a gap the
                 # 25 cm planning clearance closes (a door beside a chair). Plan
                 # through it once with 20 cm, driving slowly, then return to 25 cm.
-                safe=self.grid.masks()[3]
-                if (safe&~self.grid.reachable(pose[:2],safe)).sum()*self.grid.res**2>1:
+                # Floor walled in for the body itself (under a sofa) cannot be
+                # reached that way either and does not count.
+                if self.grid.unreached_enterable(pose[:2]).sum()*self.grid.res**2>1:
                     normal=self.grid.radius;self.grid.radius=NARROW_RADIUS
                     candidates=self.grid.frontiers(pose,self.blacklist+self.scanned_positions);kind='frontier'
                     if not candidates:candidates=self.coverage_viewpoints(pose);kind='coverage'
@@ -902,9 +924,11 @@ class LidarBrain(Brain):
         # Skipped targets are reported in the manifest; they do not hide or
         # replace any frontier or unvisited space the robot can still reach.
         pose=self.localizer.pose;safe=self.grid.masks()[3];reachable=self.grid.reachable(pose[:2],safe)
-        # A robot boxed in by its own margins must never report the house done:
-        # only small pockets (behind furniture, inside a tray) may stay unreached.
-        if (safe&~reachable).sum()*self.grid.res**2>1.5 or reachable.sum()*self.grid.res**2<1:return False
+        # A robot boxed in by its own margins, or by a route it failed to find, must never report the house done: safe
+        # floor the planner cannot reach counts, and at most 1.5 m2 of it (small pockets behind furniture) may stay
+        # unreached. Floor walled in for the body itself does not count (grid.unreached_enterable): the robot can see it
+        # but never enter it, e.g. under a sofa whose base is lower than the robot, or between chair legs.
+        if self.grid.unreached_enterable(pose[:2],safe).sum()*self.grid.res**2>1.5 or reachable.sum()*self.grid.res**2<1:return False
         if self.stuck():return False
         return not self.grid.frontiers(pose,self.blacklist+self.scanned_positions+self.trouble) and self.localizer.uncertainty<.08 and self.grid.summary()['free_area_m2']>1 and self.unvisited_area()<UNVISITED_DONE
     def stuck(self):
@@ -935,8 +959,13 @@ class LidarBrain(Brain):
         self.grid.unobservable=self.failed_views>=2
     def coverage_goal_covered(self):
         if getattr(self,'goal_kind',None)!='coverage' or self.goal is None:return False
+        # Covered means a visit passed within camera range of it. Leaving the unvisited mask is not enough: that mask
+        # also needs the target reachable and safe, which flicker as each scan moves a margin by a cell (a corridor
+        # between chair legs), and the robot then ping-ponged between two such targets across the house (B13 baseline:
+        # 13 of 22 'covered on the way' 1.7-3.9 m from the target; task F's final run 17 of 55, the last 400 s).
+        # A route that really closed is left by the route checks (route_lost), as for any target.
         cell=self.grid.cell(self.goal)
-        return self.grid.valid(cell) and not self.unvisited_mask()[cell]
+        return self.grid.valid(cell) and bool(self.covered_mask()[cell])
     def route_lost(self,stamp):
         """The route to the target closed (often thin chair legs that the LiDAR
         resolves only up close). Choose again; a target lost twice is left, so the
@@ -956,6 +985,21 @@ class LidarBrain(Brain):
             self.blacklist.append(g);self.event('The route to this target closed again on approach. Leaving it and mapping elsewhere.')
         else:self.event('The route to this target closed. Choosing the next target.')
         self.path=[];self.phase='plan';self.plan_not_before=stamp+.5
+    def detour_only(self,path):
+        """The route being followed is blocked and the new route is more than ROUTE_DETOUR_M longer than what was left of
+        it: the route to this target closed. Task H trial 2 (full-mapping-20261011T225055, the last 100 s): the short route
+        to a target under the sofa closed each time the robot came near (the LiDAR then returned the sofa's end) and
+        reopened as it backed off; every replan took the cheapest route, so the robot swapped between it and one 2 m
+        longer round the sofa's far end 7 times and came no closer. Treated like no route at all: the old route is kept
+        for 5 s, then route_lost (the narrow clearance once; a target lost twice is left). A shorter route, or a detour
+        while the old route is still open, is taken as before. 'Open' is judged as the planner judges it
+        (grid.route_open): checking only that its cells were traversable missed a route closed at a diagonal corner or
+        cut off from the robot's cell (trial 3, full-mapping-20261012T001143, kitchen, 1036 s)."""
+        if not self.path:return False
+        p=self.localizer.pose[:2];route=np.asarray(self.path);i=int(np.argmin(np.linalg.norm(route-p,axis=1)))
+        left=float(np.linalg.norm(route[i]-p)+np.linalg.norm(np.diff(route[i:],axis=0),axis=1).sum())
+        if float(np.linalg.norm(np.diff(np.asarray(path),axis=0),axis=1).sum())<=left+ROUTE_DETOUR_M:return False
+        return not self.grid.route_open(p,route[i:])
     def restore_radius(self):
         """Leave narrow-passage mode, but only where the normal clearance fits."""
         if not getattr(self,'normal_radius',None):return
@@ -1169,6 +1213,21 @@ class LidarBrain(Brain):
         if abs(getattr(self,'gyro_z',0.))>=CLOSE_SPIN_STALL_FRACTION*CLOSE_SPIN_W:m['slow_since']=None;return False
         if m.get('slow_since') is None:m['slow_since']=stamp
         return stamp-m['slow_since']>CLOSE_SPIN_STALL_S
+    def close_spin_through_press(self,m,known=None):
+        """Task J: a running close spin m (still turning) goes on through a bumper press on the side it turns
+        toward only (left switch alone for a left turn, right alone for a right turn: the contact beyond 20 deg
+        on that side) when there is no back-off room (backoff_plan): the contact phase would then turn the same
+        way (contact_spin), the pure-spin core executes exactly that spin while pressed (spin_allowed), and it
+        moves the contact toward 0 deg, inside the skin's cover. Once the press reaches the front centre (both
+        switches) this is False, so the contact phase takes over there, as after its own turn toward the
+        contact. known: the touched zone bits (0 right .. 4 left; left switch zones 2-4, right switch 0-2),
+        else the current switches. Unknown sides, the clamping core, or a close spin that is not the live one
+        (phase 'follow' and its follow context, as run_maneuver checks): False."""
+        if not m or m.get('kind')!='close_spin' or m.get('start') is not None or not getattr(self,'pressed_spin_pure',PRESSED_SPIN_PURE):return False
+        goal=getattr(self,'goal',None)
+        if self.phase!='follow' or m.get('context')!=(self.phase_started,tuple(goal) if goal is not None else None):return False
+        left,right=(any(i>=2 for i in known),any(i<=2 for i in known)) if known is not None else self.bumper_sides
+        return bool(((left and not right and m['direction']>0) or (right and not left and m['direction']<0)) and self.backoff_plan() is None)
     def close_spin_retry_blocked(self,direction):
         """True when a close spin in `direction` ended in a contact or stall at this spot recently."""
         b=getattr(self,'close_spin_blocked',None);now=getattr(self.frame,'stamp',None) if getattr(self,'frame',None) is not None else None
@@ -1188,6 +1247,9 @@ class LidarBrain(Brain):
         p=self.localizer.pose;points=self.spin_points()
         if not len(points):return None
         d=np.hypot(points[:,0],points[:,1]);close=points[d<TURN_CLEAR];az=np.arctan2(close[:,1],close[:,0])
+        # One sample per degree of azimuth: the front-half share must measure the geometry, not the beam density (a nearer wall
+        # returns more beams per degree; with the LiDAR ahead of base_link that let the wall ahead outvote the one beside, task F).
+        az=np.radians(np.unique(np.round(np.degrees(az))))
         mask=self.motion_mask();run=np.linspace(0,CLOSE_SPIN_EXIT,int(round(CLOSE_SPIN_EXIT/.005))+1);start=float(d.min())
         allowed=[s_ for s_ in (1.,-1.) if self.spin_allowed(s_) and self.close_spin_clear(s_,points)]
         for need in (TURN_CLEAR+.004,start+.01):
@@ -1772,6 +1834,8 @@ class LidarBrain(Brain):
                 self.event('Target area covered on the way. Choosing the next target.');return 0.,0.
         if t>=self.next_plan:
             path=self.grid.path(p[:2],route_goal);self.next_plan=t+1
+            # Mapping: a route that closed and left only a much longer detour has closed (detour_only).
+            if path and self.mode=='mapping' and self.detour_only(path):path=[]
             # Near narrow gaps a route can flicker as each scan moves a margin by
             # one cell. Keep the committed target and its previous route (live
             # collision checks still apply) unless the failure lasts 5 s.

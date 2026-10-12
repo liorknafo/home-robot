@@ -293,6 +293,14 @@ Steps:
   - Do not run NiMH below 1.0 V per cell.
 - **Jetson power:** barrel-jack power needs the Jetson Nano's **J48 jumper** fitted.
 - **IMU:** the MPU-6050 runs DLPF_CFG = 4 (about 20 Hz), with samples forwarded at 20 Hz (ruling PB27; see section 14).
+- **Braking: keep the ramp, never short-brake** (task F; numbers updated in task I). With the LD14 turned round at x 54 and the lid
+  closed over the front bay, the robot's balance point is 16.0 mm behind the axle (13.5 mm in the CAD's worst case). Braking harder
+  than about 1.3 m/s² down a 5° slope in that worst case (1.7 m/s² nominal) would lift the caster and rock the robot onto its bumper.
+  DriveCore ramps every wheel setpoint, braking included, at 0.25 m/s², well below that. The firmware must keep that ramp. On a disarm
+  (bumper, cliff, tilt, timeout) it must let the motors **coast**: drive both DRV8874 inputs of each motor low (IN-IN mode coast),
+  never both high (short brake). The motor torque cap alone would allow about 1.63 m/s², 0.3 m/s² above the worst-case downhill onset
+  (task F had 0.06): only the firmware ramp keeps a hard stop on a downhill from rocking the robot forward, so it must not be removed
+  or raised.
 
 ## 9. Before fitting the Jetson: plugs and the gap under the carrier
 
@@ -336,8 +344,8 @@ Then fit the Jetson (ASSY step 7).
    - Set the lid on its posts. Put the feeler in through the Ø35 fan window, lay it flat on the fan frame, and slide it outward under the
      bottom edge of the skirt, all round.
    - A **0.5 mm feeler must pass** (no contact). If it touches, sand the skirt end.
-   - A **1.0 mm feeler must not pass.** If it passes, shim the fan: otherwise the fan's bypass limit is lost. The bypass is 22.4 % of the
-     grille's open area, against a 25 % limit that is reached at a 1.01 mm gap.
+   - A **1.0 mm feeler must not pass.** If it passes, shim the fan: otherwise the fan's bypass limit is lost. The bypass is 20.4 % of the
+     grille's open area, against a 25 % limit that is reached at a 1.12 mm gap.
    - The nominal gap is 0.9 mm (`validation.jetson_cooling.fan_skirt`).
 2. **Lid-on tegrastats test.**
    - Everything is fitted and the lid and LiDAR tray are on.
@@ -346,6 +354,29 @@ Then fit the Jetson (ASSY step 7).
    - Pass: no thermal throttling (no forced clock drop), and the temperatures level off.
    - Record the peak CPU / GPU / thermal-zone values.
    - Also record the air temperature under the carrier, near the drivers: the DRV8874 figures in section 8 assume 40 °C.
+3. **LD14 orientation and scan direction** (task F: the LD14 is turned round, spin axis 54 mm ahead of the axle).
+   - The LD14 sits on its tray with its **round turret toward the front and its motor toward the back**. The tray takes four M3 × 10
+     screws with nyloc nuts under the lid: (−35, ±38) and (83, ±35).
+   - The LD14 lead (W20, the 0.2 m C17 lead) plugs in under the LD14, runs forward under it to the tray opening, drops through the lid
+     aperture there (fit the grommet `P_ld14_grommet` round it) and runs under the lid to the USB adapter.
+   - **Scan offset.** The LD14's 0° direction (its motor end) now points **backward**. In the LiDAR driver, add 180° to every scan
+     angle and wrap the result into (−180°, 180°]: robot bearing = wrap(scan angle + 180°), for a scan in the usual counter-clockwise
+     (REP-103) form whose 0° is the motor end. A raw LD14 angle, which runs clockwise, maps to wrap(180° − raw angle).
+   - **Check.** Put a box about 0.5 m straight ahead of the robot: it must show at bearing 0°, not 180°. Then move it to the robot's
+     left: it must show near +90°.
+   - The LD14 sees nothing closer than 0.1 m from its spin axis. At x 54 that circle stays just inside the bumper, even with a half
+     pushed in, so the LiDAR sees anything the bumper can touch. Do not move the LD14 further forward: at x 109 (tried in task F) a
+     strip 5 cm deep in front of the bumper was blind, and the controller's close-range checks lost what was in it.
+4. **Camera window check** (task F: the camera sits in the bumper band, fixed to the chassis, and looks out through a window cut across the
+   bumper seam).
+   - Jetson on, camera streaming at its full 1920 × 1080 mode (the widest view). Put a sheet of white paper about 0.5 m in front of the
+     robot so that edges show up.
+   - Look at all four image corners and edges: no part of the bumper may show. Then push the left half in to its stop, then the right
+     half, then both, and look again each time.
+   - Pass: the image never shows a bumper edge. If one shows, check that the camera holder sits flat on its crossbar and that the
+     camera board sits flat on the holder (the lens must point straight ahead and level).
+   - With the bumper at rest, the lens face sits about 12 mm behind the bumper skin. Check by eye that a flat card held against the
+     bumper front, pushed until the bumper stops, does not touch the lens.
 
 ## 11. Service
 
@@ -397,8 +428,24 @@ On 2026-10-09 (bay B10) the simulator data were re-synced from `cad/mass-propert
 The Unreal pawn (rebuilt in B10 phase 2) takes its body inertia from `body_inertia_kg_m2`; the physics check reads it back exactly.
 Its LiDAR collider is the turret-radius column from the lid top to the 155.15 mm robot top.
 
-The first Unreal mapping benchmark with this robot entered all five rooms and mapped each at least 90 %. The robot did not report the
-map complete within the 1500 s budget, the same way the earlier Unreal runs ended. Details are in the B10 report.
+On 2026-10-11 (task F) the camera moved into the bumper band and the LD14 was turned round and moved forward; the simulator was
+re-synced at 1876045:
+- camera lens face x 146 mm, axis 80 mm above the floor, level (was x 117, 107.5 mm);
+- LD14 turned 180° (motor toward the back), spin axis x 54 mm (was 20): the most forward position at which its 0.1 m minimum range
+  stays inside the pressed bumper. Its scan plane stays at 147.5 mm. The simulator reports scans in the robot frame; the 180° offset is
+  only for the real driver (section 10, item 3);
+- robot 2.4175 kg, COM x −17.44 mm (guard, user decision: nominal ≤ −12 mm and the CAD's worst case ≤ −10 mm; the worst case is
+  −14.88 mm).
+
+The Unreal mapping benchmark with this robot (full-mapping-20261011T183022, errors on) entered all five rooms and mapped each 95–100 %,
+with one bumper contact. It did not report the map complete within the 1500 s budget: the controller's completion rule allows at most
+1.5 m² of safe-looking floor it cannot reach, and 1.56 m² remained (a living-room pocket and the inside of the shower tray). Details are
+in the task F report.
+
+On 2026-10-11 (task I) the lid was closed over the front bay (a 1.5 mm pocket under it over the bumper seam keeps a push into the
+seam sensed) and the simulator was re-synced at e068608: robot 2.4442 kg (+26.7 g), COM x −15.96 mm (the CAD's worst case
+−13.48 mm). The scenario suites, errors on and off, and goto_wall gave the same results as before the change. Unreal was not re-run for
+this 1 % mass change; it reads the new mass and inertia at its next launch.
 
 ## 14. IMU calibration at bring-up
 

@@ -4,9 +4,12 @@ Pure: JSON only. BoardCadTests check board_cad.json against board_spec (placemen
 the module sockets, the Pico USB receptacle) and against board_outline.json (hole count, outline area within 1 %). RobotCadTests read the
 CAD outputs (cad/validation.json, cad/component-manifest.json, cad/printability.json) and re-derive the B8 facts independently: the real
 board and modules sit where board_cad.json puts them, the ribs keep 1.0 mm off every THT pad, every rear-edge connector has a rib and a
-fixing within 35 mm, and the B8 validation keys are true."""
+fixing within 35 mm, and the B8 validation keys are true. Task I adds the closed lid front and the cooling model's LD14 overhang and exhaust
+(two of these also read the per-part meshes in cad/assembly-meshes.json)."""
 import json, math, unittest
 from pathlib import Path
+try: import numpy as np
+except ImportError: np = None            # the lid-coverage test needs numpy (the CAD venv has it); the JSON-only tests do not
 from pcb import board_spec as B
 D = Path(B.__file__).parent
 BC_PATH = D / 'board_cad.json'
@@ -306,6 +309,70 @@ class RobotCadTests(unittest.TestCase):
         self.assertIn('ld14_aperture_leak_mm2', fs)
         self.assertLessEqual(fs['bypass_fraction_of_grille_open_area'], fs['bypass_limit_fraction'])
         self.assertTrue(self.v['jetson_cooling']['ok'])
+
+    @unittest.skipIf(np is None, 'needs numpy (the CAD venv has it)')
+    def test_lid_closes_the_front_bay(self):
+        """Task I: the lid's old front notch (x 88 to the rim, |y| <= 58, cut for the camera tower that task F removed) is closed: every
+        point of it lies under a lid sector's top face (cad/assembly-meshes.json). Over the bumper seam the lid's underside is lifted by a
+        shallow pocket (validation perimeter_rod_intrusion.lid_seam_relief), not a slot through it: high enough for a Ø3 rod resting on the
+        bumper top, long enough for the seam backer's full travel, and at most 10 mm × 10 mm."""
+        M = {m['id']: m for m in json.loads((CAD / 'assembly-meshes.json').read_text())}
+        top = self.v['jetson_cooling']['lid_top_z_mm']
+        T = np.vstack([tri for i in ('P_lid_front', 'P_lid_left', 'P_lid_rear', 'P_lid_right')
+                       for tri in [np.asarray(M[i]['vertices'], float).reshape(-1, 3)[np.asarray(M[i]['faces'], int).reshape(-1, 3)]]])
+        T = T[np.abs(T[:, :, 2] - top).max(1) < .01][:, :, :2]                     # top-face triangles, plan
+        X, Y = np.meshgrid(np.arange(88.5, 151, 1.0), np.arange(-57.5, 58, 1.0)); P = np.c_[X.ravel(), Y.ravel()]
+        P = P[np.hypot(P[:, 0], P[:, 1]) <= 151.0]                                   # 1.5 mm inside the R152.5 rim (its polygon facets)
+        cov = np.zeros(len(P), bool)
+        for a, b, c in T:
+            d = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1])
+            if abs(d) < 1e-12: continue
+            u = ((b[1] - c[1]) * (P[:, 0] - c[0]) + (c[0] - b[0]) * (P[:, 1] - c[1])) / d; w = ((c[1] - a[1]) * (P[:, 0] - c[0]) + (a[0] - c[0]) * (P[:, 1] - c[1])) / d
+            cov |= (u >= -1e-9) & (w >= -1e-9) & (u + w <= 1 + 1e-9)
+        self.assertTrue(cov.all(), f'{(~cov).sum()} of {len(P)} points of the old notch are open, e.g. {P[~cov][:3].tolist()}')
+        sr = self.v['perimeter_rod_intrusion']['lid_seam_relief']
+        self.assertTrue(sr['kind'].startswith('pocket'))
+        self.assertLessEqual(2 * sr['half_width_mm'], 10.0); self.assertGreaterEqual(sr['x_from_mm'], 152.5 - 10.0)
+        self.assertLess(sr['x_from_mm'], sr['seam_backer_front_x_at_full_travel_mm'])            # the backer reaches its stop under it
+        self.assertGreaterEqual(sr['ceiling_z_mm'], sr['bumper_top_z_mm'] + 3.0)                   # a Ø3 rod on the bumper top passes under
+        self.assertGreater(sr['ceiling_z_mm'], sr['rod_top_at_highest_test_height_mm'])
+        self.assertLess(sr['ceiling_z_mm'], top)                                                  # the lid stays closed above it
+        # the pocket in the mesh itself: the lowest lid surface over its inside is the ceiling, over the lid next to it the plain underside
+        U = np.vstack([np.asarray(M['P_lid_front']['vertices'], float).reshape(-1, 3)[np.asarray(M['P_lid_front']['faces'], int).reshape(-1, 3)]])
+        def lowest(px, py):
+            zs = []
+            for a, b, c in U:
+                d = (b[1] - c[1]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[1] - c[1])
+                if abs(d) < 1e-12: continue
+                u = ((b[1] - c[1]) * (px - c[0]) + (c[0] - b[0]) * (py - c[1])) / d; w = ((c[1] - a[1]) * (px - c[0]) + (a[0] - c[0]) * (py - c[1])) / d
+                if u >= -1e-9 and w >= -1e-9 and u + w <= 1 + 1e-9: zs.append(u * a[2] + w * b[2] + (1 - u - w) * c[2])
+            return min(zs)
+        for px, py in ((sr['x_from_mm'] + 1.0, 0.0), (148.0, sr['half_width_mm'] - 1.0), (150.0, -(sr['half_width_mm'] - 1.0))):
+            self.assertAlmostEqual(lowest(px, py), sr['ceiling_z_mm'], places=2)
+        self.assertAlmostEqual(lowest(sr['x_from_mm'] - 2.0, 0.0), self.v['jetson_cooling']['lid_underside_z_mm'], places=2)
+
+    def test_cooling_counts_the_ld14_overhang_and_the_exhaust(self):
+        """Task I: the turned-round LD14's motor end overhangs the fan grille's front edge (task F open item); the cooling gate counts its plan
+        shadow as closed and still keeps half the fan bore open, the shadowed slots keep a side-entry curtain larger than themselves, and the
+        exhaust ring gap under the now closed lid is at least twice the grille's open area."""
+        jc = self.v['jetson_cooling']; g, it, ex = jc['grille'], jc['intake'], jc['exhaust']
+        M = {m['id']: m for m in json.loads((CAD / 'assembly-meshes.json').read_text())}
+        front_edge = jc['lid_fan_window']['centre_mm'][0] + jc['lid_fan_window']['diameter_mm'] / 2
+        overhangs = min(min(v[0] for v in zip(*[iter(M[i]['vertices'])] * 3)) for i in ('lidar', 'lidar_motor')) < front_edge
+        self.assertEqual(overhangs, g['open_area_shadowed_in_plan_mm2'] > 0)
+        self.assertGreaterEqual(g['open_fraction_of_bore_not_shadowed'], 0.5)
+        if overhangs:
+            self.assertGreater(it['side_entry_curtain_mm2'], g['open_area_shadowed_in_plan_mm2'])
+            self.assertNotIn('models only the turret circle', it['over_grille'])
+        self.assertGreaterEqual(ex['ring_gap_section_mm2'], 2 * g['open_area_cad_mm2'])
+        self.assertTrue(jc['ok'])
+
+    def test_jetson_placement_names_the_current_com_rule(self):
+        """Task I: the Jetson placement text gives the -14 mm guard as L1 history and names the user's current rule (-12 nominal, -10 worst)."""
+        t = self.v['com_estimate']['placement']['jetson']['limit']
+        self.assertIn('nominal <= -12 mm, every case <= -10 mm', t)
+        self.assertNotIn('Its x is set by the COM sensitivity guard', t)
+        self.assertNotIn('Low profile (L2', t)
 
 
 if __name__ == '__main__':

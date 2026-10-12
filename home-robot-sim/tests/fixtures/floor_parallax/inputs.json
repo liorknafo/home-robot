@@ -1,4 +1,5 @@
 {
+ "sensitivity_note": "Carry item 4 (task F): the bathroom clip 1450-1480 is a narrow pass. Started at each of frames 1450-1457 it meets the tray rules (>= 3 cells, one >= 0.40 m away) from 5 of the 8 starts, with 2-6 tray cells and never a cell elsewhere. Not re-recorded at the task F mount (0.146, 0, 0.08): there the cutter's episode gave 2 tray cells. See tests/test_floor_parallax.py.",
  "source": {
   "recording": "Saved/Stereo/run_20261009T204951_34245436150474",
   "robot_log": "Saved/Maps/map_20261009T235037/camera-inputs.jsonl",

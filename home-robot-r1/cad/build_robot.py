@@ -28,7 +28,8 @@ JS=json.loads((JDIR/'jetson-nano-b01-simplified.json').read_text())
 JO=(25,-46,57)
 # Low-profile height chain (L2): ONE derived height drives the whole upper structure. Lid underside = top of the 40 mm fan on the Jetson
 # heatsink + a >= 5 mm air gap, rounded up to 0.5 mm. Every height that hung from the deck-era lid (underside z 143) drops by DZ: lid
-# sectors and posts, bumper and rear-shell tops (2 mm under the lid), camera tower, guard and camera, LiDAR tray and LD14, lid switches.
+# sectors and posts, bumper and rear-shell tops (2 mm under the lid), LiDAR tray and LD14, lid switches. The camera no longer hangs from it:
+# task F put it in the bumper band, fixed to the chassis behind a window in the bumper (see the camera block).
 FAN_H,AIRGAP,LID_T=10.0,5.0,3.0
 FS_HEAD=(2.8,2.1)                                       # fan screw pan heads (M3, radius and height) on the fan frame corners
 ZFAN_TOP=JO[2]+JS['heatsink']['top_z']+FAN_H           # 95.28
@@ -37,27 +38,31 @@ ZLIDT=ZLID+LID_T                                        # lid top 103.5
 DZ=143.0-ZLID                                           # 42.5 mm drop from the deck-era lid
 PARAMS=dict(base_length=244,base_width=200,base_bottom=29,base_thickness=4,
             wheel_diameter=80,wheel_track=228,wheel_x=0,
-            camera_baseline=0,camera_height=round(150-DZ,2),camera_x=117,lidar_height=round(190-DZ,2),lidar_x=20,
+            camera_baseline=0,camera_height=80.0,camera_x=146,lidar_height=round(190-DZ,2),lidar_x=54,lidar_yaw_deg=180,
+            lidar_note='Task F (user decision 2026-10-11, option B): the LD14 is turned 180 deg about its spin axis (motor toward the back), spin axis x 54: the most forward position at which its '
+                       '0.1 m minimum range (LD14P) stays inside the bumper skin with a half pressed to its stop, so the scan sees whatever the bumper touches (a trial at x 109, its front 10 mm inside '
+                       'the skin, left a 5 cm blind strip ahead of the bumper). Its 0 deg (tail/motor) direction points along robot -x: a driver scan angle theta (REP-103, CCW, 0 = LD14 tail) maps to '
+                       'the robot-frame bearing wrap(theta + 180 deg) into (-180, 180]; a raw LD14 angle a (clockwise from the tail) maps to wrap(180 deg - a). The simulator reports scans in the robot frame already.',
             outer_radius=158.9,shell_radius=157.4,rear_shell_radius=152.5,base_radius=148,bumper_tip_radius=152.7,
             bumper_axis_deg=30,bumper_travel=5.0,bumper_z=[18,ZLID-2],bumper_span_deg=90,
             rear_caster=[-75,0,0],caster_ball_radius=12.7,
             cliff_sensors=[[105,72],[105,-72],[-110,81],[-110,-81]],cliff_z=42.5,cliff_fov_deg=25,
             camera_hfov_deg=84,camera_image_px=[640,360],camera_check_image_px=[640,480],camera_check_vfov_deg=68.06,
-            camera_x_note='camera_x = lens front face; the image frustum apex used for every clearance check is 3 mm behind it (x 114), the assumed worst entrance-pupil position; the lens solid centre is x 112.4',
+            camera_x_note='camera_x = lens front face; the image frustum apex used for every clearance check is 3 mm behind it (x 143), the assumed worst entrance-pupil position; the lens solid centre is x 141.4. '
+                         'Task F: the camera sits in the bumper band behind a window in the two bumper halves (level, axis z 80). Below 80 mm the simulator camera loses the 6 cm shower tray in Unreal '
+                         '(straight drives at it: found in 6/10 at 75 mm, 10/10 at 80 mm); 80 is also the highest axis whose image still fits a window closed under the 98.5 mm bumper top.',
             camera_image_note='The simulator renders 640 × 360 (16:9, as the OV2735 1920 × 1080 mode); the CAD clearance check deliberately uses a taller 4:3 frustum (VFOV 68.06 deg), which is conservative.',
             max_speed_mps=0.15,max_speed_source='home-robot-sim DriveCore.h max_speed (forward)',
             reverse_speed_limit_m_s=0.06,reverse_speed_limit_source='firmware reverse speed cap: the simulator firmware caps reverse at 0.06 m/s (the controller never commands more than 0.05 m/s in reverse); the rear-cliff coast check uses it',
-            drive_model=dict(max_torque_nm=.10,dynamic_brake_nm_per_rad_s=.010,rolling_drag_nm=.003,axle_inertia_kg_m2=.0005,hazard_action='disarm: tl = tr = 0, the wheels then see the simulator dynamic brake (coast)',
-                source='home-robot-sim DriveCore.h (max_torque, disarm on hazard) and RobotPawn.cpp / robot-parameters.json (0.010 N m s/rad dynamic brake while disarmed, 0.003 N m rolling drag, 0.0005 kg m2 reflected axle inertia)'),
+            drive_model=dict(max_torque_nm=.10,setpoint_ramp_m_s2=.25,dynamic_brake_nm_per_rad_s=.010,rolling_drag_nm=.003,axle_inertia_kg_m2=.0005,hazard_action='disarm: tl = tr = 0, the wheels then see the simulator dynamic brake (coast)',
+                source='home-robot-sim DriveCore.h (max_torque, accel: every wheel setpoint, braking included, ramps at 0.25 m/s2; disarm on hazard) and RobotPawn.cpp / robot-parameters.json (0.010 N m s/rad dynamic brake while disarmed, 0.003 N m rolling drag, 0.0005 kg m2 reflected axle inertia)'),
             base_x_range=[-124,120],printer_bed=[250,210,210])
-NOTCH_DESIGN=dict(top_mm=119-DZ,outer_edge_top_mm=116-DZ)   # design inputs of the camera notch (they follow the camera down); the MEASURED notch is exported as parameters.json bumper_notch
 parts=[]; shapes={}; cables=[]; TESS={}; ALLOW={}; BH=[]
 COL={'print':'#49768a','cover':'#c5d4db','owned':'#32876b','buy':'#bd8a38',
      'metal':'#b5bcc3','black':'#30363b','connector':'#ddcbaa','pcb':'#226c59',
      'power':'#c45749','signal':'#528fbc','usb':'#343c49','lens':'#284350','red':'#c8322d'}
 AX=PARAMS['wheel_x']; R_SKIN=PARAMS['outer_radius']; R_SH=PARAMS['shell_radius']; R_RS=PARAMS['rear_shell_radius']; R_BASE=PARAMS['base_radius']; R_TIP=PARAMS['bumper_tip_radius']
 WALL=2.4; RWALL=2.8; R_RS_IN=R_RS-RWALL; ZB0,ZB1=PARAMS['bumper_z']; BASE_X=tuple(PARAMS['base_x_range'])   # base plate x -124..120: 4 mm further aft (battery)
-ZN,ZNO=NOTCH_DESIGN['top_mm'],NOTCH_DESIGN['outer_edge_top_mm']   # camera notch design inputs: seam-band top limit and outer-edge chamfer top
 RZ=(18,27.5)               # rail / arm / cam band: top 1.5 mm under P_base (1.0 under the 0.5 mm race strips); the balls carry the vertical load
 # M3 × 3 brass heat-set inserts (Ø4.0 through holes in the 4 mm plate) take every base screw that is not a rear-shell screw (>= 5 mm PETG
 # engagement there). Each is pressed flush with the face its screw enters; the last 1 mm of the hole stays open as a relief for displaced PETG.
@@ -70,7 +75,7 @@ BX=-96                                                      # battery tray centr
 # Jetson Nano B01 = NVIDIA's STEP (reference-models/jetson-nano-b01, simplified by cad/simplify_jetson.py) on four H05 standoffs: the two
 # front ones 24 mm from P_base, the two rear ones 20 mm from the bay board, which they clamp (low profile: no deck).
 # The STEP is turned +90 deg about z, so its 100 mm I/O edge faces forward (+x): the USB, barrel
-# and Ethernet ports point into the front bay toward the camera tower, and the heatsink and fan (on the far half of the module) sit over
+# and Ethernet ports point into the front bay toward the camera mount, and the heatsink and fan (on the far half of the module) sit over
 # the axle. JO = robot position of the STEP origin (mounting hole (0, 0)). Carrier PCB underside z 57: motor top 52.5 + the 1.93 mm of
 # through-hole leads under the PCB (2.23 allowed) + >= 2 mm; the bumper rail-pin B screws (top z 53) lie ahead of the carrier edge.
 # x: the centre-of-mass guard (COM >= 15 mm behind the axle, every sensitivity case >= 14 mm) sets it; the carrier covers the bay board's
@@ -248,7 +253,7 @@ def swL(s):return s.translate((-SW[0],-SW[1],0)).rotate((0,0,0),(0,0,1),-math.de
 def swp(X,Y):c,s=math.cos(BA),math.sin(BA);return (SW[0]+X*c+Y*s,SW[1]+X*s-Y*c)
 def mir(p,s):return (p[0],s*p[1])
 def pp(p,k,v=nrm):return (p[0]+k*v[0],p[1]+k*v[1])
-TOWERS=[(113.5,47),(105,37.5)]           # camera tower foot screws (M3 x 10, nuts under P_base)
+TOWERS=[(113.5,47),(105,37.5)]           # camera mount foot screws (M3 x 10, nuts under P_base; the old camera tower's holes)
 MTAB=5.0                                  # motor-mount tab thickness (z 33..38)
 
 # Lid posts (L2): with the deck gone they stand on P_base, from z 33 to the lid underside. The deck-era columns (-105, ±82) / (87, ±82) are
@@ -432,7 +437,7 @@ def abut(s):   # leaf-spring abutment under P_base: face normal to the travel; i
     return prism([(T[0]+a*u[0]+b*d[0],T[1]+a*u[1]+b*d[1]) for a,b in ABPOLY],18.5,10.6)
 SWLEAD=(-14,-6)                                           # switch lead hole in the switch frame (behind the body)
 for s in [-1,1]:
-    for x,y in TOWERS:bcut(f'tower screw {x},{s*y}',cyl(x,s*y,28,1.7,8))                          # camera tower feet
+    for x,y in TOWERS:bcut(f'tower screw {x},{s*y}',cyl(x,s*y,28,1.7,8))                          # camera mount feet
     for k,p in zip('AB',RAILP):bcut(f'rail slot {k}{s:+d}',pslot(mir(p,s),SLOTW/2,-SPLAY,s))   # rail pins: Ø8 bearing, 8.2 mm slot (±0.1 mm side play); centred bearing stops at s 0 and 5.0
     bcut(f'pin C slot {s:+d}',pslot(mir(PB,s),3.1,.3,s))                                  # pin C: no side or end contact
     for X in [-4.75,4.75]:bcut(f'switch slot {X:+.2f}{s:+d}',stadium(mir(swp(X,HY-SWADJ),s),mir(swp(X,HY+SWADJ),s),1.2,28,6))   # M2 clearance slots along frame Y: set the switch at assembly
@@ -1042,7 +1047,7 @@ for i,(x,y) in enumerate(CLIFF_IDS):
     add('cliff_lead_'+str(i+1),'Sensor soldered lead / strain relief',box(x,y+7,47,11,4,5),'connector','C06','lower')
 
 # Camera image frustum: ±42 deg horizontal, 4:3 (taller than the 16:9 stream: conservative). CAMO = apex at the lens front face (camera_x):
-# the bumper notch keeps 4.4 mm to it and the perimeter rod test uses it as the visible region (the smallest view at the skin).
+# the perimeter rod test uses it as the visible region (the smallest view at the skin).
 # CAMB = apex 3 mm further back (the assumed worst entrance-pupil position): no part may enter that larger frustum either.
 THF=math.tan(math.radians(PARAMS['camera_hfov_deg']/2));TVC=THF*PARAMS['camera_check_image_px'][1]/PARAMS['camera_check_image_px'][0];th,tv=THF,TVC
 CAMF=cq.Vector(PARAMS['camera_x'],0,PARAMS['camera_height']);CAMO=CAMF;CAMB=CAMF-cq.Vector(3.0,0,0)
@@ -1050,37 +1055,55 @@ def frust(t0,t1,o=None):
     o=o if o is not None else CAMO
     w=lambda t:cq.Wire.makePolygon([o+cq.Vector(t,sy*th*t,sz*tv*t) for sy,sz in [(1,1),(-1,1),(-1,-1),(1,-1)]],close=True)
     return cq.Solid.makeLoft([w(t0),w(t1)])
-# One camera: rigid existing tower, narrow guard, provisional edge-clamp fit.
-# Columns, top bar and feet share the flat rear face x=100, so the tower prints on that face with no
-# support; vertical holes get 45 degree teardrop roofs pointing up the print.
-ZTB=128-DZ                                # tower top bar underside (follows the camera down)
-tower=box(105,0,ZTB,10,112,6)
+# Task F: one camera in the bumper band, fixed to the chassis (its calibration never moves with a bump), looking out through a window
+# cut across the seam of the two bumper halves (the window is defined with the bumper below). Level, axis z camera_height, lens face x camera_x.
+# Lens 9.2 mm long in front of the 1.6 mm OV2735 PCB (25 x 25 envelope); the USB-C plug leaves the PCB back at its right edge.
+CH,CXL=PARAMS['camera_height'],PARAMS['camera_x']
+XPCB=CXL-9.2-1.6                          # PCB back face (x 135.2)
+# Mount: the old tower's four feet and M3 x 10 screws (the P_base holes and nuts are unchanged), two 8 x 8 mm columns and an 8 x 6 mm
+# crossbar at x 100-108 above the camera (z CBZ..CBZ+6: over the USB-C plug, so the camera cable runs straight back under it). Columns,
+# crossbar and feet share the flat rear face x=100: it prints on that face with no support (vertical holes get 45 deg teardrop roofs).
+CBZ=CH+3.0                                # crossbar underside (z 78): 2.5 mm over the plug top, the cable passes under it
+CMX=(100,108)                             # columns and crossbar x
+mount=box(sum(CMX)/2,0,CBZ,CMX[1]-CMX[0],104,6)
 for y in [-1,1]:
-    tower=union(tower,box(105,y*47,33,10,10,ZTB-33),box(109,y*46,33,18,26,4))
-    for x,yy in TOWERS:tower=tower.cut(tear(x,y*yy,32,1.7,7))
-for y in [-14.2,14.2]:tower=tower.cut(tear(103.6,y,ZTB-1,1.45,8))
-add('P_camera_tower','Single-camera rigid tower',tower,'print','F01','camera',printable=True,note=f'10 × 10 mm columns (z 33–{ZTB:g}), 10 × 6 mm top bar (z {ZTB:g}–{ZTB+6:g}), 18 × 26 × 4 mm feet; four M3 × 10 screws with nuts under P_base, two M2.5 × 10 to the guard. Print on the flat rear face (x=100), no supports.')
+    mount=union(mount,box(sum(CMX)/2,y*47,33,CMX[1]-CMX[0],8,CBZ+6-33),box(109,y*46,33,18,26,4))
+    for x,yy in TOWERS:mount=mount.cut(tear(x,y*yy,32,1.7,7))
+CARMY=(9.5,15.5)                          # holder arms |y| 9.5..15.5, z CBZ..CBZ+6 (over the plug), x 108..the holder plate
+for y in [-1,1]:mount=mount.cut(cyl(CMX[0]-1,y*sum(CARMY)/2,CBZ+3,1.45,CMX[1]-CMX[0]+2,'x'))   # M2.5 x 12 from the crossbar rear face into the arm pilots
+add('P_camera_mount','Camera mount (chassis-fixed, in the front bay)',mount,'print','F01','camera',printable=True,
+    note=f'Two 8 × 8 mm columns (z 33–{CBZ+6:g}) on the old tower feet (18 × 26 × 4 mm; four M3 × 10 screws with nuts under P_base, the same holes), an 8 × 6 mm crossbar at x {CMX[0]}–{CMX[1]}, z {CBZ:g}–{CBZ+6:g}, '
+         f'two M2.5 × 12 thread-forming screws from its rear face into the camera holder arms. Print on the flat rear face (x=100), no supports. '
+         'Assembly: screw the mount to P_base before the bumper halves go on (its nuts sit under P_base in the bumper-rail keep-out, as the old tower\'s did); screw the camera board onto the holder, '
+         'plug the USB-C cable into it, fit the holder to the crossbar, then run the cable back under the crossbar to the Jetson\'s lower right USB port (W17) and plug it there with the Jetson\'s other plugs.')
 for i,(x,y) in enumerate([(x,s*y) for s in (1,-1) for x,y in TOWERS]):   # M3 x 10 from the foot top, thin nut under P_base
-    add(f'tower_screw_{i}','Camera tower M3 × 10 screw and nut',union(cyl(x,y,26.6,1.5,10.4),cyl(x,y,37,2.8,2.8),cyl(x,y,26.6,3.2,2.4)),'metal','H13/H03','camera',check=True,allow=('P_base','P_camera_tower'),note='M3 × 10 socket screw (H13) with a nut (H03, 5.5 AF, 2.4 mm) under P_base; it lies inside the bumper-rail keep-out and is checked against the moving rails and cams.')
-guard=box(113,0,ZTB+6,26,40,34).cut(box(111,0,ZTB+9,24,34,28))
-guard=hole(guard,122,0,PARAMS['camera_height'],13,8,'x').cut(box(103,-13,ZTB+15,8,16,14))   # lens opening; USB-C notch through the right wall
-guard=guard.cut(frust(.5,20,CAMB-cq.Vector(3.0,0,0)))   # front opening = image frustum of an apex 6 mm behind the lens face: >= 2.0 mm (sides) / 1.7 mm (top, bottom) clear of the 3-mm-back frustum
-for y in [-14.2,14.2]:guard=hole(guard,103.6,y,ZTB+5,1.45,5)
-add('P_camera_guard','Single-camera protective enclosure',guard,'print','F01','camera',printable=True,note='Sits on the tower bar (two M2.5 × 10, nuts under the bar). 3 mm walls around the 25 mm PCB envelope; the front opening is cut by a frustum 6 mm behind the lens face (42 / 34 deg walls, printable on the front face). Print on the front face. USB and lens depth require physical fit verification.')
-cam=box(107,0,PARAMS['camera_height']-12.5,1.6,25,25)
-add('camera_board','Waveshare OV2735 camera PCB envelope',cam,'pcb','E04','camera',check=True,allow=('J17_C',))
-add('camera_lens','Single camera lens allowance',cyl(107.8,0,PARAMS['camera_height'],7,PARAMS['camera_x']-107.8,'x'),'lens','E04','camera')
-add('J17_C','Camera USB-C plug allowance',box(100,-12,ZTB+18,14,10,5),'black','C01','camera')
+    add(f'tower_screw_{i}','Camera mount M3 × 10 screw and nut',union(cyl(x,y,26.6,1.5,10.4),cyl(x,y,37,2.8,2.8),cyl(x,y,26.6,3.2,2.4)),'metal','H13/H03','camera',check=True,allow=('P_base','P_camera_mount'),note='M3 × 10 socket screw (H13) with a nut (H03, 5.5 AF, 2.4 mm) under P_base; it lies inside the bumper-rail keep-out and is checked against the moving rails and cams.')
+# Holder: a 3 mm plate behind the PCB (31 x 31, a 19 x 19 window for the parts on the PCB back, a notch through its right side for the
+# USB-C plug) with two arms back to the crossbar. Printed plate-down (its front face on the bed): the arms grow straight up, no support.
+HPL=3.0
+holder=box(XPCB-HPL/2,0,CH-15.5,HPL,31,31).cut(box(XPCB-HPL/2,0,CH-9.5,HPL+2,19,19)).cut(box(XPCB-HPL/2,-13,CH-5.5,HPL+2,11,7))
+for y in [-1,1]:holder=union(holder,box((CMX[1]+XPCB-HPL)/2,y*sum(CARMY)/2,CBZ,XPCB-HPL-CMX[1],CARMY[1]-CARMY[0],6)).cut(cyl(CMX[1]-1,y*sum(CARMY)/2,CBZ+3,1.25,9,'x'))
+for y,z in [(-10.5,-10.5),(10.5,-10.5),(-10.5,10.5),(10.5,10.5)]:holder=holder.cut(cyl(XPCB-HPL-1,y,CH+z,.8,HPL+2,'x'))   # M2 x 6 thread-forming pilots for the PCB corners (verify the board's hole pattern)
+add('P_camera_holder','Camera holder (PCB plate and arms)',holder,'print','F01','camera',printable=True,
+    note=f'3 mm plate behind the camera PCB (x {XPCB-HPL:g}–{XPCB:g}, 31 × 31 mm, 19 × 19 mm window, USB-C notch at the right edge), four M2 × 6 thread-forming screws into Ø1.6 pilots at the PCB corners (±10.5 mm: '
+         f'confirm the delivered board\'s hole pattern), two 6 × 6 mm arms back to the mount crossbar (M2.5 pilots). Print plate-down, no supports. The lens face sits at x {CXL:g}, {R_SKIN-CXL:.1f} mm behind the bumper skin.')
+cam=box(XPCB+.8,0,CH-12.5,1.6,25,25)
+add('camera_board','Waveshare OV2735 camera PCB envelope',cam,'pcb','E04','camera',check=True,allow=('J17_C','P_camera_holder'))
+add('camera_lens','Single camera lens allowance',cyl(XPCB+1.6,0,CH,7,CXL-XPCB-1.6,'x'),'lens','E04','camera')
+add('J17_C','Camera USB-C plug allowance',box(XPCB-7,-12,CH-4.5,14,10,5),'black','C01','camera')
 
 # Real LiDAR: LDROBOT LD14 manufacturer STEP (Waveshare D200 kit download, reference-models/LD14.step).
 # STEP frame: spin axis at x=y=0, tail/motor (the LD14 0 deg direction) toward +x. Its two optical
-# windows span z 8.4..16.0, so the laser plane is taken at their centre, z=12.2. Placed without
-# rotation: spin axis at (lidar_x, 0), laser plane at lidar_height, LD14 0 deg along robot +x.
-LX,LZ=PARAMS['lidar_x'],PARAMS['lidar_height']-12.2
+# windows span z 8.4..16.0, so the laser plane is taken at their centre, z=12.2. Task F (user decision): turned
+# lidar_yaw_deg (180) about its spin axis, motor toward the back; spin axis at (lidar_x, 0), as far forward as its 0.1 m blind
+# circle stays inside the pressed bumper (validation lidar_mount.min_range); laser plane at lidar_height; LD14 0 deg along robot -x.
+LX,LZ,LYAW=PARAMS['lidar_x'],PARAMS['lidar_height']-12.2,PARAMS['lidar_yaw_deg']
+def ldp(s):return s.rotate((0,0,0),(0,0,1),LYAW).translate((LX,0,LZ))   # LD14 STEP frame -> robot frame
+def lxy(x,y):c,s=math.cos(math.radians(LYAW)),math.sin(math.radians(LYAW));return (round(LX+c*x-s*y,6),round(s*x+c*y,6))   # STEP plan point -> robot
 LDS=cq.importers.importStep(str(ROOT/'reference-models'/'LD14.step')).solids().vals()
 def ld(vol):   # pick an LD14 STEP solid by its volume (mm3) and move it to the robot frame
     s=min(LDS,key=lambda s:abs(s.Volume()-vol));assert abs(s.Volume()-vol)<1,vol
-    return s.translate((LX,0,LZ))
+    return ldp(s)
 def sector(a0,a1,z0,z1,r0,r1):
     pts=[(0,0)]+[(40*math.cos(math.radians(a)),40*math.sin(math.radians(a))) for a in np.linspace(a0,a1,6)]
     return prism(pts,z0,z1-z0).intersect(cyl(0,0,z0,r1,z1-z0).cut(cyl(0,0,z0-1,r0,z1-z0+2)))
@@ -1093,42 +1116,43 @@ tur=tur.cut(cyl(0,0,16.9,5.95,4))
 for y in [-23.5,23.5]:tur=tur.cut(cyl(0,y,16.2,2.46,4))
 win=[(44.1,68.6,8.48,15.93),(109.3,142.6,8.41,16.0)]   # emitter/receiver openings as found in the STEP
 for w in win:tur=tur.cut(sector(*w,28.2,31))
-LDNOTE=f'LDROBOT LD14 manufacturer STEP (reference-models/LD14.step), placed without rotation: spin axis x={LX:g}, y=0; laser plane z={PARAMS["lidar_height"]:g} = STEP window-band centre z=12.2 (windows z 8.4-16.0) + {LZ:g} mm.'+' LD14 0 deg (tail/motor direction) points along robot +x, so the scan frame equals the robot frame; LD14 angles increase clockwise seen from above, so the REP-103 bearing is -angle. The D200 kit ships the LD14P: confirm lug positions and window height on the delivered unit.'
+LDNOTE=f'LDROBOT LD14 manufacturer STEP (reference-models/LD14.step), turned {LYAW:g} deg about its spin axis (motor toward the back, task F user decision): spin axis x={LX:g}, y=0; laser plane z={PARAMS["lidar_height"]:g} = STEP window-band centre z=12.2 (windows z 8.4-16.0) + {LZ:g} mm.'+' LD14 0 deg (tail/motor direction) points along robot -x. LD14 angles increase clockwise seen from above: robot bearing = wrap(180 deg - raw angle); for a driver scan already in REP-103 form (CCW, 0 = tail) the bearing is wrap(scan angle + 180 deg), wrapped into (-180, 180]. The D200 kit ships the LD14P: confirm lug positions and window height on the delivered unit.'
 add('lidar','LD14 housing, lugs and gear cover (manufacturer STEP)',cq.Compound.makeCompound([ld(7932.7),ld(631.0)]),'black','E15','cover',check=True,tess=(1.0,1.0),note=LDNOTE)
-add('lidar_turret','LD14 rotating turret',tur.translate((LX,0,LZ)),'black','E15','cover',check=True,tess=(.15,.2),note='Outer envelope rebuilt from the STEP turret shell (that shell is open and cannot form a solid): cone r 29.92 at STEP z 2.95 narrowing to 29.41 at z 19.18, top chamfer to r 26.6 at z 19.85. Rotates: never clamp, touch or route cable near it.')
+add('lidar_turret','LD14 rotating turret',ldp(tur),'black','E15','cover',check=True,tess=(.15,.2),note='Outer envelope rebuilt from the STEP turret shell (that shell is open and cannot form a solid): cone r 29.92 at STEP z 2.95 narrowing to 29.41 at z 19.18, top chamfer to r 26.6 at z 19.85. Rotates: never clamp, touch or route cable near it.')
 add('lidar_motor','LD14 spin motor (manufacturer STEP)',ld(5523.7),'metal','E15','cover',check=True,tess=(.5,.5))
 add('lidar_cap','LD14 red top cap',ld(219.8),'red','E15','cover',tess=(.2,.3))
-add('lidar_lens','LD14 emitter and receiver windows',cq.Compound.makeCompound([sector(*w,28.2,29.3).translate((LX,0,LZ)) for w in win]),'lens','E15','cover',tess=(.2,.3),note='Window positions follow the STEP snapshot; the turret spins at about 6 Hz. Keep the band z '+f'{PARAMS["lidar_height"]-4:g}-{PARAMS["lidar_height"]+4:g}'+' mm clear all round.')
+add('lidar_lens','LD14 emitter and receiver windows',cq.Compound.makeCompound([ldp(sector(*w,28.2,29.3)) for w in win]),'lens','E15','cover',tess=(.2,.3),note='Window positions follow the STEP snapshot; the turret spins at about 6 Hz. Keep the band z '+f'{PARAMS["lidar_height"]-4:g}-{PARAMS["lidar_height"]+4:g}'+' mm clear all round.')
 add('lidar_connector','LD14 4-pin 1.25 mm side-entry socket (STEP)',ld(62.5),'connector','E15','cover')
-# LiDAR tray: flat plate on the lid's existing M3 holes with three printed towers under the LD14 lugs.
-# Only the stationary lugs touch it; motor, PCB parts and connector keep clearance.
-LUGS=[(-35.3,0),(36,18),(36,-18)]   # STEP lug holes: Ø3.24 through a 2 mm web, Ø5.96 counterbore from above
+# LiDAR tray: flat plate on the lid's M3 holes with three printed towers under the LD14 lugs. Only the stationary lugs touch it; motor,
+# PCB parts and connector keep clearance. Task F: the LD14 is turned round (motor toward the back), its front lug tower at x 89.3.
+# Task I: the lid is closed over the front bay (its old camera-tower notch is gone), so the whole plate rests on the lid.
+LUGS=[lxy(-35.3,0),lxy(36,18),lxy(36,-18)]   # STEP lug holes (Ø3.24 through a 2 mm web, Ø5.96 counterbore from above) in the robot frame: front ear, two tail lugs
 lug_z=LZ-8.0                        # lug undersides (the LD14 housing underside)
-TRAYH=[(-35,-38),(-35,38),(66,-35),(66,35)]   # rear pair clear of the fan window and the J27 USB socket
+TRAYH=[(-35,-38),(-35,38),(83,-35),(83,35)]   # rear pair clear of the fan window and the J27 USB socket; front pair on solid lid (behind the old front notch, task F)
 ZT0=ZLIDT                           # tray plate on the lid top
-# Jetson cooling (L2). The 40 mm fan (z ZFAN_TOP-10..ZFAN_TOP) sits under the middle of the tray and 59 % under the LD14 housing, and the
-# robot centre (0, 0), where the lid seams meet, lies INSIDE the fan footprint, so lid vent slots over the fan would cross the seams.
-# Instead the lid has one round fan window (Ø35 about the fan centre, over the Ø34 fan bore; the four seams end in it, radial to it) and
-# the tray plate over it carries the grille: 4.5 mm slots on a 6.5 mm pitch inside the window, around a solid r 8 hub that carries the
-# front lug tower (it stands over the fan hub). A 1.3 mm skirt under the lid round the window ends 1 mm above the fan frame, inside the
+# Jetson cooling (L2). The 40 mm fan (z ZFAN_TOP-10..ZFAN_TOP) sits under the rear of the tray, and the robot centre (0, 0), where the lid
+# seams meet, lies INSIDE the fan footprint, so lid vent slots over the fan would cross the seams. Instead the lid has one round fan window
+# (Ø35 about the fan centre, over the Ø34 fan bore; the four seams end in it, radial to it) and the tray plate over it carries the grille:
+# 4.5 mm slots on a 6.5 mm pitch inside the window. A 1.3 mm skirt under the lid round the window ends 1 mm above the fan frame, inside the
 # fan screw heads, so the fan cannot draw its own exhaust from the body through the 5.2 mm gap between the fan top and the lid.
-# Air path: open on all sides, the 20.8 mm plenum between the tray top and the LD14 housing underside (only the three Ø8.6 lug towers in
-# it) -> grille -> window and skirt -> fan. Numbers: validation jetson_cooling.
+# Air path: room air over the tray -> grille -> window and skirt -> fan (task F: the turned-round LD14 stands ahead of the fan window; its motor
+# end overhangs the grille's front edge about 10 mm above the plate, task I counts that shadow). Numbers: validation jetson_cooling.
 FW=(JFAN[0],JFAN[1],17.5)           # lid fan window: centre and radius (the E09 bore is r 17)
 SK_T,SK_GAP=1.3,0.9                 # fan skirt wall (r FW..FW+SK_T, inside the fan screw heads) and its gap to the fan top (0.9: the fan bypass keeps >= 1 % margin under its 25 % limit; feeler go 0.5 / no-go 1.0)
 SK_FEELER=(0.5,1.0)                 # skirt-gap feelers at assembly: the go feeler passes (no contact), the no-go feeler must not (gap small enough for the bypass limit)
-FLUG=(LX+LUGS[0][0],LUGS[0][1])     # front lug tower over the fan hub
-GR_W,GR_P,GR_N,GR_R,GR_HUB=4.5,6.5,2,FW[2],8.0   # slot width, pitch, slots each side of the centre one, grille radius, hub radius
-tray=rounded(14.5,0,ZT0,119,86,3,8)
+GR_W,GR_P,GR_N,GR_R=4.5,6.5,2,FW[2]   # slot width, pitch, slots each side of the centre one, grille radius
+TRAYF=round(max(x for x,y in LUGS)+11,1)   # tray front edge: 4 mm ahead of the front lug tower's Ø14 flare; its rear edge stays at x -45 over the fan window
+tray=rounded((TRAYF-45)/2,0,ZT0,TRAYF+45,86,3,8)
 for x,y in TRAYH:tray=hole(tray,x,y,ZT0-1,1.7,5)
-GRILLE=union(*[box(FW[0]+k*GR_P,FW[1],ZT0-1,GR_W,2*GR_R+2,5) for k in range(-GR_N,GR_N+1)]).intersect(cyl(FW[0],FW[1],ZT0-1,GR_R,5)).cut(cyl(*FLUG,ZT0-2,GR_HUB,7))
+GRILLE=union(*[box(FW[0]+k*GR_P,FW[1],ZT0-1,GR_W,2*GR_R+2,5) for k in range(-GR_N,GR_N+1)]).intersect(cyl(FW[0],FW[1],ZT0-1,GR_R,5))
 tray=tray.cut(GRILLE)               # fan grille over the lid window
-LD14_AP=(35,-22,10,14)   # LD14 lead aperture in the lid (centre x, y, size x, y); the lead drops through it from the tray opening above
+LD14_AP=(*lxy(-6,-22),10,14)   # LD14 lead aperture in the lid (centre x, y, size x, y): the lead runs 21 mm forward from the socket in the plenum and drops here,
+                                # clear of the 37 deg lid seam and its r 50 dovetail tab (straight under the socket it would cross the seam)
 tray=tray.cut(box(LD14_AP[0],LD14_AP[1],ZT0-1,LD14_AP[2]+4,LD14_AP[3]+2,5))   # LD14 lead opening in the tray plate (14 × 16: >= 1.1 mm round the grommet lip)
 for x,y in LUGS:
-    tray=union(tray,cq.Solid.makeCone(7,4.3,6,cq.Vector(LX+x,y,ZT0+3)),cyl(LX+x,y,ZT0+9,4.3,lug_z-ZT0-9))
-    tray=hole(tray,LX+x,y,lug_z-8,1.3,9)   # Ø2.6 pilot, 8 deep: M3 × 10 thread-forming screw
-add('P_lidar_tray','LD14 three-point tray on the lid',tray,'print','F01','cover',printable=True,note=f'119 × 86 × 3 mm plate on the lid top (z {ZT0:g}–{ZT0+3:g}; four M3 holes at (-35, ±38) and (66, ±35), M3 × 10 + nyloc nuts under the lid). Fan grille over the lid fan window: {2*GR_N+1} × {GR_W} mm slots on a {GR_P} mm pitch inside r {GR_R:g} about the fan centre ({FW[0]:.1f}, {FW[1]:.1f}), around a solid r {GR_HUB:g} hub under the front lug tower (over the fan hub); 2 mm ribs, all vertical walls. Three Ø8.6 towers (flared to Ø14) carry the LD14 lugs at z {lug_z:g}: front (-15.3, 0), tail (56, ±18); the {lug_z-ZT0-3:.1f} mm plenum under the LD14 is the fan intake.'+' The lug holes are Ø3.24 (M3 clearance) with Ø5.96 counterbores for M3 socket heads: use M3 × 10 thread-forming screws in the Ø2.6 pilots (or open them to Ø4.0 for M3 heat-set inserts). Only the stationary lugs touch the tray. Print plate-down, no supports.')
+    tray=union(tray,cq.Solid.makeCone(7,4.3,6,cq.Vector(x,y,ZT0+3)),cyl(x,y,ZT0+9,4.3,lug_z-ZT0-9))
+    tray=hole(tray,x,y,lug_z-8,1.3,9)   # Ø2.6 pilot, 8 deep: M3 × 10 thread-forming screw
+add('P_lidar_tray','LD14 three-point tray on the lid',tray,'print','F01','cover',printable=True,note=f'{TRAYF+45:g} × 86 × 3 mm plate on the lid top (x -45–{TRAYF:g}, z {ZT0:g}–{ZT0+3:g}; four M3 holes at (-35, ±38) and ({TRAYH[2][0]:g}, ±35), M3 × 10 + nyloc nuts under the lid). Fan grille over the lid fan window: {2*GR_N+1} × {GR_W} mm slots on a {GR_P} mm pitch inside r {GR_R:g} about the fan centre ({FW[0]:.1f}, {FW[1]:.1f}); 2 mm ribs, all vertical walls, open to the room above. Three Ø8.6 towers (flared to Ø14) carry the LD14 lugs at z {lug_z:g}: front ({LUGS[0][0]:g}, 0), tail ({LUGS[1][0]:g}, ±18) (task F: the LD14 is turned round, motor toward the back).'+' The lug holes are Ø3.24 (M3 clearance) with Ø5.96 counterbores for M3 socket heads: use M3 × 10 thread-forming screws in the Ø2.6 pilots (or open them to Ø4.0 for M3 heat-set inserts). Only the stationary lugs touch the tray. Print plate-down, no supports.')
 for i,(x,y) in enumerate(TRAYH):   # M3 × 10 from the tray top, nyloc nut under the lid (z ZLID-4..ZLID)
     add(f'lidar_tray_screw_{i}','LiDAR tray M3 × 10 screw and nyloc nut',union(cyl(x,y,ZLID-4,1.5,10),cyl(x,y,ZT0+3,2.8,2.8),cyl(x,y,ZLID-4,3.2,4)),'metal','H09','cover',allow=LID_IDS+('P_lidar_tray',),note='Nut and washer seat on solid lid material (outside the fan window).')
 add('lidar_adapter','Included D200 USB serial adapter allowance',box(15,-40,132-DZ,35,16,7),'pcb','E15','upper',check=True,note='CP2102 adapter shape and connector orientation provisional; inspect supplied kit.')
@@ -1136,13 +1160,12 @@ clip=union(box(16,-40,ZLID-3,34,22,3),box(16,-50,ZLID-14,34,2,11),box(9.5,-30,ZL
 add('P_lidar_adapter_clip','USB adapter clip beneath lid',clip,'print','F01','cover',printable=True,note='Secure below lid with two ties. Verify adapter fit; keep exposed contacts insulated.')
 add('J27_A','LiDAR extension USB-A plug (aft stack, upper port)',usbplug(U0,1),'black','C16','upper')
 add('J27_socket','LiDAR extension USB-A female allowance (mated on the adapter plug)',box(-13,-40,ZLID-10,22,17,10),'black','C16','upper',allow=('lidar_adapter',))
-add('J28','LD14 lead plug, 1.25 mm 4-pin, mated',box(LX+15.02,-13.3,LZ-9.4,6.8,5,3.2),'connector','E15','cover',note='Plugs along +y into the side-entry socket under the LD14 PCB; the lead drops through the tray and lid openings at (35, -22).')
+add('J28','LD14 lead plug, 1.25 mm 4-pin, mated',box(*lxy(15.02,-13.3),LZ-9.4,6.8,5,3.2),'connector','E15','cover',note=f'Plugs along -y (the LD14 is turned round) into the side-entry socket under the LD14 PCB; the lead runs forward in the plenum and drops through the tray and lid openings at ({LD14_AP[0]:g}, {LD14_AP[1]:g}).')
 
 # Round front bumper: two independently floating 90 deg arc halves about (0,0), outer shell R157.4, 2.4 mm wall (WALL2 above ZW2, 41 mm under the top: interlayer
-# strength for hits at the top rim) with a 6 mm 45 deg inner top rim (stiffening ring), z 18..ZB1 (2 mm under the lid; 98.5 in the low profile). Inside the camera
-# wedge the top follows the lens' lower image edge with 4.4 mm clearance (radial bands with a 45 deg outer chamfer); the full-height arc fills
-# the far side of a vertical plane 4.3 mm outside the lateral FOV plane. The bands run on to AZC, where the skin crosses that plane (so no
-# band ends inside the plane and leaves a rim wedge against it), and no band is narrower than 0.3 deg. 1.5 mm EVA foam to the R158.9
+# strength for hits at the top rim) with a 6 mm 45 deg inner top rim (stiffening ring), z 18..ZB1 (2 mm under the lid; 98.5 in the low profile), full
+# height all round (task F: the camera notch is gone). The first 3.5 deg from the seam keep the thin wall, the first 5.5 deg have no rim (seam backer clearance).
+# The camera looks out through a window cut across the seam (WIN below): half of it in each half, so every edge of it moves with a half. 1.5 mm EVA foam to the R158.9
 # skin up to az 70; az 70..90 is bare PETG with PTFE film tape (low object friction where the push along the travel is smallest),
 # and az 78..90 tapers from R157.4 to R152.7, outside the start of the R152.5 rear shell (ramped down to R151.5), so a contact arriving
 # from behind always meets a ramp and an object leaving the bumper end never meets a fixed face. Each seam end is a 20 deg lead-in ramp
@@ -1170,31 +1193,27 @@ WALL2,ZW2=3.8,100.0-DZ     # upper wall (z >= ZW2 + 1) thickened inward by a 51 
 SEC=[(0,ZB0),(WALL,ZB0),(WALL,ZW2),(WALL2,ZW2+1.25*(WALL2-WALL)),(WALL2,ZB1-2-6.6/6*(WALL+6-WALL2)),(WALL+6,ZB1-2),(WALL+6,ZB1),(0,ZB1)]   # wall + 6 mm inner top rim, underside 47.7 deg (faceting margin)
 AZT,AZF,TW=78,70,2.0       # end taper start, foam end, taper wall
 seamcut=box(0,G-100,ZB0-2,400,200,ZB1-ZB0+4)                # keeps y >= G (left half)
-NOFF=4.3*math.hypot(1,THF)   # notch edge: vertical plane 4.3 mm (normal) outside the lateral FOV plane y = tan42 (x - 117)
-def _azc():   # azimuth where the R_SH shell skin meets that plane: the full-height arc starts there with a radial face
-    lo,hi=5.,40.
-    for _ in range(40):
-        m=(lo+hi)/2;x,y=polar(R_SH,m);lo,hi=(lo,m) if y>THF*(x-CAMO.x)+NOFF else (m,hi)
-    return math.ceil(hi*20)/20
-AZC=_azc()
-def secn(zn):return [(0,ZB0),(WALL,ZB0),(WALL,zn-6.6),(WALL+6,zn),(3,zn),(0,zn-3)]   # notch section: rim to zn, outer edge 45 deg down 3 mm
 FR=frust(.5,400).intersect(box(0,0,0,1200,1200,400))   # camera image frustum (apex at the lens face), lens to floor
 FRB=frust(.5,400,CAMB).intersect(box(0,0,0,1200,1200,400))   # the same with the apex 3 mm further back
-def zn_at(a,c=4.4,pts=((R_SH-3,0.),(R_SH,-3.))):   # highest top at azimuth a keeping c mm to the image frustum at the listed (r, dz) section points
-    def ok(z):return all(not FR.isInside(cq.Vector(*polar(r,a),z+dz)) and FR.distance(cq.Vertex.makeVertex(*polar(r,a),z+dz))>=c for r,dz in pts)
-    lo,hi=100.-DZ,ZB1
-    if ok(hi):return hi
-    for _ in range(14):
-        m=(lo+hi)/2;lo,hi=(m,hi) if ok(m) else (lo,m)
-    return round(lo,2)
-ZS0=min(ZNO+2.2,zn_at(1.2,c=4.05,pts=((R_SH-WALL,0.),(R_SH-1.2,0.),(R_SH,-1.2))))   # seam band (no rim, az 0..4.5): top <= 118.2 with 4.4 mm to the frustum
-SECN0=[(0,ZB0),(WALL,ZB0),(WALL,ZS0),(1.2,ZS0),(0,ZS0-1.2)]                 # no rim for the first 4.5 deg (seam backer clearance)
-NBANDS=[(4.5+1.5*k,6+1.5*k) for k in range(4)]
-while NBANDS[-1][1]<AZC-1e-6:NBANDS.append((NBANDS[-1][1],min(NBANDS[-1][1]+.5,AZC)))   # 0.5 deg bands up to AZC; each top is set by its smallest azimuth
-if NBANDS[-1][1]-NBANDS[-1][0]<.3:NBANDS[-2:]=[(NBANDS[-2][0],AZC)]                         # no band narrower than 0.3 deg (it would print as a sliver)
-ZNB={a0:zn_at(a0) for a0,a1 in NBANDS}
-NPL=[(CAMO.x,-5),(CAMO.x,NOFF),(220,THF*(220-CAMO.x)+NOFF),(220,-5)]   # plan region inside that plane (the image side)
-ncut=prism(NPL,ZNO,ZB1-ZNO+10)
+# Camera window (task F), cut through both halves' shell and foam (symmetric about the seam, so the mirrored right half gets the same cut).
+# Plan shape: side walls from an apex 7.5 mm behind the lens face (>= 2.3 mm normal to the 3-mm-back image frustum, >= 4.3 mm to the
+# lens-face one along the 1 mm land; the bumper rules are 1.5 and 4.0 mm, the rest is for the halves' planar play), then a 1 mm land square
+# to the inner wall face, then flaring at WIN_FLARE deg through the wall from x WIN_X + WIN_LAND so a pole caught at a window edge while the robot spins pushes that half along its travel (a 42 deg face is friction-locked at
+# object mu 0.5: validation spin_sweep). Sill and roof are flat, at the frustum's bottom at the skin and its top at the shell's outer face
+# from an apex 8 mm behind the lens (2.8 / 4.5 mm). The rest pose is the window's worst case: at full travel a half is 4.33 mm nearer
+# the lens, where the image is 3.9 mm narrower per side than the 2.5 mm the half moves inward.
+# Printing: above the window each half's wall is free at the seam end, so its first layer would hang in the air. The as-printed halves
+# (print-parts STL) carry a 1.8 mm print-support plug filling the window at r WIN_PLUG_R (and, on the right half, a pillar under the
+# upper seam backer); both are cut out after printing, like the battery tray's breakaway posts. The assembly shows the open window.
+WIN_AY,WIN_AZ,WIN_X,WIN_LAND,WIN_FLARE=CAMO.x-7.5,CAMO.x-8.0,153.0,1.0,62.0   # the 1 mm land keeps the side face square to the inner wall face (no knife edge)
+WIN_Z=(round(CH-(R_SKIN-WIN_AZ)*tv,1),round(CH+(R_SH-WIN_AZ)*tv,1))   # sill (frustum bottom at the skin), roof (frustum top at the shell's outer face)
+WIN_PLUG_R=(154.8,156.6)                                            # print-support plug: inside the 2.4 mm seam-band wall (R155..157.4) and the 3.8 mm wall
+def win_hw(x):return (x-WIN_AY)*th if x<=WIN_X else (WIN_X-WIN_AY)*th+max(0.,x-WIN_X-WIN_LAND)*math.tan(math.radians(WIN_FLARE))   # window half-width at x
+def win_z(x):return WIN_Z                                             # window (bottom, top): flat
+_wx=[WIN_AY+3.0,WIN_X,WIN_X+WIN_LAND,170.0]
+WIN=prism([(x,win_hw(x)) for x in _wx]+[(x,-win_hw(x)) for x in _wx[::-1]],WIN_Z[0],WIN_Z[1]-WIN_Z[0])
+WIN_PLUG=prism([(x,win_hw(x)+.3) for x in _wx]+[(x,-win_hw(x)-.3) for x in _wx[::-1]],WIN_Z[0]-.3,WIN_Z[1]-WIN_Z[0]+.6).intersect(ring(WIN_PLUG_R[0],WIN_PLUG_R[1],WIN_Z[0]-.3,WIN_Z[1]+.3,-30,30))   # 0.3 mm into the wall all round (a real overlap, no coincident faces)
+AZW=math.degrees(math.atan2(win_hw(R_SKIN),R_SKIN))   # window half-width at the skin (deg)
 RAMP_A=15.0;RAMP_D=round(R_SKIN-(R_SH-WALL+1.2),2)   # seam-end lead-in: angle from the tangent, depth below the skin (down to a 1.2 mm end land, the thinnest printable wall)
 def seam_ramp():   # cutter for the outer seam-end corner (left half): everything outside a line 20 deg from the tangent through (R_SKIN-2.5, y=G)
     P1=(math.sqrt((R_SKIN-RAMP_D)**2-G*G),G);ae=math.degrees(math.atan2(G,P1[0]));h=math.radians(ae+90-RAMP_A)
@@ -1202,17 +1221,22 @@ def seam_ramp():   # cutter for the outer seam-end corner (left half): everythin
     q0=(P1[0]-v[0],P1[1]-v[1]);q1=(P1[0]+L*v[0],P1[1]+L*v[1])
     return prism([q0,q1,(q1[0]+8*n[0],q1[1]+8*n[1]),(q0[0]+8*n[0],q0[1]+8*n[1])],ZB0-2,ZB1-ZB0+4)
 RAMPCUT=seam_ramp()
-SEC0=[(0,ZB0),(WALL,ZB0),(WALL,ZB1-8.6),(WALL+6,ZB1-2),(WALL+6,ZB1),(0,ZB1)]   # thin-wall section inside the notch (az < AZC): keeps the seam-end inner corner at R_SH - WALL
-bshell=union(arc(SEC0,R_SH,0,AZC+.2).cut(ncut),arc(SEC,R_SH,AZC,AZT).cut(ncut),arc(SECN0,R_SH,0,4.5),*[arc(secn(ZNB[a0]),R_SH,a0,a1) for a0,a1 in NBANDS],
-             spiral(AZT,90,(R_SH,R_TIP),(R_SH-TW,R_TIP-TW),ZB0,ZB1)).cut(seamcut).cut(RAMPCUT)
+ZS0=ZB1-1.2                # seam band top (thin wall, no rim, 1.2 mm outer chamfer): the backer behind the seam rises to it
+SECN0=[(0,ZB0),(WALL,ZB0),(WALL,ZB1),(1.2,ZB1),(0,ZB1-1.2)]   # seam band (az 0..3.5): thin wall keeps the seam-end inner corner at R_SH - WALL, no rim (backer clearance)
+SECT=[(0,ZB0),(WALL,ZB0),(WALL,ZW2),(WALL2,ZW2+1.25*(WALL2-WALL)),(WALL2,ZB1),(1.2,ZB1),(0,ZB1-1.2)]   # az 3.5..5.5: the upper wall thickens, still no rim (task F: the
+                           # wall step lies inside the camera window, which removes it there; at 4.5 it would leave a 0.9 mm strip beside the window side;
+                           # the rim starts at 5.5, clear of the window's 93.1 mm roof)
+bshell=union(arc(SECN0,R_SH,0,3.5),arc(SECT,R_SH,3.5,5.5),arc(SEC,R_SH,5.5,AZT),spiral(AZT,90,(R_SH,R_TIP),(R_SH-TW,R_TIP-TW),ZB0,ZB1)).cut(seamcut).cut(RAMPCUT).cut(WIN)
+bplug=WIN_PLUG.cut(seamcut).cut(RAMPCUT)   # print-support plug of the left half's window (as printed only)
 D=prism([(0,G)]+[polar(R_SH-1,a) for a in np.linspace(1.3,90,30)],17,13)   # plan sector of the left half (clips the under-base guides)
 def csk(x,y):   # Ø3.2 hole + 90 deg countersink Ø6.9 at the lower edge: 45 deg walls, no support
     return union(cyl(x,y,17,1.6,13),cq.Solid.makeCone(4.45,1.6,2.85,cq.Vector(x,y,17)))
 rail=prism([(56,RAILY[1]),(56,RAILY[0]+4),(60,RAILY[0]),(158,RAILY[0]),(158,RAILY[1])],RZ[0],RZ[1]-RZ[0]).intersect(D)   # top 1.5 mm under P_base; tail chamfered
 arm=prism([(47,80),(61,80),(61,98),(58,101),(58,158),(52,158),(52,101),(47,96)],RZ[0],RZ[1]-RZ[0]).intersect(D)          # outboard arm: 14 wide at pin C, the arm ball (11.5 mm pocket) and the leaf root, 6 wide out to the shell
 GUST=4.0                   # gusset thickness; each top edge rises at 45 deg into the wall instead of ending in a square tip
-GTIP=(110-DZ,132-DZ)       # gusset tip heights on the wall: rail (under the camera notch tops) and arm (into the top rim); they follow the top down
-gus=union(xz_fin([(127,RZ[1]),(156,RZ[1]),(156,GTIP[0]),(127,GTIP[0]-29)],17-GUST/2,17+GUST/2),     # rail-to-shell gusset
+GTIP=(110-DZ,132-DZ)       # gusset tip heights on the wall: rail and arm (into the top rim); they follow the top down
+RGY=21.0                   # rail gusset centre y (task F: from 17 to 21, on the rail's outer edge, so its tip clears the camera window flare)
+gus=union(xz_fin([(127,RZ[1]),(155,RZ[1]),(155,GTIP[0]),(127,GTIP[0]-28)],RGY-GUST/2,RGY+GUST/2),     # rail-to-shell gusset (ends at x 155, inside the wall: at y 19-23 the shell's outer face is at x 155.8-156.2)
           yz_fin([(106,RZ[1]),(146,RZ[1]),(146,GTIP[1]),(106,GTIP[1]-40)],55-GUST/2,55+GUST/2))      # arm-to-shell gusset
 def cpts(s0=S0):   # cam profile in the switch frame (roller-top line): rest flat, 40 deg ramp, dwell
     return [(XR-9,YREST),(XR+s0,YREST),(XR+S1,YDW),(XR+6.6,YDW)]
@@ -1233,18 +1257,19 @@ for x,y in RAILP+[PB]:hguide=hguide.cut(csk(x,y))
 for p in BALL_DN:hguide=hguide.cut(pocket(p,ZBD,RZ[1]-ZBD+1))    # Ø5 × 9.5 ball pockets in the rail / arm top (floor race 24.0..24.5)
 hguide=tidy(hguide)                                    # shell + rail + cam + arm + gussets (rigid part)
 bleaf=union(leaf,cyl(*LT0,LZB[0],NR,LZB[1]-LZB[0]),cyl(*LR0,LZB[0],LRB,LZB[1]-LZB[0]))   # as printed: free leaf, Ø4 nose boss, root boss
-ZFT=114-DZ                 # foam top (it stays under the camera notch as before)
-foam=union(ring(R_SH,R_SKIN,26,ZFT,0,AZF-4),spiral(AZF-4,AZF,(R_SKIN,R_SH+.02),(R_SH,R_SH),26,ZFT,6)).cut(seamcut).cut(RAMPCUT)   # bevel-cut at the seam-end ramp
+ZFT=114-DZ                 # foam top (unchanged by task F; the camera window cuts its top edge at the seam)
+foam=union(ring(R_SH,R_SKIN,26,ZFT,0,AZF-4),spiral(AZF-4,AZF,(R_SKIN,R_SH+.02),(R_SH,R_SH),26,ZFT,6)).cut(seamcut).cut(RAMPCUT).cut(WIN)   # bevel-cut at the seam-end ramp; camera window
 # Seam backer on the right half. The left half moves along (-cos30, -sin30) and the right half along (-cos30, +sin30), so in the right
 # half's frame the left end's inner corner CL sweeps the rhombus CL + (-4.33 t1 + 4.33 t2, -2.5 t1 - 2.5 t2), t1, t2 in 0..1; its
 # foremost point is CL.x - 4.33. The backer is one flat step facing +x at XSTEP = CL.x - 4.33 - 2.3 (2.3 mm to the swept region,
 # >= 1.5 mm with the planar play), spanning the whole seam (y -4.35..+3.75), joined by a web behind the right end (y < -4.35) to the
 # right wall. Its face normal +x pushes the right half along its travel with drive cos30 = 0.87 (no face parallel to the travel).
 SEAM_C=2.3;CL=(math.sqrt((R_SH-WALL)**2-G*G),G);XSTEP=CL[0]+BT*ft[0]-SEAM_C;TSTEP,WEBT=1.8,2.4
-TZ=ZS0-ZB0                                              # backer top = seam band top (>= 8 mm under the image frustum)
+TZ=ZB1-ZB0                                              # backer top = bumper top (a rod over the seam band's chamfer meets it); the camera window band (sill to roof) is cut out of it
 tongue=union(box(XSTEP-TSTEP/2,(G-(G+.6))/2,ZB0,TSTEP,2*G+.6,TZ),   # step y -(G+0.6)..+G: >= 2 mm to the left rail edge (y 11) at both full travels
 
-             box((XSTEP-TSTEP+R_SH-WALL+.6)/2,-(G+.6+WEBT/2),ZB0,R_SH-WALL+.6-(XSTEP-TSTEP),WEBT,TZ))
+             box((XSTEP-TSTEP+R_SH-WALL+.6)/2,-(G+.6+WEBT/2),ZB0,R_SH-WALL+.6-(XSTEP-TSTEP),WEBT,TZ)).cut(box(150,0,WIN_Z[0],24,24,WIN_Z[1]-WIN_Z[0]))
+bpillar=box(XSTEP-TSTEP/2,(G-(G+.6))/2,WIN_Z[0],TSTEP,2*G+.6,WIN_Z[1]-WIN_Z[0])   # print-support pillar under the upper backer (right half, as printed only)
 # Deflected leaf (assembly pose): constant-strength taper integrated as a tip-loaded cantilever from the root-boss edge, with the
 # bending shortening of the projected length, so the Ø4 nose sits on the abutment face. The printed part (P_bumper_*.stl) is the free leaf.
 def leaf_curve(dl,n=60,dt=0.):   # (axial x(q), deflection w(q), slope th(q)) at q = 0..LL for a nose deflection dl
@@ -1269,8 +1294,9 @@ def bent_noseL(sg,s):   # deflected nose centre (world, side sg) at travel s
 def leaf_nose(s):   # nose-centre position along the leaf axis from the free nose (negative = toward the root) at travel s
     q,x,w,th=leaf_curve(PL+s);return float(x[-1]-LL),float(math.degrees(th[-1]))
 BNOTE=('Print upright on the lower edge (z=18 on the bed), no supports (countersinks, rim, wall step and gussets are 45 deg). 90 deg arc about the robot centre, '
- f'R{R_SH} × {WALL} mm wall ({WALL2} mm above z {ZW2:g}) with a 6 mm 45 deg inner top rim, z 18–{ZB1:g} (inside the camera wedge the top follows the lower image edge with 4.4 mm clearance, 45 deg outer chamfer); '
- f'1.5 mm EVA foam to the R{R_SKIN} skin from the seam to az 70 (bevel-cut along the seam-end ramp); az 70–90 bare PETG covered with 0.1 mm PTFE film tape; az 78–90 tapers to R{R_TIP} (1.2 mm outside the start of the rear shell). '
+ f'R{R_SH} × {WALL} mm wall ({WALL2} mm above z {ZW2:g}) with a 6 mm 45 deg inner top rim, z 18–{ZB1:g} (full height all round; the first 3.5 deg from the seam keep the 2.4 mm wall and the first 5.5 deg have no rim); '
+ f'Camera window across the seam (task F): z {WIN_Z[0]:g}–{WIN_Z[1]:g}, flared sides. The STL carries a 1.8 mm print-support plug in the window (the right half also a pillar under the upper seam backer): after printing, cut them out round their edges with a hobby knife or flush cutter and file flush; they only hold up the wall above the window while it prints. '
+ f'1.5 mm EVA foam to the R{R_SKIN} skin from the seam to az 70 (bevel-cut along the seam-end ramp, cut out at the camera window); az 70–90 bare PETG covered with 0.1 mm PTFE film tape; az 78–90 tapers to R{R_TIP} (1.2 mm outside the start of the rear shell). '
  f'The seam end is a {RAMP_A:.0f} deg lead-in ramp {RAMP_D} mm deep through foam and shell. Before bonding the foam, check the printed outer radius with a printed R{R_SH} check template (+0.3 mm max; sand high spots) and use foam measured at 1.5 ± 0.2 mm. '
  f'Guide: a rail (y 11–23) and an outboard arm run 1.5 mm under P_base on three pins fixed by M3 × 35 countersunk screws from below; 4 mm gussets rise at 45 deg into the wall (to z {GTIP[0]} and {GTIP[1]}). '
  f'Rail pins A/B: Ø4.5 × 1.5 inner-race spacer, 693ZZ bearing rolling in a {SLOTW} mm P_base slot (filed to {SLOTW-.1:.1f}–{SLOTW}), Ø4.5 × 1 spacer, M3 thin clamp nut (threadlocker). Pin C: Ø5 × 6.5 sleeve in a 6.2 mm slot, thin clamp nut. '
@@ -1303,7 +1329,7 @@ for side,sgn in [('left',1),('right',-1)]:
     for j,X in enumerate([-4.75,4.75]):
         x,y=mir(swp(X,HY),sgn)
         add(f'bumper_switch_screw_{side}_{j}','Switch M2 × 14 screw, washer and nut on the base top',union(cyl(x,y,21.0,1.9,1.6),cyl(x,y,21.0,1.0,15.6),cyl(x,y,33,2.4,1.6)),'metal','H08','base',check=True,allow=('P_base','bumper_switch_'+side))
-    half=union(m(hguide),m(bleaf),*([] if sgn>0 else [tongue]))                         # as printed: free leaf
+    half=union(m(hguide),m(bleaf),m(bplug),*([] if sgn>0 else [tongue,bpillar]))        # as printed: free leaf; window print-support plug (and backer pillar) to cut out
     hasm=union(m(hguide),m(fillet),bent_leaf(sgn,0.),*([] if sgn>0 else [tongue]))     # assembly: leaf deflected onto its abutment
     add('P_bumper_'+side,'Front bumper arc half '+side,tidy(hasm),'print','F01/F02','lower',printable=True,explode=[60,sgn*35,0],pshape=tidy(half),
         note=BNOTE+(' Right half also carries the seam backer (a flat step facing forward across the 7.5 mm seam).' if sgn<0 else '')+' The STL is the as-printed half (free leaf); the assembly shows the leaf deflected onto its abutment.',tess=(.35,.035))
@@ -1357,8 +1383,14 @@ for i,(x,y) in enumerate(LIDPOSTS):
 # within R_KNEE of the window centre each seam turns radial to the window, so every sector meets the window and its skirt square-on (a seam
 # ray from (0, 0) would cut the window edge at 30 deg on two sectors: a sliver tip in print). Two dovetail tabs per seam (0.15 mm clearance, glue them with CA) and the LiDAR tray, which bridges the window, hold the sectors together.
 LID_R=R_RS;LID_SEAMS=[37,120,215,300];LID_TABS=(50,95)   # inner tabs at r 50: beyond the 215 deg seam's knee (r 41.4 from the centre)
-lid=cyl(0,0,ZLID,LID_R,LID_T)
-lid=lid.cut(box(124,0,ZLID-1,72,116,LID_T+4))   # camera tower/guard notch, open to the rim
+lid=cyl(0,0,ZLID,LID_R,LID_T)   # task I: closed over the front bay too (the deck-era notch at x 88..rim, |y| <= 58 held the camera tower and guard, which task F removed)
+# Seam relief (task I): over the 7.5 mm bumper seam the closed rim (R152.5) would stand ahead of the seam backer (front face XSTEP), so a rod
+# at the top of the bumper band pushed into the seam would meet the fixed lid before the sensed backer. A 1.5 mm pocket in the lid underside
+# lifts it there to z 102: a Ø3 rod low enough to touch the bumper band (bottom <= ZB1, top <= ZB1 + 3 = 101.5) passes under it. The pocket runs
+# back 1 mm past the backer at full travel and is 0.75 mm wider than the seam each side: a rod in the seam meets the backer and pushes it to its
+# stop clear of the lid. A pocket, not a slot: a slot that deep would open over the camera lens (the backer is only 1.8 mm thick).
+LID_SEAM_RELIEF=(round(XSTEP+BT*ft[0]-1.0,2),G+.75,1.5)   # (x where the pocket starts, half width, depth into the lid underside)
+lid=lid.cut(box((LID_SEAM_RELIEF[0]+LID_R+6)/2,0,ZLID-1,LID_R+6-LID_SEAM_RELIEF[0],2*LID_SEAM_RELIEF[1],1+LID_SEAM_RELIEF[2]))
 ZSK=ZFAN_TOP+SK_GAP                                    # fan skirt bottom: SK_GAP over the fan frame
 lid=union(lid,cyl(FW[0],FW[1],ZSK,FW[2]+SK_T,ZLID-ZSK+.01))   # fan skirt under the lid, r FW..FW+SK_T (clear of the fan screw heads)
 lid=lid.cut(cyl(FW[0],FW[1],ZSK-1,FW[2],ZLIDT-ZSK+2))   # Ø35 fan window over the Ø34 fan bore, through lid and skirt; the LiDAR tray grille closes it
@@ -1387,20 +1419,21 @@ for k,(a0,a1) in enumerate(spans):
              f'Seams at 37/120/215/300 deg from the centre; inside r {R_KNEE:g} of the central Ø{2*FW[2]:g} fan window they turn radial to it (the window is closed by the LiDAR tray grille). '
              f'Under the lid a {SK_T} mm skirt round the window ends {SK_GAP:g} mm above the fan frame (z {ZSK:.2f}–{ZLID:g}, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: '
              f'at assembly check the gap to the fan frame with feelers: {SK_FEELER[0]} mm must pass (sand the skirt end if it touches), {SK_FEELER[1]} mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r {LID_TABS[0]} and {LID_TABS[1]} (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; '
-             'the LiDAR tray and the four lid posts (one M3 × 6 screw into the insert in each post top) also tie the sectors. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. '
+             'the LiDAR tray and the four lid posts (one M3 × 6 screw into the insert in each post top) also tie the sectors. '
+             f'The front sector covers the front bay (task I); over the bumper seam a {2*LID_SEAM_RELIEF[1]:g} mm wide, {LID_SEAM_RELIEF[2]:g} mm deep pocket in its underside runs from the rim back to x {LID_SEAM_RELIEF[0]:g}, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. '
              'The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.')
-# LD14 lead grommet (deferred L2 item): the lid aperture would let warm body air reach the plenum under the LD14 and the fan intake (about 140 mm2
+# LD14 lead grommet (deferred L2 item): the lid aperture would let warm body air out under the LD14, beside the fan grille's intake (about 140 mm2
 # against the 25 % bypass limit of the grille), so a printed grommet fills it round the lead: a body in the aperture (GROM clr a side), a lip on the
 # lid top over the aperture's x sides, a hole snug on the Ø2.4 lead and a slit to fit it round the lead (the J28 plug cannot pass). Its residual
 # leak (validation jetson_cooling.fan_skirt.ld14_aperture_leak_mm2) is counted in the bypass term.
-GROM=dict(clr=.1,hole_d=2.6,slit=.6,lip=1.4,lip_over=.8,z0=1.2)   # z0: the body starts 1.2 mm over the lid underside (>= 1 mm off the LiDAR adapter clip under it)
+GROM=dict(clr=.1,hole_d=2.6,slit=.6,lip=1.4,lip_over=.8,z0=1.2)   # z0: the body starts 1.2 mm over the lid underside
 _gx,_gy,_ax,_ay=LD14_AP
 grom=union(box(_gx,_gy,ZLID+GROM['z0'],_ax-2*GROM['clr'],_ay-2*GROM['clr'],LID_T-GROM['z0']),box(_gx,_gy,ZLIDT,_ax+2*GROM['lip_over'],_ay-2*GROM['clr'],GROM['lip']))
 _sl=_ax/2+GROM['lip_over']+1
 grom=grom.cut(cyl(_gx,_gy,ZLID-1,GROM['hole_d']/2,LID_T+GROM['lip']+2)).cut(box(_gx+_sl/2,_gy,ZLID-1,_sl,GROM['slit'],LID_T+GROM['lip']+2))
 add('P_ld14_grommet','LD14 lead grommet in the lid aperture',grom,'print','F01','cover',printable=True,print_flip=True,allow=LID_IDS,
     note=f'Fills the {_ax:g} × {_ay:g} mm lid aperture at ({_gx:g}, {_gy:g}) round the LD14 lead (W20): {GROM["clr"]} mm clearance a side, a {GROM["lip"]:g} mm lip resting on the lid top, a Ø{GROM["hole_d"]} hole snug on the Ø2.4 lead and a '
-         f'{GROM["slit"]} mm slit to slip it round the lead after the J28 plug is through (cut the slit open with a knife if it prints closed). It keeps warm body air out of the LiDAR plenum (fan intake). Printed lip down (STL bed-ready).')
+         f'{GROM["slit"]} mm slit to slip it round the lead after the J28 plug is through (cut the slit open with a knife if it prints closed). It keeps warm body air from leaking out beside the fan grille\'s intake. Printed lip down (STL bed-ready).')
 for i,(x,y) in enumerate(LIDPOSTS):tfa(f'lid_screw_{i+1}',x,y,ZLIDT,ZLID-INS_L,group='cover',allow=LID_IDS+('P_lid_post_'+str(i+1),f'insert_lid_top_{i+1}'),name='Lid M3 × 6 pan-head machine screw (into the post-top insert)',bom='H13',
     note='Through the Ø3.4 lid hole into the M3 × 3 heat-set insert in the post top (3 mm of thread); the four lid screws are the only fasteners to undo to lift the cover.')
 
@@ -1427,9 +1460,9 @@ for i,(x,y) in enumerate(CLIFF_IDS):   # rear pair to the rear connector row (J6
     else:zf=56 if y>0 else 54.5;pts=[(x,y+7,49),(100,max(y+7,y),zf),(60,sg*50,zf),(46,BAY_CONN[ref][1],51),(6,BAY_CONN[ref][1],51),bc(ref)]   # the lead exits toward +y on both sides (the right one inboard); B9: the right one crosses under W04 (y -56, z 58) at z 54.5 (wire_to_wire)
     wire('W'+str(10+i),f'Cliff sensor lead {i+1} (to {ref} on the bay board)',pts,1,'signal','C06')
 wire('W16','Pico USB cable (left stack → Pico on the bay board)',[(XE-1,P_PICO[1],P_PICO[2]),(XE+4.5,P_PICO[1],P_PICO[2]),(XE+4.5,58,64),(25,58,64),(25,97,60),(USB_FACE[0],97,58),(USB_FACE[0],97,USB_FACE[2]),(USB_FACE[0],USB_FACE[1]+PICO_PLUG[1]-1,USB_FACE[2])],2,'usb','C02','upper')   # round the carrier's left side and over the left motor, into the micro-B plug along -y
-wire('W17','Single-camera USB cable',[(XE-1,P_CAM[1],P_CAM[2]),(XE+3.5,P_CAM[1],P_CAM[2]),(88,-12,75),(88,-12,125-DZ),(95,-15,140-DZ),(97,-13,147-DZ),(100,-12,149-DZ)],2,'usb','C01','camera')   # rises in front of the plugs; enters the guard only through its USB-C notch
+wire('W17','Single-camera USB cable',[(XE-1,P_CAM[1],P_CAM[2]),(XE+3.5,P_CAM[1],P_CAM[2]),(88,-10,66),(110,-12,CH-2),(XPCB-13,-12,CH-2)],2,'usb','C01','camera')   # task F: forward from the plug, rising gently under the camera mount crossbar into the USB-C plug behind the camera
 wire('W19','LiDAR USB extension',[(XE-1,P_LIDAR[1],P_LIDAR[2]),(XE+3.5,P_LIDAR[1],P_LIDAR[2]),(82,-24,80),(60,-62,84),(-35,-62,86),(-35,-40,ZLID-9),(-22,-40,ZLID-6)],2,'usb','C16','upper')   # over the right motor lane, outside the carrier edge; passes 3 mm under the tray nut at (-35,-38)
-wire('W20','LiDAR matched replacement / extension lead',[(28,-40,136-DZ),(30,-28,136-DZ),(LD14_AP[0],LD14_AP[1],139-DZ),(LD14_AP[0],LD14_AP[1],ZLID+LID_T/2),(LD14_AP[0],LD14_AP[1],152-DZ),(35,-19.5,163-DZ),(35,-16,LZ-7.8)],1.2,'signal','C17','cover')
+wire('W20','LiDAR matched replacement / extension lead',[(28,-40,136-DZ),(30,-28,136-DZ),(LD14_AP[0],LD14_AP[1],139-DZ),(LD14_AP[0],LD14_AP[1],ZLID+LID_T/2),(LD14_AP[0],LD14_AP[1],152-DZ),(*lxy(15,-19.5),163-DZ),(*lxy(15,-16),LZ-7.8)],1.2,'signal','C17','cover')   # task F: up through the lid aperture, then back in the plenum to the turned-round LD14's socket
 wire('W02','Master rocker pair (J2, bay board rear edge ↔ lid rocker)',[(MS[0],5,ZLIDT-25),(MS[0],12,ZLIDT-29.5),(-67,12,ZLIDT-29.5),(-67,BAY_CONN['J2'][1],56),bc('J2')],2,'power','C10','cover')   # over the pack top beside the Tamiya pair, then down the x -67 lane onto the rear edge
 wire('W14','Motor-toggle loop (J13, bay board rear edge ↔ lid toggle)',[(TOG[0],TOG[1],ZLID-15),(TOG[0],TOG[1],ZLID-22),(-66,62,68),bc('J13')],1.2,'signal','C08','cover')
 _j1y=(BCONN['J1']['body_xy'][1],BCONN['J1']['body_xy'][3])   # B12a: past J1's XT30 (mated top z 59) at x -57.5, between its plug and F2
@@ -1798,7 +1831,7 @@ def rod_probe(C,a,z,start=200.):   # rod pushed radially inward at azimuth a, ce
 SEAMIDS=['P_bumper_left','P_bumper_right','bumper_foam_left','bumper_foam_right']
 def seam_rods(shift,pushed=()):
     C=Caster(SEAMIDS,shift);out=[];dr=np.array([-1.,0,0])
-    for z in [20,40,100-DZ,110-DZ,116-DZ,ZS0-1.5]:
+    for z in [20,40,100-DZ,110-DZ,CH,85,90,ZS0-1.5]:   # z 67.5-85: through the camera window (no bumper part: 'no contact', camera_window lists them)
         for yc in np.arange(-4,4.01,.5):
             O=np.array([[200,yc+lo,z+dz] for lo,dz in ROD]);t,j=C.hits(O,dr,C.sel(z-1.6,z+1.6))
             m=int(np.argmin(t));xm=200-t[m]
@@ -1815,7 +1848,7 @@ SH=lambda *sides:{i:mvec(sd) for sd in sides for i in ('P_bumper_'+sd,'bumper_fo
 rods=seam_rods({});rcases={k:seam_rods(v,p_) for k,v,p_ in [('left_full',SH('left'),('left',)),('right_full',SH('right'),('right',)),('both_full',SH('left','right'),('left','right'))]}
 rigid=[r for r in rods if r['verdict'].startswith('rigid')]
 bumper['seam_intrusion']=dict(rod='round Ø3 flat-ended rod, 9 ray samples over its section, centres y -4..+4, pushed along -x',rows=rods,
-    max_intrusion_before_trip_mm=max(r['intrusion_before_trip_mm'] for r in rods if r['intrusion_before_trip_mm'] is not None),
+    max_intrusion_before_trip_mm=max(r['intrusion_before_trip_mm'] for r in rods if r.get('intrusion_before_trip_mm') is not None),
     max_contact_intrusion_mm=max(r['intrusion_mm'] for r in rods if 'intrusion_mm' in r),rigid_rows=rigid,
     pushed_cases={k:dict(max_contact_intrusion_mm=max(r['intrusion_mm'] for r in v if 'intrusion_mm' in r),first_contacts=sorted({r['first_contact'] for r in v}),rigid_rows=[r for r in v if r['verdict'].startswith('rigid')]) for k,v in rcases.items()},
     trip_rule='(-n).t - 0.5 |(-n).normal| >= 0.3 at the first contact face; rod advance per mm of travel = (t.n)/(d.n); trip at 2.25 mm of travel',
@@ -1951,16 +1984,17 @@ def gsolve(H,F,mu_l,mu_v,it=6,full=False,slide=None):   # (drive along the trave
     out=(float(F@FT-sum(m for _,m in fr)),float(abs(RA)+abs(RB)),float(V.sum()))
     return out+(V,abs(RA),abs(RB)) if full else out
 def skin_r(t):return R_SKIN if t<=AZF else (R_SH if t<=AZT else R_SH-(R_SH-R_TIP)*(t-AZT)/(90-AZT))
-def ztop(t):   # bumper top at the skin point of azimuth t (notch bands, then full height from AZC)
-    if t>=AZC:return ZB1
-    return ZS0-1.2 if t<4.5 else ZNB[max(a0 for a0,a1 in NBANDS if a0<=t)]-3
+def ztop(t):   # bumper top at the skin point of azimuth t (the seam band's 1.2 mm outer chamfer, then full height)
+    return ZS0 if t<5.5 else ZB1
+def in_win(t,z):   # the skin point at azimuth t, height z lies in the camera window (no bumper surface there)
+    x,y=polar(skin_r(t),t);b,tp=win_z(x);return abs(y)<=win_hw(x) and b<=z<=tp
 def hit(t,z,muc):   # hit point and force (unit normal push plus object-skin friction opposing the skin's slip)
     r=skin_r(t);n=np.array([-math.cos(math.radians(t)),-math.sin(math.radians(t))]);tg=FT-(FT@n)*n
     tg=tg/np.linalg.norm(tg) if np.linalg.norm(tg)>1e-9 else tg
     return (r*math.cos(math.radians(t)),r*math.sin(math.radians(t)),z),n-(muc if t<AZF else min(muc,.2))*tg
 ZS=[20,40,60,80,ZB1];TH=list(range(2,91,2));MU_L,MU_R=.03,.03   # 693ZZ bearing drag, ball rolling on steel (conservative)
 MU_RACE=.005               # rolling resistance of a Ø4 steel ball on a hardened steel strip (typical 0.001-0.003; 0.005 allows for dust)
-def heights(t):return sorted({min(z,ztop(t)) for z in ZS})
+def heights(t):return sorted({min(z,ztop(t)) for z in ZS if not in_win(t,min(z,ztop(t)))})
 def mucrit(H,F,same=False):
     if gsolve(H,F,0 if same else MU_L,0)[0]<=0:return 0.
     lo,hi=0.,3.
@@ -1995,7 +2029,7 @@ bumper['friction_lock']=dict(method='Quasi-static rigid half; lateral reactions 
     races_note='Every ball runs between hardened steel strips (no PETG contact, no dimpling: see hertz). The sliding case is a failure mode (a ball seized in its pocket), not the design.',
     preload_rolling_drag_N=round(MU_RACE*float(VPRE.sum()),3),roller_ramp_reaction_N=round(.49*math.sin(math.radians(40)),3),
     object_friction_note='Static or side pushes: the skin slides along the object as the half moves along its 30 deg axis; EVA foam mu_c as stated on az < 70, PTFE-taped PETG (mu_c 0.2) on az 70..90.',
-    heights_note=f'Notch tops inside the camera wedge, {ZB1:g} elsewhere; every listed height has bumper surface.')
+    heights_note=f'Full height {ZB1:g} ({ZS0:g} on the seam band chamfer); heights inside the camera window (|az| < {AZW:.1f} deg) are skipped; every listed height has bumper surface.')
 for side in ['left','right']:
     bumper['halves'][side]['arc_sensed_to_deg']=des['arc_sensed_to_deg'];bumper['halves'][side]['friction_lock']=bool(des['locked_points'])
 bumper['friction_lock']['margin_ok']=mins>=2*MU_R and mins_eq>=2*MU_RACE
@@ -2128,7 +2162,7 @@ for st in ['rest','left full travel','right full travel']:
     BUMP=['P_bumper_left','P_bumper_right','bumper_foam_left','bumper_foam_right']
     bs=[(round(sh_(i).distance(FR),2),i) for i in BUMP];bb=[(round(sh_(i).distance(FRB),2),i) for i in BUMP]
     camrows.append(dict(state=st,bumper_clearance_to_frustum_mm=min(bs)[0],nearest=min(bs)[1],bumper_clearance_to_frustum_apex_3mm_back_mm=min(bb)[0],
-        guard_clearance_to_frustum_apex_3mm_back_mm=round(shapes['P_camera_guard'].distance(FRB),2)))
+        holder_clearance_to_frustum_apex_3mm_back_mm=round(shapes['P_camera_holder'].distance(FRB),2)))
 campl=[]
 for sg_,sd in [(1,'left'),(-1,'right')]:   # the bumper halves in their planar-play extreme poses (rest and hard stop)
     for p_ in extremes([0.,.1,4.9,5.]):
@@ -2139,10 +2173,37 @@ camrows.append(dict(state='planar play extremes (rest and hard stop, both halves
 camera_fov=dict(lens_pose_mm=[CAMF.x,CAMF.y,CAMF.z],apex_back_mm=[CAMB.x,CAMB.y,CAMB.z],hfov_deg=PARAMS['camera_hfov_deg'],vfov_deg=round(2*math.degrees(math.atan(tv)),2),check_image_px=PARAMS['camera_check_image_px'],
     stream_image_px=PARAMS['camera_image_px'],lower_edge_depression_deg=dict(centre=round(math.degrees(math.atan(tv)),2),corner=round(math.degrees(math.atan(tv/math.hypot(1,th))),2)),
     bumper_clearance=camrows,required_bumper_clearance_mm=4.0,required_bumper_clearance_apex_back_mm=1.5,parts_in_frustum=camhit,
-    pitch_tolerance_deg=round(min(r['bumper_clearance_to_frustum_mm'] for r in camrows)/(41*math.radians(1)),1),
-    note='Frusta from 0.5 mm in front of each apex to the floor; checked against every part including wires (lens excluded). The bumper notch keeps 4.4 mm to the lens-face frustum; '
-         f'lowering it to keep 4 mm from the 3-mm-back frustum would open an unsensed, unseen band (rods at z {116-DZ:g}-{120-DZ:g} crossing the skin under the image) in the perimeter test.')
+    pitch_tolerance_deg=round(min(r['bumper_clearance_to_frustum_mm'] for r in camrows)/((R_SKIN-CAMO.x)*math.radians(1)),1),
+    note='Frusta from 0.5 mm in front of each apex to the floor; checked against every part including wires (lens excluded). Task F: the camera looks out through the bumper window '
+         '(camera_window); the window keeps >= 4 mm to the lens-face frustum and >= 1.5 mm to the 3-mm-back one in every pose, including the planar-play extremes.')
+# Task F: the turned-round LD14, its tray and lead sit above and behind the camera: their clearance to both frusta, reported (any
+# intrusion is already in parts_in_frustum).
+camera_fov['lidar_parts_clearance']={n:dict(to_frustum_mm=round(shapes[n].distance(FR),2),to_frustum_apex_3mm_back_mm=round(shapes[n].distance(FRB),2)) for n in ('lidar','lidar_motor','lidar_turret','P_lidar_tray','W20','J28') if n in shapes}
 camera_fov['ok']=not camhit and min(r['bumper_clearance_to_frustum_mm'] for r in camrows)>=4.0 and min(r['bumper_clearance_to_frustum_apex_3mm_back_mm'] for r in camrows)>=1.5
+# Camera window (task F): its size, the lens recess, and the gap from the camera parts to each moving half (shell, foam and seam backer) at
+# every travel and in the planar-play extremes. Rule: >= 1.5 mm everywhere, and the lens face lies further behind the skin round the window
+# than a half moves at its hard stop (+ 2 mm): an object too big to pass the window pushes a half to the trip point (2.25 mm) and on to the
+# hard stop without reaching the lens.
+CAMPARTS=['camera_lens','camera_board','P_camera_holder','J17_C']
+wrows=[]
+for sg_,sd in [(1,'left'),(-1,'right')]:
+    for s_ in STATES:
+        for i in ('P_bumper_'+sd,'bumper_foam_'+sd):
+            q=shapes[i].translate(mvec(sd,s_));wrows.append(dict(part=i,pose=f's {s_}',gap_mm=min((round(q.distance(shapes[c]),2),c) for c in CAMPARTS)))
+    for p_ in extremes([0.,.1,4.9,5.]):
+        for i in ('P_bumper_'+sd,'bumper_foam_'+sd):
+            q=pose_shape(shapes[i],p_,sg_);wrows.append(dict(part=i,pose=f'play s {p_[0]} e {round(p_[1],3)} yaw {round(math.degrees(p_[2]),3)} deg',gap_mm=min((round(q.distance(shapes[c]),2),c) for c in CAMPARTS)))
+wmin=min(wrows,key=lambda r:r['gap_mm'][0])
+rim=[polar(R_SKIN if win_z(R_SKIN)[0]<ZFT else R_SH,a) for a in np.linspace(-AZW,AZW,41)]   # the window's edge on the skin (foam at its sill)
+camera_window=dict(lens_face_x_mm=CAMO.x,axis_z_mm=CH,flare_deg=WIN_FLARE,sill_and_roof_z_mm=list(WIN_Z),print_support=f'a 1.8 mm plug at r {WIN_PLUG_R[0]}..{WIN_PLUG_R[1]} in each half (and a pillar under the right half upper seam backer) in the as-printed STL, cut out after printing',
+    at_skin=dict(half_width_deg=round(AZW,2),width_mm=round(2*win_hw(R_SKIN),1),z_mm=[round(v,1) for v in win_z(R_SKIN)]),
+    at_inner_wall=dict(x_mm=WIN_X,width_mm=round(2*win_hw(WIN_X),1),z_mm=[round(v,1) for v in win_z(WIN_X)]),
+    lens_recess_behind_skin_mm=round(min(x for x,_ in rim)-CAMO.x,2),hard_stop_travel_along_x_mm=round(-BT*ft[0],2),
+    min_gap_camera_to_moving_halves_mm=wmin['gap_mm'][0],at=dict(part=wmin['part'],pose=wmin['pose'],camera_part=wmin['gap_mm'][1]),poses=len(wrows),
+    rule='camera parts >= 1.5 mm from both halves (shell, foam, seam backer) at every travel and planar-play pose; lens recess >= hard-stop travel + 2 mm',
+    residual=f'An object small enough to pass the window opening (about {2*win_hw(WIN_X):.0f} x {win_z(WIN_X)[1]-win_z(WIN_X)[0]:.0f} mm at the inner wall) can reach the lens without moving a half: '
+             'the perimeter rods that do so are listed in rods_through_window. Anything larger meets a half first and trips it before the lens.')
+camera_window['ok']=camera_window['min_gap_camera_to_moving_halves_mm']>=1.5 and camera_window['lens_recess_behind_skin_mm']>=camera_window['hard_stop_travel_along_x_mm']+2
 
 # Cliff ToF cones (25 deg full angle from the optical face to the floor), wires and leads included, at rest and at full travel.
 cliffrows=[]
@@ -2166,8 +2227,8 @@ for i in MESH:
         P=T[k].reshape(-1,3);P=np.vstack([P,T[k].mean(1)]);P=P[(P[:,2]>=LH_-4)&(P[:,2]<=LH_+4)] if len(P[(P[:,2]>=LH_-4)&(P[:,2]<=LH_+4)]) else T[k].mean(1)
         r=np.hypot(P[:,0]-LX_,P[:,1]).max()
         if r>30.2:band.append(dict(part=i,max_r_from_spin_axis_mm=round(float(r),2)))
-ldall=cq.Compound.makeCompound([x.translate((LX,0,LZ)) for x in LDS if abs(x.Volume()-7932.7)>1]+[shapes['lidar_turret']])
-lidar_check=dict(optical_plane_z_mm=LH_,step_window_band_z=[8.41,16.0],placement_offset_mm=[LX,0,round(LZ,2)],rotation_deg=0,
+ldall=cq.Compound.makeCompound([ldp(x) for x in LDS if abs(x.Volume()-7932.7)>1]+[shapes['lidar_turret']])
+lidar_check=dict(optical_plane_z_mm=LH_,step_window_band_z=[8.41,16.0],placement_offset_mm=[LX,0,round(LZ,2)],rotation_deg=LYAW,
     lug_underside_z_mm=round(lug_z,2),tray_overlap_with_lidar_mm3=round(shapes['P_lidar_tray'].intersect(cq.Compound.makeCompound([ldall,shapes['lidar']])).Volume(),3),
     tray_gap_to_non_lug_lidar_parts_mm=round(shapes['P_lidar_tray'].distance(ldall),2),tray_gap_to_motor_mm=round(shapes['P_lidar_tray'].distance(shapes['lidar_motor']),2),
     lead_gap_to_turret_mm=round(shapes['W20'].distance(shapes['lidar_turret']),2),parts_in_scan_band=band,
@@ -2177,8 +2238,22 @@ for i in range(len(TRAYH)):
     q=shapes[f'lidar_tray_screw_{i}'];g_=[(round(q.distance(shapes[j]),2),j) for j in SOLID if j not in LID_IDS+('P_lidar_tray',) and not j.startswith('lidar_tray_screw') and near(q,shapes[j],6)]
     tf.append(dict(at=TRAYH[i],min_gap_mm=min(g_)[0] if g_ else None,nearest=min(g_)[1] if g_ else 'none within 6 mm'))
 lidar_check['tray_fasteners']=tf;lidar_check['scan_band_ok']=not band
-# Jetson cooling (L2): lid underside >= fan top + 5 mm; a Ø35 lid window over the fan bore, closed by the tray grille; the plenum between the
-# tray top and the LD14 housing underside, open on all sides, feeds the grille. Areas from a 0.25 mm plan grid over the fan bore (annulus r 7..17
+# Task F: the LD14 returns nothing under 0.1 m (D200 kit LD14P minimum range; the simulator's D200Model returns -1 there). An object
+# touching the bumper skin, with the bumper pushed to its 5 mm hard stop, must stay outside that radius at every azimuth so the scan still
+# sees what the bumper touches. This sets lidar_x: a trial at x 109 left a 5 cm blind strip ahead of the bumper, and the controller's
+# near-field checks (approach stop, spin room) lost what was in it. The nearest skin point to the spin axis is straight ahead (az 0).
+_rmin=min(math.hypot(R_SKIN*math.cos(math.radians(a))+BT*ft[0]-LX,R_SKIN*math.sin(math.radians(a))-abs(BT*ft[1])) for a in np.arange(-90,90.1,1))
+lidar_check['min_range']=dict(ld14_min_range_mm=100.0,nearest_pressed_skin_to_spin_axis_mm=round(_rmin,1),margin_mm=round(_rmin-100.0,1),
+    note='front skin (R_SKIN) with a half at its hard stop (4.33 mm rearward, 2.5 mm inward) to the LiDAR spin axis; above 100 mm the LD14 sees an object the bumper touches',ok=_rmin>=100.0)
+SKIN_=cyl(0,0,LZ-30,R_SKIN+10,60).cut(cyl(0,0,LZ-31,R_SKIN,62))   # outside the bumper skin, round the LD14 height
+_fg=min((round(shapes[n].distance(SKIN_),2),n) for n in ('lidar','lidar_motor','lidar_turret','lidar_connector'))
+lidar_check['front_gap']=dict(required_mm=10.0,gap_to_skin_mm=_fg[0],nearest_part=_fg[1],ok=_fg[0]>=10.0,
+    rule='every LD14 part (housing, motor, turret, connector) stays >= 10 mm inside the bumper skin R_SKIN')
+_bt=max(shapes[i].BoundingBox().zmax for i in ('P_bumper_left','P_bumper_right'))
+lidar_check['scan_band_vertical']=dict(band_z_mm=[LH_-4,LH_+4],lid_top_z_mm=ZLIDT,bumper_top_z_mm=round(_bt,2),tray_plate_top_z_mm=ZT0+3,
+    band_above_lid_mm=round(LH_-4-ZLIDT,2),band_above_bumper_mm=round(LH_-4-_bt,2),ok=LH_-4-ZLIDT>=20 and LH_-4-_bt>=20)
+# Jetson cooling (L2): lid underside >= fan top + 5 mm; a Ø35 lid window over the fan bore, closed by the tray grille; room air over the tray
+# feeds the grille (task F: the LD14 stands ahead of the fan, nothing over the grille). Areas from a 0.25 mm plan grid over the fan bore (annulus r 7..17
 # of the E09 model), cross-checked with the built tray: open area = (bore annulus through the 3 mm plate - tray material in it) / 3.
 # Bypass: the skirt under the lid round the window ends SK_GAP over the fan frame; air from inside the body can only reach the window through
 # that gap, so its narrowest section is the gap times the skirt's inner circumference (the skirt lies on the frame land, r 17..20). Measured
@@ -2187,8 +2262,26 @@ FB=(17.0,7.0)
 gx,gy=np.meshgrid(np.arange(-21,21.001,.25),np.arange(-21,21.001,.25));GX,GY=FW[0]+gx,FW[1]+gy;GR=np.hypot(gx,gy);CELL=.25**2
 inbore=(GR<=FB[0])&(GR>=FB[1]);slot=np.zeros_like(GR,bool)
 for k in range(-GR_N,GR_N+1):slot|=np.abs(GX-(FW[0]+k*GR_P))<=GR_W/2
-gopen=inbore&slot&(GR<=GR_R)&(np.hypot(GX-FLUG[0],GY-FLUG[1])>GR_HUB);under=np.hypot(GX-LX,GY)<=30.
-A_bore=float(inbore.sum()*CELL);A_open=float(gopen.sum()*CELL)
+gopen=inbore&slot&(GR<=GR_R)
+# Task I: the plan shadow over the grille of every part above the tray plate (the turned-round LD14's motor end overhangs the window's front
+# edge), from the mesh triangles, with the lowest overhanging surface over the open slots. The gate counts shadowed slots as closed; the
+# side-entry curtain (clear height under the overhang × the shadow's width across the window) shows how freely they still draw room air.
+under=np.zeros(GX.shape,bool);ZUN=np.full(GX.shape,np.inf);_ov=[]
+for i in MESH:
+    if i in ('P_lidar_tray',)+LID_IDS:continue
+    T=MESH[i][MESHF[i]];T=T[(T[:,:,2].min(1)>=ZT0+3)&(T[:,:,0].min(1)<=GX.max())&(T[:,:,0].max(1)>=GX.min())&(T[:,:,1].min(1)<=GY.max())&(T[:,:,1].max(1)>=GY.min())]
+    for t in T:
+        (x0,y0,z0),(x1,y1,z1),(x2,y2,z2)=t;d=(y1-y2)*(x0-x2)+(x2-x1)*(y0-y2)
+        if abs(d)<1e-9:continue
+        m=(GX>=t[:,0].min())&(GX<=t[:,0].max())&(GY>=t[:,1].min())&(GY<=t[:,1].max())&(GR<=FW[2])
+        if not m.any():continue
+        a=((y1-y2)*(GX[m]-x2)+(x2-x1)*(GY[m]-y2))/d;b=((y2-y0)*(GX[m]-x2)+(x0-x2)*(GY[m]-y2))/d;c=1-a-b;h=(a>=-1e-9)&(b>=-1e-9)&(c>=-1e-9)
+        if not h.any():continue
+        k=np.flatnonzero(m.ravel())[h];under.flat[k]=True;ZUN.flat[k]=np.minimum(ZUN.flat[k],(a*z0+b*z1+c*z2)[h])
+        if i not in _ov:_ov.append(i)
+A_bore=float(inbore.sum()*CELL);A_open=float(gopen.sum()*CELL);A_shad=float((gopen&under).sum()*CELL)
+_sh=under&(GR<=FW[2]);H_UN=float(ZUN[gopen&under].min()-(ZT0+3)) if A_shad else None;W_UN=float(GY[_sh].max()-GY[_sh].min()+.25) if _sh.any() else 0.
+A_curt=round(H_UN*W_UN,1) if A_shad else None
 ANN=cyl(FW[0],FW[1],ZT0,FB[0],3).cut(cyl(FW[0],FW[1],ZT0-1,FB[1],5));A_open_cad=(ANN.Volume()-ANN.intersect(shapes['P_lidar_tray']).Volume())/3
 LIDS_=[shapes[i] for i in LID_IDS];ZSK_=min(v.Z for q in LIDS_ for v in q.Vertices());GAP_=min(q.distance(shapes['fan']) for q in LIDS_)   # exact (bounding boxes are padded)
 SKSEC=sum(q.intersect(cyl(FW[0],FW[1],(ZSK_+ZLID)/2-.25,25,.5)).Volume() for q in LIDS_)/.5;SKSEC0=math.pi*((FW[2]+SK_T)**2-FW[2]**2)
@@ -2196,21 +2289,34 @@ A_skirt=GAP_*2*math.pi*FW[2]
 _GS=shapes['P_ld14_grommet'].intersect(box(LD14_AP[0],LD14_AP[1],ZLID+LID_T/2-.25,LD14_AP[2]+4,LD14_AP[3]+4,.5)).Volume()/.5   # grommet section at mid-lid
 A_ld14=round(LD14_AP[2]*LD14_AP[3]-_GS-math.pi*1.2**2,2)   # open area left in the aperture: round the lead, the slit, the side clearances
 A_byp=A_skirt+A_ld14;FSG=min(q.distance(shapes[f'fan_screw_{j}']) for q in LIDS_ for j in range(len(FSCREWS)))
-PLEN=lug_z-(ZT0+3);ld_=math.dist((FW[0],FW[1]),(LX,0));a_=(ld_**2+30**2-FW[2]**2)/(2*ld_);CHORD=2*math.sqrt(max(30**2-a_**2,0))
+_ldw=min(shapes[n].distance(cyl(FW[0],FW[1],ZT0,GR_R,60)) for n in ('lidar','lidar_motor','lidar_turret'))   # plan gap from the LD14 to the column over the grille
+# Exhaust (task I, the lid closed over the front bay): the warm air leaves under the lid rim through the ring gap over the bumper and
+# rear-shell tops; its narrowest section is the gap times the circumference at the rear-shell rim's inner edge (the smaller of the two rims).
+_rtop=max(float(MESH[i][:,2].max()) for i in ('P_bumper_left','P_bumper_right','P_rear_shell_left','P_rear_shell_right'))
+EX_GAP=round(ZLID-_rtop,2);EX_R=R_RS-RWALL-10;A_ex=round(EX_GAP*2*math.pi*EX_R,1)
 jetson_cooling=dict(fan_top_z_mm=round(ZFAN_TOP,2),lid_underside_z_mm=ZLID,lid_top_z_mm=ZLIDT,air_gap_fan_to_lid_mm=round(ZLID-ZFAN_TOP,2),required_air_gap_mm=AIRGAP,
     air_gap_fan_to_tray_grille_mm=round(ZT0-ZFAN_TOP,2),lid_fan_window=dict(centre_mm=[round(FW[0],2),round(FW[1],2)],diameter_mm=2*FW[2],area_mm2=round(math.pi*FW[2]**2)),
-    grille=dict(slots=f'{2*GR_N+1} × {GR_W} mm on a {GR_P} mm pitch inside r {GR_R:g}, solid r {GR_HUB:g} hub under the front lug tower',fan_bore_annulus_mm2=round(A_bore),open_area_over_bore_mm2=round(A_open),open_area_cad_mm2=round(A_open_cad),
-        open_fraction_of_bore=round(A_open/A_bore,3),open_area_not_under_lidar_mm2=round(float((gopen&~under).sum()*CELL)),bore_fraction_under_lidar_housing=round(float((inbore&under).sum()/inbore.sum()),3)),
-    plenum=dict(tray_top_z_mm=ZT0+3,lidar_housing_underside_z_mm=round(lug_z,2),height_mm=round(PLEN,2),open_sides='all round: only the three Ø8.6 lug towers stand in it',
-        side_entry_along_lidar_edge_over_window_mm2=round(CHORD*PLEN),chord_mm=round(CHORD,1)),
+    grille=dict(slots=f'{2*GR_N+1} × {GR_W} mm on a {GR_P} mm pitch inside r {GR_R:g}, no hub (task F: no lug tower over the fan)',fan_bore_annulus_mm2=round(A_bore),open_area_over_bore_mm2=round(A_open),open_area_cad_mm2=round(A_open_cad),
+        open_fraction_of_bore=round(A_open/A_bore,3),open_area_shadowed_in_plan_mm2=round(A_shad,1),open_area_not_shadowed_mm2=round(A_open-A_shad),
+        open_fraction_of_bore_not_shadowed=round((A_open-A_shad)/A_bore,3),bore_fraction_shadowed_in_plan=round(float((inbore&under).sum()/inbore.sum()),3)),
+    intake=dict(over_grille=f'open room air: the turned-round LD14 stands ahead of the fan window (task F); its motor end overhangs the grille\'s front edge by {FW[0]+FW[2]-float(GX[_sh].min())+.125:.1f} mm, '
+                            f'{H_UN:.1f} mm above the plate, shadowing {A_shad:.0f} mm2 ({A_shad/A_open:.1%}) of the open slots in plan. The gate counts that shadow as closed; '
+                            f'those slots still draw room air sideways under the overhang through a curtain about {A_curt:.0f} mm2 ({H_UN:.1f} mm clear × {W_UN:.1f} mm across the window), {A_curt/A_shad:.0f} × their own area, so the overhang does not throttle the intake.'
+                            if A_shad else 'open room air: nothing above the tray plate overhangs the grille in plan',
+                lidar_gap_to_column_over_grille_mm=round(_ldw,2),parts_over_grille=_ov,clear_height_under_overhang_mm=round(H_UN,2) if A_shad else None,
+                shadow_width_across_window_mm=round(W_UN,2),side_entry_curtain_mm2=A_curt,
+                method='plan shadow of the mesh triangles of every part above the tray plate top (tray and lid excluded) on the 0.25 mm grille grid; clear height = lowest overhanging surface over a shadowed open slot minus the plate top'),
     fan_skirt=dict(inner_r_mm=FW[2],wall_mm=SK_T,bottom_z_mm=round(ZSK_,2),gap_to_fan_frame_mm=round(GAP_,2),section_area_mm2=round(SKSEC,1),section_area_unbroken_mm2=round(SKSEC0,1),
         clearance_to_fan_screw_heads_mm=round(FSG,2),bypass_area_skirt_mm2=round(A_skirt,1),ld14_aperture_leak_mm2=A_ld14,ld14_aperture_open_without_grommet_mm2=LD14_AP[2]*LD14_AP[3],bypass_area_mm2=round(A_byp,1),bypass_fraction_of_grille_open_area=round(A_byp/A_open_cad,3),bypass_limit_fraction=.25,
         feeler_go_nogo_mm=list(SK_FEELER),gap_at_bypass_limit_mm=round((.25*A_open_cad-A_ld14)/(2*math.pi*FW[2]),2),bypass_margin_fraction=round(.25-A_byp/A_open_cad,3),
         rule='bypass (gap × skirt inner circumference + the LD14 lead aperture left open round its grommet) <= 25 % of the grille open area over the bore (CAD), with >= 1 % margin; the no-go feeler is under the gap at the limit; skirt unbroken (section within 1 %); >= 0.5 mm to the fan screw heads; window >= the fan bore'),
     bring_up_test='Lid-on load test before the robot is used: lid, LiDAR and tray fitted, sustained full CPU + GPU load for 20 min, log tegrastats (CPU/GPU/SoC temperatures and clocks) and compare with a lid-off run; the lid passes if the clocks never throttle. Carry into pcb/BRINGUP.md (L11).',
-    exhaust='The fan blows down through the heatsink fins; the warm air leaves the body through the 2 mm ring gap between the bumper / rear-shell tops and the lid underside, the 7.5 mm bumper seam and the open ring between the base edge and the shells.',
-    choice='The lid seams all meet near the centre (0, 0), which lies inside the fan footprint, so slots in the lid over the fan would cross them; the LD14 sits over 59 % of the fan, so the grille is in the tray plate over a lid window and the plenum under the LD14 is the intake. The skirt closes the 5.2 mm gap between the fan top and the lid, which would otherwise be a ~670 mm2 side inlet from inside the warm body.')
-jetson_cooling['ok']=(jetson_cooling['air_gap_fan_to_lid_mm']>=AIRGAP and FB[0]<FW[2] and A_open/A_bore>=.5 and PLEN>=15 and abs(A_open-A_open_cad)<=.05*A_bore
+    exhaust=dict(path=f'The fan blows down through the heatsink fins; the warm air leaves the body through the {EX_GAP:g} mm ring gap between the bumper / rear-shell tops and the lid underside, the 7.5 mm bumper seam and the open ring between the base edge and the shells. '
+                      'Task I closed the lid over the front bay (until then an open notch of about 7050 mm2, left from the old camera tower): the ring gap alone stays several times the grille\'s open area.',
+        ring_gap_mm=EX_GAP,ring_gap_section_mm2=A_ex,ring_gap_section_radius_mm=EX_R,ring_gap_to_grille_open_area=round(A_ex/A_open_cad,2),
+        rule='the ring gap section (gap × circumference at the rear-shell rim\'s inner edge) >= 2 × the grille open area (CAD); the seam, the camera window and the base ring are extra'),
+    choice='The lid seams all meet near the centre (0, 0), which lies inside the fan footprint, so slots in the lid over the fan would cross them; so the grille is in the tray plate over a lid window (task F: with the LD14 turned round ahead of the fan, room air reaches the grille directly). The skirt closes the 5.2 mm gap between the fan top and the lid, which would otherwise be a ~670 mm2 side inlet from inside the warm body.')
+jetson_cooling['ok']=(jetson_cooling['air_gap_fan_to_lid_mm']>=AIRGAP and FB[0]<FW[2] and (A_open-A_shad)/A_bore>=.5 and abs(A_open-A_open_cad)<=.05*A_bore and A_ex>=2*A_open_cad
     and A_byp<=.24*A_open_cad and SK_FEELER[1]<=(.25*A_open_cad-A_ld14)/(2*math.pi*FW[2]) and abs(SKSEC-SKSEC0)<=.01*SKSEC0 and FSG>=.5)
 # Lid switches: each hangs inside the lid over the pack; gaps to the battery top, the Tamiya pair and the bay board modules.
 lid_switches={}
@@ -2224,17 +2330,20 @@ print('sensors',round(time.time()-T0),'s',flush=True)
 # Perimeter rod intrusion: a Ø3 rod pushed radially inward every 0.5 deg at heights z 19..ZB1+0.5 (ZR). The first contact must be the bumper
 # (sensed) or the fixed rear shell within 13.6 mm (7 mm to the R152.5 shell; 13.5 mm to the backer flange in the slot behind the bumper end);
 # behind the bumper span (|az| > 90) the round lid's rim, flush with the rear shell (R_RS), counts as part of that rigid outline,
-# unless the rod is already inside the camera image (lens-face apex: the smallest view at the skin) where it crosses the skin.
+# unless the rod crosses the skin inside the camera window (task F): those rows reach the camera through the window unsensed and are the
+# window's residual, listed in camera_window (objects that fit through the window opening).
 CP=Caster(SOLID,rmin=95.)
 def in_view(p):   # point inside the camera frustum
     d=p[0]-CAMO.x;return d>.5 and abs(p[1])<=th*d and abs(p[2]-CAMO.z)<=tv*d
+def in_win_p(p):   # point inside the camera window cutter (the window opening and its flare)
+    b,tp=win_z(p[0]);return abs(p[1])<=win_hw(p[0]) and b<=p[2]<=tp
 ZR=[19,21,23,26,29,32,36,40,45,50]+[round(z-DZ,2) for z in (100,108,112,114,115.5,116.5,117.5,118.5,119.5,120.5,121.5,123,125,128,132,136,139,140.5,141.5)]   # fine steps around the camera notch top (they follow it down)
 rod_rows=[];rod_bad=[];rod_cam=[]
 for z in ZR:
     for a in np.arange(-180,180,.5):
         d_,prt=rod_probe(CP,float(a),z)
         c,s_=math.cos(math.radians(a)),math.sin(math.radians(a));n=(-s_,c)
-        vis=any(in_view((R_SKIN*c+lo*n[0],R_SKIN*s_+lo*n[1],z+dz)) for lo,dz in ROD)
+        vis=any(in_view((R_SKIN*c+lo*n[0],R_SKIN*s_+lo*n[1],z+dz)) or in_win_p((R_SKIN*c+lo*n[0],R_SKIN*s_+lo*n[1],z+dz)) for lo,dz in ROD)
         kind='bumper' if prt.startswith(('P_bumper','bumper_foam')) else ('rear shell' if prt.startswith(('P_rear_shell','rear_shell_dowel')) or (prt in LID_IDS and abs(a)>90) else 'other')
         ok=kind=='bumper' or (kind=='rear shell' and d_<=13.6)
         if not ok:(rod_cam if vis else rod_bad).append(dict(az=float(a),z=z,intrusion_mm=d_,first_contact=prt))
@@ -2249,8 +2358,11 @@ def runs(lst):   # compress az runs
 perim=dict(rod='Ø3 flat-ended rod (9 ray samples), radial, every 0.5 deg',heights_mm=ZR,rule='first contact P_bumper_*/bumper_foam_* (sensed) or P_rear_shell_* (or the flush round-lid rim behind the bumper span, |az| > 90) within 13.6 mm',
     max_intrusion_bumper_mm=max(r[2] for r in rod_rows if r[3].startswith(('P_bumper','bumper_foam'))),
     max_intrusion_rear_shell_mm=max([r[2] for r in rod_rows if r[3].startswith('P_rear_shell')],default=0),
-    failures=runs(rod_bad),inside_camera_view_not_bumper_sensed=runs(rod_cam))
+    failures=runs(rod_bad),through_camera_window_not_bumper_sensed=runs(rod_cam))
 perim['ok']=not rod_bad
+perim['lid_seam_relief']=dict(kind='pocket in the lid underside (the lid stays closed from above)',x_from_mm=LID_SEAM_RELIEF[0],half_width_mm=LID_SEAM_RELIEF[1],depth_mm=LID_SEAM_RELIEF[2],
+    ceiling_z_mm=ZLID+LID_SEAM_RELIEF[2],bumper_top_z_mm=ZB1,rod_top_at_highest_test_height_mm=max(ZR)+1.5,seam_backer_front_x_mm=round(XSTEP,2),seam_backer_front_x_at_full_travel_mm=round(XSTEP+BT*ft[0],2),
+    note='task I: the lid is closed over the front bay; over the bumper seam its underside is lifted by this pocket, so a rod pushed into the seam meets the sensed seam backer (and pushes it to its stop) before the fixed lid rim')
 print('rod scan',round(time.time()-T0),'s',flush=True)
 
 # Spin sweep: an object fixed in the world at radius r_o (inside the skin circle, outside the rear shell) is carried round the
@@ -2266,7 +2378,7 @@ def secs(ids,z):   # plan section segments (x0, y0, x1, y1) of each part's mesh 
 def inside(S,p):   # even-odd test against closed section segments
     x0,y0,x1,y1=S.T;c=((y0>p[1])!=(y1>p[1]))&(p[0]<(x1-x0)*(p[1]-y0)/np.where(y1-y0==0,1e-12,y1-y0)+x0);return bool(c.sum()%2)
 SW_IDS=['P_bumper_left','P_bumper_right','bumper_foam_left','bumper_foam_right','P_rear_shell_left','P_rear_shell_right']
-SPIN_Z=[30,50,70,ZHL]   # z 30/60/100/130 before L2 (top 141); now top ZB1
+SPIN_Z=[30,50,70,CH,ZHL]   # z 30/60/100/130 before L2 (top 141); now top ZB1; task F adds the camera axis height (window band)
 SPIN_RO=[152.8,153.5,154.5,155.5,156.,157.,158.,round(R_SKIN-.2,2)]
 spin=[]
 for z in SPIN_Z:
@@ -2300,15 +2412,16 @@ for z in SPIN_Z:
                     v=d*tdir;slip=v-(v@nn)*nn;slip=slip/np.linalg.norm(slip) if np.linalg.norm(slip)>1e-9 else slip
                     mu=.5 if abs(a)<AZF else .2;a0=float(-nn@tr);a1=float(slip@tr);along=a0+mu*a1
                     muc=round(-a0/a1,2) if a0>0 and a1<0 else (9. if a0>0 else 0.)
-                    notch=abs(abs(a)-AZC)<2. and z>ZNO   # the radial end face of the full-height arc at the camera notch edge
+                    pf=polar(ro,a);notch=abs(a)<AZW+1. and abs(pf[1])<=win_hw(pf[0])+.5 and win_z(pf[0])[0]-.5<=z<=win_z(pf[0])[1]+.5   # a camera window edge face (task F): it must be sensed like any other face
                     land=abs(a)<3. and ro<R_SH-WALL+1.2+.05   # the 1.2 mm radial land left at the seam end under the lead-in ramp (thinnest printable wall)
-                    rec.update(mu=mu,along_travel=round(along,3),along_travel_frictionless=round(a0,3),mu_crit=muc,camera_notch_edge=notch,seam_end_land=land,
+                    rec.update(mu=mu,along_travel=round(along,3),along_travel_frictionless=round(a0,3),mu_crit=muc,camera_window_edge=notch,seam_end_land=land,
                         verdict='moves the half (sensed)' if along>=.05 else ('friction-limited (unsensed at mu %.1f)'%mu if a0>0 else 'rigid snag'))
                 spin.append(rec)
-snags=[r for r in spin if not r['verdict'].endswith('(sensed)') and not r.get('camera_notch_edge') and not r.get('seam_end_land')]
+snags=[r for r in spin if not r['verdict'].endswith('(sensed)') and not r.get('seam_end_land')]
 land_snags=[r for r in spin if not r['verdict'].endswith('(sensed)') and r.get('seam_end_land')]
 limited=[r for r in spin if r['verdict'].startswith('friction-limited')]
-notch_snags=[r for r in spin if not r['verdict'].endswith('(sensed)') and r.get('camera_notch_edge')]
+notch_snags=[r for r in spin if not r['verdict'].endswith('(sensed)') and r.get('camera_window_edge')]
+win_faces=[r for r in spin if r.get('camera_window_edge')]
 # Pressed spin at the bumper end: an object at r_o (inside the skin, near the rear-shell radius) carried round by a spin in both directions.
 # The bumper's outer radius at each azimuth and travel comes from rays cast at the shifted half; the half takes the smallest travel that
 # keeps its skin at r_o. Pass: the first rigid contact is the bumper at its 5 mm stop (switch made) or there is no rigid contact at all;
@@ -2333,10 +2446,10 @@ for z in SPIN_Z:
                 res['max_travel_mm']=max(res['max_travel_mm'],sreq)
                 if RS_[ia]>ro+1e-9:res.update(verdict='fixed shell contact with the switch made' if sreq>=2.0 else 'fixed shell contact, switch open (unsensed)',az=float(AZS[ia]),travel_mm=sreq);break
             res['ok']=not res['verdict'].endswith('(unsensed)');pressed.append(res)
-spin_sweep=dict(objects_r_mm=SPIN_RO,heights_mm=SPIN_Z,first_faces=spin,rigid_snags=snags,friction_limited=limited,camera_notch_edge_snags=notch_snags,seam_end_land_snags=land_snags,
+spin_sweep=dict(objects_r_mm=SPIN_RO,heights_mm=SPIN_Z,first_faces=spin,rigid_snags=snags,friction_limited=limited,camera_window_edge_faces=len(win_faces),camera_window_edge_snags=notch_snags,seam_end_land_snags=land_snags,
     seam_end_land_note=f'Residual: an object thinner than the {2*G:g} mm seam that sits {R_SKIN-(R_SH-WALL+1.2):.1f}-{R_SKIN-(R_SH-WALL):.1f} mm inside the skin (r {R_SH-WALL:.1f}-{R_SH-WALL+1.2:.1f}) meets the 1.2 mm radial land under the seam-end ramp when the robot spins: unsensed. Thinner land would not print (1.2 mm gate); listed in summary.residual_unsensed.',
     pressed_spin_at_bumper_end=pressed,pressed_spin_ok=all(r['ok'] for r in pressed),ok=not snags and all(r['ok'] for r in pressed),
-    verdict_rule='sensed only if the contact force (normal plus object friction mu along the slip) has a component >= 0.05 along the half travel; friction-limited contacts count as failures. The camera-notch edge faces (z above the notch, az ±AZC) are listed separately: the camera-view rule fixes them (user decision).',
+    verdict_rule='sensed only if the contact force (normal plus object friction mu along the slip) has a component >= 0.05 along the half travel; friction-limited contacts count as failures. The camera window edge faces (task F) are flagged camera_window_edge and must be sensed like any other face (their 62 deg flare gives the push along the travel).',
     planar_play='pressed spin: the half skin is taken from its most outward planar-play pose at every travel',
     controller_rule=f'A spin with a bumper pressed must stop (or reverse) before the pressed contact passes az ±90 deg; do not start a spin with an object within {R_SKIN-R_RS:.1f} mm outside the rear shell (r < {R_SKIN}) behind the axle.',
     note=f'First face met by an object fixed in the world while the robot spins, starting from the free band behind the robot (r {R_RS}..{R_SKIN}) and from the seam gap. Object friction mu 0.5 on the foam (az < 70), 0.2 on the PTFE-taped skin (az >= 70). '
@@ -2403,30 +2516,38 @@ def onset(c,slope=0.):return g*((AX-c[0])*math.cos(math.radians(slope))-c[2]*mat
 sens={}
 for name,rr in [('all printed parts fill 1.0',printed(1.0)+bought()),('battery 10 % lighter',printed()+bought(bat=.9)),('Jetson 30 % lighter',printed()+bought(jet=.7)),
                 ('+50 g at x=+100, z=60',printed()+bought(extra=[('extra',.05,[100,0,60])])),('fill 1.0 and battery 10 % lighter',printed(1.0)+bought(bat=.9))]:
-    m_,c_=com_of(rr);sens[name]=dict(com_x_mm=round(c_[0],2),forward_pitch_onset_m_s2=round(onset(c_),2))
+    m_,c_=com_of(rr);sens[name]=dict(com_x_mm=round(c_[0],2),forward_pitch_onset_m_s2=round(onset(c_),2),forward_pitch_onset_5deg_downhill_m_s2=round(onset(c_,5),2))
 _BH=[r for r in recs if r['item'] in ('P_bumper_left','P_bumper_right')];BHX=sum(r['mass_kg']*r['position_mm'][0] for r in _BH)/sum(r['mass_kg'] for r in _BH)
 com=dict(total_mass_kg=round(MT,3),body_mass_without_wheels_and_caster_ball_kg=round(MT-.07-.068,3),printed_mass_kg=round(sum(r['mass_kg'] for r in recs if 'fill' in r),3),com_mm=[round(v,1) for v in COMv],
-    com_x_limit_mm=-15,com_x_limit_source='simulator sync guard: COM_x <= -15 mm',com_x_sensitivity_limit_mm=-14,forward_pitch_onset_min_m_s2=2.0,
+    com_x_limit_mm=-12,com_x_sensitivity_limit_mm=-10,downhill_pitch_onset_min_m_s2=round(3*PARAMS['drive_model']['setpoint_ramp_m_s2'],2),
+    com_x_limit_source='user decision 2026-10-11 (task F): nominal <= -12 mm, every sensitivity case <= -10 mm (was -15 / -14), approved for an LD14 trial at x 109 and kept for x 54; '
+                       'every case keeps its 5 deg-downhill pitch onset >= 3 × the DriveCore braking ramp (0.25 m/s2). The simulator sync guard (COM_LIMIT_M) checks the same two limits.',
     caster_load_fraction=round(cl,3),rear_caster_load_N=round(cl*MT*g,2),drive_wheel_load_N=round((1-cl)*MT*g,2),
     forward_pitch_onset_decel_m_s2=round(onset(COMv),2),forward_pitch_onset_on_5deg_downhill_m_s2=round(onset(COMv,5),2),backward_tip_onset_accel_m_s2=round(g*(COMv[0]-CX)/COMv[2],2),
-    braking_requirement=f'Keep forward braking below the pitch onset: the DriveCore torque cap already limits any active brake to about {2*PARAMS["drive_model"]["max_torque_nm"]/(PARAMS["wheel_diameter"]/2000)/(MT+2*PARAMS["drive_model"]["axle_inertia_kg_m2"]/(PARAMS["wheel_diameter"]/2000)**2):.2f} m/s2 (level onset {onset(COMv):.2f}, 5 deg downhill onset {onset(COMv,5):.2f}); use a ramped PWM brake, never a hard short, and slow down on ramps.',
+    braking_requirement=(lambda cap,wd:f'Keep forward braking below the pitch onset (level {onset(COMv):.2f}, 5 deg downhill {onset(COMv,5):.2f} m/s2 nominal; {wd:.2f} on the downhill in the '
+                        f'worst sensitivity case): DriveCore ramps every wheel setpoint, braking included, at {PARAMS["drive_model"]["setpoint_ramp_m_s2"]} m/s2 and a disarm coasts; its torque cap alone '
+                        f'would allow about {cap:.2f} m/s2, {"above" if cap>wd else "below"} that worst downhill onset, so keep the ramp in the firmware, never short-brake the motors (the driver coasts '
+                        'on disarm), and slow down on ramps.')(2*PARAMS["drive_model"]["max_torque_nm"]/(PARAMS["wheel_diameter"]/2000)/(MT+2*PARAMS["drive_model"]["axle_inertia_kg_m2"]/(PARAMS["wheel_diameter"]/2000)**2),
+                        min(x['forward_pitch_onset_5deg_downhill_m_s2'] for x in sens.values())),
     placement=dict(note='No ballast (user decision): the existing heavy parts sit as far aft as the layout allows.',
         battery=dict(centre_x_mm=BX,limit='tray rear wall flush with the rear base edge (x -124); P_base is 244 mm long on the 250 mm MK3S bed, so the base cannot grow aft'),
         jetson=dict(carrier_centre_mm=[round(v,2) for v in JC[:2]],origin_mm=list(JO),carrier_x_mm=[JPCB[0],JPCB[1]],pcb_underside_z_mm=JO[2],fan_centre_mm=[round(v,2) for v in JFAN],mounting_holes_mm=[list(h) for h in JHOLES],
-            limit=f'NVIDIA B01 STEP turned +90 deg (I/O row forward, barrel jack on the right), on two 24 mm standoff stacks from P_base (front) and two 20 mm F-F standoffs on the bay board (rear, clamping it): carrier x {JPCB[0]:g}..{JPCB[1]:g}. Its x is set by the COM sensitivity guard (every case <= -14 mm): '
-                  'with the spec position (origin x 38, carrier x -24..55) the L1 model gave COM x -15.6 and -13.4 in the +50 g-forward case (fails); origin x 30 was the most forward that passed (-14.1), origin x 25 kept 0.5 mm of margin there. '
+            limit=f'NVIDIA B01 STEP turned +90 deg (I/O row forward, barrel jack on the right), on two 24 mm standoff stacks from P_base (front) and two 20 mm F-F standoffs on the bay board (rear, clamping it): carrier x {JPCB[0]:g}..{JPCB[1]:g}. Its x was set in L1 by the COM sensitivity guard of that time (every case <= -14 mm): '
+                  'with the spec position (origin x 38, carrier x -24..55) the L1 model gave COM x -15.6 and -13.4 in the +50 g-forward case (a fail then); origin x 30 was the most forward that passed (-14.1), origin x 25 kept 0.5 mm of margin there. '
+                  'The rule now is the user\'s (task F, 2026-10-11): nominal <= -12 mm, every case <= -10 mm (com_x_limit_source); the Jetson has not moved. '
                   f'Bay board (B1): the Jetson stays at z {JO[2]:g}; its rear standoffs clamp the board, whose under-carrier modules (DRV8874 × 2, GY-521) stay <= z {UNDER_CARRIER_Z-1.5:.2f}.'),
         power_stage=f'bay board x {min(p[0] for p in BAY_OUTLINE):g}..{max(p[0] for p in BAY_OUTLINE):g} at base level under the Jetson, directly ahead of the battery tray (no room further aft); P03 turned 90 deg in the front bay (x {P03C[0]-P03S[0]/2:g}..{P03C[0]+P03S[0]/2:g}) ahead of the board\'s tongue',
-        controller_lidar_camera=f'LiDAR (spec x 20) and camera (spec x 117) positions are fixed by the sensor spec; the bumper halves ({sum(r["mass_kg"] for r in _BH):.2f} kg at x ~{BHX:.0f}) are the main forward mass'),
+        controller_lidar_camera=f'Task F: LD14 turned round, spin axis x {LX:g}, its 0.1 m blind circle inside the pressed bumper (user decision 2026-10-11, option B; COM rule relaxed to nominal <= -12 / worst <= -10 mm; the old spec x 20), camera lens face x {CAMO.x:g} in the bumper window; the bumper halves ({sum(r["mass_kg"] for r in _BH):.2f} kg at x ~{BHX:.0f}) are the main forward mass'),
     sensitivity=sens,records=recs,method='Printed: CAD volume × 1.27 g/cm3 × fill (mean wall 2V/A: 1.0 up to 3.0 mm, 0.62 from 3.6 mm = 2 × 4 perimeters × 0.45, linear in between) at the solid centroid. Bought: simulator record masses at CAD centroids (power stage and controller group spread over their parts). Steel from CAD volume. No ballast.')
 com['sensitivity_worst_com_x_mm']=max(v['com_x_mm'] for v in sens.values());com['sensitivity_worst_case']=max(sens,key=lambda k:sens[k]['com_x_mm'])
 com['sensitivity_min_forward_pitch_onset_m_s2']=min(v['forward_pitch_onset_m_s2'] for v in sens.values())
-com['placement']['jetson']['limit']+=f' Low profile (L2, Jetson position unchanged): COM x {com["com_mm"][0]:g}, worst case {com["sensitivity_worst_com_x_mm"]:g} ({com["sensitivity_worst_case"]}).'
+com['sensitivity_min_5deg_downhill_pitch_onset_m_s2']=min(v['forward_pitch_onset_5deg_downhill_m_s2'] for v in sens.values())
+com['placement']['jetson']['limit']+=f' This build: COM x {com["com_mm"][0]:g}, worst case {com["sensitivity_worst_com_x_mm"]:g} ({com["sensitivity_worst_case"]}).'
 _m0,_c0=com_of(printed(step=True)+bought());_m1,_c1=com_of(printed(step=True)+bought(extra=[('extra',.05,[100,0,60])]))
 com['fill_model_check']=dict(previous_step_rule='fill 1.0 if 2V/A <= 3.0 mm else 0.62 (step)',com_x_mm=round(_c0[0],2),total_mass_kg=round(_m0,3),forward_pitch_onset_m_s2=round(onset(_c0),2),
     worst_case_plus_50g_front_com_x_mm=round(_c1[0],2),parts_affected={r['item']:r['fill'] for r in recs if 'fill' in r and r['fill'] not in (1.0,.62)},
     note='Not part of the pass criterion: the step rule is what the previous rounds used. Under it the rear shells (mean walls just over 3.0 mm, printed with 4 perimeters, i.e. solid) drop to 62 %; weigh the printed shells to settle it.')
-com['ok']=com['com_mm'][0]<=com['com_x_limit_mm'] and com['sensitivity_worst_com_x_mm']<=com['com_x_sensitivity_limit_mm'] and com['forward_pitch_onset_decel_m_s2']>=com['forward_pitch_onset_min_m_s2']
+com['ok']=com['com_mm'][0]<=com['com_x_limit_mm'] and com['sensitivity_worst_com_x_mm']<=com['com_x_sensitivity_limit_mm'] and com['sensitivity_min_5deg_downhill_pitch_onset_m_s2']>=com['downhill_pitch_onset_min_m_s2']
 # Interlayer stress (rough, see interlayer()): impact at the hard stop at the DriveCore speed and at twice it, and a 14 N wheel-stall push,
 # hit at ZHL (11 mm under the top) and at the top rim (ZB1).
 IL_LIMIT=round(25/1.5,1)   # PETG interlayer (z) tensile strength ~25 MPa for well-fused layers, safety factor 1.5
@@ -2576,7 +2697,7 @@ BP['H12']['item']='M3 brass heat-set inserts, 3 mm long (for Ø4.0 mm holes)'
 BP['H12']['notes']=('Pressed into Ø4.0 through holes in the 4 mm P_base with a soldering iron, flush with the face the screw enters, with the plate on a flat steel backing plate: the last 1 mm of each hole stays open and takes the displaced PETG (deburr or countersink the far face afterwards). '
     'From the top for the four bay-board spacers, four battery-tray corners and the eight lid-post foot screws; from below for the three caster screws; plus one pressed flush into the top of each of the four lid posts (lid screws). Buy a pack of 50 (spares for the coupon). Follow the insert maker\'s hole size if it differs from Ø4.0.')
 BP['H13']['notes']=('Into the H12 inserts (3 mm of thread in each, validation.json blind_pilots): four M3 × 8 pan head (bay board, through the board and a 2.4 mm printed spacer), four M3 × 6 countersunk (battery tray), three M3 × 5 pan head (caster), eight M3 × 6 pan head (lid-post feet), four M3 × 6 pan head (lid, into the inserts in the post tops). '
-    'Plus four M3 × 10 socket head screws for the camera-tower feet (nuts H03).')
+    'Plus four M3 × 10 socket head screws for the camera-mount feet (nuts H03; the old camera tower holes).')
 BP['F01']['notes']=(f'Structural base, round bumper arcs, rear shell, riders, mounts, ventilated cover and the bay board\'s spacers and bearing ribs (no deck: low-profile layout) (about {com["printed_mass_kg"]} kg as modelled: solid walls ≤ 3 mm, 62 % from 3.6 mm (4 perimeters), linear between), plus the test coupon (print-parts/coupons/P_coupon.stl, about 12 g) and one failed arc (120–150 g each). '
     'User has Prusa MK3S (250 × 210 × 210 mm); every part and the coupon pass cad/check_printability.py. P_base (244 × 200 mm): no brim, skirt 1 mm or off. Arcs and shells: 4 perimeters, about 245 °C, part cooling ≤ 30 % up to the rim, then a 50–60 % fan height-range modifier for the inner top rims; brim on the arc ends.')
 FOAM_L=round(2*R_SKIN*math.radians(AZF-3)/1000,2)
@@ -2685,7 +2806,7 @@ bq={p['id']:p['quantity'] for p in BOMF['parts']}
 def mcount(code,pref=None):return sum(1 for p in parts if code in p['bom'].split('/') and (pref is None or p['id'].startswith(pref)))
 bom_rows=[dict(line='H10',item='M3 thread-forming screws (rear shell)',manifest=mcount('H10'),ordered=bq.get('H10')),
     dict(line='H12',item='M3 × 3 brass heat-set inserts',manifest=mcount('H12'),ordered=bq.get('H12')),
-    dict(line='H13',item='M3 machine screws into the inserts + camera-tower M3 × 10',manifest=mcount('H13'),ordered=bq.get('H13')),
+    dict(line='H13',item='M3 machine screws into the inserts + camera-mount M3 × 10',manifest=mcount('H13'),ordered=bq.get('H13')),
     dict(line='H11',item=f'Ø3 × {DOWEL_L:.0f} dowels',manifest=mcount('H11'),ordered=bq.get('H11')),
     dict(line='M02',item='rear ball caster',manifest=sum(1 for p in parts if p['id']=='caster_ball'),ordered=bq.get('M02')),
     dict(line='H14',item='rear clamp stacks (standoff + countersunk screw)',manifest=mcount('H14','jetson_standoff'),ordered=bq.get('H14')),
@@ -2700,7 +2821,7 @@ bom_check=dict(rows=bom_rows,text_from_cad=txt,ok=all(r['manifest']==r['ordered'
 # Robot top (L2 gate): the highest point of any part <= 160 mm; the LiDAR scan plane and the camera follow the lid down by DZ.
 _top=max(parts,key=lambda p:p['bounds'][5])
 robot_top=dict(height_mm=round(_top['bounds'][5],2),highest_part=_top['id'],limit_mm=160.0,drop_from_deck_era_lid_mm=DZ,lid_underside_z_mm=ZLID,lid_top_z_mm=ZLIDT,
-    bumper_and_rear_shell_top_z_mm=ZB1,lidar_scan_plane_z_mm=PARAMS['lidar_height'],camera_lens_axis_z_mm=PARAMS['camera_height'],camera_tower_top_bar_z_mm=[ZTB,ZTB+6])
+    bumper_and_rear_shell_top_z_mm=ZB1,lidar_scan_plane_z_mm=PARAMS['lidar_height'],camera_lens_axis_z_mm=PARAMS['camera_height'],camera_mount_crossbar_z_mm=[CBZ,CBZ+6])
 robot_top['ok']=robot_top['height_mm']<=robot_top['limit_mm']
 # Bay board (B1): the turned P03 against the bumper at full travel, the Jetson height, the under-carrier height zone and the rear-row ribs.
 # P03: every part that moves with a bumper half (ids bumper_* / P_bumper*, as pcb/extract_outline.py sweeps them) is swept through its 5 mm travel;
@@ -3040,13 +3161,13 @@ report=dict(clash_scan=dict(scope=f'all {len(SOLID)} non-wire parts pairwise (so
     ball_tracks=dict(rows=ball_tracks,ok=ball_tracks_ok),
     carrier_lead_tail_slab=dict(hits=slab_hits,note='the Jetson carrier footprint, z 54.77..57 (2.23 mm of through-hole lead tails): only the Jetson and its standoff stacks may enter it'),
     clash_scan_empty=not clashes and not fast_bad and not wire_clashes and not base_walls and not printed_gaps and not slab_hits and wire_to_wire['ok'],wire_to_wire=wire_to_wire,
-    envelope=env,envelope_max_r_mm=env['envelope_max_r_mm'],bumper_travel=bumper,perimeter_rod_intrusion=perim,spin_sweep=spin_sweep,rear_shell=rsr,camera_fov=camera_fov,cliff_fov=cliff_fov,lidar_mount=lidar_check,
+    envelope=env,envelope_max_r_mm=env['envelope_max_r_mm'],bumper_travel=bumper,perimeter_rod_intrusion=perim,spin_sweep=spin_sweep,rear_shell=rsr,camera_fov=camera_fov,camera_window=camera_window,cliff_fov=cliff_fov,lidar_mount=lidar_check,
     caster_layout=caster_layout,com_estimate=com,threshold_crossing=threshold,jetson_cooling=jetson_cooling,robot_top=robot_top,
     lid_switches=dict(rows=lid_switches,ok=lid_switches_ok,rule='switch body bottom >= 10 mm over the battery top (z 64); >= 2 mm to the battery, the Tamiya pair, the straps and the bay board modules'),
     interlayer_stress=interlayer_check,bom_consistency=bom_check,all_solids_valid=all(shapes[p['id']].isValid() for p in parts),test_coupon=COUPON,
     limitations=['Electronic envelopes and some mounting patterns remain assumptions; this is not a print-release or wiring-release check.',
                  'Friction-lock, Hertz, interlayer-stress, spin-sweep, coast and threshold-crossing results are quasi-static models; physical bump, tipping, stopping-distance, threshold and proof tests remain pending.',
-                 'Inside the camera notch (|az| < AZC) the bumper top follows the lower image edge (lens-face apex) with 4.4 mm; an object there above the bumper top is inside the camera image but NOT sensed by a switch (summary.camera_notch). User decision.',
+                 'The camera window (task F) is open: an object small enough to pass it (about the size of the opening at the inner wall, camera_window.at_inner_wall) can reach the lens without moving a bumper half (camera_window.residual); anything larger trips the bumper first.',
                  'Spinning in place next to an unmapped edge 104-113 mm from the axle can drop a wheel before a cliff sensor trips (caster_layout.spin_cliff_coverage). User decision (controller rule or extra sensor).',
                  'Steps of 8 and 10 mm fail (threshold_crossing): the DriveCore torque cap and the 25.4 mm caster ball. User decision.'])
 report.update(p03_clear_of_bumper_travel=p03_clear,p03_bumper_travel_min_gap_mm=p03_gap,jetson_carrier_bottom_z=jetson_carrier_bottom_z,bay_under_carrier_max_top_z=bay_uc_max_top,bay_ribs_under_rear_row=bay_ribs_ok,
@@ -3060,32 +3181,31 @@ pr=json.loads((ROOT/'cad'/'printability.json').read_text())
 report['printability']=dict(all_pass=pr['all_pass'] and prc['all_pass'],parts_checked=pr['parts_checked'],parts_failed=pr['parts_failed'],details='cad/printability.json',coupons=dict(checked=prc['parts_checked'],failed=prc['parts_failed'],details='cad/printability-coupons.json'),
     slicer='P_base: no brim, skirt 1 mm or off; rear shells and bumper halves: 4 perimeters, ~245 °C, cooling <= 30 %, 5 mm mouse ears at the arc ends.')
 BH_=bumper['halves']
-# Camera notch, measured on the built half: for every 0.5 deg of azimuth, the highest point of the outer shell surface (r >= R_SH - 1).
-SV_=MESH['P_bumper_left'];SV_=SV_[np.hypot(SV_[:,0],SV_[:,1])>=R_SH-1.];AZv=np.degrees(np.arctan2(SV_[:,1],SV_[:,0]))
-NPROF=[[float(a0),round(float(SV_[(AZv>=a0)&(AZv<a0+.5),2].max()),1)] for a0 in np.arange(0,20,.5) if ((AZv>=a0)&(AZv<a0+.5)).any()]
-NHW=min([a for a,z in NPROF if z>=ZB1-.5],default=None)
-notch_rows=perim['inside_camera_view_not_bumper_sensed']
-camera_notch=dict(sensed=False,user_decision_required=True,half_width_deg_at_skin=NHW,top_z_profile_az_deg_z_mm=NPROF,
-    unsensed_rod_rows=notch_rows,spin_snags_at_notch_edge=len(notch_snags),
-    issue='The camera-view rule (nothing in the lens lower image edge) and the full-arc sensing rule conflict: inside |az| < half_width the bumper stops at the notch top, so a narrow object above it (a chair rung, a shelf lip) is only seen by the camera, and a spinning robot meets the notch-edge faces with friction-limited drive.',
-    options=['mount the camera guard on the bumper halves (split at the seam) so a guard hit moves a half','add a third switch behind a floating guard','accept and rely on the camera / LiDAR for the band'])
+# Camera window (task F): the rods and seam rods that enter it (they reach the camera unsensed: the residual) and its edge faces in the spin sweep.
+wrods=perim['through_camera_window_not_bumper_sensed']
+camera_window.update(rods_through_window=wrods,rod_rows_through_window=len(wrods),rod_first_contacts=sorted({c for r in wrods for c in r['contacts']}),
+    seam_rod_heights_without_contact=sorted({r['z'] for r in bumper['seam_intrusion']['rows'] if r['first_contact']=='none'}),
+    spin_edge_faces=len(win_faces),spin_edge_snags=notch_snags,
+    widest_rod_through_window_az_deg=round(max([abs(r['az_from']) for r in wrods]+[abs(r['az_to']) for r in wrods],default=0.),1))
+camera_window['ok']=camera_window['ok'] and not notch_snags
 report['summary']=dict(envelope_ok=env['ok'],envelope_worst_case_r_mm=env['worst_case_r_mm'],clash_scan_empty=report['clash_scan_empty'],arc_sensed_to_deg=min(BH_[s]['arc_sensed_to_deg'] for s in BH_),
     friction_lock=any(BH_[s]['friction_lock'] for s in BH_),friction_margin_ok=bumper['friction_lock']['margin_ok'],hertz_ok=bumper['hertz']['ok'],preload_ok=bumper['preload_balance']['ok'],
     tilt_under_load_ok=bumper['tilt_under_load']['ok'],seam_ok=bumper['seam']['ok'],seam_min_gap_with_play_mm=bumper['seam']['with_planar_play']['min_gap_mm'],seam_intrusion_ok=bumper['seam_intrusion']['ok'],
     seam_max_intrusion_before_trip_mm=bumper['seam_intrusion']['max_intrusion_before_trip_mm'],switch_ok=bumper['switch']['operates_ok'],leaf_ok=bumper['leaf_spring']['ok'],leaf_axial_ok=bumper['leaf_spring']['axial_ok'],
     leaf_nose_contact_ok=bumper['leaf_spring']['nose_contact']['ok'],
     perimeter_rod_ok=perim['ok'],spin_sweep_ok=spin_sweep['ok'],pressed_spin_ok=spin_sweep['pressed_spin_ok'],rear_shell_dowels_ok=rsr['dowels_ok'],bumper_end_gap_ok=rsr['bumper_end_gap_ok'],
-    camera_fov_ok=camera_fov['ok'],cliff_fov_ok=cliff_fov['ok'],lidar_band_ok=lidar_check['scan_band_ok'],jetson_cooling_ok=jetson_cooling['ok'],fan_bypass_fraction_of_grille=jetson_cooling['fan_skirt']['bypass_fraction_of_grille_open_area'],lid_switches_ok=lid_switches_ok,
+    camera_fov_ok=camera_fov['ok'],cliff_fov_ok=cliff_fov['ok'],lidar_band_ok=lidar_check['scan_band_ok'],lidar_min_range_ok=lidar_check['min_range']['ok'],lidar_front_gap_ok=lidar_check['front_gap']['ok'],lidar_scan_band_vertical_ok=lidar_check['scan_band_vertical']['ok'],jetson_cooling_ok=jetson_cooling['ok'],fan_bypass_fraction_of_grille=jetson_cooling['fan_skirt']['bypass_fraction_of_grille_open_area'],lid_switches_ok=lid_switches_ok,
     robot_top_ok=robot_top['ok'],robot_height_mm=robot_top['height_mm'],lidar_scan_plane_z_mm=robot_top['lidar_scan_plane_z_mm'],camera_lens_axis_z_mm=robot_top['camera_lens_axis_z_mm'],caster_layout_ok=caster_layout['ok'],com_ok=com['ok'],
     printability_ok=pr['all_pass'] and prc['all_pass'],screw_engagement_ok=pilot_ok,ball_tracks_ok=ball_tracks_ok,bom_consistency_ok=bom_check['ok'],interlayer_ok_at_drivecore_speed=interlayer_check['ok_at_drivecore_speed'],
     threshold_crossing={k:{d:v[d]['verdict'] for d in ('forward','reverse')} for k,v in threshold.items() if k.startswith('step')},threshold_capability_mm=threshold['capability_mm'],
-    camera_notch=dict(sensed=False,user_decision_required=True,half_width_deg_at_skin=NHW,unsensed_rod_rows=len(notch_rows),spin_snags_at_notch_edge=len(notch_snags)),
-    residual_unsensed=dict(seam_end_land_spin_snags=len(land_snags),seam_thin_object_intrusion_before_trip_mm=bumper['seam_intrusion']['max_intrusion_before_trip_mm'],note='reported, not hidden: see spin_sweep.seam_end_land_note and bumper_travel.seam_intrusion'),
+    camera_window_ok=camera_window['ok'],camera_window=dict(width_mm=camera_window['at_skin']['width_mm'],z_mm=camera_window['at_skin']['z_mm'],lens_recess_mm=camera_window['lens_recess_behind_skin_mm'],
+        min_gap_camera_to_moving_halves_mm=camera_window['min_gap_camera_to_moving_halves_mm'],spin_edge_snags=len(notch_snags)),
+    residual_unsensed=dict(seam_end_land_spin_snags=len(land_snags),seam_thin_object_intrusion_before_trip_mm=bumper['seam_intrusion']['max_intrusion_before_trip_mm'],
+        camera_window_rod_rows=len(wrods),camera_window_small_objects=camera_window['residual'],note='reported, not hidden: see spin_sweep.seam_end_land_note, bumper_travel.seam_intrusion and camera_window'),
     spin_cliff_coverage=dict(user_decision_required=True,worst_band_deg=max(max(r['unsafe_start_heading_band_deg'].values()) for r in caster_layout['spin_cliff_coverage']['rows'])),
     bay_ok=bay_ok,p03_clear_of_bumper_travel=p03_clear,p03_bumper_travel_min_gap_mm=p03_gap,jetson_carrier_bottom_z=jetson_carrier_bottom_z,bay_under_carrier_max_top_z=bay_uc_max_top,bay_ribs_under_rear_row=bay_ribs_ok,
     bay_rear_connectors_supported=bay_rear_ok,pico_usb_insert_path_clear=pico_usb_ok,under_carrier_cable_paths_clear=stubs_ok,motor_joints_serviceable=motor_joints_ok,bay_edge_connectors_supported=edge_ok,
     plug_mating_sweeps_clear=sweeps_ok,tray_removal_clear=tray_ok,wire_to_wire_ok=wire_to_wire['ok'],holddown_lead_in_ok=HD_SPRING['lead_in_ok'])
-report['camera_notch']=camera_notch
 JD=lambda o:o.item() if hasattr(o,'item') else str(o)   # numpy scalars
 (ROOT/'cad'/'validation.json').write_text(json.dumps(report,indent=2,default=JD))
 # Mass properties for the simulator sync: records under the simulator's item names (wheels and caster ball are separate bodies there), at
@@ -3128,7 +3248,7 @@ mb=[r for r in mp if not r['separate_body']];MB=sum(r['mass_kg'] for r in mb);BC
     body_inertia_kg_m2=[[round(float(v)*1e-6,6) for v in row] for row in IB],body_inertia_about='body_com_mm (the inertia set was built from the same records: centre '+str([round(float(v),2) for v in cI])+' mm)',
     caster_x_mm=CX,wheel_x_mm=AX,records=mp,
     sync_note='Scripts/sync_robot_data.py should take its records from here (CAD solid centroids, no ballast, fill per part), keep Wheels / Caster ball as their own bodies, set drive_axle_x_m = wheel_x / 1000 and caster_x_m = caster_x / 1000 from parameters.json, and use body_inertia_kg_m2 instead of a uniform box.'),indent=2,default=JD))
-CR_=[CLIFF[2],CLIFF[3]];PARAMS['bumper_notch']=dict(half_width_deg_at_skin=NHW,top_z_profile_az_deg_z_mm=NPROF,design_inputs=NOTCH_DESIGN,note='measured on the built P_bumper_left outer shell (mirror for the right half); for |az| below half_width_deg_at_skin the bumper top follows the profile, above it the arc is full height (z '+f'{ZB1:g}'+')')
+CR_=[CLIFF[2],CLIFF[3]];PARAMS['camera_window']=dict(lens_face_x_mm=CAMO.x,axis_z_mm=CH,at_skin=camera_window['at_skin'],at_inner_wall=camera_window['at_inner_wall'],lens_recess_mm=camera_window['lens_recess_behind_skin_mm'],note='task F: the camera looks out through a window cut across the bumper seam (half in each half); the bumper is full height (z '+f'{ZB1:g}'+') everywhere else')
 PARAMS.update(com_estimate_mm=com['com_mm'],com_estimate_note='total COM including the wheels and the caster ball; body_com_mm excludes them (the simulator Body)',body_com_mm=BCOM,
     total_mass_estimate_kg=com['total_mass_kg'],body_mass_kg=round(MB,3),body_inertia_kg_m2=[[round(float(v)*1e-6,6) for v in row] for row in IB],
     skin_z=[26,ZFT],skin_az_deg=[round(math.degrees(math.asin(G/R_SKIN)),2),AZF],skin_note=f'EVA foam skin R{R_SKIN} for az ~4..70 (seam-end ramps from az {math.degrees(math.asin(G/R_SKIN)):.2f}); bare PTFE-taped shell R{R_SH} for 70..{AZT}, tapering to R{R_TIP} at 90',
@@ -3146,7 +3266,7 @@ PARAMS.update(com_estimate_mm=com['com_mm'],com_estimate_note='total COM includi
     sim_contract=dict(drive_axle_x_m=AX/1000,caster_x_m=CX/1000,caster_ball_centre_m=[CX/1000,0,RB/1000],wheel_offset_cm=[AX/10,round(PARAMS['wheel_track']/20,1),4.0],
         cliff_rays_m=[[x/1000,y/1000,CZ/1000] for x,y in CLIFF],cliff_order='FL, FR, RL, RR',
         collider=dict(shape='round: vertical cylinder sectors about (0,0)',front_arcs_r_m=round(R_SKIN/1000,4),front_arcs_az_deg=[-90,90],rear_shell_r_m=R_RS/1000,rear_shell_az_deg=[RS_A0,360-RS_A0],z_m=[ZB0/1000,ZB1/1000]),
-        bumpers=dict(left_switch='az 0..+90 (left half)',right_switch='az 0..-90 (right half)',seam_mm=2*G,camera_notch='see bumper_notch: no bumper above the notch top profile for |az| < half_width_deg_at_skin',zones_note='a centre hit can trip either or both switches'),
+        bumpers=dict(left_switch='az 0..+90 (left half)',right_switch='az 0..-90 (right half)',seam_mm=2*G,camera_window='see camera_window: no bumper surface inside the camera window round the lens (|az| < at_skin.half_width_deg, z at_skin.z_mm); full height elsewhere',zones_note='a centre hit can trip either or both switches'),
         reverse_speed_limit_m_s=PARAMS['reverse_speed_limit_m_s'],infrared_light_bump_sensors=0,mass_properties='cad/mass-properties.json (records, body COM, body inertia)',
         sync_guard='replace the wheel_x == 42 guard with the values here; drop the old bought-part positions'))
 PARAMS['bay_board']=dict(outline_mm=BAY_OUTLINE,z_bottom_mm=ZBAY,thickness_mm=BAY_T,z_top_mm=ZBAY_TOP,mounts_mm=BAY_MOUNTS,clamps_mm=BAY_CLAMPS,carrier_x_mm=CARRIER_X,under_carrier_z_mm=UNDER_CARRIER_Z,

@@ -184,11 +184,6 @@
         "intersection_mm3": 43.17
       },
       {
-        "a": "camera_board",
-        "b": "J17_C",
-        "intersection_mm3": 22.0
-      },
-      {
         "a": "lidar_adapter",
         "b": "J27_socket",
         "intersection_mm3": 48.0
@@ -467,23 +462,23 @@
       "fits_with_default_skirt": true
     },
     {
-      "part": "P_camera_tower",
+      "part": "P_camera_mount",
       "solid_valid": true,
       "size_mm": [
-        18.0,
+        18.01,
         118.0,
-        58.51
+        56.01
       ],
       "fits_mk3s": true,
       "fits_with_default_skirt": true
     },
     {
-      "part": "P_camera_guard",
+      "part": "P_camera_holder",
       "solid_valid": true,
       "size_mm": [
-        26.13,
-        40.0,
-        34.01
+        27.21,
+        31.0,
+        31.0
       ],
       "fits_mk3s": true,
       "fits_with_default_skirt": true
@@ -492,7 +487,7 @@
       "part": "P_lidar_tray",
       "solid_valid": true,
       "size_mm": [
-        119.06,
+        145.36,
         86.06,
         23.85
       ],
@@ -514,9 +509,9 @@
       "part": "P_bumper_left",
       "solid_valid": true,
       "size_mm": [
-        157.2,
+        157.21,
         150.57,
-        80.51
+        80.53
       ],
       "fits_mk3s": true,
       "fits_with_default_skirt": true
@@ -558,9 +553,9 @@
       "part": "P_bumper_right",
       "solid_valid": true,
       "size_mm": [
-        157.2,
+        157.21,
         158.06,
-        80.51
+        80.53
       ],
       "fits_mk3s": true,
       "fits_with_default_skirt": true
@@ -646,7 +641,7 @@
       "part": "P_lid_front",
       "solid_valid": true,
       "size_mm": [
-        150.42,
+        153.14,
         228.43,
         7.32
       ],
@@ -1103,13 +1098,13 @@
       },
       {
         "part": "lidar_tray_screw_2",
-        "min_gap_mm": 69.56,
+        "min_gap_mm": 55.72,
         "nearest": "P_bumper_right",
         "required_mm": 0.5
       },
       {
         "part": "lidar_tray_screw_3",
-        "min_gap_mm": 69.56,
+        "min_gap_mm": 55.72,
         "nearest": "P_bumper_left",
         "required_mm": 0.5
       },
@@ -2079,7 +2074,7 @@
           "W17",
           "W19"
         ],
-        "min_gap_mm": 2.301,
+        "min_gap_mm": 4.247,
         "overlap_mm3": 0.0
       },
       {
@@ -2188,7 +2183,7 @@
                 "gap_mm": 4.7
               },
               {
-                "part": "P_camera_tower",
+                "part": "P_camera_mount",
                 "gap_mm": 7.96
               },
               {
@@ -2221,12 +2216,12 @@
                 "gap_mm": 4.08
               },
               {
-                "part": "P_camera_tower",
-                "gap_mm": 8.9
+                "part": "camera_lens",
+                "gap_mm": 8.06
               },
               {
-                "part": "bumper_switch_screw_left_0",
-                "gap_mm": 9.26
+                "part": "P_camera_mount",
+                "gap_mm": 8.9
               }
             ],
             "wire_min_gap_mm": 8.54,
@@ -2254,12 +2249,12 @@
                 "gap_mm": 3.47
               },
               {
-                "part": "P_cliff_mount_3",
-                "gap_mm": 8.48
+                "part": "camera_lens",
+                "gap_mm": 6.85
               },
               {
-                "part": "p03_regulator",
-                "gap_mm": 9.43
+                "part": "P_cliff_mount_3",
+                "gap_mm": 8.48
               }
             ],
             "wire_min_gap_mm": 9.17,
@@ -2287,12 +2282,12 @@
                 "gap_mm": 2.86
               },
               {
-                "part": "P_cliff_mount_3",
-                "gap_mm": 7.24
+                "part": "camera_lens",
+                "gap_mm": 5.65
               },
               {
-                "part": "p03_regulator",
-                "gap_mm": 8.68
+                "part": "P_cliff_mount_3",
+                "gap_mm": 7.24
               }
             ],
             "wire_min_gap_mm": 9.79,
@@ -2320,12 +2315,12 @@
                 "gap_mm": 2.14
               },
               {
-                "part": "P_cliff_mount_3",
-                "gap_mm": 5.99
+                "part": "camera_lens",
+                "gap_mm": 4.47
               },
               {
-                "part": "p03_regulator",
-                "gap_mm": 8.0
+                "part": "P_cliff_mount_3",
+                "gap_mm": 5.99
               }
             ],
             "wire_min_gap_mm": 10.42,
@@ -2352,162 +2347,162 @@
           "bumper_pin_left_A": {
             "s0.0": {
               "min_gap_mm": 12.0,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 53.47
             },
             "s1.25": {
               "min_gap_mm": 12.62,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 53.34
             },
             "s2.5": {
               "min_gap_mm": 13.25,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 52.94
             },
             "s3.75": {
               "min_gap_mm": 13.88,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 52.05
             },
             "s5.0": {
               "min_gap_mm": 14.5,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 51.16
             }
           },
           "bumper_ball_left_A0": {
             "s0.0": {
               "min_gap_mm": 20.24,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 20.55,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 20.86,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 21.17,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 21.49,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
           "bumper_race_left_A0": {
             "s0.0": {
               "min_gap_mm": 18.27,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 18.88,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 19.51,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 20.13,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 20.76,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
           "bumper_ball_left_A1": {
             "s0.0": {
               "min_gap_mm": 7.76,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 8.08,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 8.39,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 8.7,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 9.01,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
           "bumper_race_left_A1": {
             "s0.0": {
               "min_gap_mm": 5.8,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 6.43,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 7.05,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 7.67,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 8.3,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
           "P_bumper_rider_left_A": {
             "s0.0": {
               "min_gap_mm": 3.81,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 4.44,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 5.06,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 5.69,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 6.31,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
@@ -2902,17 +2897,17 @@
             },
             "s2.5": {
               "min_gap_mm": 16.11,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 16.5,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 16.9,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
@@ -3027,12 +3022,12 @@
                 "gap_mm": 4.7
               },
               {
-                "part": "P_camera_tower",
-                "gap_mm": 7.96
+                "part": "camera_lens",
+                "gap_mm": 6.12
               },
               {
-                "part": "bumper_switch_screw_right_0",
-                "gap_mm": 8.63
+                "part": "P_camera_mount",
+                "gap_mm": 7.96
               }
             ],
             "wire_min_gap_mm": 7.92,
@@ -3060,12 +3055,12 @@
                 "gap_mm": 4.08
               },
               {
-                "part": "P_camera_tower",
-                "gap_mm": 8.9
+                "part": "camera_lens",
+                "gap_mm": 6.1
               },
               {
-                "part": "bumper_switch_screw_right_0",
-                "gap_mm": 9.26
+                "part": "camera_board",
+                "gap_mm": 8.66
               }
             ],
             "wire_min_gap_mm": 8.54,
@@ -3093,12 +3088,12 @@
                 "gap_mm": 3.47
               },
               {
-                "part": "P_cliff_mount_4",
-                "gap_mm": 8.48
+                "part": "camera_lens",
+                "gap_mm": 6.1
               },
               {
-                "part": "p03_regulator",
-                "gap_mm": 9.43
+                "part": "camera_board",
+                "gap_mm": 7.58
               }
             ],
             "wire_min_gap_mm": 9.17,
@@ -3126,12 +3121,12 @@
                 "gap_mm": 2.86
               },
               {
-                "part": "P_cliff_mount_4",
-                "gap_mm": 7.24
+                "part": "camera_lens",
+                "gap_mm": 5.65
               },
               {
-                "part": "p03_regulator",
-                "gap_mm": 8.68
+                "part": "camera_board",
+                "gap_mm": 6.5
               }
             ],
             "wire_min_gap_mm": 9.79,
@@ -3159,12 +3154,12 @@
                 "gap_mm": 2.14
               },
               {
-                "part": "P_cliff_mount_4",
-                "gap_mm": 5.99
+                "part": "camera_lens",
+                "gap_mm": 4.47
               },
               {
-                "part": "p03_regulator",
-                "gap_mm": 8.0
+                "part": "camera_board",
+                "gap_mm": 5.43
               }
             ],
             "wire_min_gap_mm": 10.42,
@@ -3191,162 +3186,162 @@
           "bumper_pin_right_A": {
             "s0.0": {
               "min_gap_mm": 12.0,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 44.18
             },
             "s1.25": {
               "min_gap_mm": 12.62,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 44.65
             },
             "s2.5": {
               "min_gap_mm": 13.25,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 45.15
             },
             "s3.75": {
               "min_gap_mm": 13.88,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 45.68
             },
             "s5.0": {
               "min_gap_mm": 14.5,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": 46.08
             }
           },
           "bumper_ball_right_A0": {
             "s0.0": {
               "min_gap_mm": 20.24,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 20.55,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 20.86,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 21.17,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 21.49,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
           "bumper_race_right_A0": {
             "s0.0": {
               "min_gap_mm": 18.27,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 18.88,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 19.51,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 20.13,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 20.76,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
           "bumper_ball_right_A1": {
             "s0.0": {
               "min_gap_mm": 7.76,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 8.08,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 8.39,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 8.7,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 9.01,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
           "bumper_race_right_A1": {
             "s0.0": {
               "min_gap_mm": 5.8,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 6.43,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 7.05,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 7.67,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 8.3,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
           "P_bumper_rider_right_A": {
             "s0.0": {
               "min_gap_mm": 3.81,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s1.25": {
               "min_gap_mm": 4.44,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s2.5": {
               "min_gap_mm": 5.06,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 5.69,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 6.31,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
@@ -3741,17 +3736,17 @@
             },
             "s2.5": {
               "min_gap_mm": 16.11,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s3.75": {
               "min_gap_mm": 16.5,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             },
             "s5.0": {
               "min_gap_mm": 16.9,
-              "nearest": "P_camera_tower",
+              "nearest": "P_camera_mount",
               "wire_min_gap_mm": null
             }
           },
@@ -3893,13 +3888,13 @@
         "2.5,3.75": 4.12,
         "2.5,5.0": 3.5,
         "3.75,0.0": 3.32,
-        "3.75,1.25": 4.38,
+        "3.75,1.25": 4.21,
         "3.75,2.5": 4.12,
         "3.75,3.75": 3.5,
         "3.75,5.0": 2.88,
         "5.0,0.0": 2.22,
-        "5.0,1.25": 3.27,
-        "5.0,2.5": 3.5,
+        "5.0,1.25": 3.05,
+        "5.0,2.5": 3.39,
         "5.0,3.75": 2.88,
         "5.0,5.0": 2.25
       },
@@ -4010,7 +4005,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4027,7 +4022,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4044,7 +4039,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4061,7 +4056,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4231,7 +4226,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4248,7 +4243,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4265,7 +4260,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4282,7 +4277,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4299,7 +4294,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4451,7 +4446,7 @@
           "contact_x_mm": 148.32,
           "face_normal": [
             1.0,
-            0.0,
+            -0.0,
             0.0
           ],
           "drive": 0.866,
@@ -4571,7 +4566,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4588,7 +4583,7 @@
           "face_normal": [
             0.972,
             0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4605,7 +4600,7 @@
           "face_normal": [
             0.972,
             0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4650,6 +4645,703 @@
         },
         {
           "z": 57.5,
+          "rod_y": -2.0,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 148.32,
+          "face_normal": [
+            1.0,
+            -0.0,
+            0.0
+          ],
+          "drive": 0.866,
+          "drive_with_friction_0p5": 0.616,
+          "rod_advance_per_mm_travel": 0.866,
+          "intrusion_mm": 10.58,
+          "intrusion_before_trip_mm": 12.52,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": -1.5,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 148.32,
+          "face_normal": [
+            1.0,
+            -0.0,
+            0.0
+          ],
+          "drive": 0.866,
+          "drive_with_friction_0p5": 0.616,
+          "rod_advance_per_mm_travel": 0.866,
+          "intrusion_mm": 10.58,
+          "intrusion_before_trip_mm": 12.52,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": -1.0,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 148.32,
+          "face_normal": [
+            1.0,
+            -0.0,
+            0.0
+          ],
+          "drive": 0.866,
+          "drive_with_friction_0p5": 0.616,
+          "rod_advance_per_mm_travel": 0.866,
+          "intrusion_mm": 10.58,
+          "intrusion_before_trip_mm": 12.52,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": -0.5,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 148.32,
+          "face_normal": [
+            1.0,
+            -0.0,
+            0.0
+          ],
+          "drive": 0.866,
+          "drive_with_friction_0p5": 0.616,
+          "rod_advance_per_mm_travel": 0.866,
+          "intrusion_mm": 10.58,
+          "intrusion_before_trip_mm": 12.52,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": 0.0,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 148.32,
+          "face_normal": [
+            1.0,
+            -0.0,
+            0.0
+          ],
+          "drive": 0.866,
+          "drive_with_friction_0p5": 0.616,
+          "rod_advance_per_mm_travel": 0.866,
+          "intrusion_mm": 10.58,
+          "intrusion_before_trip_mm": 12.52,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": 0.5,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 148.32,
+          "face_normal": [
+            1.0,
+            -0.0,
+            0.0
+          ],
+          "drive": 0.866,
+          "drive_with_friction_0p5": 0.616,
+          "rod_advance_per_mm_travel": 0.866,
+          "intrusion_mm": 10.58,
+          "intrusion_before_trip_mm": 12.52,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": 1.0,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 148.32,
+          "face_normal": [
+            1.0,
+            -0.0,
+            0.0
+          ],
+          "drive": 0.866,
+          "drive_with_friction_0p5": 0.616,
+          "rod_advance_per_mm_travel": 0.866,
+          "intrusion_mm": 10.58,
+          "intrusion_before_trip_mm": 12.52,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": 1.5,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 148.32,
+          "face_normal": [
+            1.0,
+            -0.0,
+            0.0
+          ],
+          "drive": 0.866,
+          "drive_with_friction_0p5": 0.616,
+          "rod_advance_per_mm_travel": 0.866,
+          "intrusion_mm": 10.58,
+          "intrusion_before_trip_mm": 12.52,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": 2.0,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 148.32,
+          "face_normal": [
+            1.0,
+            -0.0,
+            0.0
+          ],
+          "drive": 0.866,
+          "drive_with_friction_0p5": 0.616,
+          "rod_advance_per_mm_travel": 0.866,
+          "intrusion_mm": 10.58,
+          "intrusion_before_trip_mm": 12.52,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": 2.5,
+          "first_contact": "P_bumper_left",
+          "contact_x_mm": 156.22,
+          "face_normal": [
+            0.972,
+            -0.236,
+            -0.0
+          ],
+          "drive": 0.724,
+          "drive_with_friction_0p5": 0.379,
+          "rod_advance_per_mm_travel": 0.745,
+          "intrusion_mm": 2.68,
+          "intrusion_before_trip_mm": 4.36,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": 3.0,
+          "first_contact": "P_bumper_left",
+          "contact_x_mm": 156.34,
+          "face_normal": [
+            0.972,
+            -0.236,
+            -0.0
+          ],
+          "drive": 0.724,
+          "drive_with_friction_0p5": 0.379,
+          "rod_advance_per_mm_travel": 0.745,
+          "intrusion_mm": 2.56,
+          "intrusion_before_trip_mm": 4.24,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": 3.5,
+          "first_contact": "P_bumper_left",
+          "contact_x_mm": 156.46,
+          "face_normal": [
+            0.972,
+            -0.236,
+            0.0
+          ],
+          "drive": 0.724,
+          "drive_with_friction_0p5": 0.379,
+          "rod_advance_per_mm_travel": 0.745,
+          "intrusion_mm": 2.44,
+          "intrusion_before_trip_mm": 4.12,
+          "verdict": "trips"
+        },
+        {
+          "z": 57.5,
+          "rod_y": 4.0,
+          "first_contact": "P_bumper_left",
+          "contact_x_mm": 156.58,
+          "face_normal": [
+            0.972,
+            -0.236,
+            0.0
+          ],
+          "drive": 0.724,
+          "drive_with_friction_0p5": 0.379,
+          "rod_advance_per_mm_travel": 0.745,
+          "intrusion_mm": 2.32,
+          "intrusion_before_trip_mm": 4.0,
+          "verdict": "trips"
+        },
+        {
+          "z": 67.5,
+          "rod_y": -4.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": -3.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": -3.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": -2.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": -2.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": -1.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": -1.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": -0.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": 0.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": 0.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": 1.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": 1.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": 2.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": 2.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": 3.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": 3.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 67.5,
+          "rod_y": 4.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": -4.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": -3.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": -3.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": -2.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": -2.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": -1.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": -1.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": -0.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": 0.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": 0.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": 1.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": 1.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": 2.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": 2.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": 3.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": 3.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 80.0,
+          "rod_y": 4.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": -4.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": -3.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": -3.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": -2.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": -2.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": -1.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": -1.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": -0.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": 0.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": 0.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": 1.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": 1.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": 2.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": 2.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": 3.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": 3.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 85,
+          "rod_y": 4.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": -4.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": -3.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": -3.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": -2.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": -2.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": -1.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": -1.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": -0.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": 0.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": 0.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": 1.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": 1.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": 2.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": 2.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": 3.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": 3.5,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 90,
+          "rod_y": 4.0,
+          "first_contact": "none",
+          "verdict": "no contact"
+        },
+        {
+          "z": 95.8,
+          "rod_y": -4.0,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 156.58,
+          "face_normal": [
+            0.972,
+            0.236,
+            0.0
+          ],
+          "drive": 0.724,
+          "drive_with_friction_0p5": 0.379,
+          "rod_advance_per_mm_travel": 0.745,
+          "intrusion_mm": 2.32,
+          "intrusion_before_trip_mm": 4.0,
+          "verdict": "trips"
+        },
+        {
+          "z": 95.8,
+          "rod_y": -3.5,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 156.46,
+          "face_normal": [
+            0.972,
+            0.236,
+            0.0
+          ],
+          "drive": 0.724,
+          "drive_with_friction_0p5": 0.379,
+          "rod_advance_per_mm_travel": 0.745,
+          "intrusion_mm": 2.44,
+          "intrusion_before_trip_mm": 4.12,
+          "verdict": "trips"
+        },
+        {
+          "z": 95.8,
+          "rod_y": -3.0,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 156.34,
+          "face_normal": [
+            0.972,
+            0.236,
+            0.0
+          ],
+          "drive": 0.724,
+          "drive_with_friction_0p5": 0.379,
+          "rod_advance_per_mm_travel": 0.745,
+          "intrusion_mm": 2.56,
+          "intrusion_before_trip_mm": 4.24,
+          "verdict": "trips"
+        },
+        {
+          "z": 95.8,
+          "rod_y": -2.5,
+          "first_contact": "P_bumper_right",
+          "contact_x_mm": 156.22,
+          "face_normal": [
+            0.972,
+            0.236,
+            0.0
+          ],
+          "drive": 0.724,
+          "drive_with_friction_0p5": 0.379,
+          "rod_advance_per_mm_travel": 0.745,
+          "intrusion_mm": 2.68,
+          "intrusion_before_trip_mm": 4.36,
+          "verdict": "trips"
+        },
+        {
+          "z": 95.8,
           "rod_y": -2.0,
           "first_contact": "P_bumper_right",
           "contact_x_mm": 148.32,
@@ -4666,13 +5358,13 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": -1.5,
           "first_contact": "P_bumper_right",
           "contact_x_mm": 148.32,
           "face_normal": [
             1.0,
-            -0.0,
+            0.0,
             0.0
           ],
           "drive": 0.866,
@@ -4683,13 +5375,13 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": -1.0,
           "first_contact": "P_bumper_right",
           "contact_x_mm": 148.32,
           "face_normal": [
             1.0,
-            -0.0,
+            0.0,
             0.0
           ],
           "drive": 0.866,
@@ -4700,13 +5392,13 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": -0.5,
           "first_contact": "P_bumper_right",
           "contact_x_mm": 148.32,
           "face_normal": [
             1.0,
-            -0.0,
+            0.0,
             0.0
           ],
           "drive": 0.866,
@@ -4717,7 +5409,7 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": 0.0,
           "first_contact": "P_bumper_right",
           "contact_x_mm": 148.32,
@@ -4734,7 +5426,7 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": 0.5,
           "first_contact": "P_bumper_right",
           "contact_x_mm": 148.32,
@@ -4751,7 +5443,7 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": 1.0,
           "first_contact": "P_bumper_right",
           "contact_x_mm": 148.32,
@@ -4768,7 +5460,7 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": 1.5,
           "first_contact": "P_bumper_right",
           "contact_x_mm": 148.32,
@@ -4785,7 +5477,7 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": 2.0,
           "first_contact": "P_bumper_right",
           "contact_x_mm": 148.32,
@@ -4802,14 +5494,14 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": 2.5,
           "first_contact": "P_bumper_left",
           "contact_x_mm": 156.22,
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4819,14 +5511,14 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": 3.0,
           "first_contact": "P_bumper_left",
           "contact_x_mm": 156.34,
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4836,14 +5528,14 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": 3.5,
           "first_contact": "P_bumper_left",
           "contact_x_mm": 156.46,
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4853,881 +5545,14 @@
           "verdict": "trips"
         },
         {
-          "z": 57.5,
+          "z": 95.8,
           "rod_y": 4.0,
           "first_contact": "P_bumper_left",
           "contact_x_mm": 156.58,
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.32,
-          "intrusion_before_trip_mm": 4.0,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": -4.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.58,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.32,
-          "intrusion_before_trip_mm": 4.0,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": -3.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.46,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.44,
-          "intrusion_before_trip_mm": 4.12,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": -3.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.34,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.56,
-          "intrusion_before_trip_mm": 4.24,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": -2.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.22,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.68,
-          "intrusion_before_trip_mm": 4.36,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": -2.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
             0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": -1.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": -1.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": -0.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": 0.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": 0.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": 1.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": 1.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": 2.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": 2.5,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.22,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.68,
-          "intrusion_before_trip_mm": 4.36,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": 3.0,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.34,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.56,
-          "intrusion_before_trip_mm": 4.24,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": 3.5,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.46,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.44,
-          "intrusion_before_trip_mm": 4.12,
-          "verdict": "trips"
-        },
-        {
-          "z": 67.5,
-          "rod_y": 4.0,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.58,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.32,
-          "intrusion_before_trip_mm": 4.0,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": -4.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.58,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.32,
-          "intrusion_before_trip_mm": 4.0,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": -3.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.46,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.44,
-          "intrusion_before_trip_mm": 4.12,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": -3.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.34,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.56,
-          "intrusion_before_trip_mm": 4.24,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": -2.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.22,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.68,
-          "intrusion_before_trip_mm": 4.36,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": -2.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": -1.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": -1.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": -0.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": 0.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": 0.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": 1.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": 1.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": 2.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": 2.5,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.22,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.68,
-          "intrusion_before_trip_mm": 4.36,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": 3.0,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.34,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.56,
-          "intrusion_before_trip_mm": 4.24,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": 3.5,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.46,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.44,
-          "intrusion_before_trip_mm": 4.12,
-          "verdict": "trips"
-        },
-        {
-          "z": 73.5,
-          "rod_y": 4.0,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.58,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.32,
-          "intrusion_before_trip_mm": 4.0,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": -4.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.58,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.32,
-          "intrusion_before_trip_mm": 4.0,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": -3.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.46,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.44,
-          "intrusion_before_trip_mm": 4.12,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": -3.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.34,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.56,
-          "intrusion_before_trip_mm": 4.24,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": -2.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 156.22,
-          "face_normal": [
-            0.972,
-            0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.68,
-          "intrusion_before_trip_mm": 4.36,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": -2.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": -1.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": -1.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": -0.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": 0.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": 0.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": 1.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": 1.5,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": 2.0,
-          "first_contact": "P_bumper_right",
-          "contact_x_mm": 148.32,
-          "face_normal": [
-            1.0,
-            -0.0,
-            0.0
-          ],
-          "drive": 0.866,
-          "drive_with_friction_0p5": 0.616,
-          "rod_advance_per_mm_travel": 0.866,
-          "intrusion_mm": 10.58,
-          "intrusion_before_trip_mm": 12.52,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": 2.5,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.22,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.68,
-          "intrusion_before_trip_mm": 4.36,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": 3.0,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.34,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.56,
-          "intrusion_before_trip_mm": 4.24,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": 3.5,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.46,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
-          ],
-          "drive": 0.724,
-          "drive_with_friction_0p5": 0.379,
-          "rod_advance_per_mm_travel": 0.745,
-          "intrusion_mm": 2.44,
-          "intrusion_before_trip_mm": 4.12,
-          "verdict": "trips"
-        },
-        {
-          "z": 74.2,
-          "rod_y": 4.0,
-          "first_contact": "P_bumper_left",
-          "contact_x_mm": 156.58,
-          "face_normal": [
-            0.972,
-            -0.236,
-            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -5745,7 +5570,8 @@
           "max_contact_intrusion_mm": 10.58,
           "first_contacts": [
             "P_bumper_left",
-            "P_bumper_right"
+            "P_bumper_right",
+            "none"
           ],
           "rigid_rows": []
         },
@@ -5753,7 +5579,8 @@
           "max_contact_intrusion_mm": 14.91,
           "first_contacts": [
             "P_bumper_left",
-            "P_bumper_right"
+            "P_bumper_right",
+            "none"
           ],
           "rigid_rows": []
         },
@@ -5761,7 +5588,8 @@
           "max_contact_intrusion_mm": 7.01,
           "first_contacts": [
             "P_bumper_left",
-            "P_bumper_right"
+            "P_bumper_right",
+            "none"
           ],
           "rigid_rows": []
         }
@@ -6149,17 +5977,17 @@
       "operates_ok": true
     },
     "preload_balance": {
-      "moving_half_mass_kg": 0.123,
+      "moving_half_mass_kg": 0.126,
       "moving_half_com_mm": [
-        93.2,
-        83.4,
-        50.9
+        94.6,
+        82.2,
+        51.8
       ],
       "spring_preload_per_pin_N": 4.0,
       "down_ball_reactions_N": [
-        5.35,
-        2.81,
-        2.64
+        5.43,
+        2.7,
+        2.63
       ],
       "rider_ball_loads_N": 2.0,
       "required_min_N": 0.5,
@@ -6174,9 +6002,9 @@
         71.5
       ],
       "max_skin_r_mm_full_travel": 155.2,
-      "max_horizontal_shift_at_seam_mm": 0.17,
+      "max_horizontal_shift_at_seam_mm": 0.25,
       "max_rim_rise_mm": 0.19,
-      "seam_min_gap_with_both_halves_tilted_mm": 1.88,
+      "seam_min_gap_with_both_halves_tilted_mm": 1.73,
       "note": "Only under a load larger than the preload (a hit high on the skin): the half tilts within the 0.1 mm stop gap and the 0.4 mm clamp-nut gap. At rest the springs hold the nominal pose.",
       "ok": true
     },
@@ -6247,19 +6075,19 @@
             20,
             40,
             60,
-            74.5
+            97.3
           ],
           "mu_vert_crit": [
             0.885,
             0.631,
             0.605,
-            0.584
+            0.201
           ],
           "mu_crit_bearing_and_ball_equal": [
             0.529,
             0.401,
             0.414,
-            0.409
+            0.174
           ]
         },
         {
@@ -6270,19 +6098,19 @@
             20,
             40,
             60,
-            74.5
+            97.3
           ],
           "mu_vert_crit": [
             0.886,
             0.632,
             0.609,
-            0.589
+            0.204
           ],
           "mu_crit_bearing_and_ball_equal": [
             0.544,
             0.533,
             0.417,
-            0.41
+            0.181
           ]
         },
         {
@@ -6293,19 +6121,19 @@
             20,
             40,
             60,
-            74.5
+            98.5
           ],
           "mu_vert_crit": [
             0.887,
             0.634,
             0.611,
-            0.593
+            0.203
           ],
           "mu_crit_bearing_and_ball_equal": [
             0.559,
             0.418,
             0.419,
-            0.409
+            0.185
           ]
         },
         {
@@ -6316,19 +6144,22 @@
             20,
             40,
             60,
-            74.82
+            80,
+            98.5
           ],
           "mu_vert_crit": [
             0.888,
             0.635,
             0.612,
-            0.596
+            0.59,
+            0.205
           ],
           "mu_crit_bearing_and_ball_equal": [
             0.568,
             0.427,
             0.421,
-            0.406
+            0.396,
+            0.193
           ]
         },
         {
@@ -6339,19 +6170,22 @@
             20,
             40,
             60,
-            75.22
+            80,
+            98.5
           ],
           "mu_vert_crit": [
             0.889,
             0.637,
             0.613,
-            0.598
+            0.593,
+            0.208
           ],
           "mu_crit_bearing_and_ball_equal": [
             0.575,
             0.433,
             0.424,
-            0.403
+            0.393,
+            0.199
           ]
         },
         {
@@ -6362,19 +6196,22 @@
             20,
             40,
             60,
-            76.21
+            80,
+            98.5
           ],
           "mu_vert_crit": [
             0.89,
             0.638,
             0.614,
-            0.599
+            0.596,
+            0.21
           ],
           "mu_crit_bearing_and_ball_equal": [
             0.582,
             0.564,
             0.433,
-            0.398
+            0.378,
+            0.201
           ]
         },
         {
@@ -7411,8 +7248,32 @@
         "locked_points": []
       },
       "sensed_failure_case_balls_sliding_0p3": {
-        "arc_sensed_to_deg": 12,
+        "arc_sensed_to_deg": 0,
         "locked_points": [
+          {
+            "arc_deg": 2,
+            "z": 97.3
+          },
+          {
+            "arc_deg": 4,
+            "z": 97.3
+          },
+          {
+            "arc_deg": 6,
+            "z": 98.5
+          },
+          {
+            "arc_deg": 8,
+            "z": 98.5
+          },
+          {
+            "arc_deg": 10,
+            "z": 98.5
+          },
+          {
+            "arc_deg": 12,
+            "z": 98.5
+          },
           {
             "arc_deg": 14,
             "z": 98.5
@@ -7548,30 +7409,6 @@
           {
             "arc_deg": 70,
             "z": 80
-          },
-          {
-            "arc_deg": 70,
-            "z": 98.5
-          },
-          {
-            "arc_deg": 72,
-            "z": 80
-          },
-          {
-            "arc_deg": 72,
-            "z": 98.5
-          },
-          {
-            "arc_deg": 74,
-            "z": 80
-          },
-          {
-            "arc_deg": 74,
-            "z": 98.5
-          },
-          {
-            "arc_deg": 76,
-            "z": 80
           }
         ]
       },
@@ -7584,21 +7421,21 @@
       "preload_rolling_drag_N": 0.114,
       "roller_ramp_reaction_N": 0.315,
       "object_friction_note": "Static or side pushes: the skin slides along the object as the half moves along its 30 deg axis; EVA foam mu_c as stated on az < 70, PTFE-taped PETG (mu_c 0.2) on az 70..90.",
-      "heights_note": "Notch tops inside the camera wedge, 98.5 elsewhere; every listed height has bumper surface.",
+      "heights_note": "Full height 98.5 (97.3 on the seam band chamfer); heights inside the camera window (|az| < 8.0 deg) are skipped; every listed height has bumper surface.",
       "margin_ok": true
     },
     "hertz": {
       "ball_race": "0.5 mm hardened spring steel (blue-tempered 1095 or AISI 420, >= HRC 48) on every ball face; \u00d84 G10 52100 balls",
       "trip": {
         "max_push_N": 7.66,
-        "max_ball_load_N": 11.0,
-        "max_p0_ball_on_steel_MPa": 1921,
-        "max_petg_under_strip_MPa": 0.77,
+        "max_ball_load_N": 11.56,
+        "max_p0_ball_on_steel_MPa": 1953,
+        "max_petg_under_strip_MPa": 0.81,
         "max_bearing_on_petg_slot_MPa": 28.6
       },
       "stall_14N": {
-        "max_ball_load_N": 40.37,
-        "max_p0_ball_on_steel_MPa": 2962,
+        "max_ball_load_N": 40.26,
+        "max_p0_ball_on_steel_MPa": 2960,
         "max_petg_under_strip_MPa": 2.81,
         "max_bearing_on_petg_slot_MPa": 38.7
       },
@@ -7607,9 +7444,9 @@
         "steel_race_static_MPa": 2500
       },
       "preload_contact_loads_N": [
-        5.35,
-        2.81,
-        2.64,
+        5.43,
+        2.7,
+        2.63,
         2.0,
         2.0,
         2.0,
@@ -7668,103 +7505,149 @@
     "max_intrusion_bumper_mm": 10.58,
     "max_intrusion_rear_shell_mm": 12.9,
     "failures": [],
-    "inside_camera_view_not_bumper_sensed": [
+    "through_camera_window_not_bumper_sensed": [
+      {
+        "z": 69.5,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 22.1,
+        "contacts": [
+          "camera_board"
+        ]
+      },
+      {
+        "z": 71.5,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 22.08,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 73.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.96,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 74.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.83,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 75.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.83,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 76.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.75,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 77.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.75,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
       {
         "z": 78.0,
         "az_from": -4.0,
         "az_to": 4.0,
-        "max_intrusion_mm": 999.0,
+        "max_intrusion_mm": 21.75,
         "contacts": [
-          "none"
+          "camera_board",
+          "camera_lens"
         ]
       },
       {
         "z": 79.0,
-        "az_from": -5.5,
-        "az_to": 5.5,
-        "max_intrusion_mm": 999.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.66,
         "contacts": [
-          "none"
+          "camera_board",
+          "camera_lens"
         ]
       },
       {
         "z": 80.5,
-        "az_from": -11.0,
-        "az_to": 11.0,
-        "max_intrusion_mm": 999.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.66,
         "contacts": [
-          "none"
+          "camera_board",
+          "camera_lens"
         ]
       },
       {
         "z": 82.5,
-        "az_from": -12.5,
-        "az_to": 12.5,
-        "max_intrusion_mm": 999.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.75,
         "contacts": [
-          "none"
+          "camera_board",
+          "camera_lens"
         ]
       },
       {
         "z": 85.5,
-        "az_from": -12.5,
-        "az_to": 12.5,
-        "max_intrusion_mm": 48.9,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.83,
         "contacts": [
-          "P_camera_tower"
+          "camera_board",
+          "camera_lens"
         ]
       },
       {
         "z": 89.5,
-        "az_from": -12.5,
-        "az_to": 12.5,
-        "max_intrusion_mm": 48.9,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 22.1,
         "contacts": [
-          "P_camera_tower"
-        ]
-      },
-      {
-        "z": 93.5,
-        "az_from": -12.0,
-        "az_to": 12.0,
-        "max_intrusion_mm": 55.65,
-        "contacts": [
-          "P_camera_guard"
-        ]
-      },
-      {
-        "z": 96.5,
-        "az_from": -11.5,
-        "az_to": 11.5,
-        "max_intrusion_mm": 51.21,
-        "contacts": [
-          "P_camera_guard",
           "camera_board"
-        ]
-      },
-      {
-        "z": 98.0,
-        "az_from": -11.5,
-        "az_to": 11.5,
-        "max_intrusion_mm": 51.21,
-        "contacts": [
-          "P_camera_guard",
-          "camera_board"
-        ]
-      },
-      {
-        "z": 99.0,
-        "az_from": -11.5,
-        "az_to": 11.5,
-        "max_intrusion_mm": 51.21,
-        "contacts": [
-          "P_camera_guard",
-          "camera_board",
-          "camera_lens"
         ]
       }
     ],
-    "ok": true
+    "ok": true,
+    "lid_seam_relief": {
+      "kind": "pocket in the lid underside (the lid stays closed from above)",
+      "x_from_mm": 142.99,
+      "half_width_mm": 4.5,
+      "depth_mm": 1.5,
+      "ceiling_z_mm": 102.0,
+      "bumper_top_z_mm": 98.5,
+      "rod_top_at_highest_test_height_mm": 100.5,
+      "seam_backer_front_x_mm": 148.32,
+      "seam_backer_front_x_at_full_travel_mm": 143.99,
+      "note": "task I: the lid is closed over the front bay; over the bumper seam its underside is lifted by this pocket, so a rod pushed into the seam meets the sensed seam backer (and pushes it to its stop) before the fixed lid rim"
+    }
   },
   "spin_sweep": {
     "objects_r_mm": [
@@ -7781,6 +7664,7 @@
       30,
       50,
       70,
+      80.0,
       87.5
     ],
     "first_faces": [
@@ -7795,7 +7679,7 @@
         "along_travel": 0.193,
         "along_travel_frictionless": 0.378,
         "mu_crit": 0.41,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7810,7 +7694,7 @@
         "along_travel": 0.193,
         "along_travel_frictionless": 0.378,
         "mu_crit": 0.41,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7825,7 +7709,7 @@
         "along_travel": 0.212,
         "along_travel_frictionless": 0.396,
         "mu_crit": 0.43,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7840,7 +7724,7 @@
         "along_travel": 0.212,
         "along_travel_frictionless": 0.396,
         "mu_crit": 0.43,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7855,7 +7739,7 @@
         "along_travel": 0.27,
         "along_travel_frictionless": 0.449,
         "mu_crit": 0.5,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7870,7 +7754,7 @@
         "along_travel": 0.27,
         "along_travel_frictionless": 0.449,
         "mu_crit": 0.5,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7885,7 +7769,7 @@
         "along_travel": 0.308,
         "along_travel_frictionless": 0.483,
         "mu_crit": 0.55,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7900,7 +7784,7 @@
         "along_travel": 0.308,
         "along_travel_frictionless": 0.483,
         "mu_crit": 0.55,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7915,7 +7799,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -7930,7 +7814,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -7945,7 +7829,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.5,
         "mu_crit": 0.58,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7960,7 +7844,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.5,
         "mu_crit": 0.58,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -7975,7 +7859,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -7990,7 +7874,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -8005,7 +7889,7 @@
         "along_travel": 0.382,
         "along_travel_frictionless": 0.549,
         "mu_crit": 0.66,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8020,7 +7904,7 @@
         "along_travel": 0.382,
         "along_travel_frictionless": 0.549,
         "mu_crit": 0.66,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8035,7 +7919,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8050,7 +7934,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8065,7 +7949,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.689,
         "mu_crit": 0.95,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8080,7 +7964,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.689,
         "mu_crit": 0.95,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8095,7 +7979,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8110,7 +7994,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8125,7 +8009,7 @@
         "along_travel": 0.372,
         "along_travel_frictionless": 0.719,
         "mu_crit": 1.04,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8140,7 +8024,7 @@
         "along_travel": 0.372,
         "along_travel_frictionless": 0.719,
         "mu_crit": 1.04,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8155,7 +8039,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8170,7 +8054,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8185,7 +8069,7 @@
         "along_travel": 0.193,
         "along_travel_frictionless": 0.378,
         "mu_crit": 0.41,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8200,7 +8084,7 @@
         "along_travel": 0.193,
         "along_travel_frictionless": 0.378,
         "mu_crit": 0.41,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8215,7 +8099,7 @@
         "along_travel": 0.212,
         "along_travel_frictionless": 0.396,
         "mu_crit": 0.43,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8230,7 +8114,7 @@
         "along_travel": 0.212,
         "along_travel_frictionless": 0.396,
         "mu_crit": 0.43,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8245,7 +8129,7 @@
         "along_travel": 0.27,
         "along_travel_frictionless": 0.449,
         "mu_crit": 0.5,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8260,7 +8144,7 @@
         "along_travel": 0.27,
         "along_travel_frictionless": 0.449,
         "mu_crit": 0.5,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8275,7 +8159,7 @@
         "along_travel": 0.308,
         "along_travel_frictionless": 0.483,
         "mu_crit": 0.55,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8290,7 +8174,7 @@
         "along_travel": 0.308,
         "along_travel_frictionless": 0.483,
         "mu_crit": 0.55,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8305,7 +8189,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -8320,7 +8204,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -8335,7 +8219,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.5,
         "mu_crit": 0.58,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8350,7 +8234,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.5,
         "mu_crit": 0.58,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8365,7 +8249,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -8380,7 +8264,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -8395,7 +8279,7 @@
         "along_travel": 0.382,
         "along_travel_frictionless": 0.549,
         "mu_crit": 0.66,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8410,7 +8294,7 @@
         "along_travel": 0.382,
         "along_travel_frictionless": 0.549,
         "mu_crit": 0.66,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8425,7 +8309,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8440,7 +8324,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8455,7 +8339,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.689,
         "mu_crit": 0.95,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8470,7 +8354,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.689,
         "mu_crit": 0.95,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8485,7 +8369,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8500,7 +8384,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8515,7 +8399,7 @@
         "along_travel": 0.372,
         "along_travel_frictionless": 0.719,
         "mu_crit": 1.04,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8530,7 +8414,7 @@
         "along_travel": 0.372,
         "along_travel_frictionless": 0.719,
         "mu_crit": 1.04,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8545,7 +8429,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8560,7 +8444,7 @@
         "along_travel": 0.379,
         "along_travel_frictionless": 0.724,
         "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8575,7 +8459,7 @@
         "along_travel": 0.193,
         "along_travel_frictionless": 0.378,
         "mu_crit": 0.41,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8590,7 +8474,7 @@
         "along_travel": 0.193,
         "along_travel_frictionless": 0.378,
         "mu_crit": 0.41,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8605,7 +8489,7 @@
         "along_travel": 0.212,
         "along_travel_frictionless": 0.396,
         "mu_crit": 0.43,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8620,7 +8504,7 @@
         "along_travel": 0.212,
         "along_travel_frictionless": 0.396,
         "mu_crit": 0.43,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8635,7 +8519,7 @@
         "along_travel": 0.27,
         "along_travel_frictionless": 0.449,
         "mu_crit": 0.5,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8650,7 +8534,7 @@
         "along_travel": 0.27,
         "along_travel_frictionless": 0.449,
         "mu_crit": 0.5,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8665,7 +8549,7 @@
         "along_travel": 0.308,
         "along_travel_frictionless": 0.483,
         "mu_crit": 0.55,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8680,7 +8564,7 @@
         "along_travel": 0.308,
         "along_travel_frictionless": 0.483,
         "mu_crit": 0.55,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8690,14 +8574,14 @@
         "start_az": 0.0,
         "spin": "cw",
         "first_face_part": "P_bumper_left",
-        "az": 1.38,
+        "az": 5.38,
         "mu": 0.5,
-        "along_travel": -0.067,
-        "along_travel_frictionless": -0.5,
-        "mu_crit": 0.0,
-        "camera_notch_edge": false,
-        "seam_end_land": true,
-        "verdict": "rigid snag"
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
       },
       {
         "z": 70,
@@ -8705,14 +8589,14 @@
         "start_az": 0.0,
         "spin": "ccw",
         "first_face_part": "P_bumper_right",
-        "az": -1.38,
+        "az": -5.38,
         "mu": 0.5,
-        "along_travel": -0.067,
-        "along_travel_frictionless": -0.5,
-        "mu_crit": 0.0,
-        "camera_notch_edge": false,
-        "seam_end_land": true,
-        "verdict": "rigid snag"
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
       },
       {
         "z": 70,
@@ -8725,7 +8609,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.5,
         "mu_crit": 0.58,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8740,7 +8624,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.5,
         "mu_crit": 0.58,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8750,14 +8634,14 @@
         "start_az": 0.0,
         "spin": "cw",
         "first_face_part": "P_bumper_left",
-        "az": 1.38,
+        "az": 5.66,
         "mu": 0.5,
-        "along_travel": -0.067,
-        "along_travel_frictionless": -0.5,
-        "mu_crit": 0.0,
-        "camera_notch_edge": false,
-        "seam_end_land": true,
-        "verdict": "rigid snag"
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
       },
       {
         "z": 70,
@@ -8765,14 +8649,14 @@
         "start_az": 0.0,
         "spin": "ccw",
         "first_face_part": "P_bumper_right",
-        "az": -1.38,
+        "az": -5.66,
         "mu": 0.5,
-        "along_travel": -0.067,
-        "along_travel_frictionless": -0.5,
-        "mu_crit": 0.0,
-        "camera_notch_edge": false,
-        "seam_end_land": true,
-        "verdict": "rigid snag"
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
       },
       {
         "z": 70,
@@ -8785,7 +8669,7 @@
         "along_travel": 0.382,
         "along_travel_frictionless": 0.549,
         "mu_crit": 0.66,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8800,7 +8684,7 @@
         "along_travel": 0.382,
         "along_travel_frictionless": 0.549,
         "mu_crit": 0.66,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8810,12 +8694,12 @@
         "start_az": 0.0,
         "spin": "cw",
         "first_face_part": "P_bumper_left",
-        "az": 2.43,
+        "az": 6.2,
         "mu": 0.5,
-        "along_travel": 0.379,
-        "along_travel_frictionless": 0.724,
-        "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8825,12 +8709,12 @@
         "start_az": 0.0,
         "spin": "ccw",
         "first_face_part": "P_bumper_right",
-        "az": -2.43,
+        "az": -6.2,
         "mu": 0.5,
-        "along_travel": 0.379,
-        "along_travel_frictionless": 0.724,
-        "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8845,7 +8729,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.689,
         "mu_crit": 0.95,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8860,7 +8744,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.689,
         "mu_crit": 0.95,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8870,12 +8754,12 @@
         "start_az": 0.0,
         "spin": "cw",
         "first_face_part": "bumper_foam_left",
-        "az": 3.64,
+        "az": 6.73,
         "mu": 0.5,
-        "along_travel": 0.379,
-        "along_travel_frictionless": 0.724,
-        "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8885,12 +8769,12 @@
         "start_az": 0.0,
         "spin": "ccw",
         "first_face_part": "bumper_foam_right",
-        "az": -3.64,
+        "az": -6.73,
         "mu": 0.5,
-        "along_travel": 0.379,
-        "along_travel_frictionless": 0.724,
-        "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8905,7 +8789,7 @@
         "along_travel": 0.372,
         "along_travel_frictionless": 0.719,
         "mu_crit": 1.04,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8920,7 +8804,7 @@
         "along_travel": 0.372,
         "along_travel_frictionless": 0.719,
         "mu_crit": 1.04,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8930,12 +8814,12 @@
         "start_az": 0.0,
         "spin": "cw",
         "first_face_part": "bumper_foam_left",
-        "az": 4.44,
+        "az": 7.1,
         "mu": 0.5,
-        "along_travel": 0.379,
-        "along_travel_frictionless": 0.724,
-        "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8945,12 +8829,282 @@
         "start_az": 0.0,
         "spin": "ccw",
         "first_face_part": "bumper_foam_right",
-        "az": -4.44,
+        "az": -7.1,
         "mu": 0.5,
-        "along_travel": 0.379,
-        "along_travel_frictionless": 0.724,
-        "mu_crit": 1.05,
-        "camera_notch_edge": false,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 152.8,
+        "start_az": 180.0,
+        "spin": "cw",
+        "first_face_part": "P_bumper_right",
+        "az": -89.73,
+        "mu": 0.2,
+        "along_travel": 0.193,
+        "along_travel_frictionless": 0.378,
+        "mu_crit": 0.41,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 152.8,
+        "start_az": 180.0,
+        "spin": "ccw",
+        "first_face_part": "P_bumper_left",
+        "az": 89.73,
+        "mu": 0.2,
+        "along_travel": 0.193,
+        "along_travel_frictionless": 0.378,
+        "mu_crit": 0.41,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "start_az": 180.0,
+        "spin": "cw",
+        "first_face_part": "P_bumper_right",
+        "az": -87.95,
+        "mu": 0.2,
+        "along_travel": 0.212,
+        "along_travel_frictionless": 0.396,
+        "mu_crit": 0.43,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "start_az": 180.0,
+        "spin": "ccw",
+        "first_face_part": "P_bumper_left",
+        "az": 87.95,
+        "mu": 0.2,
+        "along_travel": 0.212,
+        "along_travel_frictionless": 0.396,
+        "mu_crit": 0.43,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "start_az": 180.0,
+        "spin": "cw",
+        "first_face_part": "P_bumper_right",
+        "az": -85.39,
+        "mu": 0.2,
+        "along_travel": 0.27,
+        "along_travel_frictionless": 0.449,
+        "mu_crit": 0.5,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "start_az": 180.0,
+        "spin": "ccw",
+        "first_face_part": "P_bumper_left",
+        "az": 85.39,
+        "mu": 0.2,
+        "along_travel": 0.27,
+        "along_travel_frictionless": 0.449,
+        "mu_crit": 0.5,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "start_az": 180.0,
+        "spin": "cw",
+        "first_face_part": "P_bumper_right",
+        "az": -82.83,
+        "mu": 0.2,
+        "along_travel": 0.308,
+        "along_travel_frictionless": 0.483,
+        "mu_crit": 0.55,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "start_az": 180.0,
+        "spin": "ccw",
+        "first_face_part": "P_bumper_left",
+        "az": 82.83,
+        "mu": 0.2,
+        "along_travel": 0.308,
+        "along_travel_frictionless": 0.483,
+        "mu_crit": 0.55,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "start_az": 0.0,
+        "spin": "cw",
+        "first_face_part": "P_bumper_left",
+        "az": 5.38,
+        "mu": 0.5,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "start_az": 0.0,
+        "spin": "ccw",
+        "first_face_part": "P_bumper_right",
+        "az": -5.38,
+        "mu": 0.5,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 156.0,
+        "start_az": 180.0,
+        "spin": "cw",
+        "first_face_part": "P_bumper_right",
+        "az": -81.56,
+        "mu": 0.2,
+        "along_travel": 0.327,
+        "along_travel_frictionless": 0.5,
+        "mu_crit": 0.58,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 156.0,
+        "start_az": 180.0,
+        "spin": "ccw",
+        "first_face_part": "P_bumper_left",
+        "az": 81.56,
+        "mu": 0.2,
+        "along_travel": 0.327,
+        "along_travel_frictionless": 0.5,
+        "mu_crit": 0.58,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 156.0,
+        "start_az": 0.0,
+        "spin": "cw",
+        "first_face_part": "P_bumper_left",
+        "az": 5.66,
+        "mu": 0.5,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 156.0,
+        "start_az": 0.0,
+        "spin": "ccw",
+        "first_face_part": "P_bumper_right",
+        "az": -5.66,
+        "mu": 0.5,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 157.0,
+        "start_az": 180.0,
+        "spin": "cw",
+        "first_face_part": "P_bumper_right",
+        "az": -79.02,
+        "mu": 0.2,
+        "along_travel": 0.382,
+        "along_travel_frictionless": 0.549,
+        "mu_crit": 0.66,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 157.0,
+        "start_az": 180.0,
+        "spin": "ccw",
+        "first_face_part": "P_bumper_left",
+        "az": 79.02,
+        "mu": 0.2,
+        "along_travel": 0.382,
+        "along_travel_frictionless": 0.549,
+        "mu_crit": 0.66,
+        "camera_window_edge": false,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 157.0,
+        "start_az": 0.0,
+        "spin": "cw",
+        "first_face_part": "P_bumper_left",
+        "az": 6.2,
+        "mu": 0.5,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
+        "seam_end_land": false,
+        "verdict": "moves the half (sensed)"
+      },
+      {
+        "z": 80.0,
+        "r_o": 157.0,
+        "start_az": 0.0,
+        "spin": "ccw",
+        "first_face_part": "P_bumper_right",
+        "az": -6.2,
+        "mu": 0.5,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8965,7 +9119,7 @@
         "along_travel": 0.193,
         "along_travel_frictionless": 0.378,
         "mu_crit": 0.41,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8980,7 +9134,7 @@
         "along_travel": 0.193,
         "along_travel_frictionless": 0.378,
         "mu_crit": 0.41,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -8995,7 +9149,7 @@
         "along_travel": 0.212,
         "along_travel_frictionless": 0.396,
         "mu_crit": 0.43,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9010,7 +9164,7 @@
         "along_travel": 0.212,
         "along_travel_frictionless": 0.396,
         "mu_crit": 0.43,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9025,7 +9179,7 @@
         "along_travel": 0.27,
         "along_travel_frictionless": 0.449,
         "mu_crit": 0.5,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9040,7 +9194,7 @@
         "along_travel": 0.27,
         "along_travel_frictionless": 0.449,
         "mu_crit": 0.5,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9055,7 +9209,7 @@
         "along_travel": 0.308,
         "along_travel_frictionless": 0.483,
         "mu_crit": 0.55,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9070,7 +9224,7 @@
         "along_travel": 0.308,
         "along_travel_frictionless": 0.483,
         "mu_crit": 0.55,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9080,14 +9234,14 @@
         "start_az": 0.0,
         "spin": "cw",
         "first_face_part": "P_bumper_left",
-        "az": 13.59,
+        "az": 5.38,
         "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
+        "verdict": "moves the half (sensed)"
       },
       {
         "z": 87.5,
@@ -9095,14 +9249,14 @@
         "start_az": 0.0,
         "spin": "ccw",
         "first_face_part": "P_bumper_right",
-        "az": -13.59,
+        "az": -5.38,
         "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
+        "verdict": "moves the half (sensed)"
       },
       {
         "z": 87.5,
@@ -9115,7 +9269,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.5,
         "mu_crit": 0.58,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9130,7 +9284,7 @@
         "along_travel": 0.327,
         "along_travel_frictionless": 0.5,
         "mu_crit": 0.58,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9140,14 +9294,14 @@
         "start_az": 0.0,
         "spin": "cw",
         "first_face_part": "P_bumper_left",
-        "az": 13.69,
+        "az": 5.66,
         "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
+        "verdict": "moves the half (sensed)"
       },
       {
         "z": 87.5,
@@ -9155,14 +9309,14 @@
         "start_az": 0.0,
         "spin": "ccw",
         "first_face_part": "P_bumper_right",
-        "az": -13.69,
+        "az": -5.66,
         "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
+        "verdict": "moves the half (sensed)"
       },
       {
         "z": 87.5,
@@ -9175,7 +9329,7 @@
         "along_travel": 0.382,
         "along_travel_frictionless": 0.549,
         "mu_crit": 0.66,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9190,7 +9344,7 @@
         "along_travel": 0.382,
         "along_travel_frictionless": 0.549,
         "mu_crit": 0.66,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": false,
         "verdict": "moves the half (sensed)"
       },
@@ -9200,14 +9354,14 @@
         "start_az": 0.0,
         "spin": "cw",
         "first_face_part": "P_bumper_left",
-        "az": 13.88,
+        "az": 6.2,
         "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
+        "verdict": "moves the half (sensed)"
       },
       {
         "z": 87.5,
@@ -9215,201 +9369,20 @@
         "start_az": 0.0,
         "spin": "ccw",
         "first_face_part": "P_bumper_right",
-        "az": -13.88,
+        "az": -6.2,
         "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
+        "along_travel": 0.106,
+        "along_travel_frictionless": 0.53,
+        "mu_crit": 0.62,
+        "camera_window_edge": true,
         "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
+        "verdict": "moves the half (sensed)"
       }
     ],
     "rigid_snags": [],
-    "friction_limited": [
-      {
-        "z": 87.5,
-        "r_o": 155.5,
-        "start_az": 0.0,
-        "spin": "cw",
-        "first_face_part": "P_bumper_left",
-        "az": 13.59,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 155.5,
-        "start_az": 0.0,
-        "spin": "ccw",
-        "first_face_part": "P_bumper_right",
-        "az": -13.59,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 156.0,
-        "start_az": 0.0,
-        "spin": "cw",
-        "first_face_part": "P_bumper_left",
-        "az": 13.69,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 156.0,
-        "start_az": 0.0,
-        "spin": "ccw",
-        "first_face_part": "P_bumper_right",
-        "az": -13.69,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 157.0,
-        "start_az": 0.0,
-        "spin": "cw",
-        "first_face_part": "P_bumper_left",
-        "az": 13.88,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 157.0,
-        "start_az": 0.0,
-        "spin": "ccw",
-        "first_face_part": "P_bumper_right",
-        "az": -13.88,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      }
-    ],
-    "camera_notch_edge_snags": [
-      {
-        "z": 87.5,
-        "r_o": 155.5,
-        "start_az": 0.0,
-        "spin": "cw",
-        "first_face_part": "P_bumper_left",
-        "az": 13.59,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 155.5,
-        "start_az": 0.0,
-        "spin": "ccw",
-        "first_face_part": "P_bumper_right",
-        "az": -13.59,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 156.0,
-        "start_az": 0.0,
-        "spin": "cw",
-        "first_face_part": "P_bumper_left",
-        "az": 13.69,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 156.0,
-        "start_az": 0.0,
-        "spin": "ccw",
-        "first_face_part": "P_bumper_right",
-        "az": -13.69,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 157.0,
-        "start_az": 0.0,
-        "spin": "cw",
-        "first_face_part": "P_bumper_left",
-        "az": 13.88,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      },
-      {
-        "z": 87.5,
-        "r_o": 157.0,
-        "start_az": 0.0,
-        "spin": "ccw",
-        "first_face_part": "P_bumper_right",
-        "az": -13.88,
-        "mu": 0.5,
-        "along_travel": -0.281,
-        "along_travel_frictionless": 0.208,
-        "mu_crit": 0.21,
-        "camera_notch_edge": true,
-        "seam_end_land": false,
-        "verdict": "friction-limited (unsensed at mu 0.5)"
-      }
-    ],
+    "friction_limited": [],
+    "camera_window_edge_faces": 22,
+    "camera_window_edge_snags": [],
     "seam_end_land_snags": [
       {
         "z": 30,
@@ -9422,7 +9395,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -9437,7 +9410,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -9452,7 +9425,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -9467,7 +9440,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -9482,7 +9455,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -9497,7 +9470,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -9512,7 +9485,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       },
@@ -9527,67 +9500,7 @@
         "along_travel": -0.067,
         "along_travel_frictionless": -0.5,
         "mu_crit": 0.0,
-        "camera_notch_edge": false,
-        "seam_end_land": true,
-        "verdict": "rigid snag"
-      },
-      {
-        "z": 70,
-        "r_o": 155.5,
-        "start_az": 0.0,
-        "spin": "cw",
-        "first_face_part": "P_bumper_left",
-        "az": 1.38,
-        "mu": 0.5,
-        "along_travel": -0.067,
-        "along_travel_frictionless": -0.5,
-        "mu_crit": 0.0,
-        "camera_notch_edge": false,
-        "seam_end_land": true,
-        "verdict": "rigid snag"
-      },
-      {
-        "z": 70,
-        "r_o": 155.5,
-        "start_az": 0.0,
-        "spin": "ccw",
-        "first_face_part": "P_bumper_right",
-        "az": -1.38,
-        "mu": 0.5,
-        "along_travel": -0.067,
-        "along_travel_frictionless": -0.5,
-        "mu_crit": 0.0,
-        "camera_notch_edge": false,
-        "seam_end_land": true,
-        "verdict": "rigid snag"
-      },
-      {
-        "z": 70,
-        "r_o": 156.0,
-        "start_az": 0.0,
-        "spin": "cw",
-        "first_face_part": "P_bumper_left",
-        "az": 1.38,
-        "mu": 0.5,
-        "along_travel": -0.067,
-        "along_travel_frictionless": -0.5,
-        "mu_crit": 0.0,
-        "camera_notch_edge": false,
-        "seam_end_land": true,
-        "verdict": "rigid snag"
-      },
-      {
-        "z": 70,
-        "r_o": 156.0,
-        "start_az": 0.0,
-        "spin": "ccw",
-        "first_face_part": "P_bumper_right",
-        "az": -1.38,
-        "mu": 0.5,
-        "along_travel": -0.067,
-        "along_travel_frictionless": -0.5,
-        "mu_crit": 0.0,
-        "camera_notch_edge": false,
+        "camera_window_edge": false,
         "seam_end_land": true,
         "verdict": "rigid snag"
       }
@@ -10969,6 +10882,464 @@
         "ok": true
       },
       {
+        "z": 80.0,
+        "r_o": 153.0,
+        "direction": "toward the shell (+az) from az 78",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 0.0,
+        "az": 78.0,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.0,
+        "direction": "toward the shell (+az) from az 80",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 0.0,
+        "az": 80.0,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.0,
+        "direction": "toward the shell (+az) from az 82",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 0.0,
+        "az": 82.0,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.0,
+        "direction": "toward the shell (+az) from az 84",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.0,
+        "direction": "toward the shell (+az) from az 86",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 3.65,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.0,
+        "direction": "toward the shell (+az) from az 88",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 2.05,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.0,
+        "direction": "toward the shell (+az) from az 90",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.0,
+        "direction": "toward the shell (+az) from az 92",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.0,
+        "direction": "from behind (-az) from az 104",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 5.0,
+        "az": 83.9,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "direction": "toward the shell (+az) from az 78",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 0.0,
+        "az": 78.0,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "direction": "toward the shell (+az) from az 80",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 0.0,
+        "az": 80.0,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "direction": "toward the shell (+az) from az 82",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 0.0,
+        "az": 82.0,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "direction": "toward the shell (+az) from az 84",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 4.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "direction": "toward the shell (+az) from az 86",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 2.55,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "direction": "toward the shell (+az) from az 88",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.85,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "direction": "toward the shell (+az) from az 90",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "direction": "toward the shell (+az) from az 92",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 153.5,
+        "direction": "from behind (-az) from az 104",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 5.0,
+        "az": 82.3,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.0,
+        "direction": "toward the shell (+az) from az 78",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 0.0,
+        "az": 78.0,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.0,
+        "direction": "toward the shell (+az) from az 80",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 0.0,
+        "az": 80.0,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.0,
+        "direction": "toward the shell (+az) from az 82",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 4.3,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.0,
+        "direction": "toward the shell (+az) from az 84",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 2.95,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.0,
+        "direction": "toward the shell (+az) from az 86",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 1.45,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.0,
+        "direction": "toward the shell (+az) from az 88",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.0,
+        "direction": "toward the shell (+az) from az 90",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.0,
+        "direction": "toward the shell (+az) from az 92",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.0,
+        "direction": "from behind (-az) from az 104",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 5.0,
+        "az": 80.7,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "direction": "toward the shell (+az) from az 78",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 5.0,
+        "az": 78.8,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "direction": "toward the shell (+az) from az 80",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 4.6,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "direction": "toward the shell (+az) from az 82",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 3.35,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "direction": "toward the shell (+az) from az 84",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 1.95,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "direction": "toward the shell (+az) from az 86",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.3,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "direction": "toward the shell (+az) from az 88",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "direction": "toward the shell (+az) from az 90",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "direction": "toward the shell (+az) from az 92",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 154.5,
+        "direction": "from behind (-az) from az 104",
+        "verdict": "bumper at its hard stop: sensed rigid stop",
+        "max_travel_mm": 5.0,
+        "az": 79.2,
+        "travel_mm": 5.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.0,
+        "direction": "toward the shell (+az) from az 78",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 4.3,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.0,
+        "direction": "toward the shell (+az) from az 80",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 3.65,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.0,
+        "direction": "toward the shell (+az) from az 82",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 2.35,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.0,
+        "direction": "toward the shell (+az) from az 84",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.9,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.0,
+        "direction": "toward the shell (+az) from az 86",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.0,
+        "direction": "toward the shell (+az) from az 88",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.0,
+        "direction": "toward the shell (+az) from az 90",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.0,
+        "direction": "toward the shell (+az) from az 92",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.0,
+        "direction": "from behind (-az) from az 104",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 4.3,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "direction": "toward the shell (+az) from az 78",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 3.55,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "direction": "toward the shell (+az) from az 80",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 2.75,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "direction": "toward the shell (+az) from az 82",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 1.4,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "direction": "toward the shell (+az) from az 84",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "direction": "toward the shell (+az) from az 86",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "direction": "toward the shell (+az) from az 88",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "direction": "toward the shell (+az) from az 90",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "direction": "toward the shell (+az) from az 92",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 0.0,
+        "ok": true
+      },
+      {
+        "z": 80.0,
+        "r_o": 155.5,
+        "direction": "from behind (-az) from az 104",
+        "verdict": "no rigid contact (passes)",
+        "max_travel_mm": 3.55,
+        "ok": true
+      },
+      {
         "z": 87.5,
         "r_o": 153.0,
         "direction": "toward the shell (+az) from az 78",
@@ -11429,7 +11800,7 @@
     ],
     "pressed_spin_ok": true,
     "ok": true,
-    "verdict_rule": "sensed only if the contact force (normal plus object friction mu along the slip) has a component >= 0.05 along the half travel; friction-limited contacts count as failures. The camera-notch edge faces (z above the notch, az \u00b1AZC) are listed separately: the camera-view rule fixes them (user decision).",
+    "verdict_rule": "sensed only if the contact force (normal plus object friction mu along the slip) has a component >= 0.05 along the half travel; friction-limited contacts count as failures. The camera window edge faces (task F) are flagged camera_window_edge and must be sensed like any other face (their 62 deg flare gives the push along the travel).",
     "planar_play": "pressed spin: the half skin is taken from its most outward planar-play pose at every travel",
     "controller_rule": "A spin with a bumper pressed must stop (or reverse) before the pressed contact passes az \u00b190 deg; do not start a spin with an object within 6.4 mm outside the rear shell (r < 158.9) behind the axle.",
     "note": "First face met by an object fixed in the world while the robot spins, starting from the free band behind the robot (r 152.5..158.9) and from the seam gap. Object friction mu 0.5 on the foam (az < 70), 0.2 on the PTFE-taped skin (az >= 70). The az \u00b178..90 tapers end at R152.7, outside the start of the rear shell (ramped from R151.5): an object leaving a pressed bumper end never meets a fixed face, and one coming from behind meets the ramp. The seam ends are 20 deg lead-in ramps, so an object crossing the seam pushes the other half."
@@ -13283,14 +13654,14 @@
   },
   "camera_fov": {
     "lens_pose_mm": [
-      117.0,
+      146.0,
       0.0,
-      107.5
+      80.0
     ],
     "apex_back_mm": [
-      114.0,
+      143.0,
       0.0,
-      107.5
+      80.0
     ],
     "hfov_deg": 84,
     "vfov_deg": 68.06,
@@ -13309,39 +13680,247 @@
     "bumper_clearance": [
       {
         "state": "rest",
-        "bumper_clearance_to_frustum_mm": 4.3,
+        "bumper_clearance_to_frustum_mm": 4.35,
         "nearest": "P_bumper_left",
-        "bumper_clearance_to_frustum_apex_3mm_back_mm": 2.26,
-        "guard_clearance_to_frustum_apex_3mm_back_mm": 1.68
+        "bumper_clearance_to_frustum_apex_3mm_back_mm": 2.34,
+        "holder_clearance_to_frustum_apex_3mm_back_mm": 12.28
       },
       {
         "state": "left full travel",
-        "bumper_clearance_to_frustum_mm": 4.3,
+        "bumper_clearance_to_frustum_mm": 4.35,
         "nearest": "P_bumper_right",
-        "bumper_clearance_to_frustum_apex_3mm_back_mm": 2.26,
-        "guard_clearance_to_frustum_apex_3mm_back_mm": 1.68
+        "bumper_clearance_to_frustum_apex_3mm_back_mm": 2.34,
+        "holder_clearance_to_frustum_apex_3mm_back_mm": 12.28
       },
       {
         "state": "right full travel",
-        "bumper_clearance_to_frustum_mm": 4.3,
+        "bumper_clearance_to_frustum_mm": 4.35,
         "nearest": "P_bumper_left",
-        "bumper_clearance_to_frustum_apex_3mm_back_mm": 2.26,
-        "guard_clearance_to_frustum_apex_3mm_back_mm": 1.68
+        "bumper_clearance_to_frustum_apex_3mm_back_mm": 2.34,
+        "holder_clearance_to_frustum_apex_3mm_back_mm": 12.28
       },
       {
         "state": "planar play extremes (rest and hard stop, both halves)",
-        "bumper_clearance_to_frustum_mm": 4.07,
+        "bumper_clearance_to_frustum_mm": 4.17,
         "nearest": "P_bumper_left",
-        "bumper_clearance_to_frustum_apex_3mm_back_mm": 2.06,
+        "bumper_clearance_to_frustum_apex_3mm_back_mm": 2.17,
         "poses": 64
       }
     ],
     "required_bumper_clearance_mm": 4.0,
     "required_bumper_clearance_apex_back_mm": 1.5,
     "parts_in_frustum": [],
-    "pitch_tolerance_deg": 5.7,
-    "note": "Frusta from 0.5 mm in front of each apex to the floor; checked against every part including wires (lens excluded). The bumper notch keeps 4.4 mm to the lens-face frustum; lowering it to keep 4 mm from the 3-mm-back frustum would open an unsensed, unseen band (rods at z 73.5-77.5 crossing the skin under the image) in the perimeter test.",
+    "pitch_tolerance_deg": 18.5,
+    "note": "Frusta from 0.5 mm in front of each apex to the floor; checked against every part including wires (lens excluded). Task F: the camera looks out through the bumper window (camera_window); the window keeps >= 4 mm to the lens-face frustum and >= 1.5 mm to the 3-mm-back one in every pose, including the planar-play extremes.",
+    "lidar_parts_clearance": {
+      "lidar": {
+        "to_frustum_mm": 70.73,
+        "to_frustum_apex_3mm_back_mm": 68.51
+      },
+      "lidar_motor": {
+        "to_frustum_mm": 129.51,
+        "to_frustum_apex_3mm_back_mm": 126.63
+      },
+      "lidar_turret": {
+        "to_frustum_mm": 85.26,
+        "to_frustum_apex_3mm_back_mm": 83.09
+      },
+      "P_lidar_tray": {
+        "to_frustum_mm": 51.68,
+        "to_frustum_apex_3mm_back_mm": 49.02
+      },
+      "W20": {
+        "to_frustum_mm": 89.4,
+        "to_frustum_apex_3mm_back_mm": 86.54
+      },
+      "J28": {
+        "to_frustum_mm": 114.12,
+        "to_frustum_apex_3mm_back_mm": 111.39
+      }
+    },
     "ok": true
+  },
+  "camera_window": {
+    "lens_face_x_mm": 146.0,
+    "axis_z_mm": 80.0,
+    "flare_deg": 62.0,
+    "sill_and_roof_z_mm": [
+      65.9,
+      93.1
+    ],
+    "print_support": "a 1.8 mm plug at r 154.8..156.6 in each half (and a pillar under the right half upper seam backer) in the as-printed STL, cut out after printing",
+    "at_skin": {
+      "half_width_deg": 7.98,
+      "width_mm": 44.5,
+      "z_mm": [
+        65.9,
+        93.1
+      ]
+    },
+    "at_inner_wall": {
+      "x_mm": 153.0,
+      "width_mm": 26.1,
+      "z_mm": [
+        65.9,
+        93.1
+      ]
+    },
+    "lens_recess_behind_skin_mm": 11.36,
+    "hard_stop_travel_along_x_mm": 4.33,
+    "min_gap_camera_to_moving_halves_mm": 4.36,
+    "at": {
+      "part": "P_bumper_left",
+      "pose": "play s 4.9 e 0.1 yaw -0.282 deg",
+      "camera_part": "camera_lens"
+    },
+    "poses": 84,
+    "rule": "camera parts >= 1.5 mm from both halves (shell, foam, seam backer) at every travel and planar-play pose; lens recess >= hard-stop travel + 2 mm",
+    "residual": "An object small enough to pass the window opening (about 26 x 27 mm at the inner wall) can reach the lens without moving a half: the perimeter rods that do so are listed in rods_through_window. Anything larger meets a half first and trips it before the lens.",
+    "ok": true,
+    "rods_through_window": [
+      {
+        "z": 69.5,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 22.1,
+        "contacts": [
+          "camera_board"
+        ]
+      },
+      {
+        "z": 71.5,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 22.08,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 73.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.96,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 74.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.83,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 75.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.83,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 76.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.75,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 77.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.75,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 78.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.75,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 79.0,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.66,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 80.5,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.66,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 82.5,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.75,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 85.5,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 21.83,
+        "contacts": [
+          "camera_board",
+          "camera_lens"
+        ]
+      },
+      {
+        "z": 89.5,
+        "az_from": -4.0,
+        "az_to": 4.0,
+        "max_intrusion_mm": 22.1,
+        "contacts": [
+          "camera_board"
+        ]
+      }
+    ],
+    "rod_rows_through_window": 13,
+    "rod_first_contacts": [
+      "camera_board",
+      "camera_lens"
+    ],
+    "seam_rod_heights_without_contact": [
+      67.5,
+      80.0,
+      85,
+      90
+    ],
+    "spin_edge_faces": 22,
+    "spin_edge_snags": [],
+    "widest_rod_through_window_az_deg": 4.0
   },
   "cliff_fov": {
     "fov_deg": 25,
@@ -13395,11 +13974,11 @@
       16.0
     ],
     "placement_offset_mm": [
-      20,
+      54,
       0,
       135.3
     ],
-    "rotation_deg": 0,
+    "rotation_deg": 180,
     "lug_underside_z_mm": 127.3,
     "tray_overlap_with_lidar_mm3": 0.0,
     "tray_gap_to_non_lug_lidar_parts_mm": 3.2,
@@ -13426,22 +14005,48 @@
       },
       {
         "at": [
-          66,
+          83,
           -35
         ],
-        "min_gap_mm": 69.56,
+        "min_gap_mm": 55.72,
         "nearest": "P_bumper_right"
       },
       {
         "at": [
-          66,
+          83,
           35
         ],
-        "min_gap_mm": 69.56,
+        "min_gap_mm": 55.72,
         "nearest": "P_bumper_left"
       }
     ],
-    "scan_band_ok": true
+    "scan_band_ok": true,
+    "min_range": {
+      "ld14_min_range_mm": 100.0,
+      "nearest_pressed_skin_to_spin_axis_mm": 100.5,
+      "margin_mm": 0.5,
+      "note": "front skin (R_SKIN) with a half at its hard stop (4.33 mm rearward, 2.5 mm inward) to the LiDAR spin axis; above 100 mm the LD14 sees an object the bumper touches",
+      "ok": true
+    },
+    "front_gap": {
+      "required_mm": 10.0,
+      "gap_to_skin_mm": 65.07,
+      "nearest_part": "lidar",
+      "ok": true,
+      "rule": "every LD14 part (housing, motor, turret, connector) stays >= 10 mm inside the bumper skin R_SKIN"
+    },
+    "scan_band_vertical": {
+      "band_z_mm": [
+        143.5,
+        151.5
+      ],
+      "lid_top_z_mm": 103.5,
+      "bumper_top_z_mm": 98.51,
+      "tray_plate_top_z_mm": 106.5,
+      "band_above_lid_mm": 40.0,
+      "band_above_bumper_mm": 44.99,
+      "ok": true
+    }
   },
   "caster_layout": {
     "rear_caster_xy": [
@@ -13471,35 +14076,35 @@
       "controller": "DriveCore.h: a hazard disarms (tl = tr = 0); the wheels then see the simulator dynamic brake (coast)",
       "detection_latency_s": 0.066,
       "spot_allowance_mm": 4.7,
-      "effective_mass_kg": 3.047,
-      "coast_time_constant_s": 0.244,
+      "effective_mass_kg": 3.069,
+      "coast_time_constant_s": 0.246,
       "coast_without_rolling_drag": {
         "speed_m_s": 0.06,
         "latency_travel_mm": 4.0,
-        "distance_mm": 14.6,
-        "required_lead_mm": 23.3,
-        "margin_mm": 11.7,
+        "distance_mm": 14.7,
+        "required_lead_mm": 23.4,
+        "margin_mm": 11.6,
         "ok": true
       },
       "coast_with_rolling_drag": {
         "speed_m_s": 0.06,
-        "distance_mm": 9.4,
-        "required_lead_mm": 18.0,
+        "distance_mm": 9.5,
+        "required_lead_mm": 18.1,
         "ok": true
       },
       "max_coast_safe_reverse_speed_mps": 0.095,
       "if_reverse_were_not_capped": {
         "speed_m_s": 0.15,
-        "required_lead_mm": 51.2,
+        "required_lead_mm": 51.4,
         "ok": false,
         "note": "for information: without the firmware reverse cap a 0.15 m/s reverse would need this lead; the firmware cap is REQUIRED"
       },
       "active_brake_limit": {
-        "max_decel_with_torque_cap_m_s2": 1.64,
-        "note": "DriveCore max_torque 0.1 N m per wheel caps any active brake at 1.64 m/s2; the coast is what the controller does today."
+        "max_decel_with_torque_cap_m_s2": 1.63,
+        "note": "DriveCore max_torque 0.1 N m per wheel caps any active brake at 1.63 m/s2; the coast is what the controller does today."
       },
-      "backward_tip_onset_m_s2": 9.13,
-      "max_drive_accel_m_s2": 1.64,
+      "backward_tip_onset_m_s2": 9.5,
+      "max_drive_accel_m_s2": 1.63,
       "note": "Latency = two VL53L0X timing budgets. Reflected axle inertia (0.0005 kg m2 per wheel) is in the effective mass for the coast and the torque-limited brake."
     },
     "oblique_edges": {
@@ -13510,7 +14115,7 @@
         ],
         "wheel_contact_y_mm": 114.0,
         "lead_formula_mm": "105 - 42.0 tan(a)",
-        "max_edge_angle_deg_for_coast": 52.0,
+        "max_edge_angle_deg_for_coast": 51.9,
         "edge_angle_deg_with_no_lead": 68.2,
         "limitation": "An edge met more obliquely than these angles, or driven along within 42 mm of a wheel, drops a wheel before a front sensor trips (the spec fixes the front sensors at (105, \u00b172)). Needs a controller rule (slow down near mapped edges) or outboard front sensors: user decision."
       },
@@ -13581,25 +14186,25 @@
     "ok": true
   },
   "com_estimate": {
-    "total_mass_kg": 2.422,
-    "body_mass_without_wheels_and_caster_ball_kg": 2.284,
-    "printed_mass_kg": 0.96,
+    "total_mass_kg": 2.444,
+    "body_mass_without_wheels_and_caster_ball_kg": 2.306,
+    "printed_mass_kg": 0.982,
     "com_mm": [
-      -18.5,
-      -1.1,
-      60.7
+      -16.0,
+      -1.0,
+      61.0
     ],
-    "com_x_limit_mm": -15,
-    "com_x_limit_source": "simulator sync guard: COM_x <= -15 mm",
-    "com_x_sensitivity_limit_mm": -14,
-    "forward_pitch_onset_min_m_s2": 2.0,
-    "caster_load_fraction": 0.246,
-    "rear_caster_load_N": 5.86,
-    "drive_wheel_load_N": 17.9,
-    "forward_pitch_onset_decel_m_s2": 2.99,
-    "forward_pitch_onset_on_5deg_downhill_m_s2": 2.12,
-    "backward_tip_onset_accel_m_s2": 9.13,
-    "braking_requirement": "Keep forward braking below the pitch onset: the DriveCore torque cap already limits any active brake to about 1.64 m/s2 (level onset 2.99, 5 deg downhill onset 2.12); use a ramped PWM brake, never a hard short, and slow down on ramps.",
+    "com_x_limit_mm": -12,
+    "com_x_sensitivity_limit_mm": -10,
+    "downhill_pitch_onset_min_m_s2": 0.75,
+    "com_x_limit_source": "user decision 2026-10-11 (task F): nominal <= -12 mm, every sensitivity case <= -10 mm (was -15 / -14), approved for an LD14 trial at x 109 and kept for x 54; every case keeps its 5 deg-downhill pitch onset >= 3 \u00d7 the DriveCore braking ramp (0.25 m/s2). The simulator sync guard (COM_LIMIT_M) checks the same two limits.",
+    "caster_load_fraction": 0.213,
+    "rear_caster_load_N": 5.1,
+    "drive_wheel_load_N": 18.87,
+    "forward_pitch_onset_decel_m_s2": 2.57,
+    "forward_pitch_onset_on_5deg_downhill_m_s2": 1.7,
+    "backward_tip_onset_accel_m_s2": 9.5,
+    "braking_requirement": "Keep forward braking below the pitch onset (level 2.57, 5 deg downhill 1.70 m/s2 nominal; 1.33 on the downhill in the worst sensitivity case): DriveCore ramps every wheel setpoint, braking included, at 0.25 m/s2 and a disarm coasts; its torque cap alone would allow about 1.63 m/s2, above that worst downhill onset, so keep the ramp in the firmware, never short-brake the motors (the driver coasts on disarm), and slow down on ramps.",
     "placement": {
       "note": "No ballast (user decision): the existing heavy parts sit as far aft as the layout allows.",
       "battery": {
@@ -13644,31 +14249,36 @@
             40.0
           ]
         ],
-        "limit": "NVIDIA B01 STEP turned +90 deg (I/O row forward, barrel jack on the right), on two 24 mm standoff stacks from P_base (front) and two 20 mm F-F standoffs on the bay board (rear, clamping it): carrier x -37..42. Its x is set by the COM sensitivity guard (every case <= -14 mm): with the spec position (origin x 38, carrier x -24..55) the L1 model gave COM x -15.6 and -13.4 in the +50 g-forward case (fails); origin x 30 was the most forward that passed (-14.1), origin x 25 kept 0.5 mm of margin there. Bay board (B1): the Jetson stays at z 57; its rear standoffs clamp the board, whose under-carrier modules (DRV8874 \u00d7 2, GY-521) stay <= z 53.27. Low profile (L2, Jetson position unchanged): COM x -18.5, worst case -15.92 (fill 1.0 and battery 10 % lighter)."
+        "limit": "NVIDIA B01 STEP turned +90 deg (I/O row forward, barrel jack on the right), on two 24 mm standoff stacks from P_base (front) and two 20 mm F-F standoffs on the bay board (rear, clamping it): carrier x -37..42. Its x was set in L1 by the COM sensitivity guard of that time (every case <= -14 mm): with the spec position (origin x 38, carrier x -24..55) the L1 model gave COM x -15.6 and -13.4 in the +50 g-forward case (a fail then); origin x 30 was the most forward that passed (-14.1), origin x 25 kept 0.5 mm of margin there. The rule now is the user's (task F, 2026-10-11): nominal <= -12 mm, every case <= -10 mm (com_x_limit_source); the Jetson has not moved. Bay board (B1): the Jetson stays at z 57; its rear standoffs clamp the board, whose under-carrier modules (DRV8874 \u00d7 2, GY-521) stay <= z 53.27. This build: COM x -16, worst case -13.48 (fill 1.0 and battery 10 % lighter)."
       },
       "power_stage": "bay board x -66.4..7.5 at base level under the Jetson, directly ahead of the battery tray (no room further aft); P03 turned 90 deg in the front bay (x 9..47) ahead of the board's tongue",
-      "controller_lidar_camera": "LiDAR (spec x 20) and camera (spec x 117) positions are fixed by the sensor spec; the bumper halves (0.20 kg at x ~96) are the main forward mass"
+      "controller_lidar_camera": "Task F: LD14 turned round, spin axis x 54, its 0.1 m blind circle inside the pressed bumper (user decision 2026-10-11, option B; COM rule relaxed to nominal <= -12 / worst <= -10 mm; the old spec x 20), camera lens face x 146 in the bumper window; the bumper halves (0.20 kg at x ~97) are the main forward mass"
     },
     "sensitivity": {
       "all printed parts fill 1.0": {
-        "com_x_mm": -17.12,
-        "forward_pitch_onset_m_s2": 2.81
+        "com_x_mm": -14.71,
+        "forward_pitch_onset_m_s2": 2.41,
+        "forward_pitch_onset_5deg_downhill_m_s2": 1.54
       },
       "battery 10 % lighter": {
-        "com_x_mm": -17.24,
-        "forward_pitch_onset_m_s2": 2.78
+        "com_x_mm": -14.69,
+        "forward_pitch_onset_m_s2": 2.36,
+        "forward_pitch_onset_5deg_downhill_m_s2": 1.49
       },
       "Jetson 30 % lighter": {
-        "com_x_mm": -18.85,
-        "forward_pitch_onset_m_s2": 3.06
+        "com_x_mm": -16.26,
+        "forward_pitch_onset_m_s2": 2.62,
+        "forward_pitch_onset_5deg_downhill_m_s2": 1.76
       },
       "+50 g at x=+100, z=60": {
-        "com_x_mm": -16.09,
-        "forward_pitch_onset_m_s2": 2.6
+        "com_x_mm": -13.64,
+        "forward_pitch_onset_m_s2": 2.19,
+        "forward_pitch_onset_5deg_downhill_m_s2": 1.33
       },
       "fill 1.0 and battery 10 % lighter": {
-        "com_x_mm": -15.92,
-        "forward_pitch_onset_m_s2": 2.61
+        "com_x_mm": -13.48,
+        "forward_pitch_onset_m_s2": 2.2,
+        "forward_pitch_onset_5deg_downhill_m_s2": 1.34
       }
     },
     "records": [
@@ -13865,36 +14475,36 @@
         "sim_item": "P_cliff_mount_4"
       },
       {
-        "item": "P_camera_tower",
-        "mass_kg": 0.01569,
+        "item": "P_camera_mount",
+        "mass_kg": 0.01385,
         "position_mm": [
-          105.7,
+          105.2,
           -0.0,
-          65.6
+          62.6
         ],
-        "mean_wall_mm": 4.0,
-        "fill": 0.62,
-        "sim_item": "P_camera_tower"
+        "mean_wall_mm": 3.38,
+        "fill": 0.759,
+        "sim_item": "P_camera_mount"
       },
       {
-        "item": "P_camera_guard",
-        "mass_kg": 0.01455,
+        "item": "P_camera_holder",
+        "mass_kg": 0.00421,
         "position_mm": [
-          114.5,
+          127.1,
           0.5,
-          108.7
+          83.1
         ],
-        "mean_wall_mm": 2.71,
+        "mean_wall_mm": 2.18,
         "fill": 1.0,
-        "sim_item": "P_camera_guard"
+        "sim_item": "P_camera_holder"
       },
       {
         "item": "P_lidar_tray",
-        "mass_kg": 0.04128,
+        "mass_kg": 0.04936,
         "position_mm": [
-          17.9,
-          0.6,
-          106.3
+          30.9,
+          -0.3,
+          106.1
         ],
         "mean_wall_mm": 2.82,
         "fill": 1.0,
@@ -13914,14 +14524,14 @@
       },
       {
         "item": "P_bumper_left",
-        "mass_kg": 0.09787,
+        "mass_kg": 0.09781,
         "position_mm": [
-          95.3,
-          90.5,
-          53.3
+          96.9,
+          88.8,
+          54.3
         ],
-        "mean_wall_mm": 3.12,
-        "fill": 0.927,
+        "mean_wall_mm": 3.16,
+        "fill": 0.901,
         "sim_item": "P_bumper_left"
       },
       {
@@ -13962,14 +14572,14 @@
       },
       {
         "item": "P_bumper_right",
-        "mass_kg": 0.10282,
+        "mass_kg": 0.1027,
         "position_mm": [
-          96.6,
-          -88.4,
-          53.2
+          98.0,
+          -87.0,
+          54.1
         ],
-        "mean_wall_mm": 3.08,
-        "fill": 0.951,
+        "mean_wall_mm": 3.12,
+        "fill": 0.926,
         "sim_item": "P_bumper_right"
       },
       {
@@ -14058,13 +14668,13 @@
       },
       {
         "item": "P_lid_front",
-        "mass_kg": 0.04782,
+        "mass_kg": 0.0745,
         "position_mm": [
-          71.3,
-          -27.2,
+          87.9,
+          -17.8,
           102.0
         ],
-        "mean_wall_mm": 2.73,
+        "mean_wall_mm": 2.83,
         "fill": 1.0,
         "sim_item": "P_lid_front"
       },
@@ -14108,8 +14718,8 @@
         "item": "P_ld14_grommet",
         "mass_kg": 0.00056,
         "position_mm": [
-          34.9,
-          -22.0,
+          59.9,
+          22.0,
           103.4
         ],
         "mean_wall_mm": 1.74,
@@ -14274,9 +14884,9 @@
         "item": "Wiring + connectors",
         "mass_kg": 0.1,
         "position_mm": [
-          5.1,
-          -1.6,
-          59.3
+          6.5,
+          -0.9,
+          60.0
         ],
         "sim_item": "Wiring + connectors"
       },
@@ -14284,7 +14894,7 @@
         "item": "Fasteners, inserts, pins, springs, bearings, races and balls (steel, CAD volume)",
         "mass_kg": 0.0882,
         "position_mm": [
-          35.6,
+          36.3,
           -0.2,
           42.1
         ],
@@ -14304,9 +14914,9 @@
         "item": "Camera",
         "mass_kg": 0.015,
         "position_mm": [
-          110.2,
+          139.2,
           0.0,
-          107.5
+          80.0
         ],
         "sim_item": "Camera"
       },
@@ -14314,8 +14924,8 @@
         "item": "D200 LiDAR",
         "mass_kg": 0.101,
         "position_mm": [
-          26.0,
-          -0.1,
+          48.0,
+          0.1,
           142.4
         ],
         "sim_item": "D200 LiDAR"
@@ -14334,9 +14944,9 @@
         "item": "Bumper foam F02 (EVA ~0.07 g/cm3, estimate)",
         "mass_kg": 0.0017,
         "position_mm": [
-          121.4,
+          121.2,
           0.0,
-          48.7
+          48.6
         ],
         "sim_item": "Bumper foam"
       },
@@ -14362,19 +14972,21 @@
       }
     ],
     "method": "Printed: CAD volume \u00d7 1.27 g/cm3 \u00d7 fill (mean wall 2V/A: 1.0 up to 3.0 mm, 0.62 from 3.6 mm = 2 \u00d7 4 perimeters \u00d7 0.45, linear in between) at the solid centroid. Bought: simulator record masses at CAD centroids (power stage and controller group spread over their parts). Steel from CAD volume. No ballast.",
-    "sensitivity_worst_com_x_mm": -15.92,
+    "sensitivity_worst_com_x_mm": -13.48,
     "sensitivity_worst_case": "fill 1.0 and battery 10 % lighter",
-    "sensitivity_min_forward_pitch_onset_m_s2": 2.6,
+    "sensitivity_min_forward_pitch_onset_m_s2": 2.19,
+    "sensitivity_min_5deg_downhill_pitch_onset_m_s2": 1.33,
     "fill_model_check": {
       "previous_step_rule": "fill 1.0 if 2V/A <= 3.0 mm else 0.62 (step)",
-      "com_x_mm": -19.32,
-      "total_mass_kg": 2.274,
-      "forward_pitch_onset_m_s2": 3.1,
-      "worst_case_plus_50g_front_com_x_mm": -16.75,
+      "com_x_mm": -16.62,
+      "total_mass_kg": 2.298,
+      "forward_pitch_onset_m_s2": 2.66,
+      "worst_case_plus_50g_front_com_x_mm": -14.13,
       "parts_affected": {
         "P_base": 0.622,
-        "P_bumper_left": 0.927,
-        "P_bumper_right": 0.951,
+        "P_camera_mount": 0.759,
+        "P_bumper_left": 0.901,
+        "P_bumper_right": 0.926,
         "P_rear_shell_left": 0.957,
         "P_rear_shell_right": 0.966
       },
@@ -14390,35 +15002,35 @@
         "verdict": "fail",
         "pass": false,
         "wheel_mu_required": 0.75,
-        "caster_mu_required": 1.038,
+        "caster_mu_required": 0.848,
         "body_floor_clearance_mm": 9.73,
         "clearance_point": "lowest body point while the wheels are up (pitch about the caster), or the riser on the level approach",
         "wheel_torque_required_Nm": {
-          "wheel_climb": 0.215,
-          "caster_over": 0.349,
-          "max": 0.349
+          "wheel_climb": 0.226,
+          "caster_over": 0.304,
+          "max": 0.304
         },
         "drivecore_cap_Nm": 0.1,
         "fails_because": [
           "rear caster cannot be dragged over (friction)",
-          "needs 0.349 N m per wheel, above the DriveCore cap 0.1 N m"
+          "needs 0.304 N m per wheel, above the DriveCore cap 0.1 N m"
         ]
       },
       "reverse": {
         "verdict": "fail",
         "pass": false,
         "wheel_mu_required": 0.75,
-        "caster_mu_required": 0.525,
+        "caster_mu_required": 0.441,
         "body_floor_clearance_mm": 1.23,
         "clearance_point": "lowest body point while the caster is up (pitch about the wheels), or the riser on the level approach",
         "wheel_torque_required_Nm": {
-          "wheel_climb": 0.215,
-          "caster_over": 0.206,
-          "max": 0.215
+          "wheel_climb": 0.226,
+          "caster_over": 0.18,
+          "max": 0.226
         },
         "drivecore_cap_Nm": 0.1,
         "fails_because": [
-          "needs 0.215 N m per wheel, above the DriveCore cap 0.1 N m"
+          "needs 0.226 N m per wheel, above the DriveCore cap 0.1 N m"
         ]
       }
     },
@@ -14427,44 +15039,44 @@
         "verdict": "fail",
         "pass": false,
         "wheel_mu_required": 0.882,
-        "caster_mu_required": 1.926,
+        "caster_mu_required": 1.573,
         "body_floor_clearance_mm": 7.67,
         "clearance_point": "lowest body point while the wheels are up (pitch about the caster), or the riser on the level approach",
         "wheel_torque_required_Nm": {
-          "wheel_climb": 0.237,
-          "caster_over": 0.645,
-          "max": 0.645
+          "wheel_climb": 0.25,
+          "caster_over": 0.562,
+          "max": 0.562
         },
         "drivecore_cap_Nm": 0.1,
         "fails_because": [
           "drive wheels cannot climb the edge (friction)",
           "rear caster cannot be dragged over (friction)",
-          "needs 0.645 N m per wheel, above the DriveCore cap 0.1 N m"
+          "needs 0.562 N m per wheel, above the DriveCore cap 0.1 N m"
         ]
       },
       "reverse": {
         "verdict": "fail",
         "pass": false,
         "wheel_mu_required": 0.882,
-        "caster_mu_required": 0.739,
+        "caster_mu_required": 0.625,
         "body_floor_clearance_mm": -2.96,
         "clearance_point": "lowest body point while the caster is up (pitch about the wheels), or the riser on the level approach",
         "wheel_torque_required_Nm": {
-          "wheel_climb": 0.237,
-          "caster_over": 0.303,
-          "max": 0.303
+          "wheel_climb": 0.25,
+          "caster_over": 0.264,
+          "max": 0.264
         },
         "drivecore_cap_Nm": 0.1,
         "fails_because": [
           "drive wheels cannot climb the edge (friction)",
           "lowest body point while the caster is up (pitch about the wheels), or the riser on the level approach strikes the floor",
-          "needs 0.303 N m per wheel, above the DriveCore cap 0.1 N m"
+          "needs 0.264 N m per wheel, above the DriveCore cap 0.1 N m"
         ]
       }
     },
     "capability_mm": {
-      "forward": 1.5,
-      "reverse": 1.5,
+      "forward": 1.0,
+      "reverse": 1.0,
       "note": "largest square step (0.5 mm steps) not rated fail"
     },
     "motor_note": "Pololu 4867 (99:1 MP 12 V) stall torque at 7.2 V is not in this package: the DriveCore cap 0.10 N m per wheel governs; verify the gearmotor rating before raising it.",
@@ -14490,21 +15102,27 @@
       "area_mm2": 962
     },
     "grille": {
-      "slots": "5 \u00d7 4.5 mm on a 6.5 mm pitch inside r 17.5, solid r 8 hub under the front lug tower",
+      "slots": "5 \u00d7 4.5 mm on a 6.5 mm pitch inside r 17.5, no hub (task F: no lug tower over the fan)",
       "fan_bore_annulus_mm2": 754,
-      "open_area_over_bore_mm2": 502,
-      "open_area_cad_mm2": 476,
-      "open_fraction_of_bore": 0.666,
-      "open_area_not_under_lidar_mm2": 378,
-      "bore_fraction_under_lidar_housing": 0.269
+      "open_area_over_bore_mm2": 552,
+      "open_area_cad_mm2": 523,
+      "open_fraction_of_bore": 0.732,
+      "open_area_shadowed_in_plan_mm2": 11.9,
+      "open_area_not_shadowed_mm2": 540,
+      "open_fraction_of_bore_not_shadowed": 0.716,
+      "bore_fraction_shadowed_in_plan": 0.035
     },
-    "plenum": {
-      "tray_top_z_mm": 106.5,
-      "lidar_housing_underside_z_mm": 127.3,
-      "height_mm": 20.8,
-      "open_sides": "all round: only the three \u00d88.6 lug towers stand in it",
-      "side_entry_along_lidar_edge_over_window_mm2": 597,
-      "chord_mm": 28.7
+    "intake": {
+      "over_grille": "open room air: the turned-round LD14 stands ahead of the fan window (task F); its motor end overhangs the grille's front edge by 3.6 mm, 10.2 mm above the plate, shadowing 12 mm2 (2.2%) of the open slots in plan. The gate counts that shadow as closed; those slots still draw room air sideways under the overhang through a curtain about 140 mm2 (10.2 mm clear \u00d7 13.8 mm across the window), 12 \u00d7 their own area, so the overhang does not throttle the intake.",
+      "lidar_gap_to_column_over_grille_mm": 0.0,
+      "parts_over_grille": [
+        "lidar",
+        "lidar_motor"
+      ],
+      "clear_height_under_overhang_mm": 10.2,
+      "shadow_width_across_window_mm": 13.75,
+      "side_entry_curtain_mm2": 140.3,
+      "method": "plan shadow of the mesh triangles of every part above the tray plate top (tray and lid excluded) on the 0.25 mm grille grid; clear height = lowest overhanging surface over a shadowed open slot minus the plate top"
     },
     "fan_skirt": {
       "inner_r_mm": 17.5,
@@ -14518,19 +15136,26 @@
       "ld14_aperture_leak_mm2": 7.71,
       "ld14_aperture_open_without_grommet_mm2": 140,
       "bypass_area_mm2": 106.7,
-      "bypass_fraction_of_grille_open_area": 0.224,
+      "bypass_fraction_of_grille_open_area": 0.204,
       "bypass_limit_fraction": 0.25,
       "feeler_go_nogo_mm": [
         0.5,
         1.0
       ],
-      "gap_at_bypass_limit_mm": 1.01,
-      "bypass_margin_fraction": 0.026,
+      "gap_at_bypass_limit_mm": 1.12,
+      "bypass_margin_fraction": 0.046,
       "rule": "bypass (gap \u00d7 skirt inner circumference + the LD14 lead aperture left open round its grommet) <= 25 % of the grille open area over the bore (CAD), with >= 1 % margin; the no-go feeler is under the gap at the limit; skirt unbroken (section within 1 %); >= 0.5 mm to the fan screw heads; window >= the fan bore"
     },
     "bring_up_test": "Lid-on load test before the robot is used: lid, LiDAR and tray fitted, sustained full CPU + GPU load for 20 min, log tegrastats (CPU/GPU/SoC temperatures and clocks) and compare with a lid-off run; the lid passes if the clocks never throttle. Carry into pcb/BRINGUP.md (L11).",
-    "exhaust": "The fan blows down through the heatsink fins; the warm air leaves the body through the 2 mm ring gap between the bumper / rear-shell tops and the lid underside, the 7.5 mm bumper seam and the open ring between the base edge and the shells.",
-    "choice": "The lid seams all meet near the centre (0, 0), which lies inside the fan footprint, so slots in the lid over the fan would cross them; the LD14 sits over 59 % of the fan, so the grille is in the tray plate over a lid window and the plenum under the LD14 is the intake. The skirt closes the 5.2 mm gap between the fan top and the lid, which would otherwise be a ~670 mm2 side inlet from inside the warm body.",
+    "exhaust": {
+      "path": "The fan blows down through the heatsink fins; the warm air leaves the body through the 2 mm ring gap between the bumper / rear-shell tops and the lid underside, the 7.5 mm bumper seam and the open ring between the base edge and the shells. Task I closed the lid over the front bay (until then an open notch of about 7050 mm2, left from the old camera tower): the ring gap alone stays several times the grille's open area.",
+      "ring_gap_mm": 2.0,
+      "ring_gap_section_mm2": 1755.5,
+      "ring_gap_section_radius_mm": 139.7,
+      "ring_gap_to_grille_open_area": 3.36,
+      "rule": "the ring gap section (gap \u00d7 circumference at the rear-shell rim's inner edge) >= 2 \u00d7 the grille open area (CAD); the seam, the camera window and the base ring are extra"
+    },
+    "choice": "The lid seams all meet near the centre (0, 0), which lies inside the fan footprint, so slots in the lid over the fan would cross them; so the grille is in the tray plate over a lid window (task F: with the LD14 turned round ahead of the fan, room air reaches the grille directly). The skirt closes the 5.2 mm gap between the fan top and the lid, which would otherwise be a ~670 mm2 side inlet from inside the warm body.",
     "ok": true
   },
   "robot_top": {
@@ -14542,10 +15167,10 @@
     "lid_top_z_mm": 103.5,
     "bumper_and_rear_shell_top_z_mm": 98.5,
     "lidar_scan_plane_z_mm": 147.5,
-    "camera_lens_axis_z_mm": 107.5,
-    "camera_tower_top_bar_z_mm": [
-      85.5,
-      91.5
+    "camera_lens_axis_z_mm": 80.0,
+    "camera_mount_crossbar_z_mm": [
+      83.0,
+      89.0
     ],
     "ok": true
   },
@@ -14598,16 +15223,16 @@
           "v0_mps": 0.15,
           "hit_z_mm": 87.5,
           "v_at_stop_mps": 0.128,
-          "energy_J": 0.02,
+          "energy_J": 0.0202,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 94.9,
+          "equivalent_force_N": 95.3,
           "gusset_root_MPa": 5.1,
           "wall_above_gusset_tip_MPa": 9.9,
           "consistent_stiffness": {
             "foam_in_series": false,
             "wall_bending_N_per_mm": 274.4,
             "series_stiffness_N_per_mm": 170.7,
-            "equivalent_force_N": 82.6,
+            "equivalent_force_N": 83.0,
             "gusset_root_MPa": 4.4,
             "wall_above_gusset_tip_MPa": 8.6
           }
@@ -14616,16 +15241,16 @@
           "v0_mps": 0.15,
           "hit_z_mm": 98.5,
           "v_at_stop_mps": 0.128,
-          "energy_J": 0.02,
+          "energy_J": 0.0202,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 94.9,
+          "equivalent_force_N": 95.3,
           "gusset_root_MPa": 6.0,
-          "wall_above_gusset_tip_MPa": 15.3,
+          "wall_above_gusset_tip_MPa": 15.4,
           "consistent_stiffness": {
             "foam_in_series": false,
             "wall_bending_N_per_mm": 73.7,
             "series_stiffness_N_per_mm": 63.3,
-            "equivalent_force_N": 50.3,
+            "equivalent_force_N": 50.5,
             "gusset_root_MPa": 3.2,
             "wall_above_gusset_tip_MPa": 8.1
           }
@@ -14634,36 +15259,36 @@
           "v0_mps": 0.3,
           "hit_z_mm": 87.5,
           "v_at_stop_mps": 0.3,
-          "energy_J": 0.109,
+          "energy_J": 0.11,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 221.7,
+          "equivalent_force_N": 222.7,
           "gusset_root_MPa": 11.9,
-          "wall_above_gusset_tip_MPa": 23.0,
+          "wall_above_gusset_tip_MPa": 23.1,
           "consistent_stiffness": {
             "foam_in_series": false,
             "wall_bending_N_per_mm": 274.4,
             "series_stiffness_N_per_mm": 170.7,
-            "equivalent_force_N": 192.9,
-            "gusset_root_MPa": 10.3,
-            "wall_above_gusset_tip_MPa": 20.0
+            "equivalent_force_N": 193.8,
+            "gusset_root_MPa": 10.4,
+            "wall_above_gusset_tip_MPa": 20.1
           }
         },
         {
           "v0_mps": 0.3,
           "hit_z_mm": 98.5,
           "v_at_stop_mps": 0.3,
-          "energy_J": 0.109,
+          "energy_J": 0.11,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 221.7,
-          "gusset_root_MPa": 14.0,
-          "wall_above_gusset_tip_MPa": 35.7,
+          "equivalent_force_N": 222.7,
+          "gusset_root_MPa": 14.1,
+          "wall_above_gusset_tip_MPa": 35.9,
           "consistent_stiffness": {
             "foam_in_series": false,
             "wall_bending_N_per_mm": 73.7,
             "series_stiffness_N_per_mm": 63.3,
-            "equivalent_force_N": 117.5,
-            "gusset_root_MPa": 7.4,
-            "wall_above_gusset_tip_MPa": 18.9
+            "equivalent_force_N": 118.0,
+            "gusset_root_MPa": 7.5,
+            "wall_above_gusset_tip_MPa": 19.0
           }
         }
       ],
@@ -14772,102 +15397,102 @@
           "side": "left",
           "rib_az": 121,
           "hit_z_mm": 87.5,
-          "force_N": 186.9,
+          "force_N": 187.8,
           "fins_within_40mm": 2,
           "gusset_depth_at_root_mm": 32.5,
           "tip_section_MPa": 8.8,
           "root_section_MPa": 2.3,
-          "wall_alone_at_tip_MPa": 35.8
+          "wall_alone_at_tip_MPa": 35.9
         },
         {
           "side": "left",
           "rib_az": 121,
           "hit_z_mm": 98.5,
-          "force_N": 96.9,
+          "force_N": 97.3,
           "fins_within_40mm": 2,
           "gusset_depth_at_root_mm": 32.5,
           "tip_section_MPa": 7.1,
           "root_section_MPa": 1.4,
-          "wall_alone_at_tip_MPa": 28.7
+          "wall_alone_at_tip_MPa": 28.9
         },
         {
           "side": "left",
           "rib_az": 161,
           "hit_z_mm": 87.5,
-          "force_N": 186.9,
+          "force_N": 187.8,
           "fins_within_40mm": 2,
           "gusset_depth_at_root_mm": 18.1,
           "tip_section_MPa": 8.8,
           "root_section_MPa": 5.4,
-          "wall_alone_at_tip_MPa": 35.8
+          "wall_alone_at_tip_MPa": 35.9
         },
         {
           "side": "left",
           "rib_az": 161,
           "hit_z_mm": 98.5,
-          "force_N": 96.9,
+          "force_N": 97.3,
           "fins_within_40mm": 2,
           "gusset_depth_at_root_mm": 18.1,
           "tip_section_MPa": 7.1,
           "root_section_MPa": 3.3,
-          "wall_alone_at_tip_MPa": 28.7
+          "wall_alone_at_tip_MPa": 28.9
         },
         {
           "side": "right",
           "rib_az": -121,
           "hit_z_mm": 87.5,
-          "force_N": 186.9,
+          "force_N": 187.8,
           "fins_within_40mm": 2,
           "gusset_depth_at_root_mm": 32.5,
           "tip_section_MPa": 8.8,
           "root_section_MPa": 2.3,
-          "wall_alone_at_tip_MPa": 35.8
+          "wall_alone_at_tip_MPa": 35.9
         },
         {
           "side": "right",
           "rib_az": -121,
           "hit_z_mm": 98.5,
-          "force_N": 96.9,
+          "force_N": 97.3,
           "fins_within_40mm": 2,
           "gusset_depth_at_root_mm": 32.5,
           "tip_section_MPa": 7.1,
           "root_section_MPa": 1.4,
-          "wall_alone_at_tip_MPa": 28.7
+          "wall_alone_at_tip_MPa": 28.9
         },
         {
           "side": "right",
           "rib_az": -161,
           "hit_z_mm": 87.5,
-          "force_N": 186.9,
+          "force_N": 187.8,
           "fins_within_40mm": 2,
           "gusset_depth_at_root_mm": 18.1,
           "tip_section_MPa": 8.8,
           "root_section_MPa": 5.4,
-          "wall_alone_at_tip_MPa": 35.8
+          "wall_alone_at_tip_MPa": 35.9
         },
         {
           "side": "right",
           "rib_az": -161,
           "hit_z_mm": 98.5,
-          "force_N": 96.9,
+          "force_N": 97.3,
           "fins_within_40mm": 2,
           "gusset_depth_at_root_mm": 18.1,
           "tip_section_MPa": 7.1,
           "root_section_MPa": 3.3,
-          "wall_alone_at_tip_MPa": 28.7
+          "wall_alone_at_tip_MPa": 28.9
         }
       ],
       "max_MPa": 8.8,
       "rear_centre_note": "At az 180 (between the \u00b1155 deg gussets) the shell carries a push horizontally round the arc to the gussets (bending within the layers, not across them); the 10 mm top rim and the fins act as a ring beam."
     },
     "motor_mount": {
-      "wheel_load_N": 8.95,
-      "tab_root_moment_Nmm": 82.8,
+      "wheel_load_N": 9.44,
+      "tab_root_moment_Nmm": 87.3,
       "section_modulus_mm3": 253.5,
-      "static_MPa": 0.33,
-      "three_g_MPa": 0.98,
-      "three_g_with_Kt2_MPa": 1.96,
-      "tab_alone_three_g_MPa": 6.62,
+      "static_MPa": 0.34,
+      "three_g_MPa": 1.03,
+      "three_g_with_Kt2_MPa": 2.07,
+      "tab_alone_three_g_MPa": 6.98,
       "note": "The 45 deg gusset carries the root moment; beyond the gusset (y < 96) only the screw clamp load acts."
     },
     "limit_MPa": 16.7,
@@ -14891,7 +15516,7 @@
       },
       {
         "line": "H13",
-        "item": "M3 machine screws into the inserts + camera-tower M3 \u00d7 10",
+        "item": "M3 machine screws into the inserts + camera-mount M3 \u00d7 10",
         "manifest": 27,
         "ordered": 27
       },
@@ -14963,7 +15588,7 @@
   "limitations": [
     "Electronic envelopes and some mounting patterns remain assumptions; this is not a print-release or wiring-release check.",
     "Friction-lock, Hertz, interlayer-stress, spin-sweep, coast and threshold-crossing results are quasi-static models; physical bump, tipping, stopping-distance, threshold and proof tests remain pending.",
-    "Inside the camera notch (|az| < AZC) the bumper top follows the lower image edge (lens-face apex) with 4.4 mm; an object there above the bumper top is inside the camera image but NOT sensed by a switch (summary.camera_notch). User decision.",
+    "The camera window (task F) is open: an object small enough to pass it (about the size of the opening at the inner wall, camera_window.at_inner_wall) can reach the lens without moving a bumper half (camera_window.residual); anything larger trips the bumper first.",
     "Spinning in place next to an unmapped edge 104-113 mm from the axle can drop a wheel before a cliff sensor trips (caster_layout.spin_cliff_coverage). User decision (controller rule or extra sensor).",
     "Steps of 8 and 10 mm fail (threshold_crossing): the DriveCore torque cap and the 25.4 mm caster ball. User decision."
   ],
@@ -16919,13 +17544,16 @@
     "camera_fov_ok": true,
     "cliff_fov_ok": true,
     "lidar_band_ok": true,
+    "lidar_min_range_ok": true,
+    "lidar_front_gap_ok": true,
+    "lidar_scan_band_vertical_ok": true,
     "jetson_cooling_ok": true,
-    "fan_bypass_fraction_of_grille": 0.224,
+    "fan_bypass_fraction_of_grille": 0.204,
     "lid_switches_ok": true,
     "robot_top_ok": true,
     "robot_height_mm": 155.15,
     "lidar_scan_plane_z_mm": 147.5,
-    "camera_lens_axis_z_mm": 107.5,
+    "camera_lens_axis_z_mm": 80.0,
     "caster_layout_ok": true,
     "com_ok": true,
     "printability_ok": true,
@@ -16944,21 +17572,27 @@
       }
     },
     "threshold_capability_mm": {
-      "forward": 1.5,
-      "reverse": 1.5,
+      "forward": 1.0,
+      "reverse": 1.0,
       "note": "largest square step (0.5 mm steps) not rated fail"
     },
-    "camera_notch": {
-      "sensed": false,
-      "user_decision_required": true,
-      "half_width_deg_at_skin": 13.5,
-      "unsensed_rod_rows": 10,
-      "spin_snags_at_notch_edge": 6
+    "camera_window_ok": true,
+    "camera_window": {
+      "width_mm": 44.5,
+      "z_mm": [
+        65.9,
+        93.1
+      ],
+      "lens_recess_mm": 11.36,
+      "min_gap_camera_to_moving_halves_mm": 4.36,
+      "spin_edge_snags": 0
     },
     "residual_unsensed": {
-      "seam_end_land_spin_snags": 12,
+      "seam_end_land_spin_snags": 8,
       "seam_thin_object_intrusion_before_trip_mm": 12.52,
-      "note": "reported, not hidden: see spin_sweep.seam_end_land_note and bumper_travel.seam_intrusion"
+      "camera_window_rod_rows": 13,
+      "camera_window_small_objects": "An object small enough to pass the window opening (about 26 x 27 mm at the inner wall) can reach the lens without moving a half: the perimeter rods that do so are listed in rods_through_window. Anything larger meets a half first and trips it before the lens.",
+      "note": "reported, not hidden: see spin_sweep.seam_end_land_note, bumper_travel.seam_intrusion and camera_window"
     },
     "spin_cliff_coverage": {
       "user_decision_required": true,
@@ -16979,231 +17613,5 @@
     "tray_removal_clear": true,
     "wire_to_wire_ok": true,
     "holddown_lead_in_ok": true
-  },
-  "camera_notch": {
-    "sensed": false,
-    "user_decision_required": true,
-    "half_width_deg_at_skin": 13.5,
-    "top_z_profile_az_deg_z_mm": [
-      [
-        2.0,
-        75.2
-      ],
-      [
-        2.5,
-        74.5
-      ],
-      [
-        3.0,
-        74.5
-      ],
-      [
-        3.5,
-        74.5
-      ],
-      [
-        4.5,
-        74.5
-      ],
-      [
-        5.0,
-        74.2
-      ],
-      [
-        5.5,
-        74.2
-      ],
-      [
-        6.0,
-        74.5
-      ],
-      [
-        6.5,
-        74.5
-      ],
-      [
-        7.0,
-        74.8
-      ],
-      [
-        7.5,
-        74.5
-      ],
-      [
-        8.0,
-        74.8
-      ],
-      [
-        8.5,
-        74.8
-      ],
-      [
-        9.0,
-        75.2
-      ],
-      [
-        9.5,
-        75.2
-      ],
-      [
-        10.0,
-        75.2
-      ],
-      [
-        10.5,
-        75.7
-      ],
-      [
-        11.0,
-        75.8
-      ],
-      [
-        11.5,
-        76.0
-      ],
-      [
-        12.0,
-        76.2
-      ],
-      [
-        12.5,
-        76.5
-      ],
-      [
-        13.0,
-        77.3
-      ],
-      [
-        13.5,
-        98.5
-      ],
-      [
-        14.0,
-        98.5
-      ],
-      [
-        15.0,
-        98.5
-      ],
-      [
-        16.0,
-        98.5
-      ],
-      [
-        17.0,
-        98.5
-      ],
-      [
-        18.0,
-        98.5
-      ],
-      [
-        19.0,
-        98.5
-      ]
-    ],
-    "unsensed_rod_rows": [
-      {
-        "z": 78.0,
-        "az_from": -4.0,
-        "az_to": 4.0,
-        "max_intrusion_mm": 999.0,
-        "contacts": [
-          "none"
-        ]
-      },
-      {
-        "z": 79.0,
-        "az_from": -5.5,
-        "az_to": 5.5,
-        "max_intrusion_mm": 999.0,
-        "contacts": [
-          "none"
-        ]
-      },
-      {
-        "z": 80.5,
-        "az_from": -11.0,
-        "az_to": 11.0,
-        "max_intrusion_mm": 999.0,
-        "contacts": [
-          "none"
-        ]
-      },
-      {
-        "z": 82.5,
-        "az_from": -12.5,
-        "az_to": 12.5,
-        "max_intrusion_mm": 999.0,
-        "contacts": [
-          "none"
-        ]
-      },
-      {
-        "z": 85.5,
-        "az_from": -12.5,
-        "az_to": 12.5,
-        "max_intrusion_mm": 48.9,
-        "contacts": [
-          "P_camera_tower"
-        ]
-      },
-      {
-        "z": 89.5,
-        "az_from": -12.5,
-        "az_to": 12.5,
-        "max_intrusion_mm": 48.9,
-        "contacts": [
-          "P_camera_tower"
-        ]
-      },
-      {
-        "z": 93.5,
-        "az_from": -12.0,
-        "az_to": 12.0,
-        "max_intrusion_mm": 55.65,
-        "contacts": [
-          "P_camera_guard"
-        ]
-      },
-      {
-        "z": 96.5,
-        "az_from": -11.5,
-        "az_to": 11.5,
-        "max_intrusion_mm": 51.21,
-        "contacts": [
-          "P_camera_guard",
-          "camera_board"
-        ]
-      },
-      {
-        "z": 98.0,
-        "az_from": -11.5,
-        "az_to": 11.5,
-        "max_intrusion_mm": 51.21,
-        "contacts": [
-          "P_camera_guard",
-          "camera_board"
-        ]
-      },
-      {
-        "z": 99.0,
-        "az_from": -11.5,
-        "az_to": 11.5,
-        "max_intrusion_mm": 51.21,
-        "contacts": [
-          "P_camera_guard",
-          "camera_board",
-          "camera_lens"
-        ]
-      }
-    ],
-    "spin_snags_at_notch_edge": 6,
-    "issue": "The camera-view rule (nothing in the lens lower image edge) and the full-arc sensing rule conflict: inside |az| < half_width the bumper stops at the notch top, so a narrow object above it (a chair rung, a shelf lip) is only seen by the camera, and a spinning robot meets the notch-edge faces with friction-limited drive.",
-    "options": [
-      "mount the camera guard on the bumper halves (split at the seam) so a guard hit moves a half",
-      "add a third switch behind a floating guard",
-      "accept and rely on the camera / LiDAR for the band"
-    ]
   }
 }

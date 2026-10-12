@@ -26,6 +26,9 @@ log.write('SETUP '+json.dumps(setup)+'\n')
 # Stage bookkeeping (evaluation only): each tick is charged to the kind of the current target, from the target choice
 # until the next choice ('none' before the first target and after a coverage target is covered on the way).
 stage={'frontier':0.,'coverage':0.,'none':0.};kinds=[];timeline=[];first_cov=[None];lt=[sim.t]
+# 'Target area covered on the way' (task H): the robot's distance to the target each time; beyond VISIT_RADIUS (1.2 m) the target
+# left the unvisited mask without the camera passing it (the reachability flicker task H removed).
+covered_on_way=[]
 def tick(br):
     b=br.b
     if cam and b.mode!='idle' and sim.t-last.get('cam',0)>=.5:
@@ -53,6 +56,7 @@ def tick(br):
         k=(e['time'],e['message'])
         if k in seen:continue
         seen.add(k);log.write(f"{sim.t:7.1f}   EVENT {e['message']}\n")
+        if e['message'].startswith('Target area covered on the way') and b.goal is not None:covered_on_way.append(round(float(np.linalg.norm(b.localizer.pose[:2]-b.goal)),2))
     if sim.t-last['print']>100:
         last['print']=sim.t;log.write(f"{sim.t:7.1f} --- free {b.grid.summary()['free_area_m2']:.1f} wall {time.time()-t0:.0f}s\n");log.flush()
 if os.environ.get('LOGFRONT'):
@@ -92,7 +96,8 @@ err=max(np.linalg.norm(r['est'][:2]-r['truth'][:2]) for r in br.trace)
 import cv2
 pose=b.localizer.pose;safe=g.masks()[3];reachable=g.reachable(pose[:2],safe);uv=b.unvisited_mask()
 blockers=dict(frontiers_left=len(g.frontiers(pose,b.blacklist+b.scanned_positions+b.trouble)),unvisited_m2=round(float(uv.sum()*g.res**2),3),unvisited_done_m2=UNVISITED_DONE,
-              disconnected_safe_m2=round(float((safe&~reachable).sum()*g.res**2),3),uncertainty=round(float(b.localizer.uncertainty),3),stuck=bool(b.stuck()),planning_radius_m=g.radius)
+              disconnected_safe_m2=round(float((safe&~reachable).sum()*g.res**2),3),
+              unreached_enterable_m2=round(float(g.unreached_enterable(pose[:2],safe).sum()*g.res**2),3) if hasattr(g,'unreached_enterable') else None,uncertainty=round(float(b.localizer.uncertainty),3),stuck=bool(b.stuck()),planning_radius_m=g.radius)
 def room_of(xy):
     for name,(x0,x1,y0,y1) in score.ROOMS:
         if x0<=xy[0]<x1 and y0<=xy[1]<y1:return name
@@ -116,5 +121,5 @@ res=dict(label=label,seed=seed,cam=cam,lidar_mount_m=list(geometry.LIDAR_MOUNT),
          stage_s={k:round(v,1) for k,v in stage.items()},first_coverage_s=None if first_cov[0] is None else round(first_cov[0]-t_start,1),kind_switches=len(kinds)-1 if kinds else 0,
          returns_to_frontier=sum(1 for i in range(1,len(kinds)) if kinds[i][1]=='frontier'),blockers=blockers,unvisited_by_room=uv_rooms,unvisited_clusters=clusters[:8],
          unvisited_timeline=[(round(t-t_start),u,f,k) for t,u,f,k in timeline],kinds=kinds,
-         contact_phases=len(spans),contact_phase_s=round(sum(spans),1),longest_contact_phase_s=round(max(spans,default=0.),1),reverse_audit=audit)
+         covered_on_the_way_m=covered_on_way,contact_phases=len(spans),contact_phase_s=round(sum(spans),1),longest_contact_phase_s=round(max(spans,default=0.),1),reverse_audit=audit)
 log.write(json.dumps(res)+'\n');log.close();(OUT/f'{label}.json').write_text(json.dumps(res,indent=1));print(json.dumps({k:v for k,v in res.items() if k not in ('unvisited_timeline','kinds','unvisited_clusters')}))

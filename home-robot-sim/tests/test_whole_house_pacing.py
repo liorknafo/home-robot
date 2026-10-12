@@ -17,7 +17,9 @@ def wall(p0,p1,step=.002):
     return p0+np.linspace(0,1,n)[:,None]*(p1-p0)
 def raycast(segments,noise=0.,seed=0,origin=None):
     """One D200-like scan (667 beams from the LiDAR mount) of line segments, robot frame,
-    Gaussian range jitter `noise` along each beam (sim2d uses 4 mm)."""
+    Gaussian range jitter `noise` along each beam (sim2d uses 4 mm). Like the D200 (sim2d, D200Model),
+    a beam whose first hit is nearer than 0.1 m returns nothing (task F: the near-field tests below then hold only
+    while the pressed bumper skin stays >= 0.1 m from the LiDAR, which is what limits the LD14 to x 0.054)."""
     from autonomy.geometry import LIDAR_MOUNT
     o=np.array(LIDAR_MOUNT[:2] if origin is None else origin,float);rng=np.random.default_rng(seed)
     a=-2*np.pi*np.arange(667)/667;d=np.c_[np.cos(a),np.sin(a)];best=np.full(667,np.inf)
@@ -26,7 +28,7 @@ def raycast(segments,noise=0.,seed=0,origin=None):
         with np.errstate(divide='ignore',invalid='ignore'):
             t=(w[0]*e[1]-w[1]*e[0])/den;u=(w[0]*d[:,1]-w[1]*d[:,0])/den
         ok=(np.abs(den)>1e-12)&(t>0)&(u>=0)&(u<=1);best=np.where(ok&(t<best),t,best)
-    keep=np.isfinite(best);r=best[keep]+rng.normal(0,noise,keep.sum())
+    keep=np.isfinite(best)&(best>=.1);r=best[keep]+rng.normal(0,noise,keep.sum())
     return o+r[:,None]*d[keep]
 def corner(apex_distance,half_angle=math.pi/4,arm=.2,azimuth=0.):
     """Convex corner (box corner / door jamb) pointing at base_link, apex at apex_distance."""
@@ -322,6 +324,25 @@ class RoundBodyTests(unittest.TestCase):
             self.assertIn('bump_spin=.5',text);self.assertLessEqual(lb.CONTACT_SPIN,.5)
             self.assertIn('w*bump_side>=0',text);self.assertNotIn('ls=std::min(ls,0.)',text,'DriveCore.h clamps again: set PRESSED_SPIN_PURE False')
             self.assertIn('max_reverse=.06',text)
+    def test_sim2d_spec_firmware_disarms_on_every_new_press(self):
+        # DriveCore.h update() (line 46: press=bumper&&!bump ... if(hazard||press||estop||...)disarm()) disarms on every new
+        # press, whatever the current command; disarm() zeroes the wheel setpoints and only command() re-arms, for a
+        # pressed-allowed motion. sim2d's default 'spec' firmware models that DriveCore.h (task F: it used to keep a
+        # pressed-allowed spin or reverse armed, ramping on into the obstacle).
+        from sim2d import World,Sim,SKIN_R,SKIN_REACH
+        core=CONTROLLER.parent/'Source/HomeRobotSim/DriveCore.h'
+        if core.exists():
+            text=core.read_text().replace(' ','')
+            self.assertIn('constboolpress=bumper&&!bump',text);self.assertIn('if(hazard||press||estop',text)
+        for cmd in ((0.,.25),(0.,-.25),(-.03,0.)):            # pure spins (centre press: both switches, either way) and a reverse
+            sim=Sim(World([((.17,-1.),(.17,1.))]),pose=(0.,0.,0.))   # a wall .17 m ahead: the skin and its trip reach are clear
+            for _ in range(20):sim.command(*cmd,arm=True);sim.step(.01)
+            self.assertTrue(sim.armed);self.assertFalse(sim.bump)
+            sim.pose[0]=.17-SKIN_R-SKIN_REACH/2              # the wall now within the trip reach: a press rising edge
+            sim.step(.01)
+            self.assertTrue(sim.bump);self.assertFalse(sim.armed,f'{cmd}: a new press must disarm');self.assertEqual((sim.wl,sim.wr),(0.,0.))
+            sim.command(*cmd,arm=True);self.assertTrue(sim.armed,f'{cmd}: command() re-arms a pressed-allowed motion')
+            sim.step(.01);self.assertLessEqual(max(abs(sim.wl),abs(sim.wr)),.25*.01+1e-12,'the wheel setpoints restart from 0')
     def test_close_spin_rule(self):
         # Beam-averaged points >= R + 3 mm: a slow spin is allowed although they are inside TURN_CLEAR.
         # Front-half points are verified by the released skin (LiDAR not more than 5 mm inside it); a
@@ -846,6 +867,59 @@ class RoundBodyTests(unittest.TestCase):
             v,w=b.follow_velocity(target,1.,1.1);first=b.maneuver['direction']
             b.note_contact(1.15,'front bumper',[first<0,False,first>0])
             self.assertIsNone(b.maneuver);self.assertTrue(b.close_spin_retry_blocked(first))
+    # Task J helpers: a close spin out of the 5 mm diagonal corner, and one predict() tick with the bumper zone bits `bits` (0: released).
+    def close_spin_start(self,tmp,pure=True,trail=False):
+        b=LidarBrain(tmp);b.pressed_spin_pure=pure;open_floor(b);feed_scans(b,corner_walls(.005,'diagonal'),8,seed=4);ready(b,1.1);b.phase='follow'
+        if trail:
+            for s_ in np.arange(.30,-1e-9,-.01):b.trail.append(np.array([-s_,0.]))
+        v,w=b.follow_velocity(np.array([-1.,0.]),1.,1.1);self.assertEqual(b.maneuver['kind'],'close_spin');b.requested_motion=(v,w)
+        return b,b.maneuver['direction'],w
+    def bump_tick(self,b,t,bits):
+        b.predict(dict(sim_time_s=t,fault='bumper' if bits else 'none',armed=not bits,sensors=dict(bumper=bool(bits),bump_zones=bits,left_ticks=0,right_ticks=0,
+                       encoder_cpr=4741.44,gyro_rad_s=[0,0,0],specific_force_m_s2=[0,0,9.8])))
+    def test_close_spin_goes_on_through_a_press_on_the_side_it_turns_toward(self):
+        # Task J (LIO-115), the slipping 3 mm side corner: a close spin's drift pressed the skin on the side the spin turns toward.
+        # Every press ended the spin and blocked that direction (note_contact), so the next close spin went the other way, started
+        # at the skin's trip point and pressed again at once: four presses in 4 s ended the session. The pure-spin core executes
+        # that same spin while pressed, and it brings the contact toward 0 deg (run_maneuver's abort rule already let it go on), so
+        # with no back-off room the turn goes on: the contact is recorded and counts for the area give-up, and when the press
+        # reaches the front centre (both switches) the contact phase takes over, recording nothing new.
+        from autonomy.lidar_brain import CLOSE_SPIN_W
+        target=np.array([-1.,0.])
+        with tempfile.TemporaryDirectory() as tmp:
+            b,d,w=self.close_spin_start(tmp);toward=1<<(4 if d>0 else 0)
+            self.bump_tick(b,1.15,toward)
+            self.assertEqual(b.phase,'follow');self.assertEqual(b.maneuver['kind'],'close_spin');self.assertEqual(len(b.contacts),1)
+            self.assertTrue(b.grid.camera_obstacles.any(),'the contact is on the map');self.assertFalse(b.close_spin_retry_blocked(d));self.assertIn('continuing the turn',b.message)
+            self.bump_tick(b,1.2,toward);self.assertEqual(b.phase,'follow','still pressed, no new edge: the turn goes on')
+            self.assertEqual(b.follow_velocity(target,1.,1.2),(0.,w));self.assertAlmostEqual(abs(w),CLOSE_SPIN_W);self.assertTrue(b.firmware_executes(0.,w))
+            self.bump_tick(b,1.25,1<<2)
+            self.assertEqual(b.phase,'contact');self.assertIsNone(b.maneuver);self.assertEqual(len(b.contacts),1);self.assertIn('Still pressed',b.message)
+        # As before: a press on the side the firmware refuses, a centre press, the clamping core, or a driven trail behind (back off along it).
+        for case in ('refused','centre','clamping','trail'):
+            with tempfile.TemporaryDirectory() as tmp:
+                b,d,w=self.close_spin_start(tmp,pure=case!='clamping',trail=case=='trail')
+                bits={'refused':1<<(0 if d>0 else 4),'centre':1<<2}.get(case,1<<(4 if d>0 else 0))
+                self.bump_tick(b,1.15,bits)
+                self.assertEqual(b.phase,'contact',case);self.assertIsNone(b.maneuver,case);self.assertEqual(len(b.contacts),1,case);self.assertTrue(b.close_spin_retry_blocked(d),case)
+                if case=='trail':self.assertGreaterEqual(b.backoff,.02)
+        # Only the live close spin goes on: one left behind in self.maneuver after the robot left 'follow' (plan, a margin escape) or
+        # replanned (a new follow context) does not, so the press starts the contact phase.
+        for stale in ('plan','escape_margin','new_context'):
+            with tempfile.TemporaryDirectory() as tmp:
+                b,d,w=self.close_spin_start(tmp)
+                if stale=='new_context':b.phase_started+=1.
+                else:b.phase=stale
+                self.bump_tick(b,1.15,1<<(4 if d>0 else 0))
+                self.assertEqual(b.phase,'contact',stale);self.assertIsNone(b.maneuver,stale);self.assertEqual(len(b.contacts),1,stale)
+    def test_presses_during_a_close_spin_still_count_for_the_repeated_contact_give_up(self):
+        # The area give-up (four contacts within 0.5 m end the session) also counts the presses a close spin turns through.
+        with tempfile.TemporaryDirectory() as tmp:
+            b,d,w=self.close_spin_start(tmp);toward=1<<(4 if d>0 else 0)
+            for k in range(4):
+                self.assertEqual(b.mode,'mapping');self.bump_tick(b,1.15+.1*k,toward);self.bump_tick(b,1.2+.1*k,0)
+                if k==0:self.assertEqual(b.phase,'follow');self.assertIn('Bumper released. Finishing the slow turn',b.message)
+            self.assertEqual(len(b.contacts),4);self.assertEqual(b.mode,'idle');self.assertIn('Repeated contacts in one area',b.message)
     def test_close_spin_contact_check_uses_the_rigid_shell_behind(self):
         # Overlap evidence: two raw returns > SPIN_RAW_ALLOWANCE inside the skin in front, inside the
         # rigid shell (R_RIGID) behind. Noise-level dips are not contact.

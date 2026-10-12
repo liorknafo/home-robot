@@ -3240,8 +3240,8 @@
     ]
   },
   {
-    "id": "P_camera_tower",
-    "name": "Single-camera rigid tower",
+    "id": "P_camera_mount",
+    "name": "Camera mount (chassis-fixed, in the front bay)",
     "category": "print",
     "color": "#49768a",
     "bom": "F01",
@@ -3252,11 +3252,11 @@
       33.0,
       118.0,
       59.0,
-      91.5
+      89.0
     ],
     "printable": true,
     "check": false,
-    "note": "10 \u00d7 10 mm columns (z 33\u201385.5), 10 \u00d7 6 mm top bar (z 85.5\u201391.5), 18 \u00d7 26 \u00d7 4 mm feet; four M3 \u00d7 10 screws with nuts under P_base, two M2.5 \u00d7 10 to the guard. Print on the flat rear face (x=100), no supports.",
+    "note": "Two 8 \u00d7 8 mm columns (z 33\u201389) on the old tower feet (18 \u00d7 26 \u00d7 4 mm; four M3 \u00d7 10 screws with nuts under P_base, the same holes), an 8 \u00d7 6 mm crossbar at x 100\u2013108, z 83\u201389, two M2.5 \u00d7 12 thread-forming screws from its rear face into the camera holder arms. Print on the flat rear face (x=100), no supports. Assembly: screw the mount to P_base before the bumper halves go on (its nuts sit under P_base in the bumper-rail keep-out, as the old tower's did); screw the camera board onto the holder, plug the USB-C cable into it, fit the holder to the crossbar, then run the cable back under the crossbar to the Jetson's lower right USB port (W17) and plug it there with the Jetson's other plugs.",
     "explode": [
       40,
       0,
@@ -3274,7 +3274,7 @@
   },
   {
     "id": "tower_screw_0",
-    "name": "Camera tower M3 \u00d7 10 screw and nut",
+    "name": "Camera mount M3 \u00d7 10 screw and nut",
     "category": "metal",
     "color": "#b5bcc3",
     "bom": "H13/H03",
@@ -3298,7 +3298,7 @@
   },
   {
     "id": "tower_screw_1",
-    "name": "Camera tower M3 \u00d7 10 screw and nut",
+    "name": "Camera mount M3 \u00d7 10 screw and nut",
     "category": "metal",
     "color": "#b5bcc3",
     "bom": "H13/H03",
@@ -3322,7 +3322,7 @@
   },
   {
     "id": "tower_screw_2",
-    "name": "Camera tower M3 \u00d7 10 screw and nut",
+    "name": "Camera mount M3 \u00d7 10 screw and nut",
     "category": "metal",
     "color": "#b5bcc3",
     "bom": "H13/H03",
@@ -3346,7 +3346,7 @@
   },
   {
     "id": "tower_screw_3",
-    "name": "Camera tower M3 \u00d7 10 screw and nut",
+    "name": "Camera mount M3 \u00d7 10 screw and nut",
     "category": "metal",
     "color": "#b5bcc3",
     "bom": "H13/H03",
@@ -3369,23 +3369,23 @@
     ]
   },
   {
-    "id": "P_camera_guard",
-    "name": "Single-camera protective enclosure",
+    "id": "P_camera_holder",
+    "name": "Camera holder (PCB plate and arms)",
     "category": "print",
     "color": "#49768a",
     "bom": "F01",
     "group": "camera",
     "bounds": [
-      100.0,
-      -20.0,
-      91.5,
-      126.0,
-      20.0,
-      125.5
+      108.0,
+      -15.5,
+      64.5,
+      135.2,
+      15.5,
+      95.5
     ],
     "printable": true,
     "check": false,
-    "note": "Sits on the tower bar (two M2.5 \u00d7 10, nuts under the bar). 3 mm walls around the 25 mm PCB envelope; the front opening is cut by a frustum 6 mm behind the lens face (42 / 34 deg walls, printable on the front face). Print on the front face. USB and lens depth require physical fit verification.",
+    "note": "3 mm plate behind the camera PCB (x 132.2\u2013135.2, 31 \u00d7 31 mm, 19 \u00d7 19 mm window, USB-C notch at the right edge), four M2 \u00d7 6 thread-forming screws into \u00d81.6 pilots at the PCB corners (\u00b110.5 mm: confirm the delivered board's hole pattern), two 6 \u00d7 6 mm arms back to the mount crossbar (M2.5 pilots). Print plate-down, no supports. The lens face sits at x 146, 12.9 mm behind the bumper skin.",
     "explode": [
       40,
       0,
@@ -3395,9 +3395,9 @@
       "rot_x_deg": 0,
       "rot_z_deg": 0,
       "translate_mm": [
-        -113.0,
+        -121.6,
         -0.0,
-        -91.5
+        -64.5
       ]
     }
   },
@@ -3409,12 +3409,12 @@
     "bom": "E04",
     "group": "camera",
     "bounds": [
-      106.2,
+      135.2,
       -12.5,
-      95.0,
-      107.8,
+      67.5,
+      136.8,
       12.5,
-      120.0
+      92.5
     ],
     "printable": false,
     "check": true,
@@ -3433,12 +3433,12 @@
     "bom": "E04",
     "group": "camera",
     "bounds": [
-      107.8,
+      136.8,
       -7.0,
-      100.5,
-      117.0,
+      73.0,
+      146.0,
       7.0,
-      114.5
+      87.0
     ],
     "printable": false,
     "check": false,
@@ -3457,12 +3457,12 @@
     "bom": "C01",
     "group": "camera",
     "bounds": [
-      93.0,
+      121.2,
       -17.0,
-      103.5,
-      107.0,
+      75.5,
+      135.2,
       -7.0,
-      108.5
+      80.5
     ],
     "printable": false,
     "check": false,
@@ -3481,16 +3481,16 @@
     "bom": "E15",
     "group": "cover",
     "bounds": [
-      -19.829,
+      -2.461,
       -28.852,
       127.3,
-      76.461,
+      93.829,
       28.852,
       138.0
     ],
     "printable": false,
     "check": true,
-    "note": "LDROBOT LD14 manufacturer STEP (reference-models/LD14.step), placed without rotation: spin axis x=20, y=0; laser plane z=147.5 = STEP window-band centre z=12.2 (windows z 8.4-16.0) + 135.3 mm. LD14 0 deg (tail/motor direction) points along robot +x, so the scan frame equals the robot frame; LD14 angles increase clockwise seen from above, so the REP-103 bearing is -angle. The D200 kit ships the LD14P: confirm lug positions and window height on the delivered unit.",
+    "note": "LDROBOT LD14 manufacturer STEP (reference-models/LD14.step), turned 180 deg about its spin axis (motor toward the back, task F user decision): spin axis x=54, y=0; laser plane z=147.5 = STEP window-band centre z=12.2 (windows z 8.4-16.0) + 135.3 mm. LD14 0 deg (tail/motor direction) points along robot -x. LD14 angles increase clockwise seen from above: robot bearing = wrap(180 deg - raw angle); for a driver scan already in REP-103 form (CCW, 0 = tail) the bearing is wrap(scan angle + 180 deg), wrapped into (-180, 180]. The D200 kit ships the LD14P: confirm lug positions and window height on the delivered unit.",
     "explode": [
       0,
       0,
@@ -3505,10 +3505,10 @@
     "bom": "E15",
     "group": "cover",
     "bounds": [
-      -9.922,
+      24.078,
       -29.922,
       138.25,
-      49.922,
+      83.922,
       29.922,
       155.15
     ],
@@ -3529,10 +3529,10 @@
     "bom": "E15",
     "group": "cover",
     "bounds": [
-      51.8,
+      -2.2,
       -12.2,
       116.3,
-      76.2,
+      22.2,
       12.2,
       135.9
     ],
@@ -3553,10 +3553,10 @@
     "bom": "E15",
     "group": "cover",
     "bounds": [
-      14.1,
+      48.1,
       -5.9,
       152.3,
-      25.9,
+      59.9,
       5.9,
       155.15
     ],
@@ -3577,11 +3577,11 @@
     "bom": "E15",
     "group": "cover",
     "bounds": [
-      -3.276,
-      17.128,
+      32.959,
+      -27.653,
       143.71,
-      41.041,
-      27.653,
+      77.276,
+      -17.128,
       151.3
     ],
     "printable": false,
@@ -3601,11 +3601,11 @@
     "bom": "E15",
     "group": "cover",
     "bounds": [
-      31.021,
-      -10.772,
+      34.979,
+      5.672,
       125.9,
-      39.021,
-      -5.672,
+      42.979,
+      10.772,
       129.1
     ],
     "printable": false,
@@ -3628,13 +3628,13 @@
       -45.0,
       -43.0,
       103.5,
-      74.0,
+      100.3,
       43.0,
       127.3
     ],
     "printable": true,
     "check": false,
-    "note": "119 \u00d7 86 \u00d7 3 mm plate on the lid top (z 103.5\u2013106.5; four M3 holes at (-35, \u00b138) and (66, \u00b135), M3 \u00d7 10 + nyloc nuts under the lid). Fan grille over the lid fan window: 5 \u00d7 4.5 mm slots on a 6.5 mm pitch inside r 17.5 about the fan centre (-16.3, -2.0), around a solid r 8 hub under the front lug tower (over the fan hub); 2 mm ribs, all vertical walls. Three \u00d88.6 towers (flared to \u00d814) carry the LD14 lugs at z 127.3: front (-15.3, 0), tail (56, \u00b118); the 20.8 mm plenum under the LD14 is the fan intake. The lug holes are \u00d83.24 (M3 clearance) with \u00d85.96 counterbores for M3 socket heads: use M3 \u00d7 10 thread-forming screws in the \u00d82.6 pilots (or open them to \u00d84.0 for M3 heat-set inserts). Only the stationary lugs touch the tray. Print plate-down, no supports.",
+    "note": "145.3 \u00d7 86 \u00d7 3 mm plate on the lid top (x -45\u2013100.3, z 103.5\u2013106.5; four M3 holes at (-35, \u00b138) and (83, \u00b135), M3 \u00d7 10 + nyloc nuts under the lid). Fan grille over the lid fan window: 5 \u00d7 4.5 mm slots on a 6.5 mm pitch inside r 17.5 about the fan centre (-16.3, -2.0); 2 mm ribs, all vertical walls, open to the room above. Three \u00d88.6 towers (flared to \u00d814) carry the LD14 lugs at z 127.3: front (89.3, 0), tail (18, \u00b118) (task F: the LD14 is turned round, motor toward the back). The lug holes are \u00d83.24 (M3 clearance) with \u00d85.96 counterbores for M3 socket heads: use M3 \u00d7 10 thread-forming screws in the \u00d82.6 pilots (or open them to \u00d84.0 for M3 heat-set inserts). Only the stationary lugs touch the tray. Print plate-down, no supports.",
     "explode": [
       0,
       0,
@@ -3644,7 +3644,7 @@
       "rot_x_deg": 0,
       "rot_z_deg": 0,
       "translate_mm": [
-        -14.5,
+        -27.65,
         -0.0,
         -103.5
       ]
@@ -3706,10 +3706,10 @@
     "bom": "H09",
     "group": "cover",
     "bounds": [
-      62.8,
+      79.8,
       -38.2,
       96.5,
-      69.2,
+      86.2,
       -31.8,
       109.3
     ],
@@ -3730,10 +3730,10 @@
     "bom": "H09",
     "group": "cover",
     "bounds": [
-      62.8,
+      79.8,
       31.8,
       96.5,
-      69.2,
+      86.2,
       38.2,
       109.3
     ],
@@ -3859,16 +3859,16 @@
     "bom": "E15",
     "group": "cover",
     "bounds": [
-      31.62,
-      -15.8,
+      35.58,
+      10.8,
       125.9,
-      38.42,
-      -10.8,
+      42.38,
+      15.8,
       129.1
     ],
     "printable": false,
     "check": false,
-    "note": "Plugs along +y into the side-entry socket under the LD14 PCB; the lead drops through the tray and lid openings at (35, -22).",
+    "note": "Plugs along -y (the LD14 is turned round) into the side-entry socket under the LD14 PCB; the lead runs forward in the plenum and drops through the tray and lid openings at (60, 22).",
     "explode": [
       0,
       0,
@@ -3964,7 +3964,7 @@
     ],
     "printable": true,
     "check": false,
-    "note": "Print upright on the lower edge (z=18 on the bed), no supports (countersinks, rim, wall step and gussets are 45 deg). 90 deg arc about the robot centre, R157.4 \u00d7 2.4 mm wall (3.8 mm above z 57.5) with a 6 mm 45 deg inner top rim, z 18\u201398.5 (inside the camera wedge the top follows the lower image edge with 4.4 mm clearance, 45 deg outer chamfer); 1.5 mm EVA foam to the R158.9 skin from the seam to az 70 (bevel-cut along the seam-end ramp); az 70\u201390 bare PETG covered with 0.1 mm PTFE film tape; az 78\u201390 tapers to R152.7 (1.2 mm outside the start of the rear shell). The seam end is a 15 deg lead-in ramp 2.7 mm deep through foam and shell. Before bonding the foam, check the printed outer radius with a printed R157.4 check template (+0.3 mm max; sand high spots) and use foam measured at 1.5 \u00b1 0.2 mm. Guide: a rail (y 11\u201323) and an outboard arm run 1.5 mm under P_base on three pins fixed by M3 \u00d7 35 countersunk screws from below; 4 mm gussets rise at 45 deg into the wall (to z 67.5 and 89.5). Rail pins A/B: \u00d84.5 \u00d7 1.5 inner-race spacer, 693ZZ bearing rolling in a 8.2 mm P_base slot (filed to 8.1\u20138.2), \u00d84.5 \u00d7 1 spacer, M3 thin clamp nut (threadlocker). Pin C: \u00d85 \u00d7 6.5 sleeve in a 6.2 mm slot, thin clamp nut. Vertical guide, steel on steel only: three \u00d84 balls in rail/arm-top pockets roll between a 0.5 mm hardened spring-steel strip in the pocket floor and a strip bonded under P_base; two balls under each floating printed rider roll between a strip on the base top and a strip in the rider pocket ceiling. Above each rider: brass stop tube \u00d84 \u00d7 5, compression spring (\u00d85 OD, 2.0 N/mm), \u00d87 washer and nyloc nut; at assembly tighten the nyloc until a 0.1 mm feeler just fits between the washer and the stop tube (4.0 N preload per pin). The springs pull the half up against its three down balls: zero vertical play at rest whatever the printed plate thickness (\u00b10.15) or pocket depth. Slot ends give the rest stop and the hard stop (5.0 mm with the bearing centred, 4.9 mm on a slot side) along the half's own axis, 30 deg inward of rearward, so the skin only moves inward. Leaf spring: constant-strength taper 2.5 \u2192 1.45 mm \u00d7 9.5 mm, 46 mm free from its root boss (R1.5 root fillet) to a \u00d84 nose boss, perpendicular to the travel, preloaded 2.4 mm against a base abutment. Print the leaf with 0.45 mm extrusion width and at least 3 perimeters (it is all perimeter); after printing, measure it at mid-length (1.81 mm nominal) and check the push force at 2.25 mm of travel with a gram gauge (validation leaf_spring.force_at_2p25mm_N; shim the abutment face with 0.1 mm PTFE tape if it is more than 25 % low). The rail cam (40 deg ramp, then a dwell parallel to the travel) presses the SS-5GL2 roller; the switch is set at assembly to operate at 2.25 mm (see S03). Slicer: 4 perimeters (the walls and the 4 mm gussets are all perimeter), PETG at the high end of its range (about 245 \u00b0C) with part cooling \u2264 30 % for layer adhesion below print z 62.5, then a height-range modifier from print z 62.5 to the top: fan 50\u201360 % and 50 % speed for the 45 deg inner top rim (it would curl at low fan); a 5 mm brim on both arc ends plus mouse ears, reduced speed above print z 47.5 (tall part on the moving Y bed). Release test before use: push the half at z 98.5 into its hard stop with 50 N and drop the robot from 5 cm onto a hard floor; no whitening or cracks at the gusset joints or the wall step. Never lift the robot by a bumper half or the rear shell. The STL is the as-printed half (free leaf); the assembly shows the leaf deflected onto its abutment.",
+    "note": "Print upright on the lower edge (z=18 on the bed), no supports (countersinks, rim, wall step and gussets are 45 deg). 90 deg arc about the robot centre, R157.4 \u00d7 2.4 mm wall (3.8 mm above z 57.5) with a 6 mm 45 deg inner top rim, z 18\u201398.5 (full height all round; the first 3.5 deg from the seam keep the 2.4 mm wall and the first 5.5 deg have no rim); Camera window across the seam (task F): z 65.9\u201393.1, flared sides. The STL carries a 1.8 mm print-support plug in the window (the right half also a pillar under the upper seam backer): after printing, cut them out round their edges with a hobby knife or flush cutter and file flush; they only hold up the wall above the window while it prints. 1.5 mm EVA foam to the R158.9 skin from the seam to az 70 (bevel-cut along the seam-end ramp, cut out at the camera window); az 70\u201390 bare PETG covered with 0.1 mm PTFE film tape; az 78\u201390 tapers to R152.7 (1.2 mm outside the start of the rear shell). The seam end is a 15 deg lead-in ramp 2.7 mm deep through foam and shell. Before bonding the foam, check the printed outer radius with a printed R157.4 check template (+0.3 mm max; sand high spots) and use foam measured at 1.5 \u00b1 0.2 mm. Guide: a rail (y 11\u201323) and an outboard arm run 1.5 mm under P_base on three pins fixed by M3 \u00d7 35 countersunk screws from below; 4 mm gussets rise at 45 deg into the wall (to z 67.5 and 89.5). Rail pins A/B: \u00d84.5 \u00d7 1.5 inner-race spacer, 693ZZ bearing rolling in a 8.2 mm P_base slot (filed to 8.1\u20138.2), \u00d84.5 \u00d7 1 spacer, M3 thin clamp nut (threadlocker). Pin C: \u00d85 \u00d7 6.5 sleeve in a 6.2 mm slot, thin clamp nut. Vertical guide, steel on steel only: three \u00d84 balls in rail/arm-top pockets roll between a 0.5 mm hardened spring-steel strip in the pocket floor and a strip bonded under P_base; two balls under each floating printed rider roll between a strip on the base top and a strip in the rider pocket ceiling. Above each rider: brass stop tube \u00d84 \u00d7 5, compression spring (\u00d85 OD, 2.0 N/mm), \u00d87 washer and nyloc nut; at assembly tighten the nyloc until a 0.1 mm feeler just fits between the washer and the stop tube (4.0 N preload per pin). The springs pull the half up against its three down balls: zero vertical play at rest whatever the printed plate thickness (\u00b10.15) or pocket depth. Slot ends give the rest stop and the hard stop (5.0 mm with the bearing centred, 4.9 mm on a slot side) along the half's own axis, 30 deg inward of rearward, so the skin only moves inward. Leaf spring: constant-strength taper 2.5 \u2192 1.45 mm \u00d7 9.5 mm, 46 mm free from its root boss (R1.5 root fillet) to a \u00d84 nose boss, perpendicular to the travel, preloaded 2.4 mm against a base abutment. Print the leaf with 0.45 mm extrusion width and at least 3 perimeters (it is all perimeter); after printing, measure it at mid-length (1.81 mm nominal) and check the push force at 2.25 mm of travel with a gram gauge (validation leaf_spring.force_at_2p25mm_N; shim the abutment face with 0.1 mm PTFE tape if it is more than 25 % low). The rail cam (40 deg ramp, then a dwell parallel to the travel) presses the SS-5GL2 roller; the switch is set at assembly to operate at 2.25 mm (see S03). Slicer: 4 perimeters (the walls and the 4 mm gussets are all perimeter), PETG at the high end of its range (about 245 \u00b0C) with part cooling \u2264 30 % for layer adhesion below print z 62.5, then a height-range modifier from print z 62.5 to the top: fan 50\u201360 % and 50 % speed for the 45 deg inner top rim (it would curl at low fan); a 5 mm brim on both arc ends plus mouse ears, reduced speed above print z 47.5 (tall part on the moving Y bed). Release test before use: push the half at z 98.5 into its hard stop with 50 N and drop the robot from 5 cm onto a hard floor; no whitening or cracks at the gusset joints or the wall step. Never lift the robot by a bumper half or the rear shell. The STL is the as-printed half (free leaf); the assembly shows the leaf deflected onto its abutment.",
     "explode": [
       60,
       35,
@@ -4912,7 +4912,7 @@
     ],
     "printable": true,
     "check": false,
-    "note": "Print upright on the lower edge (z=18 on the bed), no supports (countersinks, rim, wall step and gussets are 45 deg). 90 deg arc about the robot centre, R157.4 \u00d7 2.4 mm wall (3.8 mm above z 57.5) with a 6 mm 45 deg inner top rim, z 18\u201398.5 (inside the camera wedge the top follows the lower image edge with 4.4 mm clearance, 45 deg outer chamfer); 1.5 mm EVA foam to the R158.9 skin from the seam to az 70 (bevel-cut along the seam-end ramp); az 70\u201390 bare PETG covered with 0.1 mm PTFE film tape; az 78\u201390 tapers to R152.7 (1.2 mm outside the start of the rear shell). The seam end is a 15 deg lead-in ramp 2.7 mm deep through foam and shell. Before bonding the foam, check the printed outer radius with a printed R157.4 check template (+0.3 mm max; sand high spots) and use foam measured at 1.5 \u00b1 0.2 mm. Guide: a rail (y 11\u201323) and an outboard arm run 1.5 mm under P_base on three pins fixed by M3 \u00d7 35 countersunk screws from below; 4 mm gussets rise at 45 deg into the wall (to z 67.5 and 89.5). Rail pins A/B: \u00d84.5 \u00d7 1.5 inner-race spacer, 693ZZ bearing rolling in a 8.2 mm P_base slot (filed to 8.1\u20138.2), \u00d84.5 \u00d7 1 spacer, M3 thin clamp nut (threadlocker). Pin C: \u00d85 \u00d7 6.5 sleeve in a 6.2 mm slot, thin clamp nut. Vertical guide, steel on steel only: three \u00d84 balls in rail/arm-top pockets roll between a 0.5 mm hardened spring-steel strip in the pocket floor and a strip bonded under P_base; two balls under each floating printed rider roll between a strip on the base top and a strip in the rider pocket ceiling. Above each rider: brass stop tube \u00d84 \u00d7 5, compression spring (\u00d85 OD, 2.0 N/mm), \u00d87 washer and nyloc nut; at assembly tighten the nyloc until a 0.1 mm feeler just fits between the washer and the stop tube (4.0 N preload per pin). The springs pull the half up against its three down balls: zero vertical play at rest whatever the printed plate thickness (\u00b10.15) or pocket depth. Slot ends give the rest stop and the hard stop (5.0 mm with the bearing centred, 4.9 mm on a slot side) along the half's own axis, 30 deg inward of rearward, so the skin only moves inward. Leaf spring: constant-strength taper 2.5 \u2192 1.45 mm \u00d7 9.5 mm, 46 mm free from its root boss (R1.5 root fillet) to a \u00d84 nose boss, perpendicular to the travel, preloaded 2.4 mm against a base abutment. Print the leaf with 0.45 mm extrusion width and at least 3 perimeters (it is all perimeter); after printing, measure it at mid-length (1.81 mm nominal) and check the push force at 2.25 mm of travel with a gram gauge (validation leaf_spring.force_at_2p25mm_N; shim the abutment face with 0.1 mm PTFE tape if it is more than 25 % low). The rail cam (40 deg ramp, then a dwell parallel to the travel) presses the SS-5GL2 roller; the switch is set at assembly to operate at 2.25 mm (see S03). Slicer: 4 perimeters (the walls and the 4 mm gussets are all perimeter), PETG at the high end of its range (about 245 \u00b0C) with part cooling \u2264 30 % for layer adhesion below print z 62.5, then a height-range modifier from print z 62.5 to the top: fan 50\u201360 % and 50 % speed for the 45 deg inner top rim (it would curl at low fan); a 5 mm brim on both arc ends plus mouse ears, reduced speed above print z 47.5 (tall part on the moving Y bed). Release test before use: push the half at z 98.5 into its hard stop with 50 N and drop the robot from 5 cm onto a hard floor; no whitening or cracks at the gusset joints or the wall step. Never lift the robot by a bumper half or the rear shell. Right half also carries the seam backer (a flat step facing forward across the 7.5 mm seam). The STL is the as-printed half (free leaf); the assembly shows the leaf deflected onto its abutment.",
+    "note": "Print upright on the lower edge (z=18 on the bed), no supports (countersinks, rim, wall step and gussets are 45 deg). 90 deg arc about the robot centre, R157.4 \u00d7 2.4 mm wall (3.8 mm above z 57.5) with a 6 mm 45 deg inner top rim, z 18\u201398.5 (full height all round; the first 3.5 deg from the seam keep the 2.4 mm wall and the first 5.5 deg have no rim); Camera window across the seam (task F): z 65.9\u201393.1, flared sides. The STL carries a 1.8 mm print-support plug in the window (the right half also a pillar under the upper seam backer): after printing, cut them out round their edges with a hobby knife or flush cutter and file flush; they only hold up the wall above the window while it prints. 1.5 mm EVA foam to the R158.9 skin from the seam to az 70 (bevel-cut along the seam-end ramp, cut out at the camera window); az 70\u201390 bare PETG covered with 0.1 mm PTFE film tape; az 78\u201390 tapers to R152.7 (1.2 mm outside the start of the rear shell). The seam end is a 15 deg lead-in ramp 2.7 mm deep through foam and shell. Before bonding the foam, check the printed outer radius with a printed R157.4 check template (+0.3 mm max; sand high spots) and use foam measured at 1.5 \u00b1 0.2 mm. Guide: a rail (y 11\u201323) and an outboard arm run 1.5 mm under P_base on three pins fixed by M3 \u00d7 35 countersunk screws from below; 4 mm gussets rise at 45 deg into the wall (to z 67.5 and 89.5). Rail pins A/B: \u00d84.5 \u00d7 1.5 inner-race spacer, 693ZZ bearing rolling in a 8.2 mm P_base slot (filed to 8.1\u20138.2), \u00d84.5 \u00d7 1 spacer, M3 thin clamp nut (threadlocker). Pin C: \u00d85 \u00d7 6.5 sleeve in a 6.2 mm slot, thin clamp nut. Vertical guide, steel on steel only: three \u00d84 balls in rail/arm-top pockets roll between a 0.5 mm hardened spring-steel strip in the pocket floor and a strip bonded under P_base; two balls under each floating printed rider roll between a strip on the base top and a strip in the rider pocket ceiling. Above each rider: brass stop tube \u00d84 \u00d7 5, compression spring (\u00d85 OD, 2.0 N/mm), \u00d87 washer and nyloc nut; at assembly tighten the nyloc until a 0.1 mm feeler just fits between the washer and the stop tube (4.0 N preload per pin). The springs pull the half up against its three down balls: zero vertical play at rest whatever the printed plate thickness (\u00b10.15) or pocket depth. Slot ends give the rest stop and the hard stop (5.0 mm with the bearing centred, 4.9 mm on a slot side) along the half's own axis, 30 deg inward of rearward, so the skin only moves inward. Leaf spring: constant-strength taper 2.5 \u2192 1.45 mm \u00d7 9.5 mm, 46 mm free from its root boss (R1.5 root fillet) to a \u00d84 nose boss, perpendicular to the travel, preloaded 2.4 mm against a base abutment. Print the leaf with 0.45 mm extrusion width and at least 3 perimeters (it is all perimeter); after printing, measure it at mid-length (1.81 mm nominal) and check the push force at 2.25 mm of travel with a gram gauge (validation leaf_spring.force_at_2p25mm_N; shim the abutment face with 0.1 mm PTFE tape if it is more than 25 % low). The rail cam (40 deg ramp, then a dwell parallel to the travel) presses the SS-5GL2 roller; the switch is set at assembly to operate at 2.25 mm (see S03). Slicer: 4 perimeters (the walls and the 4 mm gussets are all perimeter), PETG at the high end of its range (about 245 \u00b0C) with part cooling \u2264 30 % for layer adhesion below print z 62.5, then a height-range modifier from print z 62.5 to the top: fan 50\u201360 % and 50 % speed for the 45 deg inner top rim (it would curl at low fan); a 5 mm brim on both arc ends plus mouse ears, reduced speed above print z 47.5 (tall part on the moving Y bed). Release test before use: push the half at z 98.5 into its hard stop with 50 N and drop the robot from 5 cm onto a hard floor; no whitening or cracks at the gusset joints or the wall step. Never lift the robot by a bumper half or the rear shell. Right half also carries the seam backer (a flat step facing forward across the 7.5 mm seam). The STL is the as-printed half (free leaf); the assembly shows the leaf deflected onto its abutment.",
     "explode": [
       60,
       -35,
@@ -6274,13 +6274,13 @@
       -0.753,
       -132.069,
       96.18,
-      141.04,
+      152.5,
       91.777,
       103.5
     ],
     "printable": true,
     "check": false,
-    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
+    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
     "explode": [
       0,
       0,
@@ -6290,7 +6290,7 @@
       "rot_x_deg": 180,
       "rot_z_deg": 11.5,
       "translate_mm": [
-        -73.5169,
+        -74.881,
         -39.4832,
         103.5
       ]
@@ -6313,7 +6313,7 @@
     ],
     "printable": true,
     "check": false,
-    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
+    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
     "explode": [
       0,
       0,
@@ -6346,7 +6346,7 @@
     ],
     "printable": true,
     "check": false,
-    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
+    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
     "explode": [
       0,
       0,
@@ -6379,7 +6379,7 @@
     ],
     "printable": true,
     "check": false,
-    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
+    "note": "Round removable cover (R152.5, z 100.5\u2013103.5, flush with the rear shell; the bumper moves below its rim) printed as four sectors because a 305 mm disc does not fit the MK3S bed. Seams at 37/120/215/300 deg from the centre; inside r 28 of the central \u00d835 fan window they turn radial to it (the window is closed by the LiDAR tray grille). Under the lid a 1.3 mm skirt round the window ends 0.9 mm above the fan frame (z 96.18\u2013100.5, inside the fan screw heads) so the fan draws through the grille, not its own exhaust: at assembly check the gap to the fan frame with feelers: 0.5 mm must pass (sand the skirt end if it touches), 1.0 mm must not (else shim the fan or the bypass limit is lost). Two dovetails per seam at r 50 and 95 (0.15 mm clearance). Dry-fit all four, then glue the dovetails with CA; the LiDAR tray and the four lid posts (one M3 \u00d7 6 screw into the insert in each post top) also tie the sectors. The front sector covers the front bay (task I); over the bumper seam a 9 mm wide, 1.5 mm deep pocket in its underside runs from the rim back to x 142.99, so an object pushed into the seam meets the sensed seam backer, not the lid. Master rocker opening at (-100, 0) with a 1.5 mm relief pocket underneath (1.5 mm panel for the snap tabs) is in the rear sector. The STL is written bed-ready: top face down on the bed (the skirt arc stands up), no supports.",
     "explode": [
       0,
       0,
@@ -6403,16 +6403,16 @@
     "bom": "F01",
     "group": "cover",
     "bounds": [
-      29.2,
-      -28.9,
+      54.2,
+      15.1,
       101.7,
-      40.8,
-      -15.1,
+      65.8,
+      28.9,
       104.9
     ],
     "printable": true,
     "check": false,
-    "note": "Fills the 10 \u00d7 14 mm lid aperture at (35, -22) round the LD14 lead (W20): 0.1 mm clearance a side, a 1.4 mm lip resting on the lid top, a \u00d82.6 hole snug on the \u00d82.4 lead and a 0.6 mm slit to slip it round the lead after the J28 plug is through (cut the slit open with a knife if it prints closed). It keeps warm body air out of the LiDAR plenum (fan intake). Printed lip down (STL bed-ready).",
+    "note": "Fills the 10 \u00d7 14 mm lid aperture at (60, 22) round the LD14 lead (W20): 0.1 mm clearance a side, a 1.4 mm lip resting on the lid top, a \u00d82.6 hole snug on the \u00d82.4 lead and a 0.6 mm slit to slip it round the lead after the J28 plug is through (cut the slit open with a knife if it prints closed). It keeps warm body air from leaking out beside the fan grille's intake. Printed lip down (STL bed-ready).",
     "explode": [
       0,
       0,
@@ -6422,8 +6422,8 @@
       "rot_x_deg": 180,
       "rot_z_deg": 0,
       "translate_mm": [
-        -35.0,
-        -22.0,
+        -60.0,
+        22.0,
         104.9
       ]
     }
@@ -6701,11 +6701,11 @@
     "group": "camera",
     "bounds": [
       70.5,
-      -17.0,
+      -14.0,
       60.69,
-      101.195,
+      122.2,
       -5.4,
-      108.19
+      80.0
     ],
     "printable": false,
     "check": false,
@@ -6751,8 +6751,8 @@
       26.816,
       -40.197,
       92.3,
-      36.2,
-      -14.927,
+      61.2,
+      23.2,
       128.037
     ],
     "printable": false,

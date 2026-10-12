@@ -7,10 +7,12 @@
   "wheel_track": 228,
   "wheel_x": 0,
   "camera_baseline": 0,
-  "camera_height": 107.5,
-  "camera_x": 117,
+  "camera_height": 80.0,
+  "camera_x": 146,
   "lidar_height": 147.5,
-  "lidar_x": 20,
+  "lidar_x": 54,
+  "lidar_yaw_deg": 180,
+  "lidar_note": "Task F (user decision 2026-10-11, option B): the LD14 is turned 180 deg about its spin axis (motor toward the back), spin axis x 54: the most forward position at which its 0.1 m minimum range (LD14P) stays inside the bumper skin with a half pressed to its stop, so the scan sees whatever the bumper touches (a trial at x 109, its front 10 mm inside the skin, left a 5 cm blind strip ahead of the bumper). Its 0 deg (tail/motor) direction points along robot -x: a driver scan angle theta (REP-103, CCW, 0 = LD14 tail) maps to the robot-frame bearing wrap(theta + 180 deg) into (-180, 180]; a raw LD14 angle a (clockwise from the tail) maps to wrap(180 deg - a). The simulator reports scans in the robot frame already.",
   "outer_radius": 158.9,
   "shell_radius": 157.4,
   "rear_shell_radius": 152.5,
@@ -59,7 +61,7 @@
     480
   ],
   "camera_check_vfov_deg": 68.06,
-  "camera_x_note": "camera_x = lens front face; the image frustum apex used for every clearance check is 3 mm behind it (x 114), the assumed worst entrance-pupil position; the lens solid centre is x 112.4",
+  "camera_x_note": "camera_x = lens front face; the image frustum apex used for every clearance check is 3 mm behind it (x 143), the assumed worst entrance-pupil position; the lens solid centre is x 141.4. Task F: the camera sits in the bumper band behind a window in the two bumper halves (level, axis z 80). Below 80 mm the simulator camera loses the 6 cm shower tray in Unreal (straight drives at it: found in 6/10 at 75 mm, 10/10 at 80 mm); 80 is also the highest axis whose image still fits a window closed under the 98.5 mm bumper top.",
   "camera_image_note": "The simulator renders 640 \u00d7 360 (16:9, as the OV2735 1920 \u00d7 1080 mode); the CAD clearance check deliberately uses a taller 4:3 frustum (VFOV 68.06 deg), which is conservative.",
   "max_speed_mps": 0.15,
   "max_speed_source": "home-robot-sim DriveCore.h max_speed (forward)",
@@ -67,11 +69,12 @@
   "reverse_speed_limit_source": "firmware reverse speed cap: the simulator firmware caps reverse at 0.06 m/s (the controller never commands more than 0.05 m/s in reverse); the rear-cliff coast check uses it",
   "drive_model": {
     "max_torque_nm": 0.1,
+    "setpoint_ramp_m_s2": 0.25,
     "dynamic_brake_nm_per_rad_s": 0.01,
     "rolling_drag_nm": 0.003,
     "axle_inertia_kg_m2": 0.0005,
     "hazard_action": "disarm: tl = tr = 0, the wheels then see the simulator dynamic brake (coast)",
-    "source": "home-robot-sim DriveCore.h (max_torque, disarm on hazard) and RobotPawn.cpp / robot-parameters.json (0.010 N m s/rad dynamic brake while disarmed, 0.003 N m rolling drag, 0.0005 kg m2 reflected axle inertia)"
+    "source": "home-robot-sim DriveCore.h (max_torque, accel: every wheel setpoint, braking included, ramps at 0.25 m/s2; disarm on hazard) and RobotPawn.cpp / robot-parameters.json (0.010 N m s/rad dynamic brake while disarmed, 0.003 N m rolling drag, 0.0005 kg m2 reflected axle inertia)"
   },
   "base_x_range": [
     -124,
@@ -82,160 +85,56 @@
     210,
     210
   ],
-  "bumper_notch": {
-    "half_width_deg_at_skin": 13.5,
-    "top_z_profile_az_deg_z_mm": [
-      [
-        2.0,
-        75.2
-      ],
-      [
-        2.5,
-        74.5
-      ],
-      [
-        3.0,
-        74.5
-      ],
-      [
-        3.5,
-        74.5
-      ],
-      [
-        4.5,
-        74.5
-      ],
-      [
-        5.0,
-        74.2
-      ],
-      [
-        5.5,
-        74.2
-      ],
-      [
-        6.0,
-        74.5
-      ],
-      [
-        6.5,
-        74.5
-      ],
-      [
-        7.0,
-        74.8
-      ],
-      [
-        7.5,
-        74.5
-      ],
-      [
-        8.0,
-        74.8
-      ],
-      [
-        8.5,
-        74.8
-      ],
-      [
-        9.0,
-        75.2
-      ],
-      [
-        9.5,
-        75.2
-      ],
-      [
-        10.0,
-        75.2
-      ],
-      [
-        10.5,
-        75.7
-      ],
-      [
-        11.0,
-        75.8
-      ],
-      [
-        11.5,
-        76.0
-      ],
-      [
-        12.0,
-        76.2
-      ],
-      [
-        12.5,
-        76.5
-      ],
-      [
-        13.0,
-        77.3
-      ],
-      [
-        13.5,
-        98.5
-      ],
-      [
-        14.0,
-        98.5
-      ],
-      [
-        15.0,
-        98.5
-      ],
-      [
-        16.0,
-        98.5
-      ],
-      [
-        17.0,
-        98.5
-      ],
-      [
-        18.0,
-        98.5
-      ],
-      [
-        19.0,
-        98.5
+  "camera_window": {
+    "lens_face_x_mm": 146.0,
+    "axis_z_mm": 80.0,
+    "at_skin": {
+      "half_width_deg": 7.98,
+      "width_mm": 44.5,
+      "z_mm": [
+        65.9,
+        93.1
       ]
-    ],
-    "design_inputs": {
-      "top_mm": 76.5,
-      "outer_edge_top_mm": 73.5
     },
-    "note": "measured on the built P_bumper_left outer shell (mirror for the right half); for |az| below half_width_deg_at_skin the bumper top follows the profile, above it the arc is full height (z 98.5)"
+    "at_inner_wall": {
+      "x_mm": 153.0,
+      "width_mm": 26.1,
+      "z_mm": [
+        65.9,
+        93.1
+      ]
+    },
+    "lens_recess_mm": 11.36,
+    "note": "task F: the camera looks out through a window cut across the bumper seam (half in each half); the bumper is full height (z 98.5) everywhere else"
   },
   "com_estimate_mm": [
-    -18.5,
-    -1.1,
-    60.7
+    -16.0,
+    -1.0,
+    61.0
   ],
   "com_estimate_note": "total COM including the wheels and the caster ball; body_com_mm excludes them (the simulator Body)",
   "body_com_mm": [
-    -17.37,
-    -1.13,
-    62.77
+    -14.71,
+    -1.11,
+    63.04
   ],
-  "total_mass_estimate_kg": 2.422,
-  "body_mass_kg": 2.284,
+  "total_mass_estimate_kg": 2.444,
+  "body_mass_kg": 2.306,
   "body_inertia_kg_m2": [
     [
-      0.0117,
-      8.7e-05,
-      -0.000708
+      0.011668,
+      7.9e-05,
+      -0.000994
     ],
     [
-      8.7e-05,
-      0.014611,
-      7.2e-05
+      7.9e-05,
+      0.015452,
+      6.7e-05
     ],
     [
-      -0.000708,
-      7.2e-05,
-      0.021978
+      -0.000994,
+      6.7e-05,
+      0.022788
     ]
   ],
   "skin_z": [
@@ -304,22 +203,22 @@
   ],
   "rear_caster_note": "rear_caster is the floor contact point",
   "base_x_note": "P_base spans x -124..120 (centre x -2), R148 disc clipped to |y| <= 100",
-  "camera_lower_edge_bumper_clearance_mm": 4.07,
+  "camera_lower_edge_bumper_clearance_mm": 4.17,
   "coast_safe_reverse_speed_mps": 0.095,
-  "caster_load_fraction": 0.246,
-  "rear_caster_load_N": 5.86,
+  "caster_load_fraction": 0.213,
+  "rear_caster_load_N": 5.1,
   "rear_cliff_lead_over_caster_mm": 35,
   "rear_cliff_coast_at_reverse_limit_mm": {
     "speed_m_s": 0.06,
     "latency_travel_mm": 4.0,
-    "distance_mm": 14.6,
-    "required_lead_mm": 23.3,
-    "margin_mm": 11.7,
+    "distance_mm": 14.7,
+    "required_lead_mm": 23.4,
+    "margin_mm": 11.6,
     "ok": true
   },
   "threshold_capability_mm": {
-    "forward": 1.5,
-    "reverse": 1.5,
+    "forward": 1.0,
+    "reverse": 1.0,
     "note": "largest square step (0.5 mm steps) not rated fail",
     "step_8mm": "fail forward / fail reverse",
     "step_10mm": "fail forward / fail reverse",
@@ -382,7 +281,7 @@
       "left_switch": "az 0..+90 (left half)",
       "right_switch": "az 0..-90 (right half)",
       "seam_mm": 7.5,
-      "camera_notch": "see bumper_notch: no bumper above the notch top profile for |az| < half_width_deg_at_skin",
+      "camera_window": "see camera_window: no bumper surface inside the camera window round the lens (|az| < at_skin.half_width_deg, z at_skin.z_mm); full height elsewhere",
       "zones_note": "a centre hit can trip either or both switches"
     },
     "reverse_speed_limit_m_s": 0.06,

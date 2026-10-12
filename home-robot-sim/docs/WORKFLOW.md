@@ -11,7 +11,7 @@ SIM=/Users/liorknafo/Documents/Codex/2026-10-03/i-x20/outputs/home-robot-sim  # 
 PUB=/Users/liorknafo/Documents/Codex/2026-10-03/i-x20/outputs/home-robot      # public GitHub snapshot (tools/sync.sh); controller only
 LEDGER=$R1/.superpowers/sdd/2026-10-08-r1-bay-board   # git-ignored, so NOT in worktrees: always use this absolute path
 SIMPY=$SIM/.venv/bin/python                            # sim Python (cv2, numpy); homebrew python has no cv2
-CADPY=/private/tmp/claude-501/-Users-liorknafo-Documents-Codex-2026-10-03-i-x20-outputs-home-robot-sim/030356d9-c2ab-4fc2-a131-e83b5b8d9fe0/scratchpad/cadvenv/bin/python  # CadQuery 2.8 + trimesh (in /tmp: if gone, recreate a venv with cadquery==2.8 trimesh and note where)
+CADPY=/Users/liorknafo/Documents/Codex/2026-10-03/i-x20/outputs/.venv-cad/bin/python  # CadQuery 2.8.0 + trimesh 5.1.1, permanent (rebuilt 2026-10-11 after the /tmp venv was wiped)
 KPY=/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/Current/bin/python3   # KiCad 9.0.9 pcbnew
 KCLI=/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli
 JAVA=/opt/homebrew/opt/openjdk@25/bin/java   # Freerouting jar: $R1/pcb/tools/freerouting.jar (git-ignored: worktrees use this absolute path)
@@ -43,7 +43,8 @@ Unreal (the user's simulator), the autonomy service and the dashboard run only f
    with UDP `{"quit":true}` to 8767 and wait; never SIGKILL the user's editor; relaunch with `Scripts/launch.command house polished`;
    start the autonomy service with `$SIMPY` from `controller/` (port 8771).
 4. Release: leave the simulator running on `main` with the service up (the user expects it running), then `rm -rf $SIM/.sim-lock`.
-5. While the lock owner says `benchmark`, do not start route.py / Freerouting or a CAD build (they skew the timing). One Freerouting JVM
+5. While the lock owner says `benchmark`, do not start route.py / Freerouting or a CAD build (they skew the timing), and keep other
+   sim runs light (JOBS=2, at most about 4 processes across all threads). The benchmark owner notes the machine load in its report. One Freerouting JVM
    at a time on this Mac (`-Xmx1g`, one worker).
 
 ## Notes, reports, review
@@ -52,8 +53,24 @@ Unreal (the user's simulator), the autonomy service and the dashboard run only f
   `global-constraints.md` and `final-review-carry.md` for history and rulings, but do not edit `progress.md` (the controller's ledger).
 - TDD where tests apply. Before you call the task done: every gate it touches is green, the report is written in plain language with the
   numbers, and an independent review passes (the `astra` agent: work continues until it answers ACCEPT).
+- If your task touches the controller, the robot geometry or the sim sync, the scenario gate is **both** suites:
+  `JOBS=4 $SIMPY tests/scenarios_round.py` and `R1_SENSOR_ERRORS=off JOBS=4 $SIMPY tests/scenarios_round.py` (rc 0 each), plus
+  `tests/scenarios_goto_wall.py`. List both in your report (task F's merge missed the errors-off suite).
 - When done or blocked, tell the controller: `t3_thread_send` to thread `8164f576-11ab-40d0-bc58-365bcb1118db` with the branch, last
   commit, test results and anything the user must decide.
+
+## Sub-agents
+
+Pick the cheapest model that fits each sub-agent job (user rule):
+
+- **Claude Haiku 5.5:** mechanical, fully specified, easy-to-check jobs: searches, pulling numbers out of logs, running a given test
+  command and reporting the counts, bookkeeping.
+- **Claude Sonnet 5.5:** well-scoped standard work with a clear brief: a step from a clear plan, writing tests, small refactors, a
+  focused investigation, summarizing long reports, first-pass checks.
+- **Your inherited model:** design decisions, hard debugging, safety rules, and anything where a mistake is costly or hard to spot.
+  astra keeps its own model.
+- How: native Agent tool `model: "haiku"` / `"sonnet"`; T3 `delegate_task` `target: {providerInstanceId: "claudeAgent", model:
+  "claude-haiku-5-5"}` / `"claude-sonnet-5-5"`. Check the results; if a smaller model struggles, re-run one tier up.
 
 ## User rules (binding)
 

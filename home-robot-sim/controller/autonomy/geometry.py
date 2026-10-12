@@ -49,6 +49,17 @@ Derived clearances (all distances from base_link; see derive()):
                    2 cells (.10, a body overlapping the wall) are not. The live approach decides how close the
                    robot really gets (and reports 'Stopped N cm short' when the body does not fit).
                    R - one 5 cm cell < GOAL_CLEAR < PLAN_RADIUS.
+  FIT_CLEAR        R - 5 cm (one cell of quantization, no localisation or tracking margin), at most 11.1 cm: the round body
+                   may fit at a cell whose centre is at least this far from every occupied cell centre. On the 5 cm grid it
+                   must lie between the cell-centre distances 2 cells (10 cm) and sqrt(5) cells (11.18 cm), where every value
+                   gives the same result (11.1 cm caps it there for a larger body, e.g. the old box robot's
+                   parameter file). For a body wider than 30.4 cm (asserted): between two obstacles whose cells lie 5
+                   apart on a row (a gap of at most hypot(30, 5) = 30.4 cm; the body is 2R = 31.8 cm wide) no cell is this
+                   clear; 6 apart (up to 35 cm) the middle ones are; and at any angle a gap that could be 2R or wider is
+                   never called closed (task H: 6650 random doorways, the widest called closed at most 30.4 cm). R - 2 cm
+                   (GOAL_CLEAR's allowance) is exact only along a row: it called oblique gaps of up to 33.5 cm closed.
+                   Mapping completion (grid.unreached_enterable) leaves out only floor that no path of such cells joins to
+                   the robot: walled in for the body itself, not merely cut off by the planner's margins.
 """
 import json
 import math
@@ -149,6 +160,8 @@ DRIVE_CLEARANCE_LIDAR = _ceil5mm(R + DRIVE_LIDAR_MARGIN)
 assert TURN_CLEAR < DRIVE_CLEARANCE_LIDAR < DRIVE_CLEARANCE, 'live-LiDAR driving needs more room than a spin, less than map-frame driving'
 GOAL_CLEAR = R + GOAL_MARGIN
 assert R - .05 < GOAL_CLEAR < PLAN_RADIUS, 'a near-obstacle Go-to target may undercut R by less than one 5 cm cell (quantization) and lies inside the planning margin'
+FIT_CLEAR = min(R - .05, .111)           # the body may fit here (cell quantization only, no error margin), see the docstring
+assert .10 < FIT_CLEAR < .05 * math.sqrt(5) and 2 * R > math.hypot(.30, .05), 'FIT_CLEAR: re-derive it for this body radius on the 5 cm grid (docstring)'
 NARROW_RADIUS = DRIVE_CLEARANCE          # narrow-passage planning clearance (exact for a round body)
 # Intentional literals left in controller/autonomy that look like robot geometry but are not
 # (test_whole_house_pacing keeps an allow-list of the .20 ones):

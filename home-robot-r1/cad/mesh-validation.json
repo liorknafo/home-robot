@@ -37,18 +37,18 @@
     "file": "P_bumper_left.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 83089.7,
+    "volume_mm3": 85963.9,
     "size_mm": [
       157.195,
       150.561,
       80.5
     ],
     "center_mass_mm": [
-      95.34,
-      90.41,
-      53.3
+      97.26,
+      88.28,
+      54.42
     ],
-    "area_mm2": 53316.1
+    "area_mm2": 54629.6
   },
   {
     "file": "P_bumper_rider_left_A.stl",
@@ -156,52 +156,52 @@
     "file": "P_bumper_right.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 85086.9,
+    "volume_mm3": 88205.3,
     "size_mm": [
       157.195,
       158.061,
       80.5
     ],
     "center_mass_mm": [
-      96.61,
-      -88.37,
-      53.15
+      98.57,
+      -86.1,
+      54.38
     ],
-    "area_mm2": 55286.2
+    "area_mm2": 57031.3
   },
   {
-    "file": "P_camera_guard.stl",
+    "file": "P_camera_holder.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 11453.3,
+    "volume_mm3": 3313.8,
     "size_mm": [
-      26.0,
-      40.0,
-      34.0
+      27.2,
+      31.0,
+      31.0
     ],
     "center_mass_mm": [
-      114.46,
-      0.47,
-      108.73
+      127.06,
+      0.48,
+      83.09
     ],
-    "area_mm2": 8449.6
+    "area_mm2": 3041.5
   },
   {
-    "file": "P_camera_tower.stl",
+    "file": "P_camera_mount.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 19924.2,
+    "volume_mm3": 14363.2,
     "size_mm": [
       18.0,
       118.0,
-      58.5
+      56.0
     ],
     "center_mass_mm": [
-      105.72,
-      0.0,
-      65.6
+      105.25,
+      -0.0,
+      62.6
     ],
-    "area_mm2": 9953.6
+    "area_mm2": 8496.3
   },
   {
     "file": "P_cliff_mount_1.stl",
@@ -282,8 +282,8 @@
       3.2
     ],
     "center_mass_mm": [
-      34.94,
-      -22.0,
+      59.94,
+      22.0,
       103.37
     ],
     "area_mm2": 508.3
@@ -292,18 +292,18 @@
     "file": "P_lid_front.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 37640.8,
+    "volume_mm3": 58641.1,
     "size_mm": [
-      152.51,
+      155.237,
       210.272,
       7.32
     ],
     "center_mass_mm": [
-      71.3,
-      -27.17,
-      101.99
+      87.93,
+      -17.76,
+      102.0
     ],
-    "area_mm2": 27597.5
+    "area_mm2": 41400.1
   },
   {
     "file": "P_lid_left.stl",
@@ -445,18 +445,18 @@
     "file": "P_lidar_tray.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 32503.6,
+    "volume_mm3": 38860.7,
     "size_mm": [
-      119.0,
+      145.3,
       86.0,
       23.8
     ],
     "center_mass_mm": [
-      17.89,
-      0.58,
-      106.34
+      30.88,
+      -0.28,
+      106.12
     ],
-    "area_mm2": 23076.1
+    "area_mm2": 27543.3
   },
   {
     "file": "P_motor_mount_left.stl",
