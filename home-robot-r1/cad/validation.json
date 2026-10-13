@@ -14302,14 +14302,14 @@
     "records": [
       {
         "item": "P_base",
-        "mass_kg": 0.13622,
+        "mass_kg": 0.1359,
         "position_mm": [
           -3.2,
           0.1,
           30.9
         ],
         "mean_wall_mm": 3.6,
-        "fill": 0.622,
+        "fill": 0.62,
         "sim_item": "P_base"
       },
       {
@@ -15013,7 +15013,6 @@
       "forward_pitch_onset_m_s2": 2.73,
       "worst_case_plus_50g_front_com_x_mm": -14.31,
       "parts_affected": {
-        "P_base": 0.622,
         "P_camera_mount": 0.759,
         "P_bumper_left": 0.901,
         "P_bumper_right": 0.926,
@@ -15069,7 +15068,7 @@
         "verdict": "fail",
         "pass": false,
         "wheel_mu_required": 0.882,
-        "caster_mu_required": 1.596,
+        "caster_mu_required": 1.597,
         "body_floor_clearance_mm": 7.67,
         "clearance_point": "lowest body point while the wheels are up (pitch about the caster), or the riser on the level approach",
         "wheel_torque_required_Nm": {
@@ -15279,7 +15278,7 @@
           "v_at_stop_mps": 0.128,
           "energy_J": 0.0201,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 95.3,
+          "equivalent_force_N": 95.2,
           "gusset_root_MPa": 5.1,
           "wall_above_gusset_tip_MPa": 9.9,
           "consistent_stiffness": {
@@ -15297,7 +15296,7 @@
           "v_at_stop_mps": 0.128,
           "energy_J": 0.0201,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 95.3,
+          "equivalent_force_N": 95.2,
           "gusset_root_MPa": 6.0,
           "wall_above_gusset_tip_MPa": 15.3,
           "consistent_stiffness": {
@@ -15315,7 +15314,7 @@
           "v_at_stop_mps": 0.3,
           "energy_J": 0.1098,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 222.5,
+          "equivalent_force_N": 222.4,
           "gusset_root_MPa": 11.9,
           "wall_above_gusset_tip_MPa": 23.1,
           "consistent_stiffness": {
@@ -15333,7 +15332,7 @@
           "v_at_stop_mps": 0.3,
           "energy_J": 0.1098,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 222.5,
+          "equivalent_force_N": 222.4,
           "gusset_root_MPa": 14.1,
           "wall_above_gusset_tip_MPa": 35.8,
           "consistent_stiffness": {
@@ -17559,6 +17558,129 @@
       "ok": true
     },
     "ok": true
+  },
+  "p03_model": {
+    "board": "HW-316E V4.0 (XL4015 5 A buck, 3-digit LED voltmeter), the generic board sold as \"DC-DC 5A Buck Converter 4-38V to 1.25-36V ... with LED Display\" (Amazon B085T73CSD)",
+    "sources": [
+      "DIYmore product photos of the same HW-316E V4.0 board: https://www.diymore.cc/products/xl4015-5a-dc-dc-adjustable-step-down-board-led-voltmeter-power-supply-module-4-0-38v-to-1-25v-36v-diy-high-power-75w",
+      "Amazon B085T73CSD listing (title only; the page body was not readable)",
+      "user measurement: 62 \u00d7 38 \u00d7 14 mm (the envelope, kept as the truth for size)"
+    ],
+    "render_solids": 97,
+    "colours": 21,
+    "inside_envelope": true,
+    "top_z_mm": 48.0,
+    "tallest": "XL4015 clip-on heatsink (12.4 mm over the PCB top)",
+    "orientation": "rotation, not a mirror: IN terminal on the +y short end (the robot left, the end nearer U5A / U5B), OUT on the -y end; top edge (caps, trimpot) forward, display and buttons aft",
+    "terminal_entries_mm": {
+      "IN+": [
+        33.46,
+        31.0,
+        38.9
+      ],
+      "IN-": [
+        28.38,
+        31.0,
+        38.9
+      ],
+      "OUT+": [
+        30.96,
+        -31.0,
+        38.9
+      ],
+      "OUT-": [
+        25.88,
+        -31.0,
+        38.9
+      ]
+    },
+    "leads": {
+      "W_p03_in": {
+        "terminal": "IN",
+        "end": "+y (robot left)",
+        "entries_mm": {
+          "IN+": [
+            33.46,
+            31.0,
+            38.9
+          ],
+          "IN-": [
+            28.38,
+            31.0,
+            38.9
+          ]
+        },
+        "route_mm": 45.6
+      },
+      "W_p03_out": {
+        "terminal": "OUT",
+        "end": "-y (robot right)",
+        "entries_mm": {
+          "OUT+": [
+            30.96,
+            -31.0,
+            38.9
+          ],
+          "OUT-": [
+            25.88,
+            -31.0,
+            38.9
+          ]
+        },
+        "route_mm": 70.3
+      }
+    },
+    "tie": {
+      "x_mm": 39.5,
+      "band_x_range_mm": [
+        37.95,
+        41.05
+      ],
+      "slots_mm": [
+        [
+          39.5,
+          -33.3
+        ],
+        [
+          39.5,
+          33.3
+        ]
+      ],
+      "slot_size_mm": [
+        3.1,
+        2.6
+      ],
+      "clearance_along_x_mm": {
+        "IN terminal": 1.95,
+        "OUT terminal": 4.45,
+        "trimpot": 0.65,
+        "trimpot screw": 1.95,
+        "display": 14.95,
+        "buttons": 21.25,
+        "XL4015 heatsink": 0.45,
+        "IN+ wire entry": 2.69,
+        "IN- wire entry": 7.77,
+        "OUT+ wire entry": 5.19,
+        "OUT- wire entry": 10.27,
+        "W_p03_in lead path": 7.03,
+        "W_p03_out lead path": 9.53
+      },
+      "parts_under_band_top_z_mm": {
+        "output cap": 46.1,
+        "input cap": 46.1,
+        "toroid": 42.8
+      },
+      "bears_on": [
+        "output cap",
+        "input cap"
+      ],
+      "clear": true
+    },
+    "tie_clear_of_terminals": true,
+    "open_item": {
+      "status": "resolved",
+      "text": "The first build (1b031a3) had the tie slots at (28, \u00b133.3), in front of the terminals' wire entries. Resolved by the controller's ruling (option a): the tie line moved to x 39.5 over the two cap tops (bears on: output cap, input cap); the board stays on its foam tape at the same height."
+    }
   },
   "printability": {
     "all_pass": true,

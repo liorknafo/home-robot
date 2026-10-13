@@ -28,7 +28,7 @@
     14.5
    ],
    "fits_bed": true,
-   "bed_contact_mm2": 42338.4,
+   "bed_contact_mm2": 42374.3,
    "overhang_mm2": 0.0,
    "bridge_mm2": 168.4,
    "overhang_total_mm2": 168.4,
@@ -50,7 +50,7 @@
    "winding_consistent": true,
    "min_wall_mm": 1.0,
    "wall_p1_mm": 3.4,
-   "area_thinner_than_1p2_pct": 0.01,
+   "area_thinner_than_1p2_pct": 0.0,
    "section_min_width_mm": 1.31,
    "section_slivers": [],
    "section_thin_tips": 0,

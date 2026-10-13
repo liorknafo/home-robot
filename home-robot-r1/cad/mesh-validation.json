@@ -3,18 +3,18 @@
     "file": "P_base.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 172440.3,
+    "volume_mm3": 172583.9,
     "size_mm": [
       244.0,
       200.0,
       14.5
     ],
     "center_mass_mm": [
-      -3.18,
+      -3.16,
       0.05,
       30.92
     ],
-    "area_mm2": 95872.6
+    "area_mm2": 95833.9
   },
   {
     "file": "P_battery_tray.stl",

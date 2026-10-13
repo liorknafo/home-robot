@@ -439,7 +439,9 @@ class HarnessTests(unittest.TestCase):
     # ---- brief step 3: the cut lengths in the BOM file, the spike check ----------------------------------------------------------------
     def test_cut_lengths_are_in_the_bom_file(self):
         """parts-and-connections.json carries the cut list (every cut-list lead, its route and cut length) and the spike section 8 check:
-        each spike lead's final route against the spike's 'now' and '(B)' columns, the net change near the spike's +169 mm."""
+        each spike lead's final route against the spike's 'now' and '(B)' columns, the net change near the spike's +169 mm. LIO-169: the P03
+        leads are left out of that bound: the spike (and the old envelope) took ~10 mm face-to-face leads, but the real HW-316E board has its
+        terminals on its short ends, so they run over its top (their routes are checked against its terminals in test_board_cad)."""
         h = self.d['harness']
         rows = {r['id']: r for r in h['cut_list']}
         self.assertEqual(set(rows), set(self.cutd))
@@ -448,7 +450,9 @@ class HarnessTests(unittest.TestCase):
         sc = h['spike_check']
         self.assertEqual(sc['spike_net_change_mm'], 169)
         self.assertAlmostEqual(sc['net_change_mm'], sum(r['final_mm'] - r['now_mm'] for r in sc['rows']), 6)
-        self.assertLessEqual(abs(sc['net_change_mm'] - 169), 60)
+        p03 = {'W_p03_in', 'W_p03_out'}
+        self.assertEqual(p03, {i for r in sc['rows'] for i in r['ids'] if 'p03' in i})
+        self.assertLessEqual(abs(sum(r['final_mm'] - r['spike_b_mm'] for r in sc['rows'] if not p03 & set(r['ids']))), 60)
 
     # ---- carry item 5: one verify list ----------------------------------------------------------------------------------------------
     def test_from_memory_facts_are_in_one_verify_list(self):

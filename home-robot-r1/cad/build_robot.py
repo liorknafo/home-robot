@@ -73,7 +73,7 @@ PARAMS=dict(base_length=244,base_width=200,base_bottom=29,base_thickness=4,
             drive_model=dict(max_torque_nm=.10,setpoint_ramp_m_s2=.25,dynamic_brake_nm_per_rad_s=.010,rolling_drag_nm=.003,axle_inertia_kg_m2=.0005,hazard_action='disarm: tl = tr = 0, the wheels then see the simulator dynamic brake (coast)',
                 source='home-robot-sim DriveCore.h (max_torque, accel: every wheel setpoint, braking included, ramps at 0.25 m/s2; disarm on hazard) and RobotPawn.cpp / robot-parameters.json (0.010 N m s/rad dynamic brake while disarmed, 0.003 N m rolling drag, 0.0005 kg m2 reflected axle inertia)'),
             base_x_range=[-124,120],printer_bed=[250,210,210])
-parts=[]; shapes={}; cables=[]; TESS={}; ALLOW={}; BH=[]
+parts=[]; shapes={}; cables=[]; TESS={}; ALLOW={}; BH=[]; RENDER={}   # RENDER: id -> [(solid, colour)], a render-only detail model (checks use shapes[id])
 COL={'print':'#49768a','cover':'#c5d4db','owned':'#32876b','buy':'#bd8a38',
      'metal':'#b5bcc3','black':'#30363b','connector':'#ddcbaa','pcb':'#226c59',
      'power':'#c45749','signal':'#528fbc','usb':'#343c49','lens':'#284350','red':'#c8322d'}
@@ -145,14 +145,16 @@ def yz_fin(pts,x0,x1):
 def near(a,b,m=0):
     A,B=a.BoundingBox(),b.BoundingBox()
     return A.xmin-m<B.xmax and B.xmin-m<A.xmax and A.ymin-m<B.ymax and B.ymin-m<A.ymax and A.zmin-m<B.zmax and B.zmin-m<A.zmax
-def add(id,name,s,cat='buy',bom='',group='lower',check=False,printable=False,note='',explode=None,tess=None,print_rot_z=0,allow=(),pshape=None,print_flip=False):
+def add(id,name,s,cat='buy',bom='',group='lower',check=False,printable=False,note='',explode=None,tess=None,print_rot_z=0,allow=(),pshape=None,print_flip=False,render=None):
     assert s.isValid(),f'Invalid CAD solid {id}'
+    if render:   # drawn (GLB, assembly meshes, renders) as these coloured solids; every check still uses s, which must contain them
+        assert all(r.isValid() for r,_ in render),f'Invalid render solid {id}';RENDER[id]=render
     if tess:TESS[id]=tess
     if allow:ALLOW[id]=set(allow)
     b=s.BoundingBox()
     p=dict(id=id,name=name,category=cat,color=COL.get(cat,cat),bom=bom,group=group,
       bounds=[round(v,3) for v in (b.xmin,b.ymin,b.zmin,b.xmax,b.ymax,b.zmax)],
-      printable=printable,check=check,note=note,
+      printable=printable,check=check,note=note,**({'vertex_colors':True} if render else {}),
       explode=explode or {'base':[0,0,0],'lower':[0,0,25],'upper':[0,0,85],'camera':[40,0,110],'cover':[0,0,170],'wheels':[0,0,0]}.get(group,[0,0,0]))
     parts.append(p); shapes[id]=s
     if printable:
@@ -281,9 +283,12 @@ POST_R,POST_FOOT=4.5,(22,12,3)   # Ø9 column on a 22 × 12 × 3 foot (the foot 
 LID_IDS=('P_lid_front','P_lid_left','P_lid_rear','P_lid_right')   # round cover sectors 300..37, 37..120, 120..215, 215..300 deg
 # P03 5 V converter (bay plan): turned 90 deg in the front bay, ahead of the bay board's tongue (x 7.5) and aft of the bumper riders B at full
 # travel (validation p03_clear_of_bumper_travel): x 9..47, |y| <= 31, on 1 mm foam tape (z 33-34), body z 34-48. A cable tie over its top runs
-# through two P_base slots beside its long sides; its leads to U5A/U5B on the tongue's front edge are about 10 mm.
+# through two P_base slots beside its short ends. Drawn as the real HW-316E board (LIO-169, below): its IN / OUT terminals are on the short ends.
 P03C,P03S=(28,0),(38,62,14)   # P03 centre and size (x, y, z)
-P03_TIES=[(P03C[0],s*(P03S[1]/2+2.3)) for s in (-1,1)]   # 10 × 2.6 slots at y ±33.3: 1.0 mm off the P03 sides
+# LIO-169: the tie line at x 39.5 (controller ruling, option a): over the two cap tops, clear of the HW-316E's end terminals (x <= 36.0),
+# the trimpot (x >= 41.7) and the heatsink edge (x <= 37.5); the slots, sized to the 2.5 mm tie (TIE below), keep it there (validation p03_model.tie).
+P03_TIE_X=39.5
+P03_TIES=[(P03_TIE_X,s*(P03S[1]/2+2.3)) for s in (-1,1)]   # 3.1 × 2.6 slots at y ±33.3: 1.0 mm off the P03 short ends
 TIES=[(-36,-92)]+P03_TIES                     # zip-tie slots in P_base (the (20, ±24) pair went with the P03's old long-side-along-x pose)
 # Motor inline joints, factory-cable coils and their cable ties (PB25; B9 carry items 3 / 10). Each joint (pigtail male housing + the motor cable's
 # factory female housing, on edge, axis along +-y) rests on P_base just ahead of its motor, between the motor (x <= 12.5) and the front Jetson standoff
@@ -406,7 +411,7 @@ ASSY_ORDER=('Assembly order (bay board under the Jetson): 0. on the bench, make 
             'Factory cables: measure each one from the encoder cap to the female housing\'s rear face (the wire entry); readings of @@R_LO@@–@@R_HI@@ mm all fit (2–3 turns), and a longer cable up to @@R_MAX@@ mm still fits (up to 3.5 turns). Route the fixed path first (about @@FIXED@@ mm outside the coil): a flat row along the motor\'s inner end face toward the rear, round the motor\'s rear shoulder and forward over the motor top (never over the pigtail), down the motor\'s front shoulder under the bumper lead, and from the coil position into the housing; '
             f'wind the remainder (the measured length less the fixed path: @@REM_LO@@–@@REM_HI@@ mm) into the coil on the base ahead of the motor (2–3.5 turns, about {2*MCOIL["r"]+4:g} mm across, at x {MCOIL["c"][0]:g}, |y| {MCOIL["c"][1]:g}) and tie it through its two slots. '
             'Then mate each motor\'s factory female housing onto its pigtail\'s male housing: the joint is not keyed, so mate the pin-1 stripe to the pin-1 stripe (both halves are marked at the red wire) and check the colours run straight across; stand the joint on the base and tie it down with a cable tie down the motor opening and up through the slot beside it; bumpers J10/J11; front cliffs J8/J9; '
-            f'5. set and verify the P03 output voltage on the bench, connect it to U5A/U5B (pin 1 is "+" on both terminals, silk "+", the screw nearer the robot centre line: U5A.1 to P03 IN+, U5B.1 to P03 OUT+, red wires on pin 1), then fit it on its foam tape in the front bay with the cable tie through the P_base slots at ({P03_TIES[1][0]:g}, ±{P03_TIES[1][1]:g}); '
+            f'5. set and verify the P03 output voltage on the bench, connect it to U5A/U5B (pin 1 is "+" on both terminals, silk "+", the screw nearer the robot centre line: U5A.1 to P03 IN+, U5B.1 to P03 OUT+, red wires on pin 1; the P03\'s IN terminal is on the end toward the robot\'s left, display up and toward the rear), then fit it on its foam tape in the front bay with the cable tie through the P_base slots at ({P03_TIES[1][0]:g}, ±{P03_TIES[1][1]:g}); '
             'before the Jetson is connected (W04 unplugged): battery in, F1 fitted, rocker on, and measure against a GND pad: U5A.1 reads positive, about the pack voltage, and U5B.1 positive 5.1 V (0 V or negative: the P03 leads are swapped or loose); then rocker off; '
             '6. stand the two rear 20 mm F-F standoffs on the board and screw each down with an M2.5 × 12 countersunk screw from under P_base through the base, the clamp spacer and the board (they clamp the board); '
             '7. fit the Jetson (four M2.5 top screws), then its six plugs; before the 5 V barrel plug goes in, check the Jetson lead W04 on J3 with its barrel plug free and the rocker on: the plug\'s centre reads positive 5.1 V against its sleeve (negative: the two Micro-Fit crimps are swapped), then rocker off and plug it in. '
@@ -461,7 +466,7 @@ for s in [-1,1]:
     bcut(f'switch lead {s:+d}',cyl(*mir(swp(*SWLEAD),s),28,3,8))                               # bumper switch lead
     base=union(base,abut(s))
 for i,(x,y) in enumerate(TRAYS):ins_hole(f'tray insert {i}',x,y)   # insert from above: M3 × 6 countersunk from inside the tray
-for i,(x,y) in enumerate(TIES):bcut(f'tie slot {i}',box(x,y,28,10,2.6,8))
+for i,(x,y) in enumerate(TIES):bcut(f'tie slot {i}',box(x,y,28,10 if i==0 else TIE['w']+2*TIE['slot_clr'],2.6,8))   # the P03 pair: the tie's width + clearance along x
 for i,(x0,x1,yc) in enumerate(MOTOR_TIE_SLOTS):bcut(f'motor tie slot {i}',box((x0+x1)/2,yc,28,x1-x0,TIE['w']+2*TIE['slot_clr'],8))   # B9: joint / coil cable-tie slots
 for i,(cx,cy) in enumerate(LIDPOSTS):
     for xx in [cx-8,cx+8]:ins_hole(f'lid post {i+1} insert {xx}',xx,cy)   # insert from above: M3 × 6 pan head through the post foot, tip at z 30
@@ -981,10 +986,84 @@ def assy_resolve(t):
 ASSY_ORDER=assy_resolve(ASSY_ORDER)
 for p_ in parts:p_['note']=assy_resolve(p_['note'])
 assert '@@' not in ASSY_ORDER and not any('@@' in p_['note'] for p_ in parts),'unresolved assembly-order token'
-add('p03_regulator',f'P03 5 V converter envelope ({P03S[1]} × {P03S[0]} × {P03S[2]} mm) on foam tape',union(box(*P03C,33,P03S[0]-4,P03S[1]-4,1.0),box(*P03C,34,*P03S)),'owned','P03','lower',check=True,
+# P03 drawn as the real board (LIO-169): the listing's generic "5A buck, 4-38 V to 1.25-36 V, LED display" module is the HW-316E V4.0
+# (XL4015, blue PCB, silk "HW-316E V4.0."; layout from the DIYmore photo set of the same board, scaled to the 62 mm length, about ±1 mm).
+# Board frame: u along the long side from the IN end (0..62), v from the top edge (input / output caps, trimpot; 0..37) to the display
+# edge, z up from the PCB underside. Turned into the robot as a rotation (not a mirror): the IN end at +y (the robot's left: the end
+# nearer U5A / U5B), the top edge forward (x 47), the display and buttons aft. The board stands on the measured 1 mm foam tape; every
+# drawn part stays inside the measured 62 × 38 × 14 mm envelope (asserted), so the checks keep the envelope (shapes['p03_regulator']).
+P03_Z0=34.0;P03_PCB=(62,37,1.6)
+def p03_xy(u,v):return (P03C[0]+P03S[0]/2-v,P03C[1]+P03S[1]/2-u)
+def p03_detail():
+    ZT=P03_Z0+P03_PCB[2];R=[];NB={}
+    def B(u,v,z,du,dv,dz):return box(u,-v,z,du,dv,dz)
+    def C(u,v,z,r,h):return cyl(u,-v,z,r,h)
+    def put(s,c,nm=None):
+        R.append((s.rotate((0,0,0),(0,0,1),-90).translate((P03C[0]+P03S[0]/2,P03C[1]+P03S[1]/2,0)),c))
+        if nm:b=R[-1][0].BoundingBox();q=(b.xmin,b.ymin,b.zmin,b.xmax,b.ymax,b.zmax);o=NB.get(nm,q);NB[nm]=tuple(round(f(a,b_),2) for f,a,b_ in zip((min,)*3+(max,)*3,o,q))
+    pcb=B(P03_PCB[0]/2,P03_PCB[1]/2,P03_Z0,P03_PCB[0],P03_PCB[1],P03_PCB[2])
+    for u,v in ((2.9,2.9),(59.1,2.9),(2.9,34.1),(59.1,34.1)):pcb=pcb.cut(C(u,v,P03_Z0-1,1.6,4))   # 4 × Ø3.2 M3 holes
+    put(pcb,'#1f4ea6')
+    # screw terminals (blue, 2 × 5.08 mm, KF301 style), flush with the short ends, wire entries outward, screws on top
+    ents={}
+    for nm,u0,v0,out in (('IN',0.0,11.0,-1),('OUT',54.4,13.5,1)):
+        body=B(u0+3.8,v0+5.08,ZT,7.6,10.16,10.0);ue=u0 if out<0 else u0+7.6
+        for k in (0,1):
+            vc=v0+2.54+5.08*k
+            body=body.cut(B(ue,vc,ZT+1.6,8.0,3.6,3.4)).cut(C(u0+3.8,vc,ZT+6.5,1.75,4))
+            put(C(u0+3.8,vc,ZT+7.0,1.55,2.2).cut(B(u0+3.8,vc,ZT+8.6,0.6,3.4,1)),'#b5bcc3',f'{nm} terminal')
+            ents[f'{nm}{"+-"[k]}']=(*p03_xy(ue,vc),ZT+3.3)
+        put(body,'#2f74d0',f'{nm} terminal')
+    # electrolytic V-chip caps (100 uF 50 V in, 220 uF 35 V out): black base, aluminium can with a vent cross
+    for u,v in ((13.0,7.0),(51.0,7.0)):
+        cn='input cap' if u<31 else 'output cap'
+        put(B(u,v,ZT,8.3,8.3,1.5),'#222528',cn)
+        put(C(u,v,ZT+0.5,4.0,10.0).cut(B(u,v,ZT+10.2,6,0.5,1)).cut(B(u,v,ZT+10.2,0.5,6,1)),'#c6cbd0',cn)
+    # XL4015 (TO-263-5) and its clip-on 4-fin aluminium heatsink (in the kit; fitted, as in the seller's photo): the tallest part
+    put(B(24.3,15.0,ZT,10.2,9.0,4.4),'#1b1b1d');put(B(24.3,20.15,ZT,8.0,1.3,0.25),'#b5bcc3')
+    for k in range(5):put(B(24.3+(k-2)*1.7,9.0,ZT,0.8,3.0,0.6),'#b5bcc3')
+    hs=B(24.3,15.0,ZT+4.4,12.0,11.0,1.4)
+    for du in (-4.55,-1.52,1.52,4.55):hs=hs.fuse(B(24.3+du,15.0,ZT+5.8,1.1,11.0,P03_Z0+P03S[2]-ZT-5.8))
+    put(hs,'#d4d8dc','XL4015 heatsink')
+    # toroid inductor lying flat: yellow core, copper winding (22 turns, a 40 deg gap where the leads leave)
+    tu,tv=37.8,14.5
+    put(C(tu,tv,ZT+0.9,6.4,5.4).cut(C(tu,tv,ZT,3.6,8)),'#d9b23c','toroid')
+    for k in range(22):
+        a=-160+320*k/21;turn=box(5.0,0,ZT,4.6,0.9,7.2).cut(box(5.0,0,ZT+0.9,2.8,2,5.4))
+        put(turn.rotate((0,0,0),(0,0,1),a).translate((tu,-tv,0)),'#c27a34','toroid')
+    # Schottky SS54 (SMA, long axis along v), the M7 diode and the TO-92 near the IN terminal, and a few 0805s
+    for u,v,du,dv in ((51.7,19.4,2.6,4.3),(11.0,23.5,4.3,2.6)):
+        put(B(u,v,ZT,du,dv,2.1),'#1d1d1f')
+        for s_ in (-1,1):put(B(u+s_*(du/2+.3) if du>dv else u,v+s_*(dv/2+.3) if dv>du else v,ZT,1.0 if du>dv else 1.6,1.6 if du>dv else 1.0,0.25),'#b5bcc3')
+    put(C(15.5,19.5,ZT+1.5,2.3,4.5).intersect(B(15.5,19.5+0.6,ZT,5,3.4,7)),'#1d1d1f')
+    for k in (-1,0,1):put(B(15.5+k*1.27,19.5,ZT,0.45,0.45,1.5),'#b5bcc3')
+    for u,v,c in ((16.5,13.0,'#1c1c1c'),(45.5,16.0,'#1c1c1c'),(45.5,20.5,'#b89a6a'),(47.5,23.0,'#1c1c1c'),(14.8,26.0,'#b89a6a'),(28.0,4.0,'#1c1c1c'),(21.0,4.5,'#b89a6a')):
+        put(B(u,v,ZT,1.25,2.0,0.6),c)
+    # 3-digit 0.36" red 7-segment display (3631AS), reading the set 5.10 V; it overhangs the display edge by 1 mm
+    put(B(31.0,31.0,ZT,30.0,14.0,7.0),'#e2e2dc','display');put(B(31.0,31.0,ZT+7.0,30.0,14.0,0.2),'#151515')
+    SEG={'a':(0,-4.1,4.0,.9),'b':(2.2,-2.05,.9,3.6),'c':(2.2,2.05,.9,3.6),'d':(0,4.1,4.0,.9),'e':(-2.2,2.05,.9,3.6),'f':(-2.2,-2.05,.9,3.6),'g':(0,0,4.0,.9)}
+    for k,(lit,dp) in enumerate((('afgcd',True),('bc',False),('abcdef',False))):
+        uc=31.0+(k-1)*9.4
+        for sg,(du,dv,w,h) in SEG.items():put(B(uc+du,31.0+dv,ZT+7.2,w,h,0.12),'#ff3b2f' if sg in lit else '#2a1210')
+        put(B(uc+3.4,35.3,ZT+7.2,.9,.9,0.12),'#ff3b2f' if dp else '#2a1210')
+    # two 6 × 6 tact buttons (input / output voltage readout; the display blanks with the other), their LEDs and the power LED
+    for u in (11.4,49.5):
+        put(B(u,33.3,ZT,6,6,3.1),'#25272a','buttons');put(B(u,33.3,ZT+3.1,6,6,0.3),'#b5bcc3','buttons');put(C(u,33.3,ZT+3.4,1.75,1.6),'#1d1d1f','buttons')
+    for u,v in ((11.2,27.0),(49.5,27.5),(7.5,7.0)):put(B(u,v,ZT,1.25,2.0,0.8),'#ff6a5a')
+    # blue 3296W multi-turn trimpot (W503) on the top edge, its brass screw on top at the IN end
+    put(B(37.75,2.9,ZT,9.5,4.8,10.0),'#2a5fc9','trimpot');put(C(34.2,2.9,ZT+10.0,1.1,0.6).cut(B(34.2,2.9,ZT+10.3,0.4,3,1)),'#c9a14a','trimpot screw')
+    R.append((box(*P03C,33,P03S[0]-4,P03S[1]-4,1.0),'#ece8dc'))   # 1 mm double-sided foam tape (robot frame)
+    return R,ents,NB
+P03_RENDER,P03_ENT,P03_PARTS=p03_detail()
+_p03env=union(box(*P03C,33,P03S[0]-4,P03S[1]-4,1.0),box(*P03C,34,*P03S))
+_rb=cq.Compound.makeCompound([s for s,_ in P03_RENDER]).BoundingBox()
+assert _rb.xmin>=P03C[0]-P03S[0]/2-1e-6 and _rb.xmax<=P03C[0]+P03S[0]/2+1e-6 and abs(_rb.ymin)<=P03S[1]/2+1e-6 and _rb.ymax<=P03S[1]/2+1e-6 and _rb.zmin>=33-1e-6 and _rb.zmax<=34+P03S[2]+1e-6,'P03 detail leaves its measured envelope'
+add('p03_regulator',f'P03 5 V converter, HW-316E XL4015 board with LED display ({P03S[1]} × {P03S[0]} × {P03S[2]} mm measured envelope) on foam tape',_p03env,'owned','P03','lower',check=True,render=P03_RENDER,tess=(.08,.2),
     note=f'Measured envelope {P03S[1]} × {P03S[0]} × {P03S[2]} mm on 1 mm double-sided foam tape (z 33–{34+P03S[2]}), turned 90 deg: long side along y, x {P03C[0]-P03S[0]/2:g}..{P03C[0]+P03S[0]/2:g}, |y| <= {P03S[1]/2:g}, '
          'in the front bay under the front of the Jetson carrier, ahead of the bay board\'s tongue (x 7.5) and aft of the bumper riders B at full travel (validation p03_clear_of_bumper_travel). '
-         f'A cable tie over it through the P_base slots at ({P03_TIES[1][0]:g}, ±{P03_TIES[1][1]:g}) holds it. Leads to U5A/U5B on the tongue\'s front edge, about 10 mm. Its tie and trimpot are reachable only before the Jetson goes on. '+ASSY_ORDER)
+         'Drawn as the real board (HW-316E V4.0: XL4015 with its clip-on heatsink, toroid inductor, 100 uF / 220 uF caps, SS54, 3-digit display, two buttons, blue 3296 trimpot, blue screw terminals); the checks use the envelope. '
+         'IN terminal on the left short end (+y, the end nearer U5A / U5B), OUT on the right (−y), wire entries facing out along y; caps and trimpot along the front edge, display and buttons along the aft edge. '
+         f'A cable tie over it through the P_base slots at ({P03_TIES[1][0]:g}, ±{P03_TIES[1][1]:g}) holds it: a 2.5 mm tie over the two cap tops, clear of the end terminals, the trimpot and the heatsink (validation p03_model.tie). Leads to U5A/U5B: see W_p03_in / W_p03_out. Its tie and trimpot are reachable only before the Jetson goes on. '+ASSY_ORDER)
 
 # Jetson Nano B01 from NVIDIA's STEP (simplified: carrier, module, heatsink and every connector; the many-faced connectors are
 # envelopes that keep their sockets; see reference-models/SOURCE.txt). The role -> solid map comes from the sidecar JSON; the
@@ -1660,20 +1739,36 @@ COUPON=dict(id='P_coupon',name='Fit and tolerance test coupon (not on the robot)
 
 # Export one named CAD assembly and the same geometry for browser/Blender/Unreal.
 assembly=cq.Assembly(name='Home_Robot_R1')
+def asm_add(p):   # a part into the STEP assembly: its render detail (RENDER) as a coloured sub-assembly, else its shape in its colour
+    rgb=lambda c:cq.Color(*(int(c[i:i+2],16)/255 for i in (1,3,5)))
+    if p['id'] not in RENDER:assembly.add(shapes[p['id']],name=p['id'],color=rgb(p['color']));return
+    sub=cq.Assembly(name=p['id'])
+    for k,(r,c) in enumerate(RENDER[p['id']]):sub.add(r,name=f"{p['id']}_{k}",color=rgb(c))
+    assembly.add(sub)
 if STEP_ONLY:   # same parts and colours as the loop below, without the meshes, JSON, validation and gates
-    for p in parts:assembly.add(shapes[p['id']],name=p['id'],color=cq.Color(*(int(p['color'][i:i+2],16)/255 for i in (1,3,5))))
+    for p in parts:asm_add(p)
     assembly.save(str(ROOT/'cad'/'home-robot-r1.step'));print('STEP written:',ROOT/'cad'/'home-robot-r1.step',len(parts),'components');sys.exit(0)
 scene=trimesh.Scene(); jsonparts=[]; MESH={}; MESHF={}
 for p in parts:
     s=shapes[p['id']]; color=p['color'];rgb=tuple(int(color[i:i+2],16)/255 for i in (1,3,5))
-    assembly.add(s,name=p['id'],color=cq.Color(*rgb))
+    asm_add(p)
     if p['id'] in TESS:BRepTools.Clean_s(s.wrapped)   # re-mesh at the part's own (coarser/finer) tolerance
     vs,fs=s.tessellate(*TESS.get(p['id'],(.35,.35)))
-    vertices=np.array([[v.x,v.y,v.z] for v in vs]);faces=np.array(fs);MESH[p['id']]=vertices;MESHF[p['id']]=faces
+    vertices=np.array([[v.x,v.y,v.z] for v in vs]);faces=np.array(fs);MESH[p['id']]=vertices;MESHF[p['id']]=faces   # MESH: the checked shape
+    q=dict(p)
+    if p['id'] in RENDER:   # drawn as the render detail: one mesh, a colour per vertex (palette index vpal in assembly-meshes.json)
+        pal=sorted({c for _,c in RENDER[p['id']]});V_,F_,I_=[],[],[]
+        for r,c in RENDER[p['id']]:
+            rv,rf=r.tessellate(*TESS.get(p['id'],(.1,.2)));n0=sum(len(v) for v in V_)
+            V_.append(np.array([[v.x,v.y,v.z] for v in rv]));F_.append(np.array(rf)+n0);I_+= [pal.index(c)]*len(rv)
+        vertices,faces=np.vstack(V_),np.vstack(F_);q['palette']=pal;q['vpal']=I_
+        _lin=lambda c:c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4   # glTF COLOR_0 is linear: the hex palette is sRGB
+        vcol=np.array([[round(255*_lin(int(c[i:i+2],16)/255)) for i in (1,3,5)]+[255] for c in pal])[I_]
+    else:vcol=np.tile(np.array([int(c*255) for c in rgb]+[255]),(len(vertices),1))
     mesh=trimesh.Trimesh(vertices=vertices/1000,faces=faces,process=False)
-    mesh.visual.vertex_colors=np.tile(np.array([int(c*255) for c in rgb]+[255]),(len(vertices),1))
+    mesh.visual.vertex_colors=vcol
     scene.add_geometry(mesh,node_name=p['id'],geom_name=p['id'])
-    q=dict(p);q['vertices']=[round(float(v),2) for v in vertices.reshape(-1)];q['faces']=[int(v) for v in faces.reshape(-1)]
+    q['vertices']=[round(float(v),2) for v in vertices.reshape(-1)];q['faces']=[int(v) for v in faces.reshape(-1)]
     jsonparts.append(q)
 assembly.save(str(ROOT/'cad'/'home-robot-r1.step'))
 scene.export(str(ROOT/'cad'/'home-robot-r1.glb'))
@@ -1716,12 +1811,20 @@ for c in cables:
         if ref in BS.EDGE_CONNECTORS:
             pm=pin_nets(ref);assert set(pm)==set(fn),(c['id'],pm,fn)
             c['pinout']=[dict(cavity=k,net=pm[k],function=fn[k][0],colour=fn[k][1]) for k in sorted(pm,key=int)]
-for ref,cid,side_txt in (('U5A','W_p03_in','P03 input'),('U5B','W_p03_out','P03 output')):   # the P03 leads (not drawn): terminal wire entry -> the P03's near face
+# The P03 leads (not drawn): from the P03 terminal's two wire entries (their mid point) on its short end, out 2.5 mm, up and over the P03 top
+# (z 49.5: over the 48 mm heatsink, under the carrier's 57) to just aft of the P03's aft face (x 8.2), down to the board terminal's wire entry.
+# The HW-316E's terminals are on its short ends (IN at +y, OUT at -y), so these are not the ~10 mm face-to-face leads of the old envelope.
+P03_LEADS={}
+for ref,cid,side_txt,tm in (('U5A','W_p03_in','P03 input','IN'),('U5B','W_p03_out','P03 output','OUT')):
     cn=BCONN[ref];px=round(cn['courtyard_xy'][2],2);py=round(float(np.mean([q[1] for q in cn['pins_xy']])),2);zt=round(ZBAY_TOP+6,2)
     pm=pin_nets(ref);fn={'1':('to P03 IN+' if ref=='U5A' else 'from P03 OUT+','red'),'2':('to P03 IN−' if ref=='U5A' else 'from P03 OUT−','black')}
-    cables.append(dict(id=cid,name=f'{side_txt} leads (board {ref} screw terminal ↔ P03)',route_mm=10,suggested_cut_mm=50,points=[(P03C[0]-P03S[0]/2,py,zt),(px,py,zt)],modelled=False,
+    e_=np.mean([P03_ENT[tm+'+'],P03_ENT[tm+'-']],axis=0).round(2);sy=1 if e_[1]>0 else -1;ye=sy*(P03S[1]/2+2.5)
+    pts_=[tuple(float(v) for v in e_),(float(e_[0]),ye,float(e_[2])),(float(e_[0]),ye,49.5),(8.2,py,49.5),(8.2,py,zt),(px,py,zt)]
+    L_=_polylen(pts_);P03_LEADS[cid]=dict(terminal=tm,end='+y (robot left)' if sy>0 else '-y (robot right)',entries_mm={k:[round(v,2) for v in P03_ENT[k]] for k in (tm+'+',tm+'-')},route_mm=round(L_,1))
+    cables.append(dict(id=cid,name=f'{side_txt} leads (board {ref} screw terminal ↔ P03 {tm} terminal)',route_mm=round(L_),suggested_cut_mm=int(math.ceil((L_*1.2+40)/50)*50),points=pts_,modelled=False,
         board_end=dict(ref=ref,end='last'),wire='2 × 18 AWG silicone (red, black)',pinout=[dict(cavity=k,net=pm[k],function=fn[k][0],colour=fn[k][1]) for k in sorted(pm,key=int)],
-        notes=f'Two short leads between the P03\'s {"input" if ref=="U5A" else "output"} terminals and the board\'s {ref} screw terminal (pin 1 = {pm["1"]}, pin 2 = GND): about 10 mm between them; cut 50 mm and trim to the measured P03. '
+        notes=f'Two leads between the P03\'s {tm} terminal (on its {"left (+y)" if sy>0 else "right (−y)"} short end, wire entries facing {"+y" if sy>0 else "−y"}; {tm}+ is the screw nearer the robot front) and the board\'s {ref} screw terminal (pin 1 = {pm["1"]}, pin 2 = GND): '
+              f'about {L_:.0f} mm, out of the P03 end, up and over its top (under the Jetson carrier) and down just aft of it into {ref}. Not drawn; dress them at assembly. '
               + ('Battery side: a reversed P03 input is as costly as a reversed battery lead.' if ref=='U5A' else 'Set and check 5.1 V on the bench before these go on.')))
 # Camera LED lead (task N, LIO-134; not drawn): soldered into the DNP spare row J15 (no header: a mated housing and its wire bend would
 # stand about 17-20 mm, over the 16.27 mm under the Jetson carrier; soldered and laid flat it stays under 6 mm), along the board top to
@@ -2884,14 +2987,15 @@ BP['H14']['notes']=(f'The two rear Jetson standoffs stand on the bay board (z {Z
     f'through the base, a 2.4 mm printed clamp spacer (bay_clamp_spacer_*) and the board\'s Ø{BC["clamp_holes"][0]["d"]:g} clamp hole (H5 / H6, ruling PB3), 4 mm into the standoff (assembly step 6). '
     'The carrier\'s top screws on them are in H05.')
 BP['P03']['notes']=(f'March 2021 purchase. Measured envelope {P03S[1]} × {P03S[0]} × {P03S[2]} mm (CAD p03_regulator): on 1 mm double-sided foam tape on P_base in the front bay, turned 90 deg (long side along y, x {P03C[0]-P03S[0]/2:g}..{P03C[0]+P03S[0]/2:g}, |y| <= {P03S[1]/2:g}), '
-    f'under the front of the Jetson carrier and ahead of the bay board\'s tongue, held by a cable tie through the P_base slots at ({P03_TIES[1][0]:g}, ±{P03_TIES[1][1]:g}); leads of about 10 mm to U5A/U5B on the tongue\'s front edge. '
+    f'under the front of the Jetson carrier and ahead of the bay board\'s tongue, held by a cable tie through the P_base slots at ({P03_TIES[1][0]:g}, ±{P03_TIES[1][1]:g}). Board: HW-316E V4.0 (XL4015, 3-digit LED voltmeter); IN terminal on the left short end (+y), OUT on the right (−y): '
+    f'leads of about {P03_LEADS["W_p03_in"]["route_mm"]:.0f} mm (IN) and {P03_LEADS["W_p03_out"]["route_mm"]:.0f} mm (OUT) over its top to U5A/U5B on the tongue\'s front edge. '
     'Adjust and verify regulated 5 V on the bench before it is fitted: its trimpot and tie are not reachable once the Jetson is on. Test at 6.6 V input with the intended load and motor starts; rating alone is not acceptance. '+ASSY_ORDER)
 # B9: the motor pigtails (C18), the board's connector table, the harness connection rows, the cut list in the BOM file and the spike check.
 _jt=f'{MJ["x"]-MJ["t"]/2:g}..{MJ["x"]+MJ["t"]/2:g}';_jy=f'{MJ["y0"]:g}..{MJ["y0"]+MJ["male_l"]+MJ["female_l"]:g}'
 _ex_motor=min(PIGTAIL[s_]['exit_to_motor_mm'] for s_ in PIGTAIL)
 _c18=dict(id='C18',category='Connections',item='Motor pigtails (2): Sullins PPPC061LGBN-RC 1×6 right-angle female socket (board end, wires up) + Pololu 1905 1×6 crimp housing with male pins (joint end) + six 28 AWG silicone wires',
     quantity=2,unit='pigtails (made up)',status='Buy',new_cost_usd=17.0,model='signal_harness',
-    source='Sullins PPPC061LGBN-RC via Digi-Key / Mouser; Pololu 1905 housings and male crimp pins (pololu.com); a 6-colour 28 AWG silicone wire set',
+    source='https://www.digikey.com/en/products/detail/sullins-connector-solutions/PPPC061LGBN-RC/775939',source_label='Sullins PPPC061LGBN-RC at Digi-Key',   # LIO-173's link, kept here so a build does not revert it
     notes=(f'One per motor (ruling PB25 amended; B9). Board end: {RA_SOCKET["part"]}, pushed onto J4 / J5\'s right-angle pins with its six solder tails pointing upward; '
            f'each wire is lapped {RA_SOCKET["solder_overlap"]:g} mm on a tail tip and soldered under a Ø{RA_SOCKET["sleeve_d"]} mm heat-shrink sleeve, so the wires leave the board upward (socket {RA_SOCKET["h"]} mm tall on the board, tails and sleeves to {SOCKET["J4"]["top_z"]-ZBAY_TOP:.2f} mm over it, '
            f'inside the {UNDER_CARRIER_Z-1.5-ZBAY_TOP:.2f} mm under-carrier zone; the socket and the wires\' exit stay {_ex_motor:.1f} mm off the motor face) and turn over at >= {min(min(PIGTAIL[s_]["fillet_radii"]) for s_ in PIGTAIL)-(PG["r_run"]-PG["r_wire"]):.1f} mm radius for the innermost wire '
@@ -2917,13 +3021,13 @@ set_row('J01',['Battery (lead W01)','Tamiya on the pack → adapter lead W01 →
     'J1 pin 1 is GND and pin 2 is BAT+: the opposite of the usual "pin 1 = +" habit. Fail-safe check before the fuses go in: with F1 and F2 out, plug W01 into J1 and the battery and measure F1\'s input clip against a GND pad: positive, about the pack voltage (≥ 6 V; a part-discharged pack reads lower) '
     '(a reversed lead reads negative and has no current path with the fuses out). A reversed lead with the fuses in is the costliest mistake on this board (no reverse-polarity protection).'])
 set_row('J02',['Regulator input (P03 leads)','Board U5A screw terminal (Phoenix MKDS 1,5/2-5,08) ← P03 input terminals',f'U5A: {pins_txt("U5A",{"1":("to P03 IN+",""),"2":("to P03 IN−","")},"pin")}','18 AWG',
-    'About 10 mm leads; a reversed P03 input is as costly as a reversed battery lead. Set and check 5.1 V on the bench first.'])
+    f'About {P03_LEADS["W_p03_in"]["route_mm"]:.0f} mm leads from the P03\'s IN terminal (its left short end, +y); a reversed P03 input is as costly as a reversed battery lead. Set and check 5.1 V on the bench first.'])
 set_row('J03',['Jetson regulated power (lead W04)','Molex Micro-Fit 3.0 43645-0200 receptacle + 2 × 43030 crimps (C20) on board J3 (Molex 43650-0200 right-angle header in the band behind the Jetson carrier) → 5.5 / 2.1 mm barrel plug (provisional)',
     f'J3: {pins_txt("J3",{"1":("barrel centre +",""),"2":("barrel sleeve","")})} (silk "+" at pin 1)','18 AWG',
     'Ruling PB30: a Micro-Fit 3.0, so the Jetson lead fits neither the battery header (XT30) nor the rocker header (JST VH); tag it "J3 JETSON 5V". Micro-Fit 3.0 on 18 AWG, 2 circuits: 8.5 A per circuit (Molex derating table, from memory: verify) for the Jetson\'s 4.5 A. '
     'The receptacle plugs in from beyond the board\'s right edge (robot −y) and the lead runs along the W04 corridor to the barrel jack (bay ruling PB5). Replace the output end for the actual Jetson revision; barrel power needs the J48 jumper.'])
 set_row('J04',['Regulator output (P03 leads)','P03 output terminals → board U5B screw terminal (Phoenix MKDS 1,5/2-5,08)',f'U5B: {pins_txt("U5B",{"1":("from P03 OUT+",""),"2":("from P03 OUT−","")},"pin")}','18 AWG',
-    'About 10 mm leads. (The deck-era VH lead to the driver terminals is gone: motor power runs in the board copper.)'])
+    f'About {P03_LEADS["W_p03_out"]["route_mm"]:.0f} mm leads from the P03\'s OUT terminal (its right short end, −y) over its top. (The deck-era VH lead to the driver terminals is gone: motor power runs in the board copper.)'])
 for rid,side,ref in (('J05','left','J4'),('J06','right','J5')):
     set_row(rid,[f'{side.capitalize()} motor cable','Factory female 1×6 → C18 pigtail male 1×6 at the inline joint; pigtail right-angle female socket → board '+ref+' (right-angle 1×6 male header)',
         f'{ref}: '+', '.join(f'pin {k} = {v} ({LEAD_FN[f"motor_pigtail_{side}"][3][k][1]}, {LEAD_FN[f"motor_pigtail_{side}"][3][k][0].split(" (")[0]})' for k,v in sorted(pin_nets(ref).items(),key=lambda q:int(q[0]))),'Factory cable + 28 AWG pigtail',
@@ -2949,7 +3053,7 @@ SPIKE=[('W01','Battery adapter W01 → J1',50,95),('W02','Rocker W02 → J2',72,
        (('motor_pigtail_left','motor_pigtail_right'),'Motor harness L + R (strip era; now the PB25 pigtails)',50,0)]
 _rt={c['id']:c['route_mm'] for c in cables}
 sp_rows=[dict(lead=n,ids=list(i) if isinstance(i,tuple) else [i],now_mm=a_,spike_b_mm=b_,final_mm=sum(_rt[k] for k in (i if isinstance(i,tuple) else (i,)))) for i,n,a_,b_ in SPIKE]
-BOMF['harness']=dict(note='cable-cut-list.json, written by cad/build_robot.py: route = the CAD route; cut = route × 1.2 + 40 mm rounded up to 50 mm, except the pigtails (pre-cut long by the pin spread, then each wire trimmed at its cavity after dressing and crimped), the factory motor cables (200 mm, not cut) and the P03 leads (cut 50, trim).',
+BOMF['harness']=dict(note='cable-cut-list.json, written by cad/build_robot.py: route = the CAD route; cut = route × 1.2 + 40 mm rounded up to 50 mm, except the pigtails (pre-cut long by the pin spread, then each wire trimmed at its cavity after dressing and crimped), the factory motor cables (200 mm, not cut).',
     cut_list=[dict(id=c['id'],name=c['name'],board_end=(c.get('board_end') or {}).get('ref'),wire=c.get('wire'),route_mm=c['route_mm'],cut_mm=c['suggested_cut_mm'],
                    **({'cut_means':'pre-cut length (trim each wire at its cavity after dressing)','precut_mm':c['pigtail']['precut_mm'],'finished_centre_mm':c['pigtail']['finished_centre_mm'],'finished_range_mm':c['pigtail']['finished_range_mm'],'pin_spread_mm':c['pigtail']['pin_spread_mm']} if 'pigtail' in c else {}),
                    pinout=[f'{q["cavity"]} {q["net"]} ({q["colour"]})' for q in c.get('pinout',[])]) for c in cables],
@@ -3331,6 +3435,28 @@ report=dict(clash_scan=dict(scope=f'all {len(SOLID)} non-wire parts pairwise (so
                  'Steps of 8 and 10 mm fail (threshold_crossing): the DriveCore torque cap and the 25.4 mm caster ball. User decision.'])
 report.update(p03_clear_of_bumper_travel=p03_clear,p03_bumper_travel_min_gap_mm=p03_gap,jetson_carrier_bottom_z=jetson_carrier_bottom_z,bay_under_carrier_max_top_z=bay_uc_max_top,bay_ribs_under_rear_row=bay_ribs_ok,
     bay_rear_connectors_supported=bay_rear_ok,pico_usb_insert_path_clear=pico_usb_ok,under_carrier_cable_paths_clear=stubs_ok,motor_joints_serviceable=motor_joints_ok,bay_board=bay_check)
+# LIO-169: the P03 drawn as the real HW-316E board. Its render solids stay inside the measured envelope (asserted where they are built).
+# Its cable tie (a 2.5 mm band in the yz plane at x P03_TIE_X, held there by its 3.1 mm P_base slots) must clear the end terminals and their
+# wire entries, the lead paths, the trimpot and its screw, the display and the buttons; it bears on the highest parts under its band.
+_band=(P03_TIE_X-TIE['w']/2-TIE['slot_clr'],P03_TIE_X+TIE['w']/2+TIE['slot_clr'])   # where the band can sit in its slot
+def _xgap(lo,hi):return round(max(_band[0]-hi,lo-_band[1]),2)   # > 0: clear along x by that much
+_clear={k:_xgap(P03_PARTS[k][0],P03_PARTS[k][3]) for k in ('IN terminal','OUT terminal','trimpot','trimpot screw','display','buttons','XL4015 heatsink')}
+_clear.update({f'{k} wire entry':_xgap(e[0]-1.8,e[0]+1.8) for k,e in sorted(P03_ENT.items())})
+_clear.update({f'{c} lead path':_xgap(min(q[0] for q in v['points'][:3]),max(q[0] for q in v['points'][:3])) for c in ('W_p03_in','W_p03_out') for v in [next(c_ for c_ in cables if c_['id']==c)]})
+_under=sorted(((round(b[5],2),k) for k,b in P03_PARTS.items() if b[0]<_band[1] and b[3]>_band[0]),reverse=True)
+P03_TIE=dict(x_mm=P03_TIE_X,band_x_range_mm=[round(v,2) for v in _band],slots_mm=[[P03_TIE_X,y] for _,y in P03_TIES],slot_size_mm=[round(TIE['w']+2*TIE['slot_clr'],2),2.6],
+    clearance_along_x_mm=_clear,parts_under_band_top_z_mm={k:z for z,k in _under},bears_on=[k for z,k in _under if z>=_under[0][0]-1e-6],
+    clear=all(v>0 for v in _clear.values()))
+assert P03_TIE['clear'],P03_TIE
+report['p03_model']=dict(board='HW-316E V4.0 (XL4015 5 A buck, 3-digit LED voltmeter), the generic board sold as "DC-DC 5A Buck Converter 4-38V to 1.25-36V ... with LED Display" (Amazon B085T73CSD)',
+    sources=['DIYmore product photos of the same HW-316E V4.0 board: https://www.diymore.cc/products/xl4015-5a-dc-dc-adjustable-step-down-board-led-voltmeter-power-supply-module-4-0-38v-to-1-25v-36v-diy-high-power-75w',
+             'Amazon B085T73CSD listing (title only; the page body was not readable)','user measurement: 62 × 38 × 14 mm (the envelope, kept as the truth for size)'],
+    render_solids=len(P03_RENDER),colours=len({c for _,c in P03_RENDER}),inside_envelope=True,top_z_mm=round(_rb.zmax,2),tallest='XL4015 clip-on heatsink (12.4 mm over the PCB top)',
+    orientation='rotation, not a mirror: IN terminal on the +y short end (the robot left, the end nearer U5A / U5B), OUT on the -y end; top edge (caps, trimpot) forward, display and buttons aft',
+    terminal_entries_mm={k:[round(v,2) for v in e] for k,e in sorted(P03_ENT.items())},leads=P03_LEADS,
+    tie=P03_TIE,tie_clear_of_terminals=P03_TIE['clear'],
+    open_item=dict(status='resolved',text='The first build (1b031a3) had the tie slots at (28, ±33.3), in front of the terminals\' wire entries. Resolved by the controller\'s ruling (option a): '
+                   f'the tie line moved to x {P03_TIE_X:g} over the two cap tops (bears on: {", ".join(P03_TIE["bears_on"])}); the board stays on its foam tape at the same height.'))
 rc=subprocess.run([sys.executable,str(ROOT/'cad'/'check_printability.py')]).returncode
 
 rcc=subprocess.run([sys.executable,str(ROOT/'cad'/'check_printability.py'),str(COUPONS),str(ROOT/'cad'/'printability-coupons.json')]).returncode;rc=rc or rcc

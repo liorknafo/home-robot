@@ -2027,12 +2027,32 @@
   },
   {
     "id": "W_p03_in",
-    "name": "P03 input leads (board U5A screw terminal ↔ P03)",
-    "route_mm": 10,
-    "suggested_cut_mm": 50,
+    "name": "P03 input leads (board U5A screw terminal ↔ P03 IN terminal)",
+    "route_mm": 46,
+    "suggested_cut_mm": 100,
     "points": [
       [
-        9.0,
+        30.92,
+        31.0,
+        38.9
+      ],
+      [
+        30.92,
+        33.5,
+        38.9
+      ],
+      [
+        30.92,
+        33.5,
+        49.5
+      ],
+      [
+        8.2,
+        23.14,
+        49.5
+      ],
+      [
+        8.2,
         23.14,
         43.0
       ],
@@ -2062,16 +2082,36 @@
         "colour": "black"
       }
     ],
-    "notes": "Two short leads between the P03's input terminals and the board's U5A screw terminal (pin 1 = VBAT_SW, pin 2 = GND): about 10 mm between them; cut 50 mm and trim to the measured P03. Battery side: a reversed P03 input is as costly as a reversed battery lead."
+    "notes": "Two leads between the P03's IN terminal (on its left (+y) short end, wire entries facing +y; IN+ is the screw nearer the robot front) and the board's U5A screw terminal (pin 1 = VBAT_SW, pin 2 = GND): about 46 mm, out of the P03 end, up and over its top (under the Jetson carrier) and down just aft of it into U5A. Not drawn; dress them at assembly. Battery side: a reversed P03 input is as costly as a reversed battery lead."
   },
   {
     "id": "W_p03_out",
-    "name": "P03 output leads (board U5B screw terminal ↔ P03)",
-    "route_mm": 10,
-    "suggested_cut_mm": 50,
+    "name": "P03 output leads (board U5B screw terminal ↔ P03 OUT terminal)",
+    "route_mm": 70,
+    "suggested_cut_mm": 150,
     "points": [
       [
-        9.0,
+        28.42,
+        -31.0,
+        38.9
+      ],
+      [
+        28.42,
+        -33.5,
+        38.9
+      ],
+      [
+        28.42,
+        -33.5,
+        49.5
+      ],
+      [
+        8.2,
+        11.84,
+        49.5
+      ],
+      [
+        8.2,
         11.84,
         43.0
       ],
@@ -2101,7 +2141,7 @@
         "colour": "black"
       }
     ],
-    "notes": "Two short leads between the P03's output terminals and the board's U5B screw terminal (pin 1 = 5V, pin 2 = GND): about 10 mm between them; cut 50 mm and trim to the measured P03. Set and check 5.1 V on the bench before these go on."
+    "notes": "Two leads between the P03's OUT terminal (on its right (−y) short end, wire entries facing −y; OUT+ is the screw nearer the robot front) and the board's U5B screw terminal (pin 1 = 5V, pin 2 = GND): about 70 mm, out of the P03 end, up and over its top (under the Jetson carrier) and down just aft of it into U5B. Not drawn; dress them at assembly. Set and check 5.1 V on the bench before these go on."
   },
   {
     "id": "W21",

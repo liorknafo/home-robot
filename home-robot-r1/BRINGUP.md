@@ -203,8 +203,13 @@ into the inserts.
 ### Step 5. The P03
 
 Set and verify it on the bench (section 5). Connect it to U5A / U5B: pin 1 ("+", the screw nearer the robot's centre line) is IN+ on
-U5A and OUT+ on U5B; the red wires go on pin 1. Fit it on its foam tape in the front bay, with the cable tie through the P_base slots at
-(28, ±33.3). Before the Jetson is connected, check both terminals with the meter (section 7 step 3).
+U5A and OUT+ on U5B; the red wires go on pin 1. The P03 is the HW-316E board: its IN terminal is on one short end and OUT on the
+other. Fit it with the IN end toward the robot's left (the U5A / U5B side), display up and toward the rear. The leads run out of each
+end and over the P03's top: about 46 mm (IN) and 70 mm (OUT); cut 100 mm and 150 mm (cable-cut-list.json). On each P03 terminal "+" is
+the screw nearer the robot's front. Fit it on its foam tape in the front bay, with a 2.5 mm cable tie through the P_base slots at
+(39.5, ±33.3): the tie runs over the two capacitor tops, clear of the end terminals and the trimpot. Pull it snug, not tight: it presses on the
+capacitors' vented tops and their surface-mount joints. Do not let it slide onto the trimpot.
+Before the Jetson is connected, check both terminals with the meter (section 7 step 3).
 
 ### Step 6. Rear standoffs
 

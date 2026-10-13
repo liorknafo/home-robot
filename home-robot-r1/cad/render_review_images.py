@@ -24,6 +24,11 @@ def setup():
     mats = {}
     for o in [o for o in bpy.context.scene.objects if o.type == 'MESH']:
         p = info.get(o.name.split('.')[0]); col = p['color'] if p else '#808080'
+        if p and p.get('vertex_colors') and o.data.color_attributes:   # a render-detail part: its colours are per vertex (the GLB's COLOR_0)
+            m = bpy.data.materials.new(p['id']); m.use_nodes = True; nt = m.node_tree; b = nt.nodes['Principled BSDF']
+            vc = nt.nodes.new('ShaderNodeVertexColor'); vc.layer_name = o.data.color_attributes[0].name
+            nt.links.new(vc.outputs['Color'], b.inputs['Base Color']); b.inputs['Roughness'].default_value = .5
+            o.data.materials.clear(); o.data.materials.append(m); continue
         if col not in mats:
             m = bpy.data.materials.new(col); m.use_nodes = True; b = m.node_tree.nodes['Principled BSDF']
             b.inputs['Base Color'].default_value = tuple(lin(int(col[i:i + 2], 16) / 255) for i in (1, 3, 5)) + (1,)

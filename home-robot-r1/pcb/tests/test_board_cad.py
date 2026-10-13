@@ -172,6 +172,40 @@ class RobotCadTests(unittest.TestCase):
         self.assertEqual(self.v['jetson_carrier_bottom_z'], 57.0)
         self.assertLessEqual(self.v['bay_under_carrier_max_top_z'], B.UNDER_CARRIER_Z - B.CARRIER_CLEARANCE + 1e-6)
 
+    @unittest.skipIf(np is None, 'needs numpy (the CAD venv has it)')
+    @needs('cad/assembly-meshes.json')
+    def test_p03_is_drawn_as_the_real_board(self):
+        """LIO-169: the P03 renders as the real HW-316E board (per-vertex colours in cad/assembly-meshes.json) inside its measured
+        62 × 38 × 14 mm envelope, which the checks keep; its IN terminal is on the +y short end (the end nearer U5A / U5B), OUT on the -y end,
+        "+" the screw nearer the front; the two lead routes start at the terminals' wire entries and end at U5A / U5B; the cable tie runs at
+        x 39.5 over the two cap tops, clear of the terminals, their wire entries and leads, the trimpot, the display and the buttons."""
+        man, v = self.man['p03_regulator'], self.v['p03_model']
+        self.assertIs(man['vertex_colors'], True); self.assertEqual(man['bounds'], [9.0, -31.0, 33.0, 47.0, 31.0, 48.0])
+        M = next(m for m in json.loads((CAD / 'assembly-meshes.json').read_text()) if m['id'] == 'p03_regulator')
+        xyz = np.array(M['vertices']).reshape(-1, 3)
+        self.assertEqual(len(M['vpal']), len(xyz)); self.assertGreaterEqual(len(M['palette']), 12)
+        self.assertTrue((xyz >= np.array(man['bounds'][:3]) - 0.01).all() and (xyz <= np.array(man['bounds'][3:]) + 0.01).all())
+        self.assertIs(v['inside_envelope'], True); self.assertAlmostEqual(v['top_z_mm'], 48.0, 2)
+        e = v['terminal_entries_mm']
+        self.assertTrue(all(e[k][1] == 31.0 for k in ('IN+', 'IN-')) and all(e[k][1] == -31.0 for k in ('OUT+', 'OUT-')), e)
+        self.assertTrue(e['IN+'][0] > e['IN-'][0] and e['OUT+'][0] > e['OUT-'][0], e)
+        for ref in ('U5A', 'U5B'): self.assertGreater(self.bc['connectors'][ref]['centre_xy'][1], 0)   # both board terminals on the +y side
+        cuts = {c['id']: c for c in json.loads((CAD.parent / 'cable-cut-list.json').read_text())}
+        for cid, tm, ref in (('W_p03_in', 'IN', 'U5A'), ('W_p03_out', 'OUT', 'U5B')):
+            c = cuts[cid]; pts = c['points']
+            self.assertTrue(close(pts[0], [(a + b) / 2 for a, b in zip(e[tm + '+'], e[tm + '-'])], 0.01), (cid, pts[0]))
+            self.assertAlmostEqual(pts[-1][0], self.bc['connectors'][ref]['courtyard_xy'][2], 1)
+            self.assertAlmostEqual(c['route_mm'], sum(math.dist(a, b) for a, b in zip(pts, pts[1:])), delta=0.5)
+            self.assertEqual(c['suggested_cut_mm'], math.ceil((c['route_mm'] * 1.2 + 40) / 50) * 50)
+            self.assertTrue(all(p[2] <= 57.0 - 1.0 for p in pts), cid)                               # under the Jetson carrier
+        t = v['tie']                                                    # the controller's ruling (option a): the tie line at x 39.5
+        self.assertEqual(t['x_mm'], 39.5); self.assertEqual(t['slots_mm'], [[39.5, -33.3], [39.5, 33.3]])
+        self.assertIs(t['clear'], True); self.assertTrue(all(g > 0 for g in t['clearance_along_x_mm'].values()), t)
+        for k in ('IN terminal', 'OUT terminal', 'trimpot', 'trimpot screw', 'display', 'buttons', 'IN+ wire entry', 'OUT- wire entry', 'W_p03_in lead path'):
+            self.assertIn(k, t['clearance_along_x_mm'])
+        self.assertEqual(sorted(t['bears_on']), ['input cap', 'output cap'])
+        self.assertEqual(v['open_item']['status'], 'resolved')
+
     def test_real_board_and_modules_in_place(self):
         """bay_board is the STEP: its plan bounds are the real outline's, its bottom is the trimmed leads (1.4 mm under the board); each
         module's plan bounds cover its sockets' pins; the IDs the pcb side lists as replaced (REMOVED_CAD_IDS) still exist."""
