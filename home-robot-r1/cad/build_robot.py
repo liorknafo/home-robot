@@ -6,6 +6,9 @@ place inside its own footprint. One rear ball caster, centre of mass behind the 
 Run with cadquery (2.6.1 or 2.8.0) and trimesh. Most electronic parts are dimensioned envelopes; the LiDAR is
 the manufacturer LD14 STEP (reference-models/LD14.step). The build ends with cad/check_printability.py
 (support-free MK3S gate) and cad/validate_meshes.py. See design-review.html.
+
+`build_robot.py --step-only` (LIO-170) builds the same parts but writes only cad/home-robot-r1.step (git-ignored, so the full-robot
+STEP download on the review page works without a tracked file changing): no print-parts, coupons, meshes, JSON, validation or gates.
 """
 from pathlib import Path
 import json, math, itertools, subprocess, sys
@@ -17,9 +20,11 @@ from OCP.BRepTools import BRepTools
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from pcb import board_spec as BS   # B9: the board's part numbers and pin -> net map for the harness and BOM tables (pure Python)
+STEP_ONLY='--step-only' in sys.argv[1:]   # LIO-170: write only cad/home-robot-r1.step (see the docstring)
 PRINT=ROOT/'print-parts'; PRINT.mkdir(exist_ok=True)
 COUPONS=PRINT/'coupons';COUPONS.mkdir(exist_ok=True)
-for f in list(PRINT.glob('*.stl'))+list(PRINT.glob('*.step'))+list(COUPONS.glob('*.st*')):f.unlink()   # no stale files from removed or renamed parts
+if not STEP_ONLY:
+    for f in list(PRINT.glob('*.stl'))+list(PRINT.glob('*.step'))+list(COUPONS.glob('*.st*')):f.unlink()   # no stale files from removed or renamed parts
 STL_TOL=(.02,.1)   # printed-part STL chord tolerance (mm) and angular tolerance (rad): sag <= 0.02 mm on the R157 arcs
 # Jetson Nano B01 = NVIDIA's STEP (reference-models/jetson-nano-b01, simplified by cad/simplify_jetson.py); JO = robot position of the STEP
 # origin (mounting hole (0, 0)), PCB underside z 57 (see the Jetson block below).
@@ -159,8 +164,9 @@ def add(id,name,s,cat='buy',bom='',group='lower',check=False,printable=False,not
         r=r.rotate((0,0,0),(0,0,1),print_rot_z) if print_rot_z else r;rb=r.BoundingBox()
         t=(-(rb.xmin+rb.xmax)/2,-(rb.ymin+rb.ymax)/2,-rb.zmin);out=r.translate(t)
         p['export']=dict(rot_x_deg=180 if print_flip else 0,rot_z_deg=print_rot_z,translate_mm=[round(v,4) for v in t])
-        cq.exporters.export(out,str(PRINT/(id+'.stl')),tolerance=STL_TOL[0],angularTolerance=STL_TOL[1])
-        cq.exporters.export(out,str(PRINT/(id+'.step')))
+        if not STEP_ONLY:
+            cq.exporters.export(out,str(PRINT/(id+'.stl')),tolerance=STL_TOL[0],angularTolerance=STL_TOL[1])
+            cq.exporters.export(out,str(PRINT/(id+'.step')))
     return s
 def screw(id,x,y,z,length=8,r=1.5,group='lower',allow=(),name='M3 fastener envelope',bom='H01/H02'):
     s=union(cyl(x,y,z,r,length),cyl(x,y,z+length,2.8,2.8))
@@ -1648,12 +1654,15 @@ cp=cp.cut(stadium((12-(BT/2-SPLAY),12),(12+(BT/2-SPLAY),12),SLOTW/2,-1,6)).cut(s
 cp=union(cp,cyl(38,22,3.99,BOSSR,5.01)).cut(cyl(38,22,1,1.3,9))
 cp=cp.cut(box(57,22.5,-1,13.2,20.4,6)).cut(box(57,22.5,1.5,17.2,24.4,3))
 assert cp.isValid()
-cq.exporters.export(cp,str(COUPONS/'P_coupon.stl'),tolerance=STL_TOL[0],angularTolerance=STL_TOL[1]);cq.exporters.export(cp,str(COUPONS/'P_coupon.step'))
+if not STEP_ONLY:cq.exporters.export(cp,str(COUPONS/'P_coupon.stl'),tolerance=STL_TOL[0],angularTolerance=STL_TOL[1]);cq.exporters.export(cp,str(COUPONS/'P_coupon.step'))
 COUPON=dict(id='P_coupon',name='Fit and tolerance test coupon (not on the robot)',file='print-parts/coupons/P_coupon.stl',size_mm=[70,45,9],
     features=[f'rail slot {SLOTW} wide (file to {SLOTW-.1:.1f}-{SLOTW}: a 693ZZ must roll on one side)','pin-C slot 6.2 wide','M2 switch slot 2.4 × 4.2','Ø4.0 insert hole (M3 × 3 insert, pressed flush on a steel plate)','Ø2.6 × 8 pilot in an Ø8 boss (M3 × 10 thread-forming screw)','rocker cut-out 13.2 × 20.4 with a 1.5 mm panel'])
 
 # Export one named CAD assembly and the same geometry for browser/Blender/Unreal.
 assembly=cq.Assembly(name='Home_Robot_R1')
+if STEP_ONLY:   # same parts and colours as the loop below, without the meshes, JSON, validation and gates
+    for p in parts:assembly.add(shapes[p['id']],name=p['id'],color=cq.Color(*(int(p['color'][i:i+2],16)/255 for i in (1,3,5))))
+    assembly.save(str(ROOT/'cad'/'home-robot-r1.step'));print('STEP written:',ROOT/'cad'/'home-robot-r1.step',len(parts),'components');sys.exit(0)
 scene=trimesh.Scene(); jsonparts=[]; MESH={}; MESHF={}
 for p in parts:
     s=shapes[p['id']]; color=p['color'];rgb=tuple(int(color[i:i+2],16)/255 for i in (1,3,5))
