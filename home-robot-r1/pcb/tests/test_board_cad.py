@@ -354,10 +354,10 @@ class RobotCadTests(unittest.TestCase):
 
     def test_cooling_counts_the_ld14_overhang_and_the_exhaust(self):
         """Task I: the turned-round LD14's motor end overhangs the fan grille's front edge (task F open item); the cooling gate counts its plan
-        shadow as closed and still keeps half the fan bore open, and the exhaust ring gap under the now closed lid is at least twice the grille's
-        open area. Task I also required the shadowed slots' side-entry curtain to exceed their area (the motor then stood 10 mm over the plate);
-        since task L the motor hangs 1.4 mm over the fan frame inside the intake duct, so its shadow is simply closed (the curtain is reported,
-        and test_lowered_ld14_motor_sits_in_the_tray_duct checks the duct)."""
+        shadow as closed and still keeps half the fan bore open; the shadowed open cells' side-entry curtain exceeds their area; and the exhaust
+        ring gap under the now closed lid is at least twice the grille's open area. Since task L the motor hangs 1.4 mm over the fan frame
+        inside the intake duct and its own footprint is not open area (test_cooling_open_area_leaves_the_ld14_motor_out); what stays shadowed
+        is the 1.0 mm ring round it under the LD14 housing, which draws room air in over the plate."""
         jc = self.v['jetson_cooling']; g, it, ex = jc['grille'], jc['intake'], jc['exhaust']
         M = {m['id']: m for m in json.loads((CAD / 'assembly-meshes.json').read_text())}
         front_edge = jc['lid_fan_window']['centre_mm'][0] + jc['lid_fan_window']['diameter_mm'] / 2
@@ -365,7 +365,7 @@ class RobotCadTests(unittest.TestCase):
         self.assertEqual(overhangs, g['open_area_shadowed_in_plan_mm2'] > 0)
         self.assertGreaterEqual(g['open_fraction_of_bore_not_shadowed'], 0.5)
         if overhangs:
-            self.assertGreater(it['side_entry_curtain_mm2'], 0)
+            self.assertGreater(it['side_entry_curtain_mm2'], g['open_area_shadowed_in_plan_mm2'])
             self.assertNotIn('models only the turret circle', it['over_grille'])
         self.assertGreaterEqual(ex['ring_gap_section_mm2'], 2 * g['open_area_cad_mm2'])
         self.assertTrue(jc['ok'])
@@ -412,6 +412,29 @@ class RobotCadTests(unittest.TestCase):
         pr = {p['part']: p for p in json.loads((CAD / 'printability.json').read_text())['parts']}
         self.assertTrue(pr['P_lidar_tray']['pass']); self.assertEqual(pr['P_lidar_tray']['best_orientation'], 'as exported')
         self.assertTrue(jc['ok'])
+
+    @unittest.skipIf(np is None, 'needs numpy (the CAD venv has it)')
+    def test_cooling_open_area_leaves_the_ld14_motor_out(self):
+        """Task L review: the LD14 motor stands in the tray plate's hole over the fan bore's edge, so the CAD open area through the plate
+        (which the bypass limit is measured against) must leave the motor's own section out, not count it as open grille. The motor's
+        area over the bore annulus (r 7..17 about the fan centre), worked out here from its plan circle in the manifest, matches the
+        validation's figure, the grid's shadowed open cells hold no motor (at most the ring between the motor and the plate's hole), the
+        CAD open area agrees with the grid's to under half the motor's area, and the bypass fraction is taken against that open area."""
+        jc = self.v['jetson_cooling']; g, fs = jc['grille'], jc['fan_skirt']
+        b = self.man['lidar_motor']['bounds']; mx, my, mr = (b[0] + b[3]) / 2, (b[1] + b[4]) / 2, (b[3] - b[0]) / 2
+        fx, fy = jc['lid_fan_window']['centre_mm']
+        h = 0.05; X, Y = np.meshgrid(np.arange(fx - 17, fx + 17, h) + h / 2, np.arange(fy - 17, fy + 17, h) + h / 2)
+        r = np.hypot(X - fx, Y - fy); dm = np.hypot(X - mx, Y - my); inbore = (r >= 7) & (r <= 17)
+        motor = (inbore & (dm <= mr)).sum() * h * h
+        ring = (inbore & (dm > mr) & (dm <= mr + self.v['lidar_mount']['tray_gap_to_motor_mm'])).sum() * h * h
+        self.assertGreater(motor, 10.0)                                                      # the motor really covers the bore's edge
+        self.assertAlmostEqual(g['motor_in_plate_over_bore_mm2'], motor, delta=1.0)
+        self.assertLessEqual(g['open_area_shadowed_in_plan_mm2'], ring + 1.0)
+        # the CAD figure, which the bypass limit uses, leaves the motor out too: it agrees with the grid to well under the motor's area (the
+        # build gate's 5 % of the bore, 38 mm2, would let the motor's 23.5 mm2 back in)
+        self.assertLess(abs(g['open_area_cad_mm2'] - g['open_area_over_bore_mm2']), motor / 2)
+        self.assertAlmostEqual(fs['bypass_fraction_of_grille_open_area'], fs['bypass_area_mm2'] / g['open_area_cad_mm2'], delta=0.002)
+        self.assertGreaterEqual(fs['gap_at_bypass_limit_mm'] - fs['feeler_go_nogo_mm'][1], 0.05)   # a real margin over the no-go
 
     def test_jetson_placement_names_the_current_com_rule(self):
         """Task I: the Jetson placement text gives the -14 mm guard as L1 history and names the user's current rule (-12 nominal, -10 worst)."""

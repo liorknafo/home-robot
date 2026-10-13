@@ -72,6 +72,10 @@ Order: **reflow SMD → inspect → iron THT, trimming leads to ≤ 1.4 mm → m
    - the sockets U1A / U1B, U2, U3L / U3P, U4L / U4P;
    - the connectors: the XH headers, the VH (J2), the XT30 (J1) and the Micro-Fit (J3; push its plastic peg through its hole);
    - J4 / J5, U5A / U5B;
+   - J15 stays without a header (DNP). The camera LED lead W21 is soldered into its holes 3, 5 and 6 from the top, on the bench, and laid
+     flat along the board top to its front edge (under 6 mm high; a header with a plug would not fit under the Jetson carrier). See
+     section 10 item 6. J15 hole 4 (3V3) sits between holes 3 and 5 and stays empty: after soldering, check with a meter for **no
+     short** from 5V to 3V3 (TP3 to TP4), from hole 3 to hole 4, and from 5V to GND;
    - the FLR fuse holders, K1, and C1 ("+" on the silk).
 
    The power pads keep thermal-relief spokes, so use a large tip. U3P.2 (DRV_L GND) has one spoke per outer layer by design (ruling
@@ -291,6 +295,10 @@ Steps:
   - Average over about 2 s, so motor starts do not trip it.
   - At the stop: stop the motors and tell the Jetson to shut down. Then switch the rocker off and charge the pack.
   - Do not run NiMH below 1.0 V per cell.
+- **Camera LED:** GP20 (SPARE3, J15 pin 3) is the output CAMERA_LED, **low by default**.
+  - The controller sets it high (LED fully on, about 59 mA from J15 pin 5) while a task drives, mapping or Go-to, and low when idle.
+  - **No PWM dimming:** a rolling-shutter camera would show bands. GP20 is on PWM slice 2 A if dimming is ever wanted.
+  - A 100 kΩ resistor from the MOSFET gate to GND keeps the LED off while the Pico boots or resets (section 10 item 6).
 - **Jetson power:** barrel-jack power needs the Jetson Nano's **J48 jumper** fitted.
 - **IMU:** the MPU-6050 runs DLPF_CFG = 4 (about 20 Hz), with samples forwarded at 20 Hz (ruling PB27; see section 14).
 - **Braking: keep the ramp, never short-brake** (task F; numbers updated in tasks I and L). With the LD14 turned round at x 54, the lid
@@ -309,7 +317,9 @@ Steps:
    - the bumpers J10 / J11;
    - the front cliffs J8 / J9;
    - the P03 leads at U5A / U5B;
-   - the spares J14 / J15, if fitted (DNP as delivered).
+   - the camera LED lead W21, soldered into J15 (section 1): check it lies flat on the board top and leaves the front edge without
+     crossing a connector's mating face;
+   - the spare J14, if fitted (DNP as delivered).
 
    **J3 (Jetson 5 V)** is not under the carrier. It is in the rear band, behind the carrier (robot about (−43.9, −44.5)), with its
    mating face at the board's right edge, reachable with the lid off. Plug the Jetson lead W04 into it after the section 7 checks.
@@ -347,8 +357,8 @@ Then fit the Jetson (ASSY step 7).
      opening (front left, front right, rear left, rear right), fit the lid and the tray, lift them off again and measure the squashed
      clay with a caliper.
    - Every ball must be **0.5–1.0 mm** thick. Thinner: sand the duct end where it touched. Thicker than 1.0 mm: shim the fan,
-     otherwise the bypass limit is lost (the bypass is 22.1 % of the grille's open area, against a 25 % limit that is
-     reached at a 1.05 mm gap).
+     otherwise the bypass limit is lost (the bypass is 21.4 % of the grille's open area, against a 25 % limit that is
+     reached at a 1.10 mm gap).
    - Through the tray's Ø26.4 hole for the LD14 motor, look down past the front of the fan: light must show between the
      bowl's back wall and the fan's front face (0.5 mm by design).
    - **LD14 motor over the fan.** The motor's rim sits 1.4 mm above the fan frame. Repeat the clay check with one ball on the
@@ -393,10 +403,53 @@ Then fit the Jetson (ASSY step 7).
      0.15 m ahead. The OV2735 camera (A) is sold as 96° diagonal with almost no distortion, which is about 88° × 57° at 16:9
      (top edge 28.6° above level). The simulator uses 84° × 54° (top edge 26.9°).
    - Jetson on, camera streaming in the mode the controller will use. Lay a ruler across the floor 0.15 m in front of the lens and
-     hold a card edge level 135 mm above the floor over it (the robot top with the LiDAR 20 mm lower).
-   - Pass: the card edge shows in the image, below the top edge. If it does not, the mode crops the sensor (some 4:3 modes do) or the
-     lens points down: use a 16:9 mode and check that the holder sits flat. Each degree the lens points down costs about 3 mm at
-     0.15 m.
+     hold a card edge level over it, first 155 mm above the floor (the detector's ceiling: the robot top + 2 cm, 26.6° up), then
+     135 mm (the robot top with the LiDAR 20 mm lower, 20° up).
+   - Pass: both card edges show in the image, below the top edge. If only the 135 mm edge shows, the camera still covers the robot
+     top but not the 2 cm margin. If neither shows, the mode crops the sensor (some 4:3 modes do) or the lens points down: use a
+     16:9 mode and check that the holder sits flat. Each degree the lens points down costs about 3 mm at 0.15 m.
+6. **Camera LED** (task N, LIO-134: one white LED above the camera lens lights the floor and the band in front of the robot, so the camera
+   can see the sofa's overhang in a dark corner. The controller sets it on at full brightness while a task drives, and off when idle.
+   Parts E19 to E21 and C21; lead W21; it is fed from J15 pin 5 (5 V, budget 0.10 A) and switched by GP20.)
+   - **Polarity, before gluing.** Solder the LED onto its carrier (E20) first. It lights only one way round.
+     - Touch a 3 V coin cell through a 100 Ω resistor across the two pads. It glows dimly. If it stays dark, swap the leads.
+     - Mark the anode pad (the pad that was on the cell's + when it lit) with a paint-pen dot on the back of the carrier. The wire from
+       the 39 Ω resistor goes to that pad, and the wire from the MOSFET drain to the other.
+     - Only then glue the carrier to the front face of the shelf `P_camera_led_shelf`, with its top edge flush with the block's top
+       (z 91.0), never above it. Keep the two wires under that edge too.
+   - **Fit check.** Screw the shelf under the camera board's two upper corner screws (M2 × 8 thread-forming, H09). Its block sits
+     0.9 mm above the lens barrel. If the barrel touches it, file the underside of the block. The lens holder must stay under z 87.
+     - Once the bumper is on, push its right half in to its stop (as in item 4). Its seam backer then passes 2.1 mm above the carrier:
+       the half must reach its stop freely, with no tick from the carrier or its wires.
+   - **Current check.** J15 is under the Jetson carrier, so do this and the next check **before the Jetson goes on** (section 9), with the
+     Jetson off and the board powered as in section 7.
+     - With the lead soldered into J15: at the switch, its red (5 V) wire against its black (GND) wire reads **5.0–5.2 V**.
+     - Open the 5 V wire at the 39 Ω resistor (its joint is not yet in heat-shrink) and put the meter, on its 200 mA range, in series.
+     - Force the LED on at the white wire (from J15 hole 3), on the J15 side of the switch's 100 Ω gate resistor, through a second
+       100 Ω resistor. Use one of these two ways:
+       - **Pico in its sockets, on USB, with no firmware driving GP20** (for example in BOOTSEL mode: hold BOOTSEL while you plug the
+         USB cable in). Touch the second resistor to TP4 (3.3 V). TP4 has 3.3 V only while the Pico is on USB (section 4).
+       - **Pico out of its sockets.** Touch the second resistor to TP3 (5 V). Never use 5 V with the Pico in: GP20 takes at most 3.3 V.
+     - Expect **55–65 mA** (59 mA by design: (5 − 2.7 V) / 39 Ω). **Above 70 mA: stop** and check the resistor (it must be 39 Ω) and the
+       wiring for a short.
+     - **Heat check.** With the meter still in series, leave the LED forced on for 20 minutes (clip the second resistor in place).
+       Then check the shelf block beside the carrier, with a fingertip if you can reach it or with a meter's thermocouple taped to it.
+       It may be warm, but must stay under about 50 °C, where you can keep a finger on it (the PETG shelf softens near 80 °C). The
+       current must still read 55–65 mA. The 39 Ω resistor (0.14 W in a 0.25 W part) may be warm too. If either is hotter, stop and
+       report it: the fix is a 0.5 W resistor or a larger copper carrier.
+     - Take the second 100 Ω resistor away: the LED must go out at once. Then close the 5 V joint and put every joint of the switch in
+       heat-shrink.
+   - **Off at power-up.** The 100 kΩ resistor from gate to source holds the MOSFET off while GP20 floats. Power the board with the Pico out
+     of its sockets: the LED must stay dark. Then fit the Pico, plug its USB cable and watch it boot, then reset it: the LED must stay
+     dark throughout, and come on only when the firmware sets GP20 high.
+   - **Glare check** (Jetson on, camera streaming, lid on; in a dark room, so the LED is the only strong light).
+     - Switch the LED on from the controller: a task sets it on while it drives (wheels lifted, as in section 7 item 6). If the task
+       stops too soon, set GP20 high from a test sketch instead. Do not use the 100 Ω trick now: the firmware holds GP20 low, and the
+       joints are in heat-shrink.
+     - Hold a white card about 0.5 m in front of the robot. The camera image must show **no bright spot, ring or haze** from the LED, and no
+       glow along the window's edges.
+     - If it does, add black tape or matt black paint to the window's inner edges, outside the image (it must not cover the view).
+       Then repeat item 4: no bumper edge or tape may show in the image.
 
 ## 11. Service
 
@@ -407,7 +460,8 @@ plug. BAT+ is live and unfused at F1's input whenever the battery is plugged in:
   rocker off. Fit or pull a fuse only with the rocker off.
 - **The lid comes off with the LiDAR tray and the LD14 on it** (four lid screws). Lift it straight up. Task L: the tray's fan duct
   hangs through the lid; when you refit it, lower it straight down: the bowl under the LD14 motor passes 0.5 mm in front of the fan's
-  front face.
+  front face. The duct fits the glued lid's central opening with about 0.3 mm a side: if it binds when the tray first goes on, sand
+  the lid opening's edge, not the duct.
 - **With the lid off, these are reachable:** the board's rear band (Pico USB, the rear connector row, the Jetson 5 V lead J3, the
   fuses).
 - **These need the Jetson off:** the motor inline joints, the other under-carrier connectors and the P03 (tie, trimpot). To take the
@@ -471,7 +525,7 @@ seam sensed) and the simulator was re-synced at e068608: robot 2.4442 kg (+26.7 
 this 1 % mass change; it reads the new mass and inertia at its next launch.
 
 On 2026-10-12 (task L, LIO-120, the user's request) the LD14 was lowered 20 mm, the most the scan-band rule allows: laser plane
-127.5 mm (was 147.5), robot top 135.15 mm (was 155.15). The simulator was re-synced from task L's final CAD: robot 2.4390 kg (was 2.4442), COM x −16.17 mm (the CAD's worst case −13.68 mm); the LiDAR scan plane is at 0.1275 m and the Unreal LiDAR column reaches 0.13515 m. Both sim2d scenario suites and goto_wall give logs byte-identical to main's; the 2D house completes 6 of 6 runs (median 790 s, main 763 s). sim2d has no camera, so in the 2D house the sofa base (underside 130 mm,
+127.5 mm (was 147.5), robot top 135.15 mm (was 155.15). The simulator was re-synced from task L's final CAD: robot 2.4388 kg (was 2.4442), COM x −16.17 mm (the CAD's worst case −13.68 mm); the LiDAR scan plane is at 0.1275 m and the Unreal LiDAR column reaches 0.13515 m. Both sim2d scenario suites and goto_wall give logs byte-identical to main's; the 2D house completes 6 of 6 runs (median 790 s, main 763 s). sim2d has no camera, so in the 2D house the sofa base (underside 130 mm,
 now between the scan line and the turret top) is found only by stall marks after the turret meets it; the front camera's overhang
 detection is task M (LIO-121).
 

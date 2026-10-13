@@ -61,6 +61,18 @@
     480
   ],
   "camera_check_vfov_deg": 68.06,
+  "camera_led_points": [
+    [
+      145.8,
+      0.0,
+      89.45
+    ]
+  ],
+  "camera_led_intensity_cd": 10.8,
+  "camera_led_beam_deg": 120,
+  "camera_led_cct_k": 5000,
+  "camera_led_current_a": 0.059,
+  "camera_led_note": "Task N (LIO-134): one Samsung LM281B+ Pro 2835 LED (5000 K, 37.5 lm at 65 mA / 2.7 V, 120 deg) above the lens, facing forward, its emitting face at x 145.8, z 89.45. From J15 pin 5 (5 V) through 39 ohm: (5 - 2.7) / 39 = 59 mA, so ~37.5 x 59 / 65 = 34 lm and ~34 / pi = 10.8 cd on axis (a near-Lambertian emitter). Switched low-side by a TN0702N3-G MOSFET from GP20 (J15 pin 3).",
   "camera_x_note": "camera_x = lens front face; the image frustum apex used for every clearance check is 3 mm behind it (x 143), the assumed worst entrance-pupil position; the lens solid centre is x 141.4. Task F: the camera sits in the bumper band behind a window in the two bumper halves (level, axis z 80). Below 80 mm the simulator camera loses the 6 cm shower tray in Unreal (straight drives at it: found in 6/10 at 75 mm, 10/10 at 80 mm); 80 is also the highest axis whose image still fits a window closed under the 98.5 mm bumper top.",
   "camera_image_note": "The simulator renders 640 \u00d7 360 (16:9, as the OV2735 1920 \u00d7 1080 mode); the CAD clearance check deliberately uses a taller 4:3 frustum (VFOV 68.06 deg), which is conservative.",
   "max_speed_mps": 0.15,
@@ -108,13 +120,13 @@
     "note": "task F: the camera looks out through a window cut across the bumper seam (half in each half); the bumper is full height (z 98.5) everywhere else"
   },
   "com_estimate_mm": [
-    -16.2,
+    -16.1,
     -1.1,
     60.0
   ],
   "com_estimate_note": "total COM including the wheels and the caster ball; body_com_mm excludes them (the simulator Body)",
   "body_com_mm": [
-    -14.93,
+    -14.89,
     -1.11,
     62.01
   ],
@@ -124,17 +136,17 @@
     [
       0.011378,
       8e-05,
-      -0.000841
+      -0.000843
     ],
     [
       8e-05,
-      0.01513,
+      0.015144,
       7.1e-05
     ],
     [
-      -0.000841,
+      -0.000843,
       7.1e-05,
-      0.022776
+      0.02279
     ]
   ],
   "skin_z": [
@@ -205,8 +217,8 @@
   "base_x_note": "P_base spans x -124..120 (centre x -2), R148 disc clipped to |y| <= 100",
   "camera_lower_edge_bumper_clearance_mm": 4.17,
   "coast_safe_reverse_speed_mps": 0.095,
-  "caster_load_fraction": 0.216,
-  "rear_caster_load_N": 5.16,
+  "caster_load_fraction": 0.215,
+  "rear_caster_load_N": 5.15,
   "rear_cliff_lead_over_caster_mm": 35,
   "rear_cliff_coast_at_reverse_limit_mm": {
     "speed_m_s": 0.06,

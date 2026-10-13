@@ -57,8 +57,10 @@ NEAR_SLACK_M=.10;HOLD_S=600.
 # 2.5 mm under the sofa base hits it only now and then, when the robot tilts nose-up), the camera cell is released as soon
 # as no LiDAR-occupied cell is left that close: the person or chair has gone and the LiDAR has cleared their legs by its own
 # rule (a beam passing about as close as they were seen, or HOLD_S without a hit). Released, the cell takes the LiDAR's own
-# evidence. The sofa base stays (its legs stay), an overhang the LiDAR never saw is never released by it, and a bumper or
-# stall mark never is. 15 cm reaches a shoe's toe from the shin and the middle of a chair's foot rail from its legs.
+# evidence, and the camera may confirm it again (LidarBrain tells LowObstacleCamera.forget). Never handed over: overhang edges
+# (cells the camera confirmed with nothing below them, add_overhang_shadow), so a person who stood in front of the sofa does
+# not take its edge with them, and bumper or stall marks. 15 cm reaches a shoe's toe from the shin and the middle of a chair's
+# foot rail from its legs.
 CAMERA_BACK_LOGODDS=3.;CAMERA_BACK_RADIUS_M=.15
 # Floor under a camera-confirmed overhang (task M; LidarGrid.add_overhang_shadow). The camera finds an overhang's bottom edge only
 # where the robot drives at it, a stretch at a time, while the LiDAR sees the floor under it as free: task H's rule kept counting
@@ -105,6 +107,8 @@ class LidarGrid(Grid):
         # contact_core: cells from bumper / stall marks; camera_backed: camera cells the LiDAR also saw (release_camera_cells).
         self.lidar_logodds=self.logodds.copy();self.contact_core=np.zeros_like(self.seen,bool);self.camera_backed=np.zeros_like(self.seen,bool)
         self.overhang_shadow=np.zeros_like(self.seen,bool)   # cells marked by add_overhang_shadow
+        self.overhang_edge=np.zeros_like(self.seen,bool)     # the overhang edges it was given (never handed to the LiDAR)
+        self.released=[]                                      # world centres of cells release_camera_cells freed, for the camera
     def masks(self):
         free,occupied,unknown,safe,clearance=super().masks()
         if self.radius<PLAN_RADIUS and getattr(self,'narrow_blocks',None):
@@ -130,6 +134,7 @@ class LidarGrid(Grid):
         line from camera_xy, up to depth, while the LiDAR's own evidence says free. Returns how many cells were added."""
         cam=np.asarray(camera_xy,float)[:2];added=0
         for e in np.asarray(edges,float).reshape(-1,2):
+            if self.valid(self.cell(e)):self.overhang_edge[self.cell(e)]=True
             u=e-cam;L=float(np.linalg.norm(u))
             if L<1e-6:continue
             u/=L;edge=self.cell(e)
@@ -140,13 +145,14 @@ class LidarGrid(Grid):
                 if not self.camera_obstacles[c]:self.camera_obstacles[c]=self.overhang_shadow[c]=True;added+=1
         self.logodds[self.overhang_shadow]=5;self.seen[self.overhang_shadow]=np.maximum(1,self.seen[self.overhang_shadow]);return added
     def save(self,folder):
-        super().save(folder);np.savez_compressed(folder/'camera-obstacles.npz',occupied=self.camera_obstacles,core=self.camera_core,driven=self.driven,contact=self.contact_core,shadow=self.overhang_shadow)
+        super().save(folder);np.savez_compressed(folder/'camera-obstacles.npz',occupied=self.camera_obstacles,core=self.camera_core,driven=self.driven,contact=self.contact_core,shadow=self.overhang_shadow,edge=self.overhang_edge)
     def load(self,folder):
         super().load(folder);p=folder/'camera-obstacles.npz';d=np.load(p,allow_pickle=False) if p.exists() else {}
         self.camera_obstacles=d['occupied'] if 'occupied' in d else np.zeros_like(self.seen,bool);self.camera_core=d['core'] if 'core' in d else self.camera_obstacles.copy()
         self.driven=d['driven'] if 'driven' in d else np.zeros_like(self.seen,bool);self._camera_layers();self.lidar_logodds[self.camera_obstacles]=0
         if 'contact' in d:self.contact_core=d['contact']
         if 'shadow' in d:self.overhang_shadow=d['shadow']
+        if 'edge' in d:self.overhang_edge=d['edge']
     def add_driven(self,a,b):
         """Record ground the robot's centre drove over (a 3-cell, 4-connected corridor)."""
         ca,cb=self.cell(a),self.cell(b)
@@ -191,12 +197,14 @@ class LidarGrid(Grid):
     def release_camera_cells(self):
         """Hand camera cells the LiDAR also saw back to it (CAMERA_BACK_LOGODDS / CAMERA_BACK_RADIUS_M). Returns the mask of
         the cells released now."""
-        src=self.camera_core&~self.contact_core
+        src=self.camera_core&~self.contact_core&~self.overhang_edge
         if not src.any():return np.zeros_like(src)
         k=int(round(CAMERA_BACK_RADIUS_M/self.res));disc=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2*k+1,2*k+1))
         self.camera_backed|=src&(cv2.dilate((self.lidar_logodds>=CAMERA_BACK_LOGODDS).astype(np.uint8),disc)>0)
         rel=self.camera_backed&src&~(cv2.dilate((self.lidar_logodds>.8).astype(np.uint8),disc)>0)
-        if rel.any():self.camera_obstacles[rel]=self.camera_core[rel]=self.camera_backed[rel]=False;self.logodds[rel]=self.lidar_logodds[rel]
+        if rel.any():
+            self.camera_obstacles[rel]=self.camera_core[rel]=self.camera_backed[rel]=False;self.logodds[rel]=self.lidar_logodds[rel]
+            self.released+=[self.world(tuple(c)) for c in np.argwhere(rel)]
         return rel
 
 class LidarLocalizer(Localizer):

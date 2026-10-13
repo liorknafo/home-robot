@@ -268,6 +268,12 @@ def main(argv=None):
     for k in ('bumper_axis_deg',):
         if k in prm:
             geometry[k] = prm[k]
+    # Camera LED (task N, LIO-134): emitting points (mm in the CAD, flat x, y, z per LED in m here), each LED's on-axis
+    # intensity (real candela), full beam angle at half intensity and colour temperature. RobotPawn adds one spot light each.
+    if 'camera_led_points' in prm:
+        geometry['camera_led_mounts_m'] = [round(v / 1000, 6) for point in prm['camera_led_points'] for v in point]
+        for k in ('camera_led_intensity_cd', 'camera_led_beam_deg', 'camera_led_cct_k', 'camera_led_current_a'):
+            geometry[k] = prm[k]
     if 'bumper_travel' not in prm:
         print('warning: parameters.json has no bumper_travel; using 5 mm for the simulated bumper hard stop', file=sys.stderr)
     geometry['bumper_travel_m'] = prm.get('bumper_travel', 5) / 1000

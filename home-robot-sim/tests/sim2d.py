@@ -21,6 +21,11 @@ Emulates the simulator <-> autonomy_service boundary without Unreal or UDP:
     Known remaining simplifications against DriveCore.h (Unreal runs DriveCore.h itself): any disarm stops the wheels at once
     (DriveCore cuts the torque and the robot coasts); a forward command while pressed disarms here (DriveCore stays armed and
     ramps both setpoints to 0 at 0.25 m/s2); a pure spin here is v == 0 (DriveCore: |v| < 1e-4).
+    Optional press roll-on (press_roll_m, default 0; task P): DriveCore cuts the torque on a press and the robot coasts on into
+    the skin until the bumper stop. A press rising edge while driving forward keeps the wheel speeds for up to press_roll_m of
+    travel (encoders and body alike), ending before the rigid disc would touch. Unreal: 5.8 mm after the trip (task G's
+    trial); the shower-tray touches of trials full-mapping-20261012T183238 / T192331 at 8-10 cm/s rolled on past where the
+    back-off's first reverse tick had frozen the end of the driven trail.
     firmware='drivecore': the PREVIOUS (box-robot) DriveCore.h, kept as a negative control: a press rising edge
     disarms; while pressed command() re-arms only for v <= 0 and |w| <= bump_yaw (.3) and never
     disarms on a later command; update() clamps BOTH wheel setpoints to <= 0 while pressed (a
@@ -171,7 +176,7 @@ def seg_point_distance(segs, p):
 
 
 class World:
-    def __init__(self, walls, low=(), sticky=(), cliffs=(), curbs=(), overhangs=(), overhang_z=None, ledges=(), ledge_drop=.0175):
+    def __init__(self, walls, low=(), sticky=(), cliffs=(), curbs=(), overhangs=(), overhang_z=None, ledges=(), ledge_drop=.0175, overhang_stops_wheels=False):
         """walls: list of ((x0,y0),(x1,y1)) tall segments (LiDAR-visible).
         low: list of polygons for objects below the LiDAR plane (bumper-visible only).
         overhangs: list of polygons (footprints) of furniture whose underside is at overhang_z (default: midway
@@ -192,6 +197,9 @@ class World:
         # curbs: low objects the wheels/caster cannot climb; block motion and touch the skin, no LiDAR
         self.curbs = [np.asarray(p, float) for p in curbs]
         self.overhangs = [np.asarray(p, float) for p in overhangs]
+        # overhang_stops_wheels: the turret on an overhang stops the wheels too (Unreal: the drive torque cap holds them; task M's
+        # trial full-mapping-20261012T144002), so no encoder ticks while it pushes: no jam by wheel slip, only pushed_stalled.
+        self.overhang_stops_wheels = bool(overhang_stops_wheels)
         self.ledges = [np.asarray(p, float) for p in ledges]
         self.ledge_segs = np.array([s for p in self.ledges for s in poly_segments(p)], float).reshape(-1, 2, 2)
         self.ledge_drop = float(ledge_drop)
@@ -203,8 +211,9 @@ class World:
 
 class Sim:
     def __init__(self, world, pose=(0., 0., 0.), seed=0, lidar_noise_m=.004, reverse_on_bump=True, spin_slip_m_per_turn=0., firmware='spec',
-                 sensor_errors=None):
+                 sensor_errors=None, press_roll_m=0.):
         assert firmware in ('spec', 'drivecore')
+        self.press_roll = float(press_roll_m); self.roll_left = 0.; self.roll_speeds = (0., 0.)
         self.sensor_model = SensorErrorModel(enabled=sensor_errors, run_seed=seed)
         self.reverse_on_bump = reverse_on_bump; self.firmware = firmware; self.fw_bump = False
         self.spin_slip = spin_slip_m_per_turn / (2 * math.pi); self.slip_dir = None; self.spin_drift = 0.
@@ -356,7 +365,15 @@ class Sim:
             bump_reverse_ok = reason == 'bumper' and self.reverse_on_bump and pressed_motion_ok(*self.cmd, self.left, self.right)
             if press or (reason and not bump_reverse_ok) or self.estop or self.t - self.cmd_time > .35:
                 self.armed = False
-        if not self.armed:
+        if press and self.press_roll and self.wl + self.wr > 0:
+            self.roll_left = self.press_roll; self.roll_speeds = (self.wl, self.wr)   # coasting on into the skin (press_roll_m)
+        rolling = self.roll_left > 0
+        if rolling:
+            self.wl, self.wr = self.roll_speeds; self.roll_left -= (self.wl + self.wr) / 2 * dt
+            if self.roll_left <= 0:
+                self.roll_left = 0.; self.roll_speeds = None   # coasted to a stop: the next step starts from rest
+        elif self.roll_speeds is None or not self.armed:
+            self.roll_speeds = (0., 0.)                        # (DriveCore restarts the wheel setpoints from 0 on a re-arm)
             self.wl = self.wr = 0.
         else:
             v, w = self.cmd; ls, rs = v - w * TRACK / 2, v + w * TRACK / 2
@@ -381,11 +398,15 @@ class Sim:
             step = self.spin_slip * abs(mw) * dt; new[:2] += step * self.slip_dir; self.spin_drift += step
         elif abs(mw) <= .05:
             self.slip_dir = None
+        held = False
+        if rolling and self.body_blocked(new):
+            self.roll_left = 0.; self.roll_speeds = (0., 0.); self.wl = self.wr = mv = mw = 0.; new = self.pose.copy()   # the bumper stop ends the roll-on
         if (mv or mw) and self.body_blocked(new) and not self.body_blocked(self.pose):
-            self.contacts += 1; self.overhang_hits += bool(self.overhang_blocked(new))
+            ov = bool(self.overhang_blocked(new)); self.contacts += 1; self.overhang_hits += ov
+            held = ov and self.w.overhang_stops_wheels
             mv = mw = 0.; new = self.pose.copy()       # contact stops the body; wheels may still tick
         self.pose = new; self.gyro = mw
-        k = dt / (2 * math.pi * WHEEL_R) * CPR
+        k = 0. if held else dt / (2 * math.pi * WHEEL_R) * CPR
         self.left_ticks += self.wl * k; self.right_ticks += self.wr * k
         self._lidar(dt)
         self.t += dt
@@ -710,18 +731,18 @@ def _legs(x0, x1, y0, y1, s=.04):
     return out
 
 
-def overhang_world(kind, underside=None):
+def overhang_world(kind, underside=None, stops_wheels=False):
     """A 4 x 3 m room with furniture whose underside is `underside` (default: midway between the LiDAR plane and the robot
     top; it was a fixed 150 mm for the 147.5 / 155.15 mm robot, which task L's lower candidates put above the robot top) on 4 cm
     corner legs. 'sofa': 2 x .85 m against the top wall (the LiDAR sees the legs and the wall under it);
-    'table': a 1 x .6 m island (coffee table). Start pose (0, 0, 0) = map frame."""
+    'table': a 1 x .6 m island (coffee table). stops_wheels: World overhang_stops_wheels. Start pose (0, 0, 0) = map frame."""
     room = [((-1, -1.5), (3, -1.5)), ((3, -1.5), (3, 1.5)), ((3, 1.5), (-1, 1.5)), ((-1, 1.5), (-1, -1.5))]
     fp = {'sofa': (.3, 2.3, .65, 1.5), 'table': (.8, 1.8, -.3, .3)}[kind]
     top = box((fp[0] + fp[1]) / 2, (fp[2] + fp[3]) / 2, fp[1] - fp[0], fp[3] - fp[2])
-    return World(room + _legs(*fp), overhangs=[top], overhang_z=underside)
+    return World(room + _legs(*fp), overhangs=[top], overhang_z=underside, overhang_stops_wheels=stops_wheels)
 
 
-def run_overhang(brain_factory, kind, goals=(), seconds=800., goal_seconds=200., seed=0, sensor_errors=None):
+def run_overhang(brain_factory, kind, goals=(), seconds=800., goal_seconds=200., seed=0, sensor_errors=None, stops_wheels=False):
     """Map overhang_world(kind) (then Go-to each of `goals`). The overhang gives the controller no signal: no LiDAR
     return, no bumper, no cliff; only the LiDAR turret meets its edge, the body stops and the wheels still turn.
     Reports every hit episode (TRUE base_link position; consecutive blocked ticks are one episode) and the controller's
@@ -729,8 +750,9 @@ def run_overhang(brain_factory, kind, goals=(), seconds=800., goal_seconds=200.,
     Go-to 'Arrived' within 3 cm; the reverse audit is clean (no blind reverse, episodes within REVERSE_LIMIT); no
     rigid-body contact except the turret on the overhang and no bumper touch; every hit spot is recorded (a stall mark
     within .30 m of it); a marked spot is never hit again after its mark (no hit within .10 m of it later) and no spot
-    takes more than 3 hits (the jam retries). seed and sensor_errors: as Sim."""
-    brain = brain_factory(); sim = Sim(overhang_world(kind), seed=seed, sensor_errors=sensor_errors)
+    takes more than 3 hits (the jam retries). seed and sensor_errors: as Sim. stops_wheels: the turret's push stops the wheels
+    (overhang_world), so only LidarBrain.pushed_stalled can notice it."""
+    brain = brain_factory(); sim = Sim(overhang_world(kind, stops_wheels=stops_wheels), seed=seed, sensor_errors=sensor_errors)
     bridge = Bridge(brain, sim, rearm_hook=lambda b: getattr(b, 'wants_arm', False))
     for _ in range(10):
         brain.predict(sim.state()); [sim.step(.01) for _ in range(5)]
@@ -891,19 +913,28 @@ def run_ledge(brain_factory, seconds=900., seed=0, sensor_errors=None):
 # a quarter turn in place before anything else (the trail behind is only the start position).
 CONTACT_APPROACHES = {'weave': [(.04, .4, .65), (.1, -.4, .65), (.1, -.4, .65), (.04, -.4, .65), (.04, 0., .65), (.1, .4, .65)],
                       'spin': [(.1, 0., 3.), (0., .4, math.pi / 2 / .4)],
-                      'spin_start': [(0., .4, math.pi / 2 / .4)]}
+                      'spin_start': [(0., .4, math.pi / 2 / .4)],
+                      # task P: Unreal trial full-mapping-20261012T183238's last 2 s before the shower tray: straight at 10 cm/s, then the
+                      # local planner's -.4 rad/s commit for .5 s (11 deg), so the trail behind the touch curves away from the heading.
+                      'turn': [(.1, 0., 2.), (.1, -.4, .5)],
+                      # task P: Unreal trial full-mapping-20261012T220759 (task N) at 585-587 s: weaving, the local planner's reverse arc
+                      # (-.04 m/s, .4 rad/s), then forward on an arc into the touch: the drive after the reverse was not on the trail.
+                      'reverse_arc': [(.1, 0., 2.), (.1, .4, .6), (-.04, .4, .6), (.1, .4, .5)]}
 
 
-def run_contact_recovery(brain_factory, approach='weave', gap=.02, seconds=60., seed=0, sensor_errors=None, release_s=15., leave_m=.3):
+def run_contact_recovery(brain_factory, approach='weave', gap=.02, seconds=60., seed=0, sensor_errors=None, release_s=15., leave_m=.3,
+                         press_roll_m=0.):
     """Mapping start, then the CONTACT_APPROACHES[approach] script; then a wide low step appears `gap` ahead of the skin
     and the robot drives straight (10 cm/s) until its bumper touches the step. From the touch on the real controller
     decides everything. PASS: the bumper releases within release_s of the touch; by the end the robot has left the contact
     phase and is at least leave_m from where it touched (it got off the step and went on mapping); zero rigid-body
     blocks; the reverse audit clean (no reverse off the TRUE driven trail, episodes within REVERSE_LIMIT); the touch is
     on the map (a contact recorded, contact cells within 15 cm of the touched skin). Before task G the robot backed off
-    one tick or not at all and then waited for the bumper to release until the time budget ran out."""
+    one tick or not at all and then waited for the bumper to release until the time budget ran out. press_roll_m: as Sim (task P:
+    the body rolls on into the skin after the touch, past where the back-off's first reverse tick began)."""
     brain = brain_factory(); sim = Sim(World([((-1, -1.5), (3, -1.5)), ((3, -1.5), (3, 1.5)), ((3, 1.5), (-1, 1.5)), ((-1, 1.5), (-1, -1.5)),
-                                              ((.5, -1.1), (.5, -.8)), ((2.3, -.9), (2.3, -.6))]), seed=seed, sensor_errors=sensor_errors)
+                                              ((.5, -1.1), (.5, -.8)), ((2.3, -.9), (2.3, -.6))]), seed=seed, sensor_errors=sensor_errors,
+                                       press_roll_m=press_roll_m)
     bridge = Bridge(brain, sim, rearm_hook=lambda b: getattr(b, 'wants_arm', False))
     for _ in range(10):
         brain.predict(sim.state()); [sim.step(.01) for _ in range(5)]
@@ -948,3 +979,45 @@ def run_contact_recovery(brain_factory, approach='weave', gap=.02, seconds=60., 
                 reversed_after_touch_m=round(reversed_m, 4), away_from_touch_m=round(away, 3), contact_marked=marked, contacts=len(brain.contacts),
                 bumps=sim.bump_events, body_blocks=sim.contacts, reverse_audit=audit, mode=brain.mode, phase=brain.phase, message=brain.message,
                 events=[e['message'] for e in brain.events][2:8])
+
+
+def run_retreat_after_reverse(brain_factory, seconds=20., seed=0, sensor_errors=None, back_m=.015, forward_s=.55):
+    """Task P: Unreal trial full-mapping-20261012T184036 under the dining table (GI on). Mapping start, then a scripted drive: 30 cm
+    straight at 10 cm/s, a stop, a short reverse (4 cm/s for back_m), a stop, then forward on the local planner's arc (5 cm/s, -.4 rad/s) for
+    forward_s (~2.7 cm: past where the reverse began, less than the 5 cm that closes a reverse episode); then it stands still and
+    the stall retreat starts (LidarBrain.begin_retreat, as after 6 s without progress). From then on the real controller decides.
+    Before task P the open episode had fixed the newest end of the trail where the reverse began, base_link stood ~1 cm past it,
+    and command()'s guard refused the planned retreat (in Unreal 16 times, 126 s). PASS: the retreat starts and base_link (truth)
+    moves back at least 2.5 cm, no 'Reverse refused' event after it began, the reverse audit clean, 0 body blocks, mapping on."""
+    brain = brain_factory(); sim = Sim(World([((-1, -1.5), (3, -1.5)), ((3, -1.5), (3, 1.5)), ((3, 1.5), (-1, 1.5)), ((-1, 1.5), (-1, -1.5)),
+                                              ((.5, -1.1), (.5, -.8)), ((2.3, -.9), (2.3, -.6))]), seed=seed, sensor_errors=sensor_errors)
+    bridge = Bridge(brain, sim, rearm_hook=lambda b: getattr(b, 'wants_arm', False))
+    for _ in range(10):
+        brain.predict(sim.state()); [sim.step(.01) for _ in range(5)]
+    script = [(.1, 0., 3.), (0., 0., .6), (-.04, 0., back_m / .04), (0., 0., .5), (.05, -.4, forward_s), (0., 0., .5)]
+    real = brain.drive_command; st = dict(t0=None, retreat=None, began=False, pose=None, events=None)
+
+    def scripted(state):
+        if st['retreat'] is not None or brain.phase not in ('plan', 'follow') or not brain.imu.ready_to_move():
+            return real(state)
+        t = state['sim_time_s']; st['t0'] = t if st['t0'] is None else st['t0']; k = t - st['t0']; brain.phase = 'follow'
+        for v, w, d in script:
+            if k < d:
+                return v, w
+            k -= d
+        st['retreat'] = t; st['pose'] = sim.pose.copy(); st['events'] = len(brain.events); st['began'] = brain.begin_retreat(t)
+        if not st['began']:
+            brain.phase = 'plan'; brain.plan_not_before = t
+        return real(state)
+
+    brain.drive_command = scripted
+    bridge.start_mapping(); bridge.run(seconds)
+    audit = reverse_audit(bridge.trace); back = 0.; refused = 0
+    if st['pose'] is not None:
+        u = np.array([math.cos(st['pose'][2]), math.sin(st['pose'][2])])
+        back = max([0.] + [float(-(r['truth'][:2] - st['pose'][:2]) @ u) for r in bridge.trace if r['t'] >= st['retreat'] and r['t'] <= st['retreat'] + 3.])
+        refused = sum('Reverse refused' in e['message'] for e in brain.events[st['events']:])
+    ok = bool(st['began'] and back >= .025 and refused == 0 and audit['ok'] and sim.contacts == 0 and brain.mode != 'idle')
+    return dict(passed=ok, seed=seed, retreat_began=bool(st['began']), moved_back_m=round(back, 4), refused=refused, body_blocks=sim.contacts,
+                reverse_audit=audit, mode=brain.mode, phase=brain.phase, message=brain.message,
+                events=[e['message'] for e in brain.events[(st['events'] or 0):][:6]])

@@ -4,6 +4,15 @@ Unknown cells remain blocked. No house model or simulator depth is consulted.
 import math,heapq,json,cv2,numpy as np
 from .stereo import optical_to_world
 from .geometry import PLAN_RADIUS,BODY_CLEAR,FIT_CLEAR
+# Unknown cells the round body may pass (Grid.body_fit, task R / LIO-153): never-measured cells inside the closing of the
+# measured free floor by a disc of radius GAP_M, i.e. every never-measured cell except those a circle 2 x GAP_M across can
+# cover without touching measured floor: an unmeasured gap between measured floor up to about 2 x GAP_M across counts (a wall
+# stretch nobody measured may be a doorway: task H). Unexplored space beyond the measured floor is not a way in:
+# with the LiDAR 20 mm lower the floor under the bed was mapped free and walled in for the body by the frame's sides, yet the
+# body-fit way left the house through 25 cm of wall hidden behind the vanity, ran round the outside through ~200 unknown
+# cells and came back in behind the bed (full-mapping-20261013T004512: 0.85 of the 1.70 m2 counted). Space like that next to
+# the robot's floor is a frontier. .2, .5 and 1 m give the same pockets on 20 saved Unreal maps (only bed pockets drop).
+GAP_M=.5
 class Grid:
     def __init__(self,resolution=.05,size=320):
         self.res=resolution;self.n=size;self.origin=np.array([-size*resolution/2]*2);self.logodds=np.zeros((size,size),np.float32);self.seen=np.zeros((size,size),np.uint16);self.last_pose=None;self.updates=0
@@ -172,18 +181,29 @@ class Grid:
         if any(a[0]!=b[0] and a[1]!=b[1] and not (mask[a[0],b[1]] and mask[b[0],a[1]]) for a,b in zip(cells,cells[1:])):return False
         _,labels=cv2.connectedComponents(mask.astype(np.uint8),connectivity=4)
         return labels[cells[0]]==labels[start]
+    def body_fit(self,reach,fit=FIT_CLEAR):
+        """Cells the round body could stand on: at least `fit` from every occupied cell (LiDAR returns, camera and contact
+        marks; cell centres) and measured free, or never measured inside a gap between measured free floor (GAP_M); plus the
+        planner's reachable cells `reach`."""
+        free,occupied,unknown,_,clearance=self.masks();k=int(round(GAP_M/self.res))
+        disc=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2*k+1,)*2)
+        # The closing on the free floor padded by k cells of "not measured", then cropped: the grid's edge (a wall 7.5 m or more
+        # from the start) neither counts as floor nor cuts a gap beside it (task R review: a gap by a wall on the last row was
+        # dropped and the house reported complete).
+        gap=cv2.erode(cv2.dilate(np.pad(free.astype(np.uint8),k),disc),disc)[k:-k,k:-k]>0
+        return (~occupied&(free|(unknown&gap))&(clearance>=fit))|reach
     def unreached_enterable(self,start_xy,safe=None,fit=FIT_CLEAR):
         """Safe cells the planner cannot reach from start_xy that the round body itself could: joined to the robot by a
-        path of cells at least `fit` from every occupied cell (LiDAR returns, camera and contact marks; cell centres).
-        Unknown cells count as open, so an unmeasured gap is never a wall. What is left out is floor walled in for the
-        body (between obstacles or marked steps closer together than it is wide, e.g. seen under a sofa, or inside a
-        shower tray marked all round), never floor cut off only by the planning margins or a failed route."""
-        free,occupied,_,all_safe,clearance=self.masks()
+        path of body_fit cells. Unknown cells in a gap between measured floor count as open, so an unmeasured gap is never
+        a wall; unexplored space beyond the measured floor (outside the house's walls) is no way in. What is left out is
+        floor walled in for the body (between obstacles or marked steps closer together than it is wide, e.g. seen under a
+        sofa, or inside a shower tray marked all round), never floor cut off only by the planning margins or a failed route."""
+        _,_,_,all_safe,_=self.masks()
         if safe is None:safe=all_safe
         reach=self.reachable(start_xy,safe);left=safe&~reach;start=self.cell(start_xy)
         # No reachable floor at all (no valid start, or the robot on an occupied cell): every unreached cell counts.
         if not left.any() or not self.valid(start) or not reach.any():return left
-        body=(~occupied&(clearance>=fit))|reach;body[start]=True
+        body=self.body_fit(reach,fit);body[start]=True
         _,labels=cv2.connectedComponents(body.astype(np.uint8),connectivity=8)
         robot=np.setdiff1d(np.unique(np.r_[labels[reach],labels[start]]),[0])
         return left&np.isin(labels,robot)

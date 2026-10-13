@@ -8,6 +8,8 @@
 #include "Components/SceneCaptureComponent2D.h"
 #include "Components/DirectionalLightComponent.h"
 #include "Components/SkyLightComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "Engine/PointLight.h"
 #include "Camera/CameraActor.h"
 #include "Camera/CameraComponent.h"
 #include "Engine/DirectionalLight.h"
@@ -37,6 +39,13 @@
 #include "HAL/FileManager.h"
 #include "HAL/IConsoleManager.h"
 #include "ImageUtils.h"
+#include "RHI.h"
+#include "UnrealClient.h"
+#include "StaticMeshResources.h"
+#include "DistanceFieldAtlas.h"
+#include "MeshCardBuild.h"
+#include "UObject/UObjectIterator.h"
+#include "HAL/PlatformTime.h"
 #include "InputCoreTypes.h"
 
 static constexpr double BodyHeight=8.5; // physics body origin above the floor (cm); ground truth reports base_link at floor level
@@ -114,6 +123,9 @@ void ARobotPawn::LoadParameters() {
  // Masses and COM (robot frame; BodyComY is stored in Unreal sign, y right).
  Num(TEXT("body_mass_kg"),BodyMass,1,true);Num(TEXT("wheel_mass_kg"),WheelMass,1,true);Num(TEXT("caster_ball_mass_kg"),CasterMass,1,true);
  Num(TEXT("body_com_x_cm"),BodyComX,1,true);Num(TEXT("body_com_z_cm"),BodyComZ,1,true);Num(TEXT("encoder_cpr"),EncoderCPR,1,false);
+ // Camera LED (task N): optional. camera_led_mounts_m is flat x, y, z (m, robot frame) per LED: its emitting point.
+ {TArray<double> Led;CameraLedMounts.Reset();if(Vec(TEXT("camera_led_mounts_m"),3,Led,false))for(int32 I=0;I+2<Led.Num();I+=3)CameraLedMounts.Add(FVector(Led[I],Led[I+1],Led[I+2])*100);
+  Num(TEXT("camera_led_intensity_cd"),CameraLedCd,1,false);Num(TEXT("camera_led_beam_deg"),CameraLedBeamDeg,1,false);Num(TEXT("camera_led_cct_k"),CameraLedCct,1,false);}
  TArray<double> V;
  if(Vec(TEXT("estimated_body_com_mm"),3,V,true)){BodyComY=-V[1]/10;}
  // Geometry (metres in the file, cm here).
@@ -385,6 +397,8 @@ void ARobotPawn::BeginPlay() {
  Socket=FUdpSocketBuilder(TEXT("RobotBridgeLocalhost")).AsNonBlocking().AsReusable().BoundToAddress(FIPv4Address(127,0,0,1)).BoundToPort(8767).WithReceiveBufferSize(65536);
  Peer=ISocketSubsystem::Get(PLATFORM_SOCKETSUBSYSTEM)->CreateInternetAddr();bool Valid=false;Peer->SetIp(TEXT("127.0.0.1"),Valid);Peer->SetPort(8768);
  FParse::Value(FCommandLine::Get(),TEXT("CameraHz="),CameraHz);CameraHz=FMath::Clamp(CameraHz,1.0,10.0);
+ FParse::Value(FCommandLine::Get(),TEXT("CameraLedScale="),CameraLedScale);SetupCameraLeds();
+ int32 AutoExposure=1;FParse::Value(FCommandLine::Get(),TEXT("CameraAE="),AutoExposure);bCameraAE=AutoExposure!=0;FParse::Value(FCommandLine::Get(),TEXT("CameraNoise="),CameraNoiseDN);
  if(!Socket)UE_LOG(LogTemp,Error,TEXT("Robot UDP port 8767 unavailable"));
  if(!FParse::Param(FCommandLine::Get(),TEXT("nullrhi")))NewStereoSession();
  if(!FParse::Param(FCommandLine::Get(),TEXT("nullrhi"))){
@@ -422,6 +436,20 @@ void ARobotPawn::PollCommands() {
   if(O->TryGetBoolField(TEXT("capture"),Flag))CaptureEnabled=Flag;
   double Rate=0;if(O->TryGetNumberField(TEXT("camera_hz"),Rate))CameraHz=FMath::Clamp(Rate,1.0,10.0);
   if(O->TryGetBoolField(TEXT("quit"),Flag)&&Flag)FGenericPlatformMisc::RequestExit(false);
+  // Measurement switches (task O): camera auto-exposure off = back to the fixed exposure; house GI off = no Lumen (same meshes).
+  if(O->TryGetBoolField(TEXT("camera_ae"),Flag)){bCameraAE=Flag;if(!Flag){CameraEV=0;for(auto* C:{LeftCamera,RightCamera}){C->PostProcessSettings.bOverride_AutoExposureBias=true;C->PostProcessSettings.AutoExposureBias=0;}}}
+  double Noise=0;if(O->TryGetNumberField(TEXT("camera_noise"),Noise))CameraNoiseDN=FMath::Max(0.0,Noise);
+  // Camera LED (task N): duty 0..1 from the controller; scale and the house lamps only for the brightness calibration.
+  double Duty=0;if(O->TryGetNumberField(TEXT("camera_led_scale"),Duty)){CameraLedScale=FMath::Max(0.0,Duty);SetCameraLed(CameraLedDuty);}
+  if(O->TryGetNumberField(TEXT("camera_led"),Duty))SetCameraLed(Duty);
+  if(O->TryGetBoolField(TEXT("house_lamps"),Flag))for(TActorIterator<APointLight> It(GetWorld());It;++It)It->GetLightComponent()->SetVisibility(Flag);
+  // The sun and the sky light: off, with the lamps off, leaves only the LED (the LED's dark-room check; with GI on some light reaches
+  // the rooms even with the lamps off, task O notes).
+  if(O->TryGetBoolField(TEXT("house_daylight"),Flag)){for(TActorIterator<ADirectionalLight> It(GetWorld());It;++It)It->GetLightComponent()->SetVisibility(Flag);for(TActorIterator<ASkyLight> It(GetWorld());It;++It)It->GetLightComponent()->SetVisibility(Flag);}
+  // Overview pictures for checking the lighting (task O): the game viewport as the user sees it, in a preview mode (1-4).
+  double Mode=0;if(O->TryGetNumberField(TEXT("preview_mode"),Mode))SetPreviewMode(FMath::Clamp((int)Mode,1,4));
+  FString Shot;if(O->TryGetStringField(TEXT("screenshot"),Shot))FScreenshotRequest::RequestScreenshot(Shot,false,false);
+  if(O->TryGetBoolField(TEXT("house_gi"),Flag))if(auto* Method=IConsoleManager::Get().FindConsoleVariable(TEXT("r.DynamicGlobalIlluminationMethod")))Method->Set(Flag?1:0,ECVF_SetByCode);
   double V=0,W=0;bool Arm=false,Stop=false;O->TryGetNumberField(TEXT("v_m_s"),V);O->TryGetNumberField(TEXT("w_rad_s"),W);O->TryGetBoolField(TEXT("arm"),Arm);if(!O->TryGetBoolField(TEXT("motor_power_off"),Stop))O->TryGetBoolField(TEXT("estop"),Stop);
   Drive.command(Time,V,W,Arm,Stop);
  }
@@ -469,6 +497,8 @@ void ARobotPawn::LogSensorCost() {
 }
 void ARobotPawn::Tick(float Dt) {
  Super::Tick(Dt);if(bComPending){bComPending=false;ApplyCenterOfMass(TEXT("first tick"));}
+ {const double Now=FPlatformTime::Seconds();if(CostLastWall>0){const double F=Now-CostLastWall;CostFrameSum+=F;CostFrameMax=FMath::Max(CostFrameMax,F);CostGpuSum+=FPlatformTime::ToMilliseconds(RHIGetGPUFrameCycles());CostSim+=Dt;CostFrames++;}else CostWallStart=Now;
+  CostLastWall=Now;if(Now-CostWallStart>=10)LogRenderCost();}
  Time+=Dt;PollCommands();const FVector Axis=Body->GetRightVector();
  LeftRate=FVector::DotProduct(LeftWheel->GetPhysicsAngularVelocityInRadians()-Body->GetPhysicsAngularVelocityInRadians(),Axis);RightRate=FVector::DotProduct(RightWheel->GetPhysicsAngularVelocityInRadians()-Body->GetPhysicsAngularVelocityInRadians(),Axis);
  LeftTicks+=LeftRate*Dt/(2*PI)*EncoderCPR;RightTicks+=RightRate*Dt/(2*PI)*EncoderCPR;
@@ -549,12 +579,82 @@ void ARobotPawn::SendState() {
  auto View=MakeShared<FJsonObject>();View->SetNumberField(TEXT("mode"),PreviewMode);View->SetNumberField(TEXT("yaw_deg"),ViewYaw);View->SetNumberField(TEXT("pitch_deg"),ViewPitch);View->SetNumberField(TEXT("distance_cm"),ViewDistance);if(Overview)View->SetArrayField(TEXT("camera_position_cm"),JVec(Overview->GetActorLocation()));O->SetObjectField(TEXT("preview"),View);
  FString Text;FJsonSerializer::Serialize(O,TJsonWriterFactory<TCHAR,TCondensedJsonPrintPolicy<TCHAR>>::Create(&Text));FTCHARToUTF8 Utf8(*Text);int32 Sent=0;Socket->SendTo(reinterpret_cast<const uint8*>(Utf8.Get()),Utf8.Length(),Sent,*Peer);
 }
+void ARobotPawn::LogRenderCost() {
+ const double Wall=CostLastWall-CostWallStart,Sim=CostSim;   // simulated time stepped in the window (a reset zeroes Time)
+ UE_LOG(LogTemp,Display,TEXT("RENDER_COST frames=%lld wall_frame_ms=%.2f max_frame_ms=%.1f gpu_ms=%.2f captures=%d capture_hz=%.2f sim_over_wall=%.3f gi=%d camera_ev=%.2f"),
+  CostFrames,1000*CostFrameSum/FMath::Max<int64>(1,CostFrames),1000*CostFrameMax,CostGpuSum/FMath::Max<int64>(1,CostFrames),CostCaptures,CostCaptures/FMath::Max(1e-6,Wall),Sim/FMath::Max(1e-6,Wall),
+  IConsoleManager::Get().FindConsoleVariable(TEXT("r.DynamicGlobalIlluminationMethod"))->GetInt(),CameraEV);
+ {int32 Meshes=0,WithField=0,WithCards=0,Cards=0,Building=0;   // the house's render copies (HouseScene.cpp), as Lumen sees them now
+  for(TObjectIterator<UStaticMeshComponent> It;It;++It){if(It->GetWorld()!=GetWorld()||!It->GetStaticMesh())continue;const FStaticMeshRenderData* Data=It->GetStaticMesh()->GetRenderData();if(!Data||!Data->LODResources.Num())continue;Meshes++;
+   const FStaticMeshLODResources& Lod=Data->LODResources[0];if(Lod.DistanceFieldData){if(Lod.DistanceFieldData->bAsyncBuilding)Building++;else if(Lod.DistanceFieldData->Mips[0].IndirectionDimensions.GetMax()>0)WithField++;}
+   if(Lod.CardRepresentationData){const int32 N=Lod.CardRepresentationData->MeshCardsBuildData.CardBuildData.Num();Cards+=N;WithCards+=N>0;}}
+  UE_LOG(LogTemp,Display,TEXT("LUMEN_MESHES static meshes %d: distance field %d (building %d), Lumen cards on %d (%d cards)"),Meshes,WithField,Building,WithCards,Cards);}
+ CostWallStart=CostLastWall;CostSim=CostFrameSum=CostFrameMax=CostGpuSum=0;CostFrames=0;CostCaptures=0;
+}
+// USB-webcam-like auto-exposure on the robot camera (task O, LIO-133). The house has a fixed exposure, tuned for its lit rooms, and
+// before this a dark corner rendered pure black. A real UVC camera meters each frame and raises its exposure time and gain:
+// - Meter: centre-weighted mean linear luminance. Target 0.29: the median frame of the house at the fixed exposure (task M's trial 2,
+//   519 frames), so lit rooms keep their look. Within 0.75 EV of it nothing changes (hysteresis; 80 % of frames lie within
+//   -0.8..+0.5 EV); beyond that the camera wants the rest of the difference.
+// - Range -1..+4 EV: +4 EV is 16x (1/30 s at 30 fps from about 1/250 s, and ~2x gain), what a webcam has left in a dim room.
+// - Lag: it moves with a 0.3 s time constant, at most 4 EV per second (about 1 s for a large step), like a UVC camera settling.
+// - Exposure scales light, so true black stays black. Above 0 EV it is gain, and read noise grows with it: CameraNoiseDN x 2^EV
+//   counts (8 counts at +4 EV), zero-mean, clipped at 0 and 255 like a sensor.
+void ARobotPawn::ExposeCamera(TArray<FColor>& Pixels) {
+ static double Linear[256];static float Normal[65536];static bool Ready=false;   // sRGB -> linear; standard normal samples
+ if(!Ready){for(int I=0;I<256;I++){const double C=I/255.0;Linear[I]=C<=.04045?C/12.92:FMath::Pow((C+.055)/1.055,2.4);}
+  for(float& N:Normal){const double U1=FMath::Max(1e-7f,CameraNoise.FRand()),U2=CameraNoise.FRand();N=FMath::Sqrt(-2*FMath::Loge(U1))*FMath::Cos(2*PI*U2);}Ready=true;}
+ const int W=640,H=360;double Sum=0,WSum=0;
+ for(int Y=0;Y<H;Y+=4)for(int X=0;X<W;X+=4){const FColor& P=Pixels[Y*W+X];const double Wt=FMath::Exp(-(FMath::Square((X-319.5)/(.35*W))+FMath::Square((Y-179.5)/(.35*H)))/2);
+  Sum+=Wt*(.2126*Linear[P.R]+.7152*Linear[P.G]+.0722*Linear[P.B]);WSum+=Wt;}
+ if(CameraNoiseDN>0) {
+  const double Sigma=CameraNoiseDN*FMath::Pow(2.0,FMath::Max(0.0,CameraEV));
+  uint32 Seed=CameraNoise.GetUnsignedInt();
+  for(FColor& P:Pixels){Seed=Seed*1664525u+1013904223u;const int N=FMath::RoundToInt(Sigma*Normal[Seed>>16]);
+   P.R=(uint8)FMath::Clamp(P.R+N,0,255);P.G=(uint8)FMath::Clamp(P.G+N,0,255);P.B=(uint8)FMath::Clamp(P.B+N,0,255);}
+ }
+ if(!bCameraAE)return;
+ const double Offset=FMath::Log2(.29/FMath::Max(1e-5,Sum/WSum)),Wanted=FMath::Clamp(CameraEV+FMath::Sign(Offset)*FMath::Max(0.0,FMath::Abs(Offset)-.75),-1.0,4.0);
+ const double Dt=1/CameraHz;CameraEV+=FMath::Clamp((1-FMath::Exp(-Dt/.3))*(Wanted-CameraEV),-4*Dt,4*Dt);
+ for(auto* C:{LeftCamera,RightCamera}){C->PostProcessSettings.bOverride_AutoExposureBias=true;C->PostProcessSettings.AutoExposureBias=CameraEV;}
+}
+// Camera LED (task N, LIO-134). The 2835 LED is a near-Lambertian emitter (intensity ~ cos of the angle off its axis): its
+// datasheet beam angle, 120 deg, is the full angle at half intensity. Unreal's spot falloff is ((cos - cos outer) /
+// (cos inner - cos outer))^2, with the outer cone at most 80 deg: inner 40 / outer 80 deg gives 63 % at 50 deg (cos: 64 %),
+// 30 % at 60 deg (50 %) and nothing past 80 deg (17 %); inside 40 deg it is up to 1.3x the cosine.
+// Brightness: the house lamps are Unreal legacy lights (no inverse-square falloff), so the house's absolute light level is not
+// physical: the camera's exposure renders it as a lit room. An LED in physical candela would be far brighter than real next to
+// the room. CameraLedScale = house light level per real lux; the LED gets CameraLedCd x CameraLedScale. Its value and how it was
+// measured (floor brightness under a lamp against under the LED alone) are in the task N report: 0.020, a lamp-lit floor taken as
+// 150 real lux (a lit living room); override with -CameraLedScale= or UDP camera_led_scale.
+// The light starts 1 mm ahead of the emitting point (the LED's own body would shadow it) and the robot's own parts cast
+// shadows from it, so the bumper window clips the beam as the real one does.
+void ARobotPawn::SetupCameraLeds() {
+ for(auto* L:CameraLeds)if(L)L->DestroyComponent();CameraLeds.Reset();
+ for(const FVector& M:CameraLedMounts) {
+  auto* L=NewObject<USpotLightComponent>(this);L->SetupAttachment(Body);L->SetRelativeLocation(ToUnreal(M.X+.1,M.Y,M.Z));L->SetRelativeRotation(FRotator::ZeroRotator);
+  L->SetMobility(EComponentMobility::Movable);L->SetUseInverseSquaredFalloff(true);L->SetIntensityUnits(ELightUnits::Candelas);
+  L->SetInnerConeAngle(40.f);L->SetOuterConeAngle(80.f);L->SetUseTemperature(true);L->SetTemperature(CameraLedCct);
+  L->SetSourceRadius(.25f);L->SetAttenuationRadius(500.f);L->SetCastShadows(true);L->RegisterComponent();CameraLeds.Add(L);
+ }
+ SetCameraLed(CameraLedDuty);
+ UE_LOG(LogTemp,Display,TEXT("CAMERA_LED %d LED(s), %.2f cd each (real), beam %.0f deg, %.0f K, house scale %.4f"),CameraLeds.Num(),CameraLedCd,CameraLedBeamDeg,CameraLedCct,CameraLedScale);
+}
+void ARobotPawn::SetCameraLed(double Duty) {
+ CameraLedDuty=FMath::Clamp(Duty,0.0,1.0);
+ for(auto* L:CameraLeds)if(L){L->SetIntensity(CameraLedCd*CameraLedScale*CameraLedDuty);L->SetVisibility(CameraLedDuty>0);}
+}
 void ARobotPawn::CaptureStereo() {
- LeftCamera->CaptureScene();if(!LidarMode)RightCamera->CaptureScene();Frame++;
- const FString L=FString::Printf(TEXT("left_%06d.png"),Frame),R=FString::Printf(TEXT("right_%06d.png"),Frame);
- auto Save=[&](UTextureRenderTarget2D* RT,const FString& Name){TArray<FColor> Pixels;RT->GameThread_GetRenderTargetResource()->ReadPixels(Pixels);TArray64<uint8> PNG;FImageUtils::PNGCompressImageArray(640,360,Pixels,PNG);return FFileHelper::SaveArrayToFile(PNG,*(DataDir/Name));};
- if(!Save(LeftTarget,L)||(!LidarMode&&!Save(RightTarget,R)))return;
+ // Unreal turns Lumen off in scene captures unless the component asks for it (SceneCaptureRendering.cpp): follow the house's
+ // setting (task O). Reflections stay as before (none in the robot camera).
+ static IConsoleVariable* GIMethod=IConsoleManager::Get().FindConsoleVariable(TEXT("r.DynamicGlobalIlluminationMethod"));
+ for(auto* C:{LeftCamera,RightCamera}){C->PostProcessSettings.bOverride_DynamicGlobalIlluminationMethod=true;C->PostProcessSettings.DynamicGlobalIlluminationMethod=GIMethod&&GIMethod->GetInt()==1?EDynamicGlobalIlluminationMethod::Lumen:EDynamicGlobalIlluminationMethod::None;}
+ LeftCamera->CaptureScene();if(!LidarMode)RightCamera->CaptureScene();Frame++;CostCaptures++;
+ const FString L=FString::Printf(TEXT("left_%06d.png"),Frame),R=FString::Printf(TEXT("right_%06d.png"),Frame);const double ExposureEV=CameraEV;
+ auto Save=[&](UTextureRenderTarget2D* RT,const FString& Name,bool Meter){TArray<FColor> Pixels;RT->GameThread_GetRenderTargetResource()->ReadPixels(Pixels);if(Meter&&Pixels.Num()==640*360)ExposeCamera(Pixels);TArray64<uint8> PNG;FImageUtils::PNGCompressImageArray(640,360,Pixels,PNG);return FFileHelper::SaveArrayToFile(PNG,*(DataDir/Name));};
+ if(!Save(LeftTarget,L,true)||(!LidarMode&&!Save(RightTarget,R,false)))return;
  auto O=MakeShared<FJsonObject>();O->SetNumberField(TEXT("frame"),Frame);O->SetNumberField(TEXT("sim_time_s"),Time);O->SetStringField(TEXT("left"),L);if(!LidarMode)O->SetStringField(TEXT("right"),R);O->SetStringField(TEXT("sensor_configuration"),LidarMode?TEXT("d200_single_camera"):TEXT("stereo"));O->SetNumberField(TEXT("width"),640);O->SetNumberField(TEXT("height"),360);O->SetNumberField(TEXT("fx"),320/FMath::Tan(FMath::DegreesToRadians(LidarMode?42.0:40.0)));O->SetNumberField(TEXT("fy"),320/FMath::Tan(FMath::DegreesToRadians(LidarMode?42.0:40.0)));O->SetNumberField(TEXT("cx"),319.5);O->SetNumberField(TEXT("cy"),179.5);O->SetNumberField(TEXT("baseline_m"),LidarMode?0:.062);O->SetStringField(TEXT("model"),TEXT("ideal_pinhole_zero_distortion_synthetic_FOV"));
+ O->SetNumberField(TEXT("exposure_ev"),ExposureEV);O->SetNumberField(TEXT("camera_led"),CameraLedDuty);O->SetBoolField(TEXT("auto_exposure"),bCameraAE);
  O->SetNumberField(TEXT("left_ticks"),FMath::RoundToDouble(LeftTicks));O->SetNumberField(TEXT("right_ticks"),FMath::RoundToDouble(RightTicks));
  const FVector CP=LeftCamera->GetComponentLocation();O->SetArrayField(TEXT("camera_position_evaluation_only_m"),JVec(CP*FVector(1,-1,1)/100));
  auto Evaluation=MakeShared<FJsonObject>();const FVector BP=Body->GetComponentLocation();Evaluation->SetArrayField(TEXT("position_m"),JVec(FVector(BP.X,-BP.Y,BP.Z-BodyHeight)/100));Evaluation->SetNumberField(TEXT("yaw_rad"),-Body->GetComponentRotation().Yaw*PI/180);O->SetObjectField(TEXT("ground_truth_evaluation_only"),Evaluation);

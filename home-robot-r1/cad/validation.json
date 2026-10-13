@@ -1,6 +1,6 @@
 {
   "clash_scan": {
-    "scope": "all 269 non-wire parts pairwise (solid intersection > 0.05 mm3; the bumper halves are modelled with the leaf deflected onto its abutment, so P_base is no longer exempt); fasteners, inserts, races and moving hardware by minimum gap; wires by minimum gap (>= 0.3 mm to every non-terminal part)",
+    "scope": "all 272 non-wire parts pairwise (solid intersection > 0.05 mm3; the bumper halves are modelled with the leaf deflected onto its abutment, so P_base is no longer exempt); fasteners, inserts, races and moving hardware by minimum gap; wires by minimum gap (>= 0.3 mm to every non-terminal part)",
     "clashes": [],
     "intended_contacts": [
       {
@@ -484,6 +484,17 @@
       "fits_with_default_skirt": true
     },
     {
+      "part": "P_camera_led_shelf",
+      "solid_valid": true,
+      "size_mm": [
+        7.4,
+        26.0,
+        6.1
+      ],
+      "fits_mk3s": true,
+      "fits_with_default_skirt": true
+    },
+    {
       "part": "P_lidar_tray",
       "solid_valid": true,
       "size_mm": [
@@ -716,7 +727,7 @@
     }
   ],
   "major_component_clashes": [],
-  "major_components_checked": 269,
+  "major_components_checked": 272,
   "printed_part_overlaps": [],
   "printed_part_near_contacts": {
     "violations": [],
@@ -2220,8 +2231,8 @@
                 "gap_mm": 8.06
               },
               {
-                "part": "P_camera_mount",
-                "gap_mm": 8.9
+                "part": "camera_led_board",
+                "gap_mm": 8.41
               }
             ],
             "wire_min_gap_mm": 8.54,
@@ -2253,8 +2264,8 @@
                 "gap_mm": 6.85
               },
               {
-                "part": "P_cliff_mount_3",
-                "gap_mm": 8.48
+                "part": "camera_led_board",
+                "gap_mm": 7.21
               }
             ],
             "wire_min_gap_mm": 9.17,
@@ -2286,8 +2297,8 @@
                 "gap_mm": 5.65
               },
               {
-                "part": "P_cliff_mount_3",
-                "gap_mm": 7.24
+                "part": "camera_led_board",
+                "gap_mm": 6.03
               }
             ],
             "wire_min_gap_mm": 9.79,
@@ -2319,8 +2330,8 @@
                 "gap_mm": 4.47
               },
               {
-                "part": "P_cliff_mount_3",
-                "gap_mm": 5.99
+                "part": "camera_led_board",
+                "gap_mm": 4.88
               }
             ],
             "wire_min_gap_mm": 10.42,
@@ -3018,16 +3029,16 @@
                 "gap_mm": 2.0
               },
               {
-                "part": "P_rear_shell_right",
-                "gap_mm": 4.7
+                "part": "camera_led",
+                "gap_mm": 2.36
               },
               {
-                "part": "camera_lens",
-                "gap_mm": 6.12
+                "part": "camera_led_board",
+                "gap_mm": 2.6
               },
               {
-                "part": "P_camera_mount",
-                "gap_mm": 7.96
+                "part": "P_camera_led_shelf",
+                "gap_mm": 3.13
               }
             ],
             "wire_min_gap_mm": 7.92,
@@ -3051,16 +3062,16 @@
                 "gap_mm": 2.0
               },
               {
-                "part": "P_rear_shell_right",
-                "gap_mm": 4.08
+                "part": "camera_led_board",
+                "gap_mm": 2.15
               },
               {
-                "part": "camera_lens",
-                "gap_mm": 6.1
+                "part": "camera_led",
+                "gap_mm": 2.25
               },
               {
-                "part": "camera_board",
-                "gap_mm": 8.66
+                "part": "P_camera_led_shelf",
+                "gap_mm": 2.44
               }
             ],
             "wire_min_gap_mm": 8.54,
@@ -3084,16 +3095,16 @@
                 "gap_mm": 2.0
               },
               {
-                "part": "P_rear_shell_right",
-                "gap_mm": 3.47
+                "part": "camera_led_board",
+                "gap_mm": 2.1
               },
               {
-                "part": "camera_lens",
-                "gap_mm": 6.1
+                "part": "P_camera_led_shelf",
+                "gap_mm": 2.11
               },
               {
-                "part": "camera_board",
-                "gap_mm": 7.58
+                "part": "camera_led",
+                "gap_mm": 2.25
               }
             ],
             "wire_min_gap_mm": 9.17,
@@ -3117,16 +3128,16 @@
                 "gap_mm": 2.0
               },
               {
-                "part": "P_rear_shell_right",
-                "gap_mm": 2.86
+                "part": "P_camera_led_shelf",
+                "gap_mm": 2.1
               },
               {
-                "part": "camera_lens",
-                "gap_mm": 5.65
+                "part": "camera_led_board",
+                "gap_mm": 2.1
               },
               {
-                "part": "camera_board",
-                "gap_mm": 6.5
+                "part": "camera_led",
+                "gap_mm": 2.25
               }
             ],
             "wire_min_gap_mm": 9.79,
@@ -3150,16 +3161,16 @@
                 "gap_mm": 2.0
               },
               {
+                "part": "P_camera_led_shelf",
+                "gap_mm": 2.1
+              },
+              {
+                "part": "camera_led_board",
+                "gap_mm": 2.1
+              },
+              {
                 "part": "P_rear_shell_right",
                 "gap_mm": 2.14
-              },
-              {
-                "part": "camera_lens",
-                "gap_mm": 4.47
-              },
-              {
-                "part": "camera_board",
-                "gap_mm": 5.43
               }
             ],
             "wire_min_gap_mm": 10.42,
@@ -7629,9 +7640,11 @@
         "z": 89.5,
         "az_from": -4.0,
         "az_to": 4.0,
-        "max_intrusion_mm": 22.1,
+        "max_intrusion_mm": 19.83,
         "contacts": [
-          "camera_board"
+          "P_camera_led_shelf",
+          "camera_led",
+          "camera_led_board"
         ]
       }
     ],
@@ -13767,11 +13780,11 @@
     },
     "lens_recess_behind_skin_mm": 11.36,
     "hard_stop_travel_along_x_mm": 4.33,
-    "min_gap_camera_to_moving_halves_mm": 4.36,
+    "min_gap_camera_to_moving_halves_mm": 2.1,
     "at": {
-      "part": "P_bumper_left",
-      "pose": "play s 4.9 e 0.1 yaw -0.282 deg",
-      "camera_part": "camera_lens"
+      "part": "P_bumper_right",
+      "pose": "s 2.5",
+      "camera_part": "camera_led_board"
     },
     "poses": 84,
     "rule": "camera parts >= 1.5 mm from both halves (shell, foam, seam backer) at every travel and planar-play pose; lens recess >= hard-stop travel + 2 mm",
@@ -13901,15 +13914,20 @@
         "z": 89.5,
         "az_from": -4.0,
         "az_to": 4.0,
-        "max_intrusion_mm": 22.1,
+        "max_intrusion_mm": 19.83,
         "contacts": [
-          "camera_board"
+          "P_camera_led_shelf",
+          "camera_led",
+          "camera_led_board"
         ]
       }
     ],
     "rod_rows_through_window": 13,
     "rod_first_contacts": [
+      "P_camera_led_shelf",
       "camera_board",
+      "camera_led",
+      "camera_led_board",
       "camera_lens"
     ],
     "seam_rod_heights_without_contact": [
@@ -14190,7 +14208,7 @@
     "body_mass_without_wheels_and_caster_ball_kg": 2.301,
     "printed_mass_kg": 0.977,
     "com_mm": [
-      -16.2,
+      -16.1,
       -1.1,
       60.0
     ],
@@ -14198,13 +14216,13 @@
     "com_x_sensitivity_limit_mm": -10,
     "downhill_pitch_onset_min_m_s2": 0.75,
     "com_x_limit_source": "user decision 2026-10-11 (task F): nominal <= -12 mm, every sensitivity case <= -10 mm (was -15 / -14), approved for an LD14 trial at x 109 and kept for x 54; every case keeps its 5 deg-downhill pitch onset >= 3 \u00d7 the DriveCore braking ramp (0.25 m/s2). The simulator sync guard (COM_LIMIT_M) checks the same two limits.",
-    "caster_load_fraction": 0.216,
-    "rear_caster_load_N": 5.16,
-    "drive_wheel_load_N": 18.77,
+    "caster_load_fraction": 0.215,
+    "rear_caster_load_N": 5.15,
+    "drive_wheel_load_N": 18.78,
     "forward_pitch_onset_decel_m_s2": 2.64,
-    "forward_pitch_onset_on_5deg_downhill_m_s2": 1.78,
+    "forward_pitch_onset_on_5deg_downhill_m_s2": 1.77,
     "backward_tip_onset_accel_m_s2": 9.62,
-    "braking_requirement": "Keep forward braking below the pitch onset (level 2.64, 5 deg downhill 1.78 m/s2 nominal; 1.40 on the downhill in the worst sensitivity case): DriveCore ramps every wheel setpoint, braking included, at 0.25 m/s2 and a disarm coasts; its torque cap alone would allow about 1.63 m/s2, above that worst downhill onset, so keep the ramp in the firmware, never short-brake the motors (the driver coasts on disarm), and slow down on ramps.",
+    "braking_requirement": "Keep forward braking below the pitch onset (level 2.64, 5 deg downhill 1.77 m/s2 nominal; 1.39 on the downhill in the worst sensitivity case): DriveCore ramps every wheel setpoint, braking included, at 0.25 m/s2 and a disarm coasts; its torque cap alone would allow about 1.63 m/s2, above that worst downhill onset, so keep the ramp in the firmware, never short-brake the motors (the driver coasts on disarm), and slow down on ramps.",
     "placement": {
       "note": "No ballast (user decision): the existing heavy parts sit as far aft as the layout allows.",
       "battery": {
@@ -14249,36 +14267,36 @@
             40.0
           ]
         ],
-        "limit": "NVIDIA B01 STEP turned +90 deg (I/O row forward, barrel jack on the right), on two 24 mm standoff stacks from P_base (front) and two 20 mm F-F standoffs on the bay board (rear, clamping it): carrier x -37..42. Its x was set in L1 by the COM sensitivity guard of that time (every case <= -14 mm): with the spec position (origin x 38, carrier x -24..55) the L1 model gave COM x -15.6 and -13.4 in the +50 g-forward case (a fail then); origin x 30 was the most forward that passed (-14.1), origin x 25 kept 0.5 mm of margin there. The rule now is the user's (task F, 2026-10-11): nominal <= -12 mm, every case <= -10 mm (com_x_limit_source); the Jetson has not moved. Bay board (B1): the Jetson stays at z 57; its rear standoffs clamp the board, whose under-carrier modules (DRV8874 \u00d7 2, GY-521) stay <= z 53.27. This build: COM x -16.2, worst case -13.68 (fill 1.0 and battery 10 % lighter)."
+        "limit": "NVIDIA B01 STEP turned +90 deg (I/O row forward, barrel jack on the right), on two 24 mm standoff stacks from P_base (front) and two 20 mm F-F standoffs on the bay board (rear, clamping it): carrier x -37..42. Its x was set in L1 by the COM sensitivity guard of that time (every case <= -14 mm): with the spec position (origin x 38, carrier x -24..55) the L1 model gave COM x -15.6 and -13.4 in the +50 g-forward case (a fail then); origin x 30 was the most forward that passed (-14.1), origin x 25 kept 0.5 mm of margin there. The rule now is the user's (task F, 2026-10-11): nominal <= -12 mm, every case <= -10 mm (com_x_limit_source); the Jetson has not moved. Bay board (B1): the Jetson stays at z 57; its rear standoffs clamp the board, whose under-carrier modules (DRV8874 \u00d7 2, GY-521) stay <= z 53.27. This build: COM x -16.1, worst case -13.64 (fill 1.0 and battery 10 % lighter)."
       },
       "power_stage": "bay board x -66.4..7.5 at base level under the Jetson, directly ahead of the battery tray (no room further aft); P03 turned 90 deg in the front bay (x 9..47) ahead of the board's tongue",
       "controller_lidar_camera": "Task F: LD14 turned round, spin axis x 54, its 0.1 m blind circle inside the pressed bumper (user decision 2026-10-11, option B; COM rule relaxed to nominal <= -12 / worst <= -10 mm; the old spec x 20), camera lens face x 146 in the bumper window; the bumper halves (0.20 kg at x ~97) are the main forward mass"
     },
     "sensitivity": {
       "all printed parts fill 1.0": {
-        "com_x_mm": -14.91,
-        "forward_pitch_onset_m_s2": 2.48,
+        "com_x_mm": -14.87,
+        "forward_pitch_onset_m_s2": 2.47,
         "forward_pitch_onset_5deg_downhill_m_s2": 1.61
       },
       "battery 10 % lighter": {
-        "com_x_mm": -14.9,
-        "forward_pitch_onset_m_s2": 2.43,
-        "forward_pitch_onset_5deg_downhill_m_s2": 1.57
+        "com_x_mm": -14.86,
+        "forward_pitch_onset_m_s2": 2.42,
+        "forward_pitch_onset_5deg_downhill_m_s2": 1.56
       },
       "Jetson 30 % lighter": {
-        "com_x_mm": -16.48,
+        "com_x_mm": -16.44,
         "forward_pitch_onset_m_s2": 2.7,
-        "forward_pitch_onset_5deg_downhill_m_s2": 1.84
+        "forward_pitch_onset_5deg_downhill_m_s2": 1.83
       },
       "+50 g at x=+100, z=60": {
-        "com_x_mm": -13.84,
+        "com_x_mm": -13.8,
         "forward_pitch_onset_m_s2": 2.26,
-        "forward_pitch_onset_5deg_downhill_m_s2": 1.4
+        "forward_pitch_onset_5deg_downhill_m_s2": 1.39
       },
       "fill 1.0 and battery 10 % lighter": {
-        "com_x_mm": -13.68,
-        "forward_pitch_onset_m_s2": 2.27,
-        "forward_pitch_onset_5deg_downhill_m_s2": 1.41
+        "com_x_mm": -13.64,
+        "forward_pitch_onset_m_s2": 2.26,
+        "forward_pitch_onset_5deg_downhill_m_s2": 1.4
       }
     },
     "records": [
@@ -14499,14 +14517,26 @@
         "sim_item": "P_camera_holder"
       },
       {
-        "item": "P_lidar_tray",
-        "mass_kg": 0.04754,
+        "item": "P_camera_led_shelf",
+        "mass_kg": 0.0006,
         "position_mm": [
-          25.2,
+          139.1,
+          -0.0,
+          90.4
+        ],
+        "mean_wall_mm": 1.57,
+        "fill": 1.0,
+        "sim_item": "P_camera_led_shelf"
+      },
+      {
+        "item": "P_lidar_tray",
+        "mass_kg": 0.04728,
+        "position_mm": [
+          25.4,
           0.1,
           104.9
         ],
-        "mean_wall_mm": 2.83,
+        "mean_wall_mm": 2.82,
         "fill": 1.0,
         "sim_item": "P_lidar_tray"
       },
@@ -14972,16 +15002,16 @@
       }
     ],
     "method": "Printed: CAD volume \u00d7 1.27 g/cm3 \u00d7 fill (mean wall 2V/A: 1.0 up to 3.0 mm, 0.62 from 3.6 mm = 2 \u00d7 4 perimeters \u00d7 0.45, linear in between) at the solid centroid. Bought: simulator record masses at CAD centroids (power stage and controller group spread over their parts). Steel from CAD volume. No ballast.",
-    "sensitivity_worst_com_x_mm": -13.68,
+    "sensitivity_worst_com_x_mm": -13.64,
     "sensitivity_worst_case": "fill 1.0 and battery 10 % lighter",
     "sensitivity_min_forward_pitch_onset_m_s2": 2.26,
-    "sensitivity_min_5deg_downhill_pitch_onset_m_s2": 1.4,
+    "sensitivity_min_5deg_downhill_pitch_onset_m_s2": 1.39,
     "fill_model_check": {
       "previous_step_rule": "fill 1.0 if 2V/A <= 3.0 mm else 0.62 (step)",
-      "com_x_mm": -16.84,
-      "total_mass_kg": 2.292,
-      "forward_pitch_onset_m_s2": 2.74,
-      "worst_case_plus_50g_front_com_x_mm": -14.35,
+      "com_x_mm": -16.8,
+      "total_mass_kg": 2.293,
+      "forward_pitch_onset_m_s2": 2.73,
+      "worst_case_plus_50g_front_com_x_mm": -14.31,
       "parts_affected": {
         "P_base": 0.622,
         "P_camera_mount": 0.759,
@@ -15002,7 +15032,7 @@
         "verdict": "fail",
         "pass": false,
         "wheel_mu_required": 0.75,
-        "caster_mu_required": 0.863,
+        "caster_mu_required": 0.861,
         "body_floor_clearance_mm": 9.73,
         "clearance_point": "lowest body point while the wheels are up (pitch about the caster), or the riser on the level approach",
         "wheel_torque_required_Nm": {
@@ -15020,12 +15050,12 @@
         "verdict": "fail",
         "pass": false,
         "wheel_mu_required": 0.75,
-        "caster_mu_required": 0.448,
+        "caster_mu_required": 0.446,
         "body_floor_clearance_mm": 1.23,
         "clearance_point": "lowest body point while the caster is up (pitch about the wheels), or the riser on the level approach",
         "wheel_torque_required_Nm": {
           "wheel_climb": 0.225,
-          "caster_over": 0.182,
+          "caster_over": 0.181,
           "max": 0.225
         },
         "drivecore_cap_Nm": 0.1,
@@ -15039,38 +15069,38 @@
         "verdict": "fail",
         "pass": false,
         "wheel_mu_required": 0.882,
-        "caster_mu_required": 1.602,
+        "caster_mu_required": 1.596,
         "body_floor_clearance_mm": 7.67,
         "clearance_point": "lowest body point while the wheels are up (pitch about the caster), or the riser on the level approach",
         "wheel_torque_required_Nm": {
           "wheel_climb": 0.248,
-          "caster_over": 0.568,
-          "max": 0.568
+          "caster_over": 0.567,
+          "max": 0.567
         },
         "drivecore_cap_Nm": 0.1,
         "fails_because": [
           "drive wheels cannot climb the edge (friction)",
           "rear caster cannot be dragged over (friction)",
-          "needs 0.568 N m per wheel, above the DriveCore cap 0.1 N m"
+          "needs 0.567 N m per wheel, above the DriveCore cap 0.1 N m"
         ]
       },
       "reverse": {
         "verdict": "fail",
         "pass": false,
         "wheel_mu_required": 0.882,
-        "caster_mu_required": 0.634,
+        "caster_mu_required": 0.633,
         "body_floor_clearance_mm": -2.96,
         "clearance_point": "lowest body point while the caster is up (pitch about the wheels), or the riser on the level approach",
         "wheel_torque_required_Nm": {
           "wheel_climb": 0.248,
-          "caster_over": 0.267,
-          "max": 0.267
+          "caster_over": 0.266,
+          "max": 0.266
         },
         "drivecore_cap_Nm": 0.1,
         "fails_because": [
           "drive wheels cannot climb the edge (friction)",
           "lowest body point while the caster is up (pitch about the wheels), or the riser on the level approach strikes the floor",
-          "needs 0.267 N m per wheel, above the DriveCore cap 0.1 N m"
+          "needs 0.266 N m per wheel, above the DriveCore cap 0.1 N m"
         ]
       }
     },
@@ -15103,28 +15133,29 @@
       "note": "Task L: the fan-window circle is the tray duct's circle about the fan centre; the lid has one opening round the whole duct (the window and motor circles + the 1.3 mm wall + 0.3 mm)."
     },
     "grille": {
-      "slots": "5 \u00d7 4.8 mm on a 6.5 mm pitch inside r 17.5, no hub (task F: no lug tower over the fan); task L: the LD14 motor drops through a \u00d826.4 hole in the plate, its 1.0 mm ring is open to the room",
+      "slots": "5 \u00d7 5.2 mm on a 6.5 mm pitch inside r 17.5, no hub (task F: no lug tower over the fan); task L: the LD14 motor drops through a \u00d826.4 hole in the plate, its 1.0 mm ring is open to the room",
       "fan_bore_annulus_mm2": 754,
-      "open_area_over_bore_mm2": 541,
-      "open_area_cad_mm2": 547,
-      "open_fraction_of_bore": 0.718,
-      "open_area_shadowed_in_plan_mm2": 26.0,
-      "open_area_not_shadowed_mm2": 515,
-      "open_fraction_of_bore_not_shadowed": 0.684,
+      "open_area_over_bore_mm2": 570,
+      "open_area_cad_mm2": 565,
+      "motor_in_plate_over_bore_mm2": 23.5,
+      "open_fraction_of_bore": 0.757,
+      "open_area_shadowed_in_plan_mm2": 2.9,
+      "open_area_not_shadowed_mm2": 568,
+      "open_fraction_of_bore_not_shadowed": 0.753,
       "bore_fraction_shadowed_in_plan": 0.035
     },
     "intake": {
-      "over_grille": "Room air through the grille and the 1.0 mm ring round the LD14 motor. Task L: the motor hangs in the intake duct, its rim 1.4 mm over the fan frame, and covers the bore's front edge: 26 mm2 (4.8%) of the open area over the bore lies under it in plan (the LD14 housing and motor together). The gate counts that shadow as closed; those cells still draw air sideways from inside the duct under the motor through a curtain about 20 mm2 (1.4 mm clear over the fan frame \u00d7 13.8 mm across the window).",
+      "over_grille": "Room air through the grille and the 1.0 mm ring round the LD14 motor. Task L: the motor hangs in the intake duct, its rim 1.4 mm over the fan frame, and covers the bore's front edge: the motor's own footprint is not open area. 2.9 mm2 (0.5%) of the open area over the bore lies under the LD14 in plan, 2.9 mm2 of it the 1.0 mm ring round the motor; the gate counts that shadow as closed; those cells still draw air sideways over the plate, under the LD14 housing, through a curtain about 55 mm2 (4.0 mm clear over the plate \u00d7 13.8 mm across the window).",
       "lidar_gap_to_column_over_grille_mm": 0.0,
       "parts_over_grille": [
         "lidar",
         "lidar_motor"
       ],
-      "clear_height_under_overhang_mm": 1.42,
+      "clear_height_under_overhang_mm": 3.98,
       "shadow_width_across_window_mm": 13.75,
-      "side_entry_curtain_mm2": 19.5,
+      "side_entry_curtain_mm2": 54.7,
       "ld14_motor_gap_to_fan_mm": 1.42,
-      "method": "plan shadow of the mesh triangles of every part above the fan top (tray, lid, fan and fan screws excluded) on the 0.25 mm grid over the bore; clear height = lowest overhanging surface over a shadowed open cell minus the fan top"
+      "method": "plan shadow of the mesh triangles of every part above the fan top (tray, lid, fan and fan screws excluded) on the 0.25 mm grid over the bore; clear height = lowest overhanging surface over a shadowed open cell minus the plate top where that surface is above the plate (task L), else minus the fan top"
     },
     "fan_skirt": {
       "kind": "intake duct under the LiDAR tray (task L; until then a skirt under the lid round the window): its fan-window circle r 17.5 and a circle r 13.2 round the LD14 motor, 1.3 mm wall; a bowl under the motor beyond the fan's front face",
@@ -15159,15 +15190,15 @@
       "ld14_aperture_leak_mm2": 6.51,
       "ld14_aperture_open_without_grommet_mm2": 80,
       "bypass_area_mm2": 120.9,
-      "bypass_fraction_of_grille_open_area": 0.221,
+      "bypass_fraction_of_grille_open_area": 0.214,
       "bypass_limit_fraction": 0.25,
       "feeler_go_nogo_mm": [
         0.5,
         1.0
       ],
-      "gap_at_bypass_limit_mm": 1.05,
-      "bypass_margin_fraction": 0.029,
-      "rule": "bypass (wall gap \u00d7 the duct's inner outline over the fan frame + the notches + the bowl slot + the LD14 lead aperture left open round its grommet) <= 25 % of the grille open area over the bore (CAD), with >= 1 % margin; the no-go feeler is under the gap at the limit; duct unbroken (section within 1 %); >= 0.5 mm to the fan screw heads and the fan's front face; the duct circle >= the fan bore; the LD14 motor >= 1.0 mm from the fan"
+      "gap_at_bypass_limit_mm": 1.1,
+      "bypass_margin_fraction": 0.036,
+      "rule": "bypass (wall gap \u00d7 the duct's inner outline over the fan frame + the notches + the bowl slot + the LD14 lead aperture left open round its grommet) <= 25 % of the grille open area over the bore (CAD: through the plate, less the tray and the LD14 motor standing in its hole), with >= 1 % margin; the no-go feeler is under the gap at the limit; duct unbroken (section within 1 %); >= 0.5 mm to the fan screw heads and the fan's front face; the duct circle >= the fan bore; the LD14 motor >= 1.0 mm from the fan"
     },
     "bring_up_test": "Lid-on load test before the robot is used: lid, LiDAR and tray fitted, sustained full CPU + GPU load for 20 min, log tegrastats (CPU/GPU/SoC temperatures and clocks) and compare with a lid-off run; the lid passes if the clocks never throttle. Carry into pcb/BRINGUP.md (L11).",
     "exhaust": {
@@ -15175,7 +15206,7 @@
       "ring_gap_mm": 2.0,
       "ring_gap_section_mm2": 1755.5,
       "ring_gap_section_radius_mm": 139.7,
-      "ring_gap_to_grille_open_area": 3.21,
+      "ring_gap_to_grille_open_area": 3.11,
       "rule": "the ring gap section (gap \u00d7 circumference at the rear-shell rim's inner edge) >= 2 \u00d7 the grille open area (CAD); the seam, the camera window and the base ring are extra"
     },
     "choice": "The lid seams all meet near the centre (0, 0), which lies inside the fan footprint, so slots in the lid over the fan would cross them; so the grille is in the tray plate over the fan. The duct closes the 5.2 mm gap between the fan top and the lid, which would otherwise be a ~670 mm2 side inlet from inside the warm body. Task L: the lowered LD14's motor straddles the fan's front face, so the duct moved from the lid to the tray (one printed part, no joint) and takes the motor in, with a bowl under it beyond the fan.",
@@ -15248,7 +15279,7 @@
           "v_at_stop_mps": 0.128,
           "energy_J": 0.0201,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 95.2,
+          "equivalent_force_N": 95.3,
           "gusset_root_MPa": 5.1,
           "wall_above_gusset_tip_MPa": 9.9,
           "consistent_stiffness": {
@@ -15266,7 +15297,7 @@
           "v_at_stop_mps": 0.128,
           "energy_J": 0.0201,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 95.2,
+          "equivalent_force_N": 95.3,
           "gusset_root_MPa": 6.0,
           "wall_above_gusset_tip_MPa": 15.3,
           "consistent_stiffness": {
@@ -15284,7 +15315,7 @@
           "v_at_stop_mps": 0.3,
           "energy_J": 0.1098,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 222.4,
+          "equivalent_force_N": 222.5,
           "gusset_root_MPa": 11.9,
           "wall_above_gusset_tip_MPa": 23.1,
           "consistent_stiffness": {
@@ -15302,7 +15333,7 @@
           "v_at_stop_mps": 0.3,
           "energy_J": 0.1098,
           "series_stiffness_N_per_mm": 225.4,
-          "equivalent_force_N": 222.4,
+          "equivalent_force_N": 222.5,
           "gusset_root_MPa": 14.1,
           "wall_above_gusset_tip_MPa": 35.8,
           "consistent_stiffness": {
@@ -15509,13 +15540,13 @@
       "rear_centre_note": "At az 180 (between the \u00b1155 deg gussets) the shell carries a push horizontally round the arc to the gussets (bending within the layers, not across them); the 10 mm top rim and the fins act as a ring beam."
     },
     "motor_mount": {
-      "wheel_load_N": 9.38,
-      "tab_root_moment_Nmm": 86.8,
+      "wheel_load_N": 9.39,
+      "tab_root_moment_Nmm": 86.9,
       "section_modulus_mm3": 253.5,
       "static_MPa": 0.34,
       "three_g_MPa": 1.03,
-      "three_g_with_Kt2_MPa": 2.05,
-      "tab_alone_three_g_MPa": 6.94,
+      "three_g_with_Kt2_MPa": 2.06,
+      "tab_alone_three_g_MPa": 6.95,
       "note": "The 45 deg gusset carries the root moment; beyond the gusset (y < 96) only the screw clamp load acts."
     },
     "limit_MPa": 16.7,
@@ -17531,7 +17562,7 @@
   },
   "printability": {
     "all_pass": true,
-    "parts_checked": 39,
+    "parts_checked": 40,
     "parts_failed": [],
     "details": "cad/printability.json",
     "coupons": {
@@ -17571,7 +17602,7 @@
     "lidar_front_gap_ok": true,
     "lidar_scan_band_vertical_ok": true,
     "jetson_cooling_ok": true,
-    "fan_bypass_fraction_of_grille": 0.221,
+    "fan_bypass_fraction_of_grille": 0.214,
     "lid_switches_ok": true,
     "robot_top_ok": true,
     "robot_height_mm": 135.15,
@@ -17607,7 +17638,7 @@
         93.1
       ],
       "lens_recess_mm": 11.36,
-      "min_gap_camera_to_moving_halves_mm": 4.36,
+      "min_gap_camera_to_moving_halves_mm": 2.1,
       "spin_edge_snags": 0
     },
     "residual_unsensed": {

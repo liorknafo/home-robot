@@ -1,14 +1,14 @@
 {
   "units": "kg, mm, robot frame (base_link at the axle centre on the floor)",
-  "body_mass_kg": 2.301,
+  "body_mass_kg": 2.3014,
   "body_com_mm": [
-    -14.93,
+    -14.89,
     -1.11,
     62.01
   ],
-  "total_mass_kg": 2.439,
+  "total_mass_kg": 2.4394,
   "total_com_mm": [
-    -16.17,
+    -16.14,
     -1.05,
     60.0
   ],
@@ -16,20 +16,20 @@
     [
       0.011378,
       8e-05,
-      -0.000841
+      -0.000843
     ],
     [
       8e-05,
-      0.01513,
+      0.015144,
       7.1e-05
     ],
     [
-      -0.000841,
+      -0.000843,
       7.1e-05,
-      0.022776
+      0.02279
     ]
   ],
-  "body_inertia_about": "body_com_mm (the inertia set was built from the same records: centre [-14.92, -1.11, 62.0] mm)",
+  "body_inertia_about": "body_com_mm (the inertia set was built from the same records: centre [-14.88, -1.11, 62.01] mm)",
   "caster_x_mm": -75,
   "wheel_x_mm": 0,
   "records": [
@@ -232,10 +232,21 @@
       "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
     },
     {
-      "item": "P_lidar_tray",
-      "mass_kg": 0.04754,
+      "item": "P_camera_led_shelf",
+      "mass_kg": 0.0006,
       "position_mm": [
-        25.2,
+        139.1,
+        0.0,
+        90.4
+      ],
+      "separate_body": false,
+      "basis": "printed: CAD volume \u00d7 PETG 1.27 \u00d7 fill at the CAD solid centroid"
+    },
+    {
+      "item": "P_lidar_tray",
+      "mass_kg": 0.04728,
+      "position_mm": [
+        25.4,
         0.1,
         104.9
       ],

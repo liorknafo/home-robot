@@ -817,6 +817,115 @@ class RoundBodyTests(unittest.TestCase):
             b.predict(dict(sim_time_s=1.,fault='bumper',armed=False,sensors=dict(bumper=True,bump_zones=1<<2,left_ticks=0,right_ticks=0,encoder_cpr=4741.44,gyro_rad_s=[0,0,0],specific_force_m_s2=[0,0,9.8])))
             self.assertEqual(b.phase,'contact');self.assertGreaterEqual(b.backoff,.02);self.assertIsNone(b.contact_spin)
             self.assertEqual(b.command(dict(sim_time_s=1.,armed=False,fault='bumper')),(-.05,0.))
+    def press_on_trail(self,b,t=1.):
+        """A front press at the origin, heading +x, after 30 cm driven along +x: the contact phase plans its back-off."""
+        b.current_cloud=open_floor(b);ready(b,t)
+        for s in np.arange(.30,-1e-9,-.01):b.trail.append(np.array([-s,0.]))
+        b.predict(dict(sim_time_s=t,fault='bumper',armed=False,sensors=dict(self.PRESS,left_ticks=0,right_ticks=0)))
+        self.assertEqual(b.phase,'contact');self.assertGreaterEqual(b.backoff,.02)
+    def tick(self,b,t,armed=True):
+        ready(b,t,stamp_only=True);v,w=b.command(dict(sim_time_s=t,armed=armed,fault='bumper' if b.bumper_pressed else 'none'));b.requested_motion=(v,w);return v,w
+    def test_back_off_goes_on_when_the_body_rolls_on_after_its_first_reverse_tick(self):
+        # Task P, Unreal trials full-mapping-20261012T183238 / T192331 (GI on, the shower tray): the press tripped at 8-10 cm/s,
+        # the back-off was planned (8 / 4 cm) and its first reverse tick began the reverse episode, which fixed the newest end of
+        # the driven trail there. The body then rolled on into the skin (DriveCore cuts the torque; the bumper stop is 7.9 mm past
+        # the trip), so base_link stood past the end of its own trail: command()'s guard refused every reverse, the plan (which
+        # never tested the first centimetre) still fitted, and nothing moved: 60 s pressed, then "Stuck" (trial 1), or 9 s until
+        # LiDAR jitter freed it (trial 3). The episode's start follows base_link forward until it has moved back.
+        with tempfile.TemporaryDirectory() as tmp:
+            b=LidarBrain(tmp);self.press_on_trail(b)
+            self.assertEqual(self.tick(b,1.,armed=False),(-.05,0.))
+            b.localizer.pose=np.array([.0075,0.,0.])                    # rolled on 7.5 mm into the skin
+            t=1.05
+            for k in range(4):self.assertEqual(self.tick(b,t),(-.05,0.),b.message);t+=.05
+            self.assertTrue(np.allclose(b.trail_head(),[.0075,0.]),b.trail_head())
+            for k in range(8):
+                v,w=self.tick(b,t);self.assertEqual((v,w),(-.05,0.),b.message);b.localizer.pose[0]+=v*.05;t+=.05
+            self.assertTrue(np.allclose(b.trail_head(),[.0075,0.]),'the start never follows base_link back')
+            self.assertNotIn('Reverse refused',' '.join(e['message'] for e in b.events))
+    def test_stall_retreat_after_driving_forward_past_where_a_short_reverse_began(self):
+        # Task P, Unreal trial full-mapping-20261012T184036 (GI on, under the dining table): the local planner reversed 1.5 cm,
+        # drove 2.7 cm forward on an arc (less than the 5 cm that closes a reverse episode) and stood 1 cm past where the reverse
+        # began. Every stall retreat was planned, then refused by command()'s guard: the open episode had fixed the newest end of
+        # the trail where the reverse began, and the samples after the reverse started a new run 1 cm or more past the old one.
+        # 16 retreats, 126 s, until the narrow-gap rule gave up. Here the newest sample is where the reverse began and the robot
+        # stops 8 mm past it, under the 1 cm that records a new sample: nothing after the reverse was ever recorded. Forward
+        # driving after a reverse is driven ground from where it began; base_link is the newest end of the trail again.
+        from autonomy.lidar_brain import TRAIL_TOL
+        for arc in (0.,-.4):
+            with tempfile.TemporaryDirectory() as tmp:
+                b=LidarBrain(tmp);b.current_cloud=open_floor(b,radius=3.);ready(b,1.);b.phase='follow'
+                for s in np.arange(.40,-1e-9,-.01):b.trail.append(np.array([-s,0.]))
+                t=1.;plan=[(-.04,0.)]*8+[(.05,arc)]*10+[(0.,0.)]*10
+                for want in plan:
+                    b.drive_command=lambda state,want=want:want;v,w=self.tick(b,t);t+=.05
+                    p=b.localizer.pose;p[:2]+=v*.05*np.array([math.cos(p[2]+w*.025),math.sin(p[2]+w*.025)]);p[2]+=w*.05;b.record_trail(p,t)
+                del b.drive_command;p=b.localizer.pose.copy();u=np.array([math.cos(p[2]),math.sin(p[2])])
+                self.assertIsNotNone(b.reverse_episode,'precondition: the episode is still open')
+                self.assertGreater(p[0],.006,'precondition: past where the reverse began');self.assertLess(p[0],.01)
+                line=p[:2]-np.arange(0,.06,.001)[:,None]*u
+                self.assertTrue((b.trail_distance(line)<=TRAIL_TOL).all(),'base_link and the ground just behind it are on the trail')
+                ready(b,t);b.phase='follow';self.assertTrue(b.begin_retreat(t));self.assertEqual(b.phase,'retreat')
+                x0=p[:2].copy();n=len(b.events)
+                for k in range(30):
+                    v,w=self.tick(b,t)
+                    if b.phase!='retreat':break
+                    b.localizer.pose[:2]+=v*.05*np.array([math.cos(b.localizer.pose[2]),math.sin(b.localizer.pose[2])]);b.localizer.pose[2]+=w*.05;t+=.05
+                self.assertNotIn('Reverse refused',' '.join(e['message'] for e in b.events[n:]),arc);self.assertGreaterEqual(np.linalg.norm(b.localizer.pose[:2]-x0),.03,arc)
+    def test_planned_reverses_pass_the_final_guard_on_their_first_tick(self):
+        # Task P: the back-off, the creep and the stall retreat plan a straight reverse with reverse_room, which looked 1 cm (the
+        # creep: 1 mm) behind base_link and on in steps; command()'s guard (reverse_on_trail) checks base_link from where it is
+        # now. Past the trail's end, or across a gap between trail runs, the plan fitted and the guard refused it every tick.
+        # Any reverse they plan must pass the guard where it starts, and fit the episode budget the guard counts: command() adds the
+        # move since the episode's last reverse tick (a forward drive too short to end the episode included) when the next reverse
+        # starts; reverse_budget did not (2D house seed 0: a stall retreat planned with budget left, refused at once at the limit).
+        from autonomy.lidar_brain import REVERSE_LIMIT,CONTACT_CREEP_V
+        rng=np.random.default_rng(136);bad=[];planned=0
+        with tempfile.TemporaryDirectory() as tmp:
+            for k in range(400):
+                b=LidarBrain(tmp);b.current_cloud=open_floor(b);ready(b,1.);bend=rng.uniform(-.25,.25)
+                xy=[np.array([-s,0.]) for s in np.arange(.30,.10,-.01)];h=0.
+                for i in range(10):h+=bend/10;xy.append(xy[-1]+.01*np.array([math.cos(h),math.sin(h)]))
+                for q in xy:b.trail.append(q)
+                if rng.random()<.4:                                      # the newest run starts after a gap (a reverse in between)
+                    gap=rng.uniform(.008,.016);cut=len(xy)-rng.integers(2,6);d=xy[cut]-xy[cut-1];d/=np.linalg.norm(d)
+                    for i in range(cut,len(xy)):b.trail[i]=b.trail[i]+(gap-.01)*d
+                    b.trail_breaks.append(tuple(float(x) for x in b.trail[cut]))
+                end=np.asarray(b.trail[-1]);b.localizer.pose=np.r_[end+rng.uniform(-.005,.015)*np.array([math.cos(h),math.sin(h)])+rng.uniform(-.01,.01)*np.array([-math.sin(h),math.cos(h)]),h+rng.uniform(-.2,.2)]
+                ep=None
+                if rng.random()<.5:                                      # an open episode whose start is the trail's end; it may have
+                    # reversed up to 14 cm and its last reverse tick may lie up to 4 cm behind base_link (a drive forward since)
+                    h_=b.localizer.pose[2];last=b.localizer.pose[:2]-rng.uniform(0,.04)*np.array([math.cos(h_),math.sin(h_)])
+                    ep=b.reverse_episode=dict(start=end.copy(),last=last,travelled=rng.uniform(0,.14),forward_from=None);b.requested_motion=(-.05,0.);b.last_reverse_stamp=.99
+                # What command() allows from here: the guard, and the episode budget after it adds the move since the last reverse tick.
+                left=REVERSE_LIMIT if ep is None else REVERSE_LIMIT-ep['travelled']-float(np.linalg.norm(b.localizer.pose[:2]-ep['last']))
+                b.bumper_pressed=True;b.forward_run=rng.uniform(0,.03)
+                plan=b.backoff_plan(.12)
+                if plan:
+                    planned+=1
+                    if not b.reverse_on_trail(-plan[1],0.) or plan[0]>left+1e-9:bad.append(('backoff',k,plan,round(left,4)))
+                room=min(.035,b.reverse_budget(),b.reverse_room(REVERSE_LIMIT+.03)-.025)
+                if room>=.03 and b.retreat_clear(room+.025):
+                    planned+=1
+                    if not b.reverse_on_trail(-.05,0.) or room>left+1e-9:bad.append(('retreat',k,room,round(left,4)))
+        self.assertGreater(planned,100);self.assertEqual(bad,[],f'{len(bad)} of {planned} planned reverses refused at their first tick')
+    def test_a_back_off_the_guard_refuses_is_planned_again_not_repeated(self):
+        # Task P safety net: if the final guard refuses the back-off's reverse anyway, the contact phase plans again from where the
+        # robot is (within CONTACT_ATTEMPTS, then the bounded wait) instead of commanding the refused reverse every tick until
+        # its 10 s time-out; a refused stall retreat ends at once.
+        from autonomy.lidar_brain import CONTACT_ATTEMPTS
+        with tempfile.TemporaryDirectory() as tmp:
+            b=LidarBrain(tmp);self.press_on_trail(b)
+            self.assertEqual(self.tick(b,1.,armed=False),(-.05,0.))
+            b.reverse_on_trail=lambda *a,**k:False                     # the guard refuses from here on
+            t=1.05
+            for k in range(20):self.tick(b,t);t+=.05
+            self.assertEqual(b.contact_attempts,CONTACT_ATTEMPTS);self.assertEqual(b.backoff,0.);self.assertEqual(b.phase,'contact')
+            b=LidarBrain(tmp);b.current_cloud=open_floor(b);ready(b,1.)
+            for s in np.arange(.30,-1e-9,-.01):b.trail.append(np.array([-s,0.]))
+            b.phase='follow';self.assertTrue(b.begin_retreat(1.));self.assertEqual(b.phase,'retreat')
+            self.assertEqual(self.tick(b,1.),(-.05,0.));b.reverse_on_trail=lambda *a,**k:False
+            self.assertEqual(self.tick(b,1.05),(0.,0.));self.tick(b,1.1);self.assertNotEqual(b.phase,'retreat')
     def test_close_spin_aborts_only_on_actual_contact(self):
         from types import SimpleNamespace
         from autonomy.lidar_brain import CLOSE_SPIN_W,SPIN_RAW_ALLOWANCE

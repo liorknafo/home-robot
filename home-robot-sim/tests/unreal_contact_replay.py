@@ -1,5 +1,5 @@
 """Unreal replay of task G: a bumper contact with the bathroom shower tray (6 cm, LiDAR-blind) with no straight trail behind.
-Usage: unreal_contact_replay.py APPROACH [seconds_after_touch=60]   APPROACH: weave | spin | spin_start
+Usage: unreal_contact_replay.py APPROACH [seconds_after_touch=60]   APPROACH: weave | spin | spin_start | turn
 Live simulator only, under the .sim-lock (docs/WORKFLOW.md), with the autonomy service STOPPED (this script binds UDP 8768).
 It resets the robot near the tray, runs the autonomy Application in-process with the controller of THIS tree (camera frames are read
 from the simulator's Saved/Stereo in SIM_ROOT, default the main SIM folder), starts Mapping, drives a scripted approach into the
@@ -8,7 +8,10 @@ controller decide everything.
   weave: the last 4 s of trial full-mapping-20261011T054731 before it met the tray: its start pose there (truth at sim 426.0 s) and
          decision commands, then straight on at 10 cm/s (that trial then waited, pressed, for 1110 s);
   spin: 17 cm east along the tray front (skin 1.6 cm from it), a quarter turn in place to face it, then straight on;
-  spin_start: the quarter turn at the start of the session (no trail behind but the start position), then straight on.
+  spin_start: the quarter turn at the start of the session (no trail behind but the start position), then straight on;
+  turn (task P): the last 1.4 s of GI trial full-mapping-20261012T183238 before it met the tray: its truth pose at sim 537.97 s, 10 cm/s
+         straight for .95 s, the local planner's -.4 rad/s commit for .45 s, then straight on (that trial's back-off was refused
+         by the guard after the body rolled on into the skin, and it stopped 'Stuck' 70 s later).
 Writes $SIM_ROOT/reports/contact-replay-<approach>-<time>/ (decisions.jsonl, result.json). Simulator truth is read for the report
 only (the Application's display endpoint); it never reaches the brain.
 PASS: released within 15 s of the touch, out of the contact phase and >= .3 m from the touch at the end, no tick off the driven trail
@@ -24,8 +27,8 @@ sys.path.insert(0,str(HERE/'controller'));sys.path.insert(0,str(HERE/'tests'))
 import autonomy_service as svc
 from sim2d import CONTACT_APPROACHES,reverse_audit
 approach=sys.argv[1];after=float(sys.argv[2]) if len(sys.argv)>2 else 60.
-START={'weave':(4.015,-1.657,-1.313),'spin':(3.90,-1.955,0.),'spin_start':(4.07,-1.955,0.)}[approach]
-SCRIPT={'weave':CONTACT_APPROACHES['weave'],'spin':[(.1,0.,1.7),(0.,-.4,math.pi/2/.4)],'spin_start':[(0.,-.4,math.pi/2/.4)]}[approach]
+START={'weave':(4.015,-1.657,-1.313),'spin':(3.90,-1.955,0.),'spin_start':(4.07,-1.955,0.),'turn':(4.0645,-1.845,-1.4422)}[approach]
+SCRIPT={'weave':CONTACT_APPROACHES['weave'],'spin':[(.1,0.,1.7),(0.,-.4,math.pi/2/.4)],'spin_start':[(0.,-.4,math.pi/2/.4)],'turn':[(.1,0.,.95),(.1,-.4,.45)]}[approach]
 OUT=SIM/'reports'/time.strftime(f'contact-replay-{approach}-%Y%m%dT%H%M%S');OUT.mkdir(parents=True)
 (HERE/'reports').mkdir(exist_ok=True)   # the Application writes reports/autonomy-status.json under its own tree
 # Reset the robot (simulator command, before the Application binds the state port) and wait until it rests there.
@@ -99,6 +102,7 @@ away=float(math.dist(rows[-1]['truth'][:2],tt[:2])) if touch is not None else 0.
 released=None if state['released'] is None else round(state['released']-touch,2)
 result=dict(approach=approach,start=START,touched_sim_s=touch,touch_truth=tt,released_after_s=released,away_from_touch_m=round(away,3),contacts=len(b.contacts),
             final_mode=b.mode,final_phase=b.phase,final_message=b.message,reverse_audit=audit,commanded_reverse_episodes_m=episodes,
+            reverse_refused=sum('Reverse refused' in e['message'] for e in b.events),
             passed=bool(touch is not None and released is not None and released<=15 and b.phase!='contact' and away>=.3 and audit.get('off_trail_ticks')==0
                         and max(episodes,default=0.)<=.16),
             events=[e['message'] for e in b.events][-12:])

@@ -6,6 +6,7 @@
 #include "PhysicsEngine/BodySetup.h"
 #include "Materials/MaterialInterface.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "Materials/Material.h"
 #include "Misc/CommandLine.h"
 #include "Misc/Parse.h"
 #include "Engine/PointLight.h"
@@ -14,6 +15,18 @@
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
+#include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
+#include "HAL/IConsoleManager.h"
+#include "HAL/PlatformTime.h"
+#if WITH_EDITOR
+#include "ProceduralMeshConversion.h"
+#include "MeshDescription.h"
+#include "StaticMeshCompiler.h"
+#include "DistanceFieldAtlas.h"
+#include "MeshCardBuild.h"
+#include "StaticMeshResources.h"
+#endif
 
 void BuildFurnishedHouse(UWorld* World) {
  FString Text; TSharedPtr<FJsonObject> Scene,Library;
@@ -31,6 +44,15 @@ void BuildFurnishedHouse(UWorld* World) {
  if(Floor)Floor->SetScalarParameterValue(TEXT("Roughness"),Finish==TEXT("matte")?.80f:.30f);
  TMap<FString,UMaterialInterface*> Materials;
  int32 Objects=0,Sections=0,Triangles=0;
+ // Global illumination (task O, LIO-133): Lumen traces mesh distance fields, and procedural meshes have none. So each object
+ // keeps its procedural mesh for collision (LiDAR, bumper, cliff and physics queries are unchanged) and is drawn by a static-mesh
+ // copy of the same triangles and materials, built here with a distance field and Lumen cards (editor builds: the sim runs in
+ // UnrealEditor -game). One copy per mesh asset and material set. -HouseGI=0: the old look, procedural meshes drawn, no GI.
+ int32 GI=1;FParse::Value(FCommandLine::Get(),TEXT("HouseGI="),GI);
+#if !WITH_EDITOR
+ GI=0;
+#endif
+ TMap<FString,UStaticMesh*> Copies;int32 Drawn=0;const double BuildStart=FPlatformTime::Seconds();
  for(auto& Entry:Scene->GetArrayField(TEXT("objects"))) {
   auto O=Entry->AsObject();const FString Key=O->GetStringField(TEXT("mesh"));auto Asset=Assets->GetObjectField(Key);
   const auto& C=O->GetArrayField(TEXT("center"));const FVector Center(C[0]->AsNumber(),C[1]->AsNumber(),C[2]->AsNumber());
@@ -70,6 +92,29 @@ void BuildFurnishedHouse(UWorld* World) {
    Mesh->SetMaterial(Section,Material?Material:Default);Triangles+=T.Num()/3;Section++;Sections++;
   }
   if(Mesh->GetBodySetup())Mesh->GetBodySetup()->bDoubleSidedGeometry=true;
+#if WITH_EDITOR
+  if(GI) {
+   FString CopyKey=Key;for(int32 S=0;S<Mesh->GetNumSections();S++)CopyKey+=TEXT("|")+GetNameSafe(Mesh->GetMaterial(S));
+   UStaticMesh*& Copy=Copies.FindOrAdd(CopyKey);
+   if(!Copy) {
+    // As the engine's "Create StaticMesh" for procedural meshes: polygon groups and material slots both follow the sections'
+    // unique materials, in section order. Normals and tangents are kept as built above.
+    Copy=NewObject<UStaticMesh>(GetTransientPackage(),NAME_None,RF_Transient);
+    FStaticMeshSourceModel& Source=Copy->AddSourceModel();
+    Source.BuildSettings.bRecomputeNormals=false;Source.BuildSettings.bRecomputeTangents=false;Source.BuildSettings.bRemoveDegenerates=false;Source.BuildSettings.bGenerateLightmapUVs=false;
+    Copy->CreateMeshDescription(0,BuildMeshDescription(Mesh));Copy->CommitMeshDescription(0);
+    TSet<UMaterialInterface*> Unique;
+    for(int32 S=0;S<Mesh->GetNumSections();S++){UMaterialInterface* M=Mesh->GetMaterial(S);if(!M)M=UMaterial::GetDefaultMaterial(MD_Surface);if(!Unique.Contains(M)){Unique.Add(M);Copy->GetStaticMaterials().Add(FStaticMaterial(M));}}
+    // Section i draws material i. Without these entries the distance-field and Lumen-card builders skip every triangle (they
+    // take each section's material and flags from this map), and Lumen then has nothing to bounce light from.
+    for(int32 M=0;M<Copy->GetStaticMaterials().Num();M++){FMeshSectionInfo Info(M);Info.bEnableCollision=false;Info.bCastShadow=true;Copy->GetSectionInfoMap().Set(0,M,Info);}
+    Copy->SetImportVersion(EImportStaticMeshVersion::LastVersion);Copy->Build(true);
+   }
+   auto* Render=NewObject<UStaticMeshComponent>(A);Render->SetMobility(EComponentMobility::Static);Render->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+   Render->SetStaticMesh(Copy);Render->SetupAttachment(Mesh);Render->RegisterComponent();
+   Mesh->SetVisibility(false);Drawn++;   // collision only from here on: not drawn, casts no shadow
+  }
+#endif
   Objects++;
  }
  if(FParse::Param(FCommandLine::Get(),TEXT("ValidateHouseAssets"))) {
@@ -91,6 +136,17 @@ void BuildFurnishedHouse(UWorld* World) {
   FString Output;FJsonSerializer::Serialize(Report,TJsonWriterFactory<>::Create(&Output));FFileHelper::SaveStringToFile(Output,*(FPaths::ProjectDir()/TEXT("reports/house-native-collision.json")));
  }
  UE_LOG(LogTemp,Display,TEXT("BLENDER_HOUSE_READY objects=%d sections=%d triangles=%d collision=visible_static_surfaces"),Objects,Sections,Triangles);
+#if WITH_EDITOR
+ // Wait for the copies, their distance fields and Lumen cards before the robot starts (cached in the DDC after the first run).
+ int32 WithField=0,WithCards=0;SIZE_T FieldBytes=0;
+ if(GI){FStaticMeshCompilingManager::Get().FinishAllCompilation();if(GDistanceFieldAsyncQueue)GDistanceFieldAsyncQueue->BlockUntilAllBuildsComplete();if(GCardRepresentationAsyncQueue)GCardRepresentationAsyncQueue->BlockUntilAllBuildsComplete();
+  for(auto& Pair:Copies){const FStaticMeshRenderData* Data=Pair.Value->GetRenderData();if(!Data||!Data->LODResources.Num())continue;const FStaticMeshLODResources& Lod=Data->LODResources[0];
+   if(Lod.DistanceFieldData&&Lod.DistanceFieldData->Mips[0].IndirectionDimensions.GetMax()>0){WithField++;FieldBytes+=Lod.DistanceFieldData->GetResourceSizeBytes();}
+   if(Lod.CardRepresentationData&&Lod.CardRepresentationData->MeshCardsBuildData.CardBuildData.Num()>0)WithCards++;}
+  UE_LOG(LogTemp,Display,TEXT("HOUSE_GI copies with a distance field %d / %d (%.1f MB), with Lumen cards %d"),WithField,Copies.Num(),FieldBytes/1048576.0,WithCards);}
+#endif
+ if(auto* Method=IConsoleManager::Get().FindConsoleVariable(TEXT("r.DynamicGlobalIlluminationMethod")))Method->Set(GI?1:0,ECVF_SetByCode);
+ UE_LOG(LogTemp,Display,TEXT("HOUSE_GI %s: %d objects drawn by %d static copies (distance fields, Lumen cards) in %.1f s; r.DynamicGlobalIlluminationMethod=%d"),GI?TEXT("lumen"):TEXT("off"),Drawn,Copies.Num(),FPlatformTime::Seconds()-BuildStart,GI?1:0);
  for(FVector Position:{FVector(-95,-90,223),FVector(270,-90,223),FVector(-120,205,223),FVector(208,183,223),FVector(410,170,223)}) {
   auto* Lamp=World->SpawnActor<APointLight>(Position,FRotator::ZeroRotator);
   auto* Light=Cast<UPointLightComponent>(Lamp->GetLightComponent());Light->SetMobility(EComponentMobility::Movable);Light->SetUseInverseSquaredFalloff(false);Light->SetLightFalloffExponent(2.f);Light->SetIntensity(6.f);Light->SetAttenuationRadius(470.f);Light->SetLightColor(FLinearColor(1.f,.96f,.90f));Light->SetSourceRadius(18.f);Light->SetSoftSourceRadius(25.f);

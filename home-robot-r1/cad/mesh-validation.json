@@ -187,6 +187,23 @@
     "area_mm2": 3041.5
   },
   {
+    "file": "P_camera_led_shelf.stl",
+    "watertight": true,
+    "winding_consistent": true,
+    "volume_mm3": 469.4,
+    "size_mm": [
+      7.4,
+      26.0,
+      6.1
+    ],
+    "center_mass_mm": [
+      139.12,
+      0.0,
+      90.43
+    ],
+    "area_mm2": 599.5
+  },
+  {
     "file": "P_camera_mount.stl",
     "watertight": true,
     "winding_consistent": true,
@@ -445,18 +462,18 @@
     "file": "P_lidar_tray.stl",
     "watertight": true,
     "winding_consistent": true,
-    "volume_mm3": 37436.2,
+    "volume_mm3": 37230.9,
     "size_mm": [
       145.3,
       86.0,
       19.2
     ],
     "center_mass_mm": [
-      25.21,
-      0.13,
-      104.89
+      25.45,
+      0.14,
+      104.88
     ],
-    "area_mm2": 26456.2
+    "area_mm2": 26363.3
   },
   {
     "file": "P_motor_mount_left.stl",

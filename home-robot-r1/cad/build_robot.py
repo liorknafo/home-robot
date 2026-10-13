@@ -55,6 +55,10 @@ PARAMS=dict(base_length=244,base_width=200,base_bottom=29,base_thickness=4,
             rear_caster=[-75,0,0],caster_ball_radius=12.7,
             cliff_sensors=[[105,72],[105,-72],[-110,81],[-110,-81]],cliff_z=42.5,cliff_fov_deg=25,
             camera_hfov_deg=84,camera_image_px=[640,360],camera_check_image_px=[640,480],camera_check_vfov_deg=68.06,
+            camera_led_points=[[145.8,0.0,89.45]],camera_led_intensity_cd=10.8,camera_led_beam_deg=120,camera_led_cct_k=5000,camera_led_current_a=0.059,
+            camera_led_note='Task N (LIO-134): one Samsung LM281B+ Pro 2835 LED (5000 K, 37.5 lm at 65 mA / 2.7 V, 120 deg) above the lens, facing forward, '
+                            'its emitting face at x 145.8, z 89.45. From J15 pin 5 (5 V) through 39 ohm: (5 - 2.7) / 39 = 59 mA, so ~37.5 x 59 / 65 = 34 lm and '
+                            '~34 / pi = 10.8 cd on axis (a near-Lambertian emitter). Switched low-side by a TN0702N3-G MOSFET from GP20 (J15 pin 3).',
             camera_x_note='camera_x = lens front face; the image frustum apex used for every clearance check is 3 mm behind it (x 143), the assumed worst entrance-pupil position; the lens solid centre is x 141.4. '
                          'Task F: the camera sits in the bumper band behind a window in the two bumper halves (level, axis z 80). Below 80 mm the simulator camera loses the 6 cm shower tray in Unreal '
                          '(straight drives at it: found in 6/10 at 75 mm, 10/10 at 80 mm); 80 is also the highest axis whose image still fits a window closed under the 98.5 mm bumper top.',
@@ -1098,6 +1102,34 @@ cam=box(XPCB+.8,0,CH-12.5,1.6,25,25)
 add('camera_board','Waveshare OV2735 camera PCB envelope',cam,'pcb','E04','camera',check=True,allow=('J17_C','P_camera_holder'))
 add('camera_lens','Single camera lens allowance',cyl(XPCB+1.6,0,CH,7,CXL-XPCB-1.6,'x'),'lens','E04','camera')
 add('J17_C','Camera USB-C plug allowance',box(XPCB-7,-12,CH-4.5,14,10,5),'black','C01','camera')
+# Camera LED (task N, LIO-134): one white 2835 LED above the lens, facing forward, chassis-fixed like the camera (a bump never moves
+# it). It lights the floor and the LiDAR's blind band ahead through the camera window: from its face (x 145.8, y 0, z 89.45) the window
+# (side faces from x 153, half-width 13.1, square for a 1 mm land to x 154; flat roof 93.1 and sill 65.9 right through the wall, whose
+# outer edges set the limits) passes ±58 deg sideways and about 62 deg down to 17 deg up; within ~18 deg of straight ahead the 7.5 mm
+# seam gap also passes 84 deg down to 55 deg up (to the seam backers at x 148). Its face is 0.2 mm behind the lens face's plane and
+# 9.45 mm above the axis, facing forward: its light can reach the lens front only at 79 deg or more off the lens axis (no glare path),
+# and it stays outside the image frustum.
+# Height: the right half's seam backer stands over the window roof (z 93.1) at x 146.5-148.3 and moves back to x 142.2 at the hard
+# stop, so everything forward of x 140 stays under z 91.0 (>= 2.1 mm under it at every travel, the 2 mm rigid-part rule), and over
+# the lens allowance (z 87) by 0.9 mm: a 3.1 mm band for the LED stack.
+# The LED (2.8 x 3.5 x 0.8 mm) is soldered across a cut in a 10 x 3.1 mm piece of 0.8 mm copper-clad board (the two copper halves are
+# its pads; the two wires solder to them beside the LED and run back along the shelf block's sides). A printed shelf holds that board:
+# a 2 mm plate on the camera PCB's front, clamped under its two upper corner screws (M2 x 8 instead of x 6), and a 10 mm wide block
+# forward over the lens allowance (0.9 mm above it) with the board glued to its front face. Printed on the plate's back face, no supports.
+LEDF=PARAMS['camera_led_points'][0]                     # LED emitting face (x, y, z)
+LEDB0=LEDF[0]-0.8-0.8                                     # carrier board back face (x 144.2): LED 0.8 mm + board 0.8 mm
+LEDZ0,LEDZ1=87.9,91.0                                     # shelf block and board: z 87.9 (0.9 mm over the lens allowance) .. 91.0 (2.1 mm under the backer)
+PLZ1=94.0                                                 # the plate (x <= 138.8, 3.4 mm behind the backer's hard stop) rises to z 94 round the screws
+shelf=union(box(XPCB+1.6+1.0,0,LEDZ0,2.0,26,PLZ1-LEDZ0),                # plate on the PCB front (x 136.8..138.8), y -13..13
+            box((XPCB+1.6+2.0+LEDB0)/2,0,LEDZ0,LEDB0-(XPCB+1.6+2.0),10,LEDZ1-LEDZ0))   # block forward to the board (x 138.8..144.2)
+for y in (-10.5,10.5):shelf=shelf.cut(cyl(XPCB,y,CH+10.5,1.1,4,'x'))    # M2 clearance holes at the PCB's upper corner screws
+add('P_camera_led_shelf','Camera LED shelf (on the camera PCB, over the lens)',shelf,'print','F01','camera',printable=True,check=True,allow=('camera_board','camera_led_board'),
+    note=f'2 mm plate on the camera PCB front (x {XPCB+1.6:g}–{XPCB+3.6:g}, y ±13, z {LEDZ0:g}–{PLZ1:g}), clamped under the PCB\'s two upper corner screws (M2 × 8 thread-forming instead of × 6; Ø2.2 holes), '
+         f'and a 10 mm wide, {LEDZ1-LEDZ0:.1f} mm high block forward over the lens allowance to x {LEDB0:g}, 0.9 mm above it and 2.1 mm under the bumper seam backer at its hard stop; the LED board is glued to its front face, its two wires run back along the block\'s sides. '
+         'Print on the plate\'s back face, no supports. Check on the delivered camera that the lens holder stays under z 87 (the CAD allowance is a Ø14 cylinder).')
+add('camera_led_board','Camera LED carrier (10 × 3.1 mm piece of 0.8 mm copper-clad board, copper cut into two pads)',box(LEDB0+.4,0,LEDZ0,0.8,10,LEDZ1-LEDZ0),'pcb','E20','camera',check=True,allow=('P_camera_led_shelf','camera_led'))
+add('camera_led','Camera LED (Samsung LM281B+ Pro 2835, 5000 K)',box(LEDF[0]-.4,LEDF[1],LEDF[2]-1.4,0.8,3.5,2.8),'lens','E19','camera',check=True,allow=('camera_led_board',),
+    note='Emitting face at x 145.8, z 89.45; 3.5 mm along y, 2.8 mm along z. Anode / cathode: see the datasheet\'s polarity mark (BRINGUP section 10).')
 
 # Real LiDAR: LDROBOT LD14 manufacturer STEP (Waveshare D200 kit download, reference-models/LD14.step).
 # STEP frame: spin axis at x=y=0, tail/motor (the LD14 0 deg direction) toward +x. Its two optical
@@ -1153,7 +1185,7 @@ FW=(JFAN[0],JFAN[1],17.5)           # fan window (now the duct's circle about th
 SK_T,SK_GAP=1.3,0.9                 # duct wall and its gap to the fan top (0.9: the fan bypass keeps >= 1 % margin under its 25 % limit; feeler go 0.5 / no-go 1.0)
 SK_FEELER=(0.5,1.0)                 # duct-gap limits at assembly (go / no-go; task L checks them with modelling clay, the duct edge is out of a feeler's reach): >= 0.5 no contact, <= 1.0 inside the bypass limit
 ZSK=ZFAN_TOP+SK_GAP                 # duct wall bottom over the fan frame
-GR_W,GR_P,GR_N,GR_R=4.8,6.5,2,FW[2]   # slot width (task L: 4.8, was 4.5: 1.7 mm ribs give back the open area the rib round the motor hole takes), pitch, slots each side of the centre one, grille radius
+GR_W,GR_P,GR_N,GR_R=5.2,6.5,2,FW[2]   # slot width (task L: 5.2, was 4.5: 1.3 mm ribs give back the open area the motor and the rib round its hole take), pitch, slots each side of the centre one, grille radius
 _mb=shapes['lidar_motor'].BoundingBox()
 MOT=((_mb.xmin+_mb.xmax)/2,(_mb.ymin+_mb.ymax)/2,(_mb.xmax-_mb.xmin)/2,_mb.zmin)   # LD14 motor axis (x, y), radius, lowest point (the hub, beyond the fan's front face)
 MOT_CLR,SLOT_G,DUCT_FIT,BOWL_T,BOWL_DEG,BOWL_FLOOR=1.0,0.5,0.3,1.2,42.0,6.0   # motor to every printed part; bowl back wall to the fan's front face; duct walls in the lid opening; bowl wall; bowl slope from vertical; bowl floor under its rim
@@ -1214,7 +1246,7 @@ add('P_lidar_tray','LD14 tray and fan intake duct on the lid',tray,'print','F01'
          f'Print top face down (STL bed-ready): the duct and bowl rise from the plate, no supports; the bowl\'s flat floor ({BOWL_FLOOR:g} mm under its rim) is a short bridge and its back-wall top edge a 24 mm bridge between the duct walls.')
 for i,(x,y) in enumerate(LUGS):
     add(f'lidar_lug_insert_{i}','M3 × 3 brass heat-set insert (LD14 lug)',cyl(x,y,lug_z-INS_L,INS_R,INS_L).cut(cyl(x,y,lug_z-INS_L-1,1.5,INS_L+2)),'metal','H12','cover',check=True,allow=('P_lidar_tray','lidar'),
-        note='Pressed flush into the tray plate top with a soldering iron (tray on a flat plate, top face up); the LD14 lug sits on it and an M3 × 5 socket-head screw from above takes 3 mm of thread.')
+        note='Pressed flush into the tray plate top with a soldering iron, the plate supported on a block under each insert (the duct and bowl hang 15 mm under the plate, so it cannot lie flat top face up); the LD14 lug sits on it and an M3 × 5 socket-head screw from above takes 3 mm of thread.')
 for i,(x,y) in enumerate(TRAYH):   # M3 × 12 from the tray top, nyloc nut under the lid (z ZLID-4..ZLID)
     add(f'lidar_tray_screw_{i}','LiDAR tray M3 × 12 screw and nyloc nut',union(cyl(x,y,ZLID-5.2,1.5,12),cyl(x,y,ZT0+TRAY_T,2.8,2.8),cyl(x,y,ZLID-4,3.2,4)),'metal','H09','cover',allow=LID_IDS+('P_lidar_tray',),note='Nut and washer seat on solid lid material (outside the fan window).')
 add('lidar_adapter','Included D200 USB serial adapter allowance',box(15,-40,132-DZ,35,16,7),'pcb','E15','upper',check=True,note='CP2102 adapter shape and connector orientation provisional; inspect supplied kit.')
@@ -1682,6 +1714,23 @@ for ref,cid,side_txt in (('U5A','W_p03_in','P03 input'),('U5B','W_p03_out','P03 
         board_end=dict(ref=ref,end='last'),wire='2 × 18 AWG silicone (red, black)',pinout=[dict(cavity=k,net=pm[k],function=fn[k][0],colour=fn[k][1]) for k in sorted(pm,key=int)],
         notes=f'Two short leads between the P03\'s {"input" if ref=="U5A" else "output"} terminals and the board\'s {ref} screw terminal (pin 1 = {pm["1"]}, pin 2 = GND): about 10 mm between them; cut 50 mm and trim to the measured P03. '
               + ('Battery side: a reversed P03 input is as costly as a reversed battery lead.' if ref=='U5A' else 'Set and check 5.1 V on the bench before these go on.')))
+# Camera LED lead (task N, LIO-134; not drawn): soldered into the DNP spare row J15 (no header: a mated housing and its wire bend would
+# stand about 17-20 mm, over the 16.27 mm under the Jetson carrier; soldered and laid flat it stays under 6 mm), along the board top to
+# its front edge, the inline switch in heat-shrink in the front bay, then two wires along the camera cable W17 to a 2-pin JST-PH plug
+# by the camera mount (so the camera unit comes out) and the LED carrier. Route length estimated from J15 to the LED.
+_cy=BC['parts']['J15']['courtyard_xy'];_j15=[round((_cy[0]+_cy[2])/2,1),round((_cy[1]+_cy[3])/2,1),ZBAY_TOP]   # J15 centre (robot frame), board top
+_led=PARAMS['camera_led_points'][0];_r=int(round(1.3*math.dist(_j15,_led)/10)*10)
+cables.append(dict(id='W21',name='Camera LED lead (soldered into J15 → inline switch → JST-PH plug → LED above the camera lens)',route_mm=_r,
+    suggested_cut_mm=int(math.ceil((_r*1.2+40)/50)*50),points=[tuple(_j15),tuple(_led)],modelled=False,
+    wire='3 × 26 AWG silicone (white GP20 (SPARE3), red 5 V, black GND) from J15 to the inline switch, then 2 × 26 AWG (red, black) to the LED',
+    pinout=[dict(cavity='3',net='SPARE3',function='GP20 (SPARE3): gate drive (through 100 Ω)',colour='white'),
+            dict(cavity='5',net='5V',function='5 V to the 39 Ω resistor and the LED anode',colour='red'),
+            dict(cavity='6',net='GND',function='GND: MOSFET source and the 100 kΩ pull-down',colour='black')],
+    notes=f'Camera LED lead (task N, LIO-134; not drawn: route = 1.3 × the straight {round(math.dist(_j15,_led))} mm from J15 to the LED, an estimate). '
+          'Three wires soldered into J15 holes 3, 5 and 6 from the top (J15 is a DNP pad row: no header, because a mated housing would not fit '
+          'under the Jetson carrier), laid flat along the board top to its front edge (under 6 mm high). The inline switch (E21) sits in heat-shrink '
+          'in the front bay, past the carrier\'s front edge; from it two wires follow the camera cable W17 to a 2-pin JST-PH plug (C21) by the camera '
+          'mount, then run back along the sides of P_camera_led_shelf\'s block to the LED carrier (E20). Make it on the bench before the board goes in (BRINGUP.md section 10 item 6).'))
 (ROOT/'cable-cut-list.json').write_text(json.dumps(cables,indent=2,ensure_ascii=False))
 
 
@@ -2251,7 +2300,7 @@ camera_fov['ok']=not camhit and min(r['bumper_clearance_to_frustum_mm'] for r in
 # every travel and in the planar-play extremes. Rule: >= 1.5 mm everywhere, and the lens face lies further behind the skin round the window
 # than a half moves at its hard stop (+ 2 mm): an object too big to pass the window pushes a half to the trip point (2.25 mm) and on to the
 # hard stop without reaching the lens.
-CAMPARTS=['camera_lens','camera_board','P_camera_holder','J17_C']
+CAMPARTS=['camera_lens','camera_board','P_camera_holder','J17_C','P_camera_led_shelf','camera_led_board','camera_led']   # task N: the LED parts sit in the same bay
 wrows=[]
 for sg_,sd in [(1,'left'),(-1,'right')]:
     for s_ in STATES:
@@ -2334,10 +2383,12 @@ FB=(17.0,7.0)
 gx,gy=np.meshgrid(np.arange(-21,21.001,.25),np.arange(-21,21.001,.25));GX,GY=FW[0]+gx,FW[1]+gy;GR=np.hypot(gx,gy);CELL=.25**2
 inbore=(GR<=FB[0])&(GR>=FB[1]);slot=np.zeros_like(GR,bool)
 for k in range(-GR_N,GR_N+1):slot|=np.abs(GX-(FW[0]+k*GR_P))<=GR_W/2
-_dm=np.hypot(GX-MOT[0],GY-MOT[1]);gopen=inbore&((slot&(GR<=GR_R)&(_dm>R_MI+GR_RIB))|(_dm<=R_MI))   # grille slots (stopped GR_RIB short of the motor's hole) and that hole
+_dm=np.hypot(GX-MOT[0],GY-MOT[1]);_ring=(_dm<=R_MI)&(_dm>MOT[2]);gopen=inbore&((slot&(GR<=GR_R)&(_dm>R_MI+GR_RIB))|_ring)   # grille slots (stopped GR_RIB short of the motor's hole) and the 1.0 mm ring round the motor in that hole (the motor itself is not open)
 # Plan shadow over the bore of every part above the fan top (tray, lid, fan and its screws excluded): task I's overhang of the turned-round
 # LD14, and since task L the motor itself, which hangs in the duct 1.4 mm over the bore's front edge. The gate counts shadowed open cells as
-# closed; the side-entry curtain (clear height over the fan frame under the overhang × the shadow's width) is reported.
+# closed; the side-entry curtain (clear height under the overhang × the shadow's width) is reported. Task L: the clear height is taken over
+# the plate top where the overhang is above the plate (room air comes in over the plate, as to the ring under the LD14 housing), else
+# over the fan frame (air from inside the duct).
 under=np.zeros(GX.shape,bool);ZUN=np.full(GX.shape,np.inf);_ov=[]
 for i in MESH:
     if i in ('P_lidar_tray','fan')+LID_IDS or i.startswith('fan_screw'):continue
@@ -2352,9 +2403,13 @@ for i in MESH:
         k=np.flatnonzero(m.ravel())[h];under.flat[k]=True;ZUN.flat[k]=np.minimum(ZUN.flat[k],(a*z0+b*z1+c*z2)[h])
         if i not in _ov:_ov.append(i)
 A_bore=float(inbore.sum()*CELL);A_open=float(gopen.sum()*CELL);A_shad=float((gopen&under).sum()*CELL)
-_sh=under&(GR<=FW[2]);H_UN=float(ZUN[gopen&under].min()-ZFAN_TOP) if A_shad else None;W_UN=float(GY[_sh].max()-GY[_sh].min()+.25) if _sh.any() else 0.
+_sh=under&(GR<=FW[2]);W_UN=float(GY[_sh].max()-GY[_sh].min()+.25) if _sh.any() else 0.;A_shad_ring=float((gopen&under&_ring).sum()*CELL)
+H_UN=H_OVER=None
+if A_shad:
+    _zs=ZUN[gopen&under];_zb=np.where(_zs>=ZT0+TRAY_T,ZT0+TRAY_T,ZFAN_TOP);_k=int(np.argmin(_zs-_zb));H_UN=float(_zs[_k]-_zb[_k]);H_OVER='plate' if _zb[_k]>ZFAN_TOP else 'fan frame'
 A_curt=round(H_UN*W_UN,1) if A_shad else None
-ANN=cyl(FW[0],FW[1],ZT0,FB[0],TRAY_T).cut(cyl(FW[0],FW[1],ZT0-1,FB[1],TRAY_T+2));A_open_cad=(ANN.Volume()-ANN.intersect(shapes['P_lidar_tray']).Volume())/TRAY_T
+ANN=cyl(FW[0],FW[1],ZT0,FB[0],TRAY_T).cut(cyl(FW[0],FW[1],ZT0-1,FB[1],TRAY_T+2));A_motor_cad=ANN.intersect(shapes['lidar_motor']).Volume()/TRAY_T   # task L: the motor stands in the plate's hole over the bore's edge
+A_open_cad=(ANN.Volume()-ANN.intersect(shapes['P_lidar_tray']).Volume())/TRAY_T-A_motor_cad   # open through the plate: neither tray material nor the motor
 TRAY_=shapes['P_lidar_tray'];_rear=TRAY_.intersect(box(XFAN-100,0,ZFAN_TOP-50,200,200,ZT0-ZFAN_TOP+50));_front=TRAY_.intersect(box(XFAN+100,0,ZFAN_TOP-50,200,200,ZT0-ZFAN_TOP+50))
 ZSK_=min(v.Z for v in _rear.Vertices());GAP_=_rear.distance(shapes['fan']);GAP_SLOT=_front.distance(shapes['fan'])   # duct wall over the fan frame; bowl back wall (exact distances: bounding boxes are padded)
 _zm=(ZSK_+ZLID)/2;SKSEC=TRAY_.intersect(dprism(SK_T+.5,_zm-.25,.5)).Volume()/.5;SKSEC0=dprism(SK_T,0,1).cut(dprism(0.,-1,3)).Volume()   # duct section at mid-height vs the unbroken outline
@@ -2384,16 +2439,16 @@ jetson_cooling=dict(fan_top_z_mm=round(ZFAN_TOP,2),lid_underside_z_mm=ZLID,lid_t
     air_gap_fan_to_tray_grille_mm=round(ZT0-ZFAN_TOP,2),lid_fan_window=dict(centre_mm=[round(FW[0],2),round(FW[1],2)],diameter_mm=2*FW[2],area_mm2=round(math.pi*FW[2]**2),
         note=f'Task L: the fan-window circle is the tray duct\'s circle about the fan centre; the lid has one opening round the whole duct (the window and motor circles + the {SK_T} mm wall + {DUCT_FIT} mm).'),
     grille=dict(slots=f'{2*GR_N+1} × {GR_W} mm on a {GR_P} mm pitch inside r {GR_R:g}, no hub (task F: no lug tower over the fan); task L: the LD14 motor drops through a Ø{2*R_MI:g} hole in the plate, its 1.0 mm ring is open to the room',
-        fan_bore_annulus_mm2=round(A_bore),open_area_over_bore_mm2=round(A_open),open_area_cad_mm2=round(A_open_cad),
+        fan_bore_annulus_mm2=round(A_bore),open_area_over_bore_mm2=round(A_open),open_area_cad_mm2=round(A_open_cad),motor_in_plate_over_bore_mm2=round(A_motor_cad,1),
         open_fraction_of_bore=round(A_open/A_bore,3),open_area_shadowed_in_plan_mm2=round(A_shad,1),open_area_not_shadowed_mm2=round(A_open-A_shad),
         open_fraction_of_bore_not_shadowed=round((A_open-A_shad)/A_bore,3),bore_fraction_shadowed_in_plan=round(float((inbore&under).sum()/inbore.sum()),3)),
     intake=dict(over_grille=f'Room air through the grille and the 1.0 mm ring round the LD14 motor. Task L: the motor hangs in the intake duct, its rim {MGAP:.1f} mm over the fan frame, and covers the bore\'s front edge: '
-                            f'{A_shad:.0f} mm2 ({A_shad/A_open:.1%}) of the open area over the bore lies under it in plan (the LD14 housing and motor together). The gate counts that shadow as closed; '
-                            f'those cells still draw air sideways from inside the duct under the motor through a curtain about {A_curt:.0f} mm2 ({H_UN:.1f} mm clear over the fan frame × {W_UN:.1f} mm across the window).'
+                            f'the motor\'s own footprint is not open area. {A_shad:.1f} mm2 ({A_shad/A_open:.1%}) of the open area over the bore lies under the LD14 in plan, {A_shad_ring:.1f} mm2 of it the 1.0 mm ring round the motor; the gate counts that shadow as closed; '
+                            f'those cells still draw air sideways {"over the plate, under the LD14 housing," if H_OVER=="plate" else "from inside the duct"} through a curtain about {A_curt:.0f} mm2 ({H_UN:.1f} mm clear over the {H_OVER} × {W_UN:.1f} mm across the window).'
                             if A_shad else 'open room air: nothing above the fan overhangs the bore in plan',
                 lidar_gap_to_column_over_grille_mm=round(_ldw,2),parts_over_grille=_ov,clear_height_under_overhang_mm=round(H_UN,2) if A_shad else None,
                 shadow_width_across_window_mm=round(W_UN,2),side_entry_curtain_mm2=A_curt,ld14_motor_gap_to_fan_mm=round(MGAP,2),
-                method='plan shadow of the mesh triangles of every part above the fan top (tray, lid, fan and fan screws excluded) on the 0.25 mm grid over the bore; clear height = lowest overhanging surface over a shadowed open cell minus the fan top'),
+                method='plan shadow of the mesh triangles of every part above the fan top (tray, lid, fan and fan screws excluded) on the 0.25 mm grid over the bore; clear height = lowest overhanging surface over a shadowed open cell minus the plate top where that surface is above the plate (task L), else minus the fan top'),
     fan_skirt=dict(kind=f'intake duct under the LiDAR tray (task L; until then a skirt under the lid round the window): its fan-window circle r {FW[2]:g} and a circle r {R_MI:g} round the LD14 motor, {SK_T} mm wall; a bowl under the motor beyond the fan\'s front face',
         inner_r_mm=FW[2],wall_mm=SK_T,bottom_z_mm=round(ZSK_,2),gap_to_fan_frame_mm=round(GAP_,2),section_area_mm2=round(SKSEC,1),section_area_unbroken_mm2=round(SKSEC0,1),
         clearance_to_fan_screw_heads_mm=round(FSG,2),notches_over_fan_screw_heads=DUCT_NOTCH,
@@ -2401,7 +2456,7 @@ jetson_cooling=dict(fan_top_z_mm=round(ZFAN_TOP,2),lid_underside_z_mm=ZLID,lid_t
         bowl_slot=dict(gap_to_fan_front_face_mm=round(GAP_SLOT,2),width_mm=round(L_SLOT,1),area_mm2=round(A_slot,1),rule=f'the bowl\'s back wall stays >= {SLOT_G} mm in front of the fan\'s front face'),
         ld14_aperture_leak_mm2=A_ld14,ld14_aperture_open_without_grommet_mm2=LD14_AP[2]*LD14_AP[3],bypass_area_mm2=round(A_byp,1),bypass_fraction_of_grille_open_area=round(A_byp/A_open_cad,3),bypass_limit_fraction=.25,
         feeler_go_nogo_mm=list(SK_FEELER),gap_at_bypass_limit_mm=round((.25*A_open_cad-(A_byp-A_wall))/L_WALL,2),bypass_margin_fraction=round(.25-A_byp/A_open_cad,3),
-        rule='bypass (wall gap × the duct\'s inner outline over the fan frame + the notches + the bowl slot + the LD14 lead aperture left open round its grommet) <= 25 % of the grille open area over the bore (CAD), with >= 1 % margin; the no-go feeler is under the gap at the limit; duct unbroken (section within 1 %); >= 0.5 mm to the fan screw heads and the fan\'s front face; the duct circle >= the fan bore; the LD14 motor >= 1.0 mm from the fan'),
+        rule='bypass (wall gap × the duct\'s inner outline over the fan frame + the notches + the bowl slot + the LD14 lead aperture left open round its grommet) <= 25 % of the grille open area over the bore (CAD: through the plate, less the tray and the LD14 motor standing in its hole), with >= 1 % margin; the no-go feeler is under the gap at the limit; duct unbroken (section within 1 %); >= 0.5 mm to the fan screw heads and the fan\'s front face; the duct circle >= the fan bore; the LD14 motor >= 1.0 mm from the fan'),
     bring_up_test='Lid-on load test before the robot is used: lid, LiDAR and tray fitted, sustained full CPU + GPU load for 20 min, log tegrastats (CPU/GPU/SoC temperatures and clocks) and compare with a lid-off run; the lid passes if the clocks never throttle. Carry into pcb/BRINGUP.md (L11).',
     exhaust=dict(path=f'The fan blows down through the heatsink fins; the warm air leaves the body through the {EX_GAP:g} mm ring gap between the bumper / rear-shell tops and the lid underside, the 7.5 mm bumper seam and the open ring between the base edge and the shells. '
                       'Task I closed the lid over the front bay (until then an open notch of about 7050 mm2, left from the old camera tower): the ring gap alone stays several times the grille\'s open area.',
@@ -2893,7 +2948,8 @@ BOMF['harness']=dict(note='cable-cut-list.json, written by cad/build_robot.py: r
                      net_change_mm=sum(r['final_mm']-r['now_mm'] for r in sp_rows),spike_b_net_change_mm=sum(r['spike_b_mm']-r['now_mm'] for r in sp_rows),
                      note='the factory motor cables (200 mm), the USB / fan / LiDAR leads and the new factory-cable coils are outside the spike table, as there'))
 BP['F01']['notes']+=(' Bay board printed parts: four 2.4 mm spacers (bay_spacer_0–3) and two clamp spacers (bay_clamp_spacer_1 / _3), 100 % infill; two bearing ribs (bay_rib_0 / _1, bonded with epoxy F04); '
-    'the battery tray carries the three hold-down springs (bay_holddown, printed with P_battery_tray, beams freed with a razor saw); the LD14 lead grommet (P_ld14_grommet).')
+    'the battery tray carries the three hold-down springs (bay_holddown, printed with P_battery_tray, beams freed with a razor saw); the LD14 lead grommet (P_ld14_grommet). '
+    'Camera LED shelf (P_camera_led_shelf, task N): clamped on the camera board\'s front under its two upper screws, holds the LED carrier above the lens.')
 BOMF['base_new_cost_usd']=round(sum(p_['new_cost_usd'] for p_ in BOMF['parts'] if p_['status']!='Conditional buy'),2)
 (ROOT/'parts-and-connections.json').write_text(json.dumps(BOMF,indent=2,ensure_ascii=False))
 bq={p['id']:p['quantity'] for p in BOMF['parts']}

@@ -89,6 +89,8 @@ Buy from the BOM (`r1_power_io-bom.csv`; MPNs marked "verify before ordering" we
   62 × 38 × 14 mm envelope), then set 5.1 V on the bench under load before it is wired to U5A / U5B.
 - **J14 / J15 are DNP:** spare pad rows, placed and netted, not fitted (ruling PB8). A bare 2.54 mm header may be fitted later
   (≤ 8.5 mm tall).
+  J15 is now used by the camera LED (task N, LIO-134): the LED lead's three wires are soldered into its holes 3, 5 and 6 as an
+  assembly step, no header (BRINGUP.md section 10 item 6). The board files do not change.
 - **C3** is Panasonic EEE-FK1C101P (100 µF 16 V, 6.3 × 5.8 mm SMD can) at DRV_L's VIN, under the IMU module. It is reflowed with the
   other SMD parts.
 - **Mechanical:** M2.5 × 20 mm nylon F-F standoffs ×2 (the rear Jetson standoffs that clamp the board), M2.5 × 12 countersunk screws ×2

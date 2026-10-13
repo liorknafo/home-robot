@@ -15,7 +15,7 @@
    "sliver_min_extent_mm": 1.0
   }
  },
- "parts_checked": 39,
+ "parts_checked": 40,
  "parts_failed": [],
  "all_pass": true,
  "parts": [
@@ -538,6 +538,32 @@
    "pass": true
   },
   {
+   "part": "P_camera_led_shelf",
+   "best_orientation": "-x down",
+   "size_mm": [
+    6.1,
+    26.0,
+    7.4
+   ],
+   "fits_bed": true,
+   "bed_contact_mm2": 151.0,
+   "overhang_mm2": 0.0,
+   "bridge_mm2": 0.0,
+   "overhang_total_mm2": 0.0,
+   "bridge_regions": [],
+   "watertight": true,
+   "winding_consistent": true,
+   "min_wall_mm": 1.4,
+   "wall_p1_mm": 1.51,
+   "area_thinner_than_1p2_pct": 0.0,
+   "section_min_width_mm": 1.4,
+   "section_slivers": [],
+   "section_thin_tips": 0,
+   "triangles": 1044,
+   "issues": [],
+   "pass": true
+  },
+  {
    "part": "P_camera_mount",
    "best_orientation": "-x down",
    "size_mm": [
@@ -936,7 +962,7 @@
     19.2
    ],
    "fits_bed": true,
-   "bed_contact_mm2": 9233.2,
+   "bed_contact_mm2": 9179.2,
    "overhang_mm2": 39.0,
    "bridge_mm2": 76.8,
    "overhang_total_mm2": 115.8,
@@ -958,11 +984,11 @@
    "winding_consistent": true,
    "min_wall_mm": 0.32,
    "wall_p1_mm": 1.2,
-   "area_thinner_than_1p2_pct": 4.1,
+   "area_thinner_than_1p2_pct": 4.12,
    "section_min_width_mm": 0.02,
    "section_slivers": [],
    "section_thin_tips": 47,
-   "triangles": 8950,
+   "triangles": 8992,
    "issues": [],
    "pass": true
   },

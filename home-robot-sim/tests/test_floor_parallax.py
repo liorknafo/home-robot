@@ -111,6 +111,24 @@ def sofa_drive(name,overhangs=None,**detector):
             if overhangs is not None:overhangs+=[q for q in camera.new_overhangs]
     return out
 
+# Dining chairs (task Q, LIO-137): tests/fixtures/dining-chairs, cut by cut_chair_fixture.py from task N's Unreal mapping trial 2
+# (GI on, errors on, the robot's own estimated poses). There the band pass took the south chair's south-east leg, 0.8-1.3 m
+# away, for an overhang edge (points 31-87 mm high, ranged up to 11 cm short), and the cells sealed the 0.40 m gap between the
+# leg and the wall. Offline annotation (house-scene.json): the chair's legs and the wall / door casing south of it.
+CHAIRS=json.loads((FIXTURE.parent/'dining-chairs/inputs.json').read_text())
+CHAIR_PARTS=[(3.628,3.660,-.240,-.208),(3.628,3.660,.128,.160),(3.280,3.312,-.240,-.208),(3.280,3.312,.128,.160),
+             (2.494,3.656,-.756,-.644),(3.650,3.670,-.764,-.636)]
+def chair_off(q):return min(float(np.hypot(max(b[0]-q[0],0,q[0]-b[1]),max(b[2]-q[1],0,q[1]-b[3]))) for b in CHAIR_PARTS)
+def chair_clip(name):
+    """(confirmed cells, cells reported as overhang edges) for one clip, fed as LidarBrain.observe feeds the detector."""
+    camera=LowObstacleCamera();cells=[];ov=[]
+    with recorded_mount(tuple(CHAIRS['camera_mount_m'])):
+        for r in CHAIRS['sequences'][name]:
+            if not r['geometry_ready']:camera.reset_history();continue
+            cells+=list(camera.process(cv2.imread(str(FIXTURE.parent/'dining-chairs'/r['image']),cv2.IMREAD_GRAYSCALE),r['meta'],np.array(r['estimated_pose'])))
+            ov+=list(camera.new_overhangs)
+    return cells,ov
+
 class FloorParallaxTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -263,8 +281,49 @@ class FloorParallaxTests(unittest.TestCase):
         # lower part of a low object taller than the camera): not one.
         v=CellVoter();edge=np.array([[1.01,0.01,.13],[1.02,.02,.14]]);low=np.array([[1.31,.01,.05],[1.32,.02,.06]])
         pts=np.vstack([edge,low,low+[0,0,.07]]);band=np.array([True,True,False,False,True,True])
-        v.add(pts,[0,0],0,band=band);new,_=v.add(pts,[.04,0],.4,band=band)
+        v.add(pts,[.5,0],0,band=band);new,_=v.add(pts,[.54,0],.4,band=band)   # views from within OVERHANG_MAX_RANGE of the edge
         self.assertEqual(len(new),2);np.testing.assert_allclose(v.new_overhangs,[[1.025,.025]])
+
+    def test_band_pass_points_below_the_blind_band_are_never_an_overhang(self):
+        # A chair leg seen in the band pass's rows: points 6-8.5 cm high (below the LiDAR plane - 3 cm), nothing from the floor
+        # pass (it skips the leg's vertical edges). They confirm a low obstacle, and the high points beside them are no overhang
+        # edge; high points with nothing low near them still are.
+        v=CellVoter();lo=floor_parallax.OVERHANG_MIN_H
+        self.assertAlmostEqual(lo,LIDAR_MOUNT[2]-.03)
+        leg=np.array([[1.01,.01,.06],[1.02,.02,.085]]);top=np.array([[1.06,.01,.11],[1.07,.02,.12]]);edge=np.array([[2.01,.01,lo+.002],[2.02,.02,.14]])
+        pts=np.vstack([leg,top,edge]);band=np.ones(len(pts),bool)
+        v.add(pts,[1.3,0],0,band=band);new,mask=v.add(pts,[1.34,0],.4,band=band)
+        np.testing.assert_allclose(sorted(new.tolist()),[[1.025,.025],[1.075,.025],[2.025,.025]]);np.testing.assert_allclose(v.new_overhangs,[[2.025,.025]])
+        self.assertTrue(mask.all())
+
+    def test_an_overhang_edge_needs_a_view_from_within_0_8_m(self):
+        # Seen only from 0.95-1.0 m (where oblique views range an edge short) the cell is a plain obstacle; one of its two views
+        # from 0.6 m makes it an overhang edge.
+        self.assertAlmostEqual(floor_parallax.OVERHANG_MAX_RANGE,.8)
+        edge=np.array([[1.01,.01,.13],[1.02,.02,.14]]);band=np.ones(2,bool)
+        far=CellVoter();far.add(edge,[0.,0.],0,band=band);new,_=far.add(edge,[.05,0.],.4,band=band)
+        self.assertEqual(len(new),1);self.assertEqual(len(far.new_overhangs),0)
+        near=CellVoter();near.add(edge,[0.,0.],0,band=band);new,_=near.add(edge,[.42,0.],.4,band=band)
+        np.testing.assert_allclose(near.new_overhangs,[[1.025,.025]])
+
+    def test_the_north_east_chair_leg_that_sealed_the_robot_is_not_an_overhang_edge(self):
+        # Task N trial 2 (and task P trial 1): the cell (4.425, 0.725) on a dining-chair leg was confirmed as an overhang edge and the
+        # floor mapped behind it sealed the corridor east of the table. Offline the detector does not repeat that confirmation (cause
+        # not found), so its measurements feed the voter directly: the band-pass points it gives on that leg at 865.1 / 865.3 s
+        # (61-66 mm high, show_points.py), from two camera positions 6 cm apart on the robot's path, 0.99 and 1.05 m from the cell
+        # (offline the detector's views of that leg are 0.98-1.07 m away; live it was confirmed with the robot 1.12 m away). Too low
+        # and too far: plain obstacles (the leg's cell and the one north of it), no overhang edge.
+        pts=np.array([[4.448,.730,.066],[4.425,.742,.061],[4.429,.760,.066],[4.427,.752,.061]]);band=np.ones(len(pts),bool)
+        v=CellVoter();v.add(pts,[4.203,-.296],0.,band=band);new,_=v.add(pts,[4.233,-.244],.2,band=band)
+        np.testing.assert_allclose(sorted(new.tolist()),[[4.425,.725],[4.425,.775]]);self.assertEqual(v.new_overhangs.tolist(),[])
+
+    def test_recorded_dining_chair_legs_are_not_overhang_edges(self):
+        # Task N's trial 2: before the fix both clips gave overhang edges up to 10.7 cm in front of the leg; the floor mapped
+        # behind such edges sealed the robot in. Their cells stay, as low obstacles beside the leg (within 12 cm).
+        for name in CHAIRS['sequences']:
+            cells,ov=chair_clip(name)
+            self.assertEqual([q.tolist() for q in ov],[],name);self.assertGreater(len(cells),0,name)
+            self.assertEqual([q.tolist() for q in cells if chair_off(q)>.12],[],name)
 
     def test_recorded_sofa_base_is_reported_as_an_overhang_edge(self):
         for name in ('straight_y150','angled_p045'):

@@ -39,7 +39,7 @@ from .lidar import inverse
 from .local_planner import choose_velocity,turn_clear,NEARBY
 from .geometry import (AXLE_X,LIDAR_MOUNT,PLAN_RADIUS,TRACK as WHEEL_TRACK,WHEEL_R,CLIFF_XY,CLIFF_Z,BASE_Z,BUMP_ZONES,shell_point as _shell_point,
                        DRIVE_CLEARANCE,BODY_CLEAR,TURN_CLEAR,TURN_MARGIN,SPIN_DRIFT,NARROW_RADIUS,R,R_RIGID,CLOSE_SPIN_CLEAR,BUMPER_SPAN_DEG,
-                       DRIVE_CLEARANCE_LIDAR,GOAL_CLEAR,FIT_CLEAR)
+                       DRIVE_CLEARANCE_LIDAR,GOAL_CLEAR)
 SQRT2=math.sqrt(2)
 REVERSE_LIMIT=.15   # metres; reversing only ever retraces the driven path
 # NARROW_RADIUS (geometry: DRIVE_CLEARANCE = R + 4 cm -> .20) is the fallback planning clearance for narrow
@@ -129,6 +129,17 @@ CLOSE_SPIN_STALL_S=.8;CLOSE_SPIN_STALL_FRACTION=.3;CLOSE_SPIN_RETRY_M=.03;CLOSE_
 # cover at most REVERSE_LIMIT in total.
 TRAIL_TOL=.025;TRAIL_CAP_TOL=.005;TRAIL_JOINT=.01;TRAIL_GAP=.05;TRAIL_PLAN_TOL=.015
 REVERSE_GUARD_M=.02;REVERSE_SETTLE_S=.5;REVERSE_EPISODE_RESET=.05;FORWARD_CLEAR_M=.01
+# Task P (Unreal trials with GI, full-mapping-20261012T183238 / T184036 / T192331): the planners and the guard disagreed about base_link's
+# own position and the first centimetre behind it. (1) The first reverse tick of a back-off began the episode and fixed the
+# trail's newest end there; the body then rolled on into the skin (up to the bumper stop, 7.9 mm past the trip), so base_link stood past
+# it and the guard refused every reverse: 60 s pressed, then "Stuck" (shower tray). Until base_link has backed REVERSE_BACKED_M from
+# where the reverse began, that position follows it forward (command()). (2) A drive forward after a reverse shorter than 1 cm past
+# the newest older sample recorded nothing, and the open episode kept the trail's end where the reverse began: 1 cm past it, 16
+# stall retreats were refused (126 s, dining table). The run driven since a reverse now starts where forward driving began, and
+# base_link is the newest end again once it is recorded (trail_head), inside an episode too. (3) reverse_room tested from 1 cm (the
+# creep: 1 mm) behind base_link in steps, the guard from base_link every REVERSE_GUARD_STEP: reverse_room now never reaches past
+# where the guard would refuse, and a reverse the guard refuses ends the back-off's plan or the retreat (drive_command).
+REVERSE_BACKED_M=.003;REVERSE_GUARD_STEP=.0025
 # A reverse episode ends only after forward travel of at least max(REVERSE_EPISODE_RESET, the distance it
 # reversed), so repeated forward / back cycles cannot walk the robot backward along its trail.
 # Getting off a bumper contact (task G). Unreal trial full-mapping-20261011T054731 met the 6 cm shower tray after a
@@ -304,7 +315,7 @@ class LidarBrain(Brain):
         # that predict() advances with odometry between scans; spin_points averages in it.
         self.scan_pose=np.asarray(pose,float).copy()
         if good and locating and self.imu.ready_to_move():self.phase='plan';self.phase_started=stamp;self.plan_not_before=stamp;self.last_progress=stamp;self.progress_pose=pose.copy();self.translation_anchor=None;self.event('Position verified across three LiDAR scans. Planning a route.')
-        if good and self.mode=='mapping':self.grid.integrate_scan(points,pose,stamp)
+        if good and self.mode=='mapping':self.grid.integrate_scan(points,pose,stamp);self.forget_released_camera_cells()
         if good and (not self.visits or np.linalg.norm(pose[:2]-self.visits[-1])>.15):self.visits.append(pose[:2].copy())
         if good:
             self.note_spin_scan(points,pose,stamp)
@@ -313,10 +324,15 @@ class LidarBrain(Brain):
             # The round body is standing on this cell, so a camera or contact
             # obstacle recorded here was wrong or has moved.
             cell=self.grid.cell(pose[:2])
-            if self.grid.valid(cell) and self.grid.camera_obstacles[cell]:self.grid.camera_obstacles[cell]=self.grid.camera_core[cell]=self.grid.camera_backed[cell]=self.grid.contact_core[cell]=self.grid.overhang_shadow[cell]=False;self.grid.logodds[cell]=-1.
+            if self.grid.valid(cell) and self.grid.camera_obstacles[cell]:
+                self.grid.camera_obstacles[cell]=self.grid.camera_core[cell]=self.grid.camera_backed[cell]=self.grid.contact_core[cell]=self.grid.overhang_shadow[cell]=self.grid.overhang_edge[cell]=False;self.grid.logodds[cell]=-1.
+                self.low_camera.forget([self.grid.world(cell)])
         if self.phase=='confirm_arrival':
             self.arrival_frames=self.arrival_frames+1 if good and np.linalg.norm(pose[:2]-self.arrival_point())<.10 else 0
             if self.arrival_frames>=5:self.mode='idle';self.phase='idle';self.path=[];self.event(self.arrival_message(pose))
+    def forget_released_camera_cells(self):
+        """Cells the grid handed back to the LiDAR (LidarGrid.release_camera_cells) may be confirmed by the camera again."""
+        if self.grid.released:self.low_camera.forget(self.grid.released);self.grid.released=[]
     def record_trail(self,pose,stamp):
         """Driven trail: base_link every 1 cm, reached driving forward or turning only. After a reverse
         nothing is added until base_link has driven FORWARD_CLEAR_M forward again (reversed_since_forward,
@@ -328,6 +344,16 @@ class LidarBrain(Brain):
             if self.trail and not self.trail_break and np.linalg.norm(pose[:2]-self.trail[-1])<.10:self.grid.add_driven(self.trail[-1],pose[:2])
             if self.trail and self.trail_break:self.trail_breaks.append(tuple(float(x) for x in pose[:2]))
             self.trail.append(np.asarray(pose[:2],float).copy());self.trail_break=False
+    def record_driven(self,xy):
+        """Record xy, the newest driven position (where a reverse episode begins, moved up by the body's roll-on before it backs),
+        as a trail sample joined to the newest one (task P). Until then only trail_head held it, as the segment from the newest
+        sample: once the run driven after the reverse was appended, that end of the run before it was lost (up to a scan's
+        travel, sim2d 1.7 cm, plus the roll-on). Only that segment is recorded (xy within TRAIL_GAP of the newest sample, which
+        trail_segments joined anyway): nothing new counts as driven."""
+        if xy is None or not self.trail:return
+        d=float(np.linalg.norm(np.asarray(xy)-self.trail[-1]))
+        if d<.001 or d>TRAIL_GAP:return
+        self.grid.add_driven(self.trail[-1],np.asarray(xy));self.trail.append(np.asarray(xy,float).copy())
     def note_contact(self,stamp,kind,zones=None):
         """Record a touched obstacle ahead and start a short verified back-off."""
         if self.phase=='contact' and stamp-self.phase_started<10:return
@@ -451,10 +477,17 @@ class LidarBrain(Brain):
     def trail_head(self):
         """The newest driven position, which the 1 cm samples lag by up to a sample: base_link now,
         when it got here driving forward or turning AND the newest sample was recorded after the last
-        reverse (no reverse episode, no reverse since that sample, none within REVERSE_SETTLE_S); during a
-        reverse episode the position where it began (if that was such a position); otherwise None."""
+        reverse (no reverse since that sample, none within REVERSE_SETTLE_S; also inside a reverse episode
+        once the drive forward after its reverse is recorded, task P); otherwise, during a reverse episode,
+        the position where it began (if that was such a position; command() moves it up to base_link while
+        the body rolls on forward before it backs); otherwise None."""
+        driving=self.driving_head()
+        if driving is not None:return driving
         ep=getattr(self,'reverse_episode',None)
-        if ep is not None:return ep['start']
+        return None if ep is None else ep['start']
+    def driving_head(self):
+        """base_link now when it got here driving forward or turning since the newest trail sample, which was recorded after
+        the last reverse (trail_head); otherwise None."""
         now=getattr(self.frame,'stamp',None) if getattr(self,'frame',None) is not None else None
         if getattr(self,'requested_motion',(0.,0.))[0]<0 or (now is not None and now-getattr(self,'last_reverse_stamp',-1e9)<REVERSE_SETTLE_S):return None
         if getattr(self,'reversed_since_forward',False) or getattr(self,'trail_break',False):return None
@@ -505,15 +538,24 @@ class LidarBrain(Brain):
     def on_trail(self,points,tolerance=TRAIL_TOL):
         return bool((self.trail_distance(points)<=tolerance).all())
     def reverse_budget(self):
-        """Reverse distance still allowed in the current reverse episode (REVERSE_LIMIT in total)."""
+        """Reverse distance still allowed in the current reverse episode (REVERSE_LIMIT in total). command() adds base_link's move
+        since the episode's last reverse tick when the next reverse starts (a forward drive too short to end the episode
+        included): it is counted here too, so a planned reverse fits what the guard allows (task P)."""
         ep=getattr(self,'reverse_episode',None)
-        return REVERSE_LIMIT if ep is None else max(0.,REVERSE_LIMIT-ep['travelled'])
+        if ep is None:return REVERSE_LIMIT
+        return max(0.,REVERSE_LIMIT-ep['travelled']-float(np.linalg.norm(self.localizer.pose[:2]-ep['last'])))
     def reverse_room(self,limit=REVERSE_LIMIT,tolerance=TRAIL_PLAN_TOL,step=.01):
         """Straight reverse distance that stays on ground the chassis has driven over (within
-        `tolerance` of the driven trail) and within the episode's reverse budget, in `step`s."""
+        `tolerance` of the driven trail) and within the episode's reverse budget, in `step`s. It also never reaches past
+        where command()'s guard would refuse (reverse_on_trail: on_trail from base_link itself, REVERSE_GUARD_STEP apart):
+        the steps skipped base_link and the first step, so past the trail's end, or across a gap between trail runs, a
+        back-off or retreat was planned that the guard then refused every tick (task P)."""
         p=self.localizer.pose;steps=np.arange(step,min(limit,self.reverse_budget()+.03)+1e-6,step)
         if not len(steps):return 0.
-        off=self.trail_distance(p[:2]-steps[:,None]*np.array([math.cos(p[2]),math.sin(p[2])]))>tolerance
+        u=np.array([math.cos(p[2]),math.sin(p[2])]);fine=np.arange(0.,steps[-1]+1e-9,min(step,REVERSE_GUARD_STEP))
+        refused=self.trail_distance(p[:2]-fine[:,None]*u)>TRAIL_TOL
+        if refused[0]:return 0.
+        off=(self.trail_distance(p[:2]-steps[:,None]*u)>tolerance)|(steps>(fine[refused.argmax()-1] if refused.any() else np.inf)+1e-9)
         if not off.any():return float(steps[-1])
         first=int(off.argmax());return float(steps[first-1]) if first else 0.
     def jammed(self,stamp):
@@ -716,7 +758,7 @@ class LidarBrain(Brain):
         free,occupied,_,safe,clearance=self.grid.masks();reach=self.grid.reachable(pose[:2],safe);res=self.grid.res
         pockets=self.grid.unreached_enterable(pose[:2],safe)
         if pockets.sum()*res**2<=1.5:return []
-        body=(~occupied&(clearance>=FIT_CLEAR))|reach;n=self.grid.n
+        body=self.grid.body_fit(reach);n=self.grid.n
         # Breadth-first through body-fit cells from the reachable floor: each cell's step count and the cell it came from.
         steps=np.full(body.shape,-1,np.int32);came={};queue=deque()
         for c in zip(*np.nonzero(reach)):steps[c]=0;queue.append(c)
@@ -1623,13 +1665,23 @@ class LidarBrain(Brain):
         """The next `distance` m (default reverse_guard(v)) of a reverse command keep base_link on the driven trail (on_trail)."""
         distance=self.reverse_guard(v) if distance is None else distance
         rel=self.predicted_centres(v,w,np.linspace(0,distance/max(abs(v),1e-6),9));return self.on_trail(transform(rel,self.localizer.pose))
+    def follow_roll_on(self):
+        """The newest driven position is never behind base_link (task P): until base_link has backed REVERSE_BACKED_M from where
+        the open reverse episode began, forward motion there (the body rolling on into the skin after a press while the drive
+        re-arms for the back-off) moves that position (the episode's start) up to base_link. Within a 45 deg cone of the heading
+        only; it never moves backward."""
+        ep=getattr(self,'reverse_episode',None)
+        if ep is None or ep['start'] is None or ep.get('backed'):return
+        p=self.localizer.pose;d=p[:2]-ep['start'];u=np.array([math.cos(p[2]),math.sin(p[2])]);ahead=float(d@u)
+        if ahead<-REVERSE_BACKED_M:ep['backed']=True
+        elif ahead>0 and abs(d[0]*u[1]-d[1]*u[0])<=ahead:ep['start']=p[:2].copy()
     def command(self,state):
         """drive_command, with a final guard (no rear bumper, rear camera or low-object sensing behind
         the robot): a reverse is sent only while its next reverse_guard(v) (REVERSE_GUARD_M; the creep's
         CONTACT_CREEP_GUARD_M at CONTACT_CREEP_V or slower) stays on the driven trail
         (which reversing never extends, see observe_scan) and its reverse episode has covered less
         than REVERSE_LIMIT."""
-        v,w=self.drive_command(state);p=self.localizer.pose
+        self.follow_roll_on();v,w=self.drive_command(state);p=self.localizer.pose
         # Pressed: send only what the motor core executes as commanded (firmware_executes). With the
         # clamping DriveCore.h core any spin or forward command would become a backward pivot / nothing.
         if not self.firmware_executes(v,w):
@@ -1638,25 +1690,39 @@ class LidarBrain(Brain):
         else:self.pressed_refused=False
         ep=getattr(self,'reverse_episode',None)
         if v<0:
+            head=self.driving_head()
             if ep is None:
                 # The episode starts here: trail_head is this position if it was reached driving forward
                 # after the newest trail sample; otherwise the episode has no start of its own (None).
-                head=self.trail_head();ep=self.reverse_episode=dict(start=None if head is None else np.asarray(head,float).copy(),last=p[:2].copy(),travelled=0.,forward_from=None)
+                head=self.trail_head();ep=self.reverse_episode=dict(start=None if head is None else np.asarray(head,float).copy(),last=p[:2].copy(),travelled=0.,forward_from=None,backed=False)
+                self.record_driven(ep['start'])
+            elif head is not None and not self.reverse_refused:
+                # A reverse inside the episode after driving forward again (recorded, task P) begins at base_link (not after a
+                # refused reverse tick: that left requested_motion at zero, but nothing was driven).
+                ep['start']=np.asarray(head,float).copy();ep['backed']=False;self.record_driven(ep['start'])
             ep['travelled']+=float(np.linalg.norm(p[:2]-ep['last']));ep['last']=p[:2].copy();ep['forward_from']=None
             if ep['travelled']>=REVERSE_LIMIT or not self.reverse_on_trail(v,w):
                 if not self.reverse_refused:self.event('Reverse refused: it would leave the path the robot has driven.' if ep['travelled']<REVERSE_LIMIT else 'Reverse refused: this reverse already covered the reverse limit.')
-                self.reverse_refused=True;return 0.,0.
+                self.reverse_refused=True;self.refused_at=state.get('sim_time_s',0.);return 0.,0.
             self.last_reverse_stamp=state.get('sim_time_s',self.last_reverse_stamp)
             # Nothing is added to the trail until FORWARD_CLEAR_M of forward driving after this reverse.
             self.reversed_since_forward=True;self.forward_mark=None;self.trail_break=True
         else:
-            if v>0 and self.reversed_since_forward:
-                # Forward progress along the heading from where forward driving began (the wheel ramp may
-                # first carry the body a little further back), after the settle time.
-                if self.forward_mark is None:self.forward_mark=p.copy()
-                u=np.array([math.cos(self.forward_mark[2]),math.sin(self.forward_mark[2])])
-                if float((p[:2]-self.forward_mark[:2])@u)>=FORWARD_CLEAR_M and state.get('sim_time_s',0.)-self.last_reverse_stamp>=REVERSE_SETTLE_S:self.reversed_since_forward=False;self.forward_mark=None
+            if v>0 and self.reversed_since_forward and self.forward_mark is None:self.forward_mark=p.copy()
             elif v<=0 and abs(w)>0 and self.forward_mark is not None:self.forward_mark=None
+            if self.reversed_since_forward and self.forward_mark is not None:
+                # Forward progress along the heading from where forward driving began (the wheel ramp may
+                # first carry the body a little further back), after the settle time; checked on every tick, so a short
+                # drive that stops before the settle time ends is recorded too (task P).
+                u=np.array([math.cos(self.forward_mark[2]),math.sin(self.forward_mark[2])])
+                if float((p[:2]-self.forward_mark[:2])@u)>=FORWARD_CLEAR_M and state.get('sim_time_s',0.)-self.last_reverse_stamp>=REVERSE_SETTLE_S:
+                    # The run driven since the reverse starts where forward driving began (on the ground the reverse retraced),
+                    # as a new run (trail_breaks: never joined to the samples before the reverse). Before task P it started at
+                    # the first sample 1 cm past the newest older one: a robot that drove forward less than that stood past the
+                    # end of its trail (Unreal trial full-mapping-20261012T184036: 16 refused stall retreats, 126 s).
+                    if ep is not None:self.record_driven(ep['start'])
+                    m=np.asarray(self.forward_mark[:2],float).copy();self.trail.append(m);self.trail_breaks.append(tuple(float(x) for x in m));self.trail_break=False
+                    self.reversed_since_forward=False;self.forward_mark=None
             if ep is not None:
                 # The episode ends after max(REVERSE_EPISODE_RESET, the distance reversed) of forward travel
                 # (turning does not end it): forward / back cycles cannot walk the robot back along its trail.
@@ -1778,8 +1844,10 @@ class LidarBrain(Brain):
             stopped=t-self.phase_started>10 or abs(wrap(p[2]-self.escape_origin[2]))>.35
             # A creep ends at its planned length even while pressed (it undoes the last forward drive and no more), measured by
             # the wheels (forward_run; mm-exact, unlike the LiDAR pose); the straight back-off goes on while pressed as far as
-            # its own check allows, as before.
-            if ((travelled>=self.backoff-.005 and not self.bumper_pressed) or stopped or (creep and getattr(self,'forward_run',0.)<=self.creep_until+1e-5)
+            # its own check allows, as before. A reverse of this plan that command()'s guard refused ends it too (task P: it used
+            # to be commanded again every tick, refused, until the 10 s time-out).
+            refused=getattr(self,'refused_at',-1e9)>=self.phase_started
+            if ((travelled>=self.backoff-.005 and not self.bumper_pressed) or stopped or refused or (creep and getattr(self,'forward_run',0.)<=self.creep_until+1e-5)
                     or not self.straight_corridor_clear(-1,max(.001 if creep else .01,self.backoff-travelled),True,step=.001 if creep else .01)):
                 # Still pressed: the back-off cannot go on as planned. When its own check refused the rest (the trail
                 # curves away from the straight line, the pose estimate moved, the trail ran out) or a creep is done, it is planned again
@@ -1826,7 +1894,8 @@ class LidarBrain(Brain):
             # Check the remaining motion plus a braking allowance. Requiring
             # another fixed 8 cm on every tick prematurely aborted a 3.5 cm
             # recovery just before it reached its own stopping point.
-            if t-self.phase_started>8 or abs(error)>.35 or not self.retreat_clear(self.retreat_distance-travelled+.025):
+            # A retreat reverse that command()'s guard refused ends it at once (task P: it used to be commanded again every tick).
+            if t-self.phase_started>8 or abs(error)>.35 or getattr(self,'refused_at',-1e9)>=self.phase_started or not self.retreat_clear(self.retreat_distance-travelled+.025):
                 self.skip_goal('The measured retreat could not continue safely.',t);return 0.,0.
             return -.05,float(np.clip(error,-.12,.12))
         if self.phase=='recovery_advance':

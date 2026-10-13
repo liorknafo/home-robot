@@ -41,11 +41,32 @@ Unreal (the user's simulator), the autonomy service and the dashboard run only f
    before you release. Then rebuild Unreal for `main` if your branch changed C++, so the running simulator matches `main`.
 3. Unreal etiquette: back up `~/Library/Logs/HomeRobotSim/` before every relaunch (UE log rotation deleted logs once); quit gracefully
    with UDP `{"quit":true}` to 8767 and wait; never SIGKILL the user's editor; relaunch with `Scripts/launch.command house polished`;
-   start the autonomy service with `$SIMPY` from `controller/` (port 8771).
+   start the autonomy service with `$SIMPY` from `controller/` (port 8771). The user opens the dashboard from their phone and laptop:
+   add `--host 0.0.0.0` (see "Opening the dashboard from a phone or laptop" below).
 4. Release: leave the simulator running on `main` with the service up (the user expects it running), then `rm -rf $SIM/.sim-lock`.
 5. While the lock owner says `benchmark`, do not start route.py / Freerouting or a CAD build (they skew the timing), and keep other
    sim runs light (JOBS=2, at most about 4 processes across all threads). The benchmark owner notes the machine load in its report. One Freerouting JVM
    at a time on this Mac (`-Xmx1g`, one worker).
+
+## Opening the dashboard from a phone or laptop
+
+The robot dashboard normally answers only on this Mac (`http://127.0.0.1:8771/autonomy.html`). To open it from another device on the
+home Wi-Fi, start the service with `--host 0.0.0.0`:
+
+```bash
+Scripts/start-autonomy.command --host 0.0.0.0        # or: cd controller && $SIMPY autonomy_service.py --host 0.0.0.0
+```
+
+- On start it prints the addresses that work, for example `http://Liors-MacBook-Pro.local:8771/autonomy.html` and
+  `http://192.168.1.201:8771/autonomy.html`. Type either one into the phone's or laptop's browser. The `.local` name keeps working
+  when the router gives the Mac a new IP address; the IP address is the fallback if a device cannot find `.local` names.
+- If the macOS firewall is on, macOS asks once whether Python may "accept incoming network connections". Click Allow. If you clicked
+  Deny, change it in System Settings > Network > Firewall > Options.
+- There is no password. Anyone on the home Wi-Fi who opens the page can start Mapping, send the robot somewhere or stop it.
+- Only the dashboard is shared: autonomy.html, the house preview and LiDAR review pages it links, the files those pages load and the
+  `/api` routes. Every other file in the sim folder answers 404 (not found), on this Mac too while the flag is on (restart without
+  the flag to see the other review pages). Without `--host` nothing changes.
+- Double-clicking `Scripts/start-autonomy.command` in Finder starts it for this Mac only; the flag needs Terminal.
 
 ## Notes, reports, review
 

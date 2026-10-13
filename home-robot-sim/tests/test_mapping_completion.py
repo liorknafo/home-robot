@@ -114,6 +114,59 @@ class MappingCompletionTests(unittest.TestCase):
         self.assertNotIn('narrow',' '.join(e['message'] for e in b.events))
         self.assertEqual(b.mode,'idle');self.assertTrue(b.complete)
         self.assertEqual(g.radius,PLAN_RADIUS)
+class UnexploredSpaceTests(unittest.TestCase):
+    """Task R (LIO-153). With the LiDAR 20 mm lower (task L) its beams pass under the bed frame (underside 125 mm, 2.5 mm below
+    the scan plane) whenever the robot pitches nose-down a little, so the floor under the bed is mapped free. The frame's sides
+    are returned too, so that floor is walled in for the body from the room. Yet task H's rule counted it in two Unreal trials
+    (full-mapping-20261013T004512: 0.85 m2, 1.70 m2 in all; ...20261012T230227: 0.29 m2, 1.69 m2 in all; limit 1.5 m2): the
+    body-fit way left the house through a 25 cm stretch of wall the LiDAR never saw behind the vanity, ran round the outside of
+    the house through about 200 never-measured cells (unknown counts as open), and came back in through the wall hidden behind
+    the bed. An unmeasured gap between measured floor still counts as open; unexplored space beyond the measured floor is no
+    way in for the body."""
+    def setUp(self):
+        self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
+    def hidden_walls(self,fence='wall'):
+        b=LidarBrain(self.tmp.name);g=house(fence,b)
+        g.logodds[LO-1,26:31]=0      # 5 cells of outer wall never measured on the robot's side (behind the vanity)
+        g.logodds[HI,86:91]=0        # and 5 behind the pocket (behind the bed, against the outer wall)
+        return b,g
+    def test_the_hidden_wall_stretches_are_no_frontier(self):
+        # As in the house: a stretch of 5 unknown cells in a grazed wall is not a frontier (task B's 10 cm rule), yet the round
+        # body fits through it on the map (15 cm from both wall ends, FIT_CLEAR 10.9 cm).
+        b,g=self.hidden_walls();self.assertFalse(g.frontiers(b.localizer.pose))
+        free,occupied,_,_,clearance=g.masks();self.assertGreaterEqual(clearance[LO-1,28],FIT_CLEAR)
+    def test_floor_walled_in_from_the_room_does_not_count_through_unexplored_space_outside_the_walls(self):
+        for fence in ('wall','posts','marks'):
+            with self.subTest(fence=fence):
+                b,g=self.hidden_walls(fence)
+                self.assertEqual(area(g.unreached_enterable(b.localizer.pose[:2]),g),0.)
+                self.assertTrue(b.mapping_complete())
+    def test_an_unmeasured_gap_between_measured_floor_still_counts(self):
+        # Task H's protection: a wall stretch nobody measured may be open (fence 'unknown': 10 unknown cells), here also with a
+        # band of never-measured floor 60 cm deep on both sides of the gap, and with the hidden outer walls as well.
+        for depth in (0,6):
+            with self.subTest(depth=depth):
+                b,g=self.hidden_walls('unknown');f=POCKET-1;g.logodds[f-depth:f+depth+1,85:95]=0
+                self.assertGreater(area(g.unreached_enterable(b.localizer.pose[:2]),g),1.5)
+                self.assertFalse(b.mapping_complete())
+    def test_an_unmeasured_gap_at_the_grids_edge_still_counts(self):
+        # astra's probe (review 1): the closing must not treat the space beyond the grid as "no floor". The robot's map is 16 m
+        # square about its start, so a wall 7.5 m or more away lies at its edge. Task H's 10-cell gap, in the pocket's fence
+        # right beside the room's outer wall, which is the grid's last row: before the padding the gap's cells were dropped and
+        # the house reported complete.
+        b=LidarBrain(self.tmp.name);g=LidarGrid(size=HI+1);b.grid=g;g.logodds[LO:HI,LO:HI]=-5
+        g.logodds[LO-1,LO-1:HI+1]=5;g.logodds[HI,LO-1:HI+1]=5;g.logodds[LO-1:HI+1,LO-1]=5;g.logodds[LO-1:HI+1,HI]=5
+        f=POCKET-1;g.logodds[f,f:HI]=5;g.logodds[f+1:HI,f]=5;g.logodds[HI-10:HI,f]=0
+        b.localizer.pose=np.r_[g.world((30,30)),0.];b.localizer.uncertainty=.025;b.mode='mapping'
+        b.visits=[g.world((r,c)) for r in range(LO,HI,10) for c in range(LO,HI,10)]
+        self.assertEqual(g.n-1,HI,'the outer wall is the grid\'s last row')
+        self.assertGreater(area(g.unreached_enterable(b.localizer.pose[:2]),g),1.5)
+        self.assertFalse(b.mapping_complete())
+    def test_unexplored_space_next_to_the_robots_floor_is_a_frontier(self):
+        # What holds the map open when a way into a pocket would run through unexplored space wider than a gap: the frontier.
+        b,g=self.brain_with_unexplored_band();self.assertTrue(g.frontiers(b.localizer.pose));self.assertFalse(b.mapping_complete())
+    def brain_with_unexplored_band(self):
+        b,g=self.hidden_walls('unknown');f=POCKET-1;g.logodds[f-15:f+16,80:100]=0;return b,g
 class CoverageTargetTests(unittest.TestCase):
     def test_a_coverage_target_that_drops_out_of_reach_is_not_covered_on_the_way(self):
         # B13 / task F: 13 of 22 (and 17 of 55) 'Target area covered on the way' events came with the robot 1.2-4 m from its

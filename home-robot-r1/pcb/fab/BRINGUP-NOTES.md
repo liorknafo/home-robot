@@ -49,6 +49,10 @@ Collected in B7 from the B3–B6 rulings. B10 folds these into `BRINGUP.md`.
     3.3 V reference).
   - Average over about 2 s so motor starts do not trip it. At the stop: stop the motors, tell the Jetson to shut down; the user then
     switches the rocker off and charges. Do not run NiMH below 1.0 V per cell.
+- **Camera LED:** GP20 (SPARE3, J15 pin 3) = CAMERA_LED, an output, default low. The controller sets it high (LED fully on, about 59 mA from
+  J15 pin 5 through a 39 Ω resistor) while a task drives, mapping or Go-to, and low when idle. No PWM: a rolling-shutter camera would
+  show bands (GP20 is PWM slice 2 A if dimming is ever wanted). A 100 kΩ pull-down at the MOSFET gate keeps the LED off while the Pico
+  boots or resets. J15 stays DNP on the board: the LED lead's three wires are soldered into its holes as an assembly step (BRINGUP.md section 10 item 6).
 - **Jetson:** barrel-jack power needs the Jetson Nano's J48 jumper fitted.
 - **IMU:** the MPU-6050 runs DLPF_CFG = 4 (about 20 Hz) with 20 Hz forwarding (ruling PB27; BRINGUP.md section 14).
 

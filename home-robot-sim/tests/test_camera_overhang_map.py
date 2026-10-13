@@ -8,7 +8,7 @@ not be undone by beams that legitimately pass under them, by task K's close-rang
 HOLD_S), or by task H's completion rules (floor walled in by them is not floor the robot still has to visit). A person's feet
 or a chair's base are camera cells beside legs the LiDAR sees: they are released once the LiDAR has cleared those legs by its
 own rule (lidar.CAMERA_BACK_*)."""
-import unittest,sys,math,tempfile
+import unittest,sys,math,tempfile,json
 from pathlib import Path
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'controller'))
@@ -92,6 +92,29 @@ class CameraOverhangMapTests(unittest.TestCase):
         self.assertTrue(g.camera_backed[tuple(np.array(cs).T)].any(),'set-up: the cells beside the legs are backed')
         self.assertTrue(all(camera(g,cs)) and all(blocked(g,cs)))
 
+    def test_someone_standing_in_front_of_an_overhang_does_not_hand_it_over_when_they_leave(self):
+        # The sofa's face (camera-confirmed overhang edges, legs at its ends 45 cm out), a person's shins 10 cm in front of it for
+        # 10 scans, then gone (astra's probe: before the fix 5 of the 9 face cells were released and mapped free).
+        g=LidarGrid();legs=[(FACE_X+.05,-.45,.03),(FACE_X+.05,.45,.03)];face=np.array([(FACE_X,y) for y in np.arange(-.20,.201,.05)])
+        run(g,at(FACE_X-.40),np.arange(0,5),posts=legs);g.add_camera_obstacles(face,margin=0);g.add_overhang_shadow(face,(FACE_X-.40,0.))
+        cs=cells(g,face);run(g,at(FACE_X-.40),np.arange(5,10),posts=legs)
+        run(g,at(FACE_X-.40),np.arange(10,20),posts=legs+[(FACE_X-.10,0.,.04)]);run(g,at(FACE_X-.40),np.arange(20,40),posts=legs)
+        self.assertTrue(all(camera(g,cs)) and all(blocked(g,cs)),[bool(g.camera_obstacles[c]) for c in cs]);self.assertEqual(g.released,[])
+
+    def test_a_released_cell_can_be_confirmed_by_the_camera_again(self):
+        # The person's feet are released when they leave (above); the map lists the cells, LidarBrain passes them to the camera's
+        # voter, which then confirms them afresh if something stands there again.
+        g=LidarGrid();legs=[(FACE_X,0.,.05)];feet=[(FACE_X-.05,0.)]
+        run(g,at(FACE_X-.40),np.arange(0,5),posts=legs);g.add_camera_obstacles(np.array(feet),margin=0)
+        run(g,at(FACE_X-.40),np.arange(5,40));self.assertEqual([g.cell(p) for p in g.released],cells(g,feet))
+        with tempfile.TemporaryDirectory() as tmp:
+            b=LidarBrain(tmp);b.grid=g;cam=b.low_camera;pts=np.array([[feet[0][0],feet[0][1],.05]]*3)
+            for k,c in enumerate([(0.,0.),(.05,0.)]):cam.voter.add(pts,c,k)
+            self.assertEqual(len(cam.voter.add(pts,(.10,0.),2)[0]),0,'set-up: confirmed once, not again')
+            b.forget_released_camera_cells();self.assertEqual(g.released,[])
+            got=[len(cam.voter.add(pts,c,10+k)[0]) for k,c in enumerate([(.2,0.),(.25,0.)])]
+        self.assertEqual(got,[0,1],'confirmed again after two fresh views')
+
     def test_bumper_and_stall_marks_are_never_handed_to_the_lidar(self):
         g=LidarGrid();legs=[(FACE_X,0.,.05)];marks=[(FACE_X-.05,0.)]
         run(g,at(FACE_X-.40),np.arange(0,5),posts=legs);g.add_camera_obstacles(np.array(marks),margin=0,contact=True);cs=cells(g,marks)
@@ -157,6 +180,37 @@ class CameraOverhangMapTests(unittest.TestCase):
             self.assertEqual(area(g.unreached_enterable(b.localizer.pose[:2]),g),0.);self.assertTrue(b.mapping_complete())
             self.assertLess(b.unvisited_area(),.5)
 
+class SofaSouthEndTests(unittest.TestCase):
+    """The turn into the sofa's south end (task Q, LIO-137). tests/fixtures/sofa-south-end (cut_south_end_fixture.py): task N's
+    Unreal Go-to 'angled_from_north' with the camera LED on, GI on, true level poses. The robot curves round into the 0.57 m gap
+    between the sofa's south legs (x -2.74 and -2.12, y 0.46; the base's face at y 0.33) and its turret meets the end's east part
+    at the clip's end. The camera confirms only the end's west part, beside the west leg (0.44 m before the turret arrives), and
+    nothing of the stretch the robot turns into. No map or motion rule closed the gap safely (task Q report section 2: a rule
+    joining a confirmed edge to the next leg falsely walled in the 2D house); a touch sensor on the LiDAR head is the
+    recommendation. Kept as the fast reproduction: it passes once something stops the turret here."""
+    LEGS=((-2.74,.46),(-2.12,.46));UNDER=(-2.45,1.0)
+    @unittest.expectedFailure
+    def test_recorded_south_end_approach_is_stopped_before_the_turret_arrives(self):
+        import cv2
+        from autonomy.floor_parallax import LowObstacleCamera
+        from autonomy.geometry import NARROW_RADIUS
+        from recorded_camera import recorded_mount
+        F=Path(__file__).parent/'fixtures/sofa-south-end';D=json.loads((F/'inputs.json').read_text())
+        # Measured free floor round the end (only the end leads under the sofa here), the legs as the LiDAR's own obstacles.
+        g=LidarGrid();y0,x0=g.cell((-2.95,-.6));y1,x1=g.cell((-1.95,1.6));g.logodds[y0:y1,x0:x1]=-3;g.seen[y0:y1,x0:x1]=5
+        for leg in self.LEGS:g.logodds[g.cell(leg)]=5
+        g.lidar_logodds=g.logodds.copy();g.radius=NARROW_RADIUS;cam=LowObstacleCamera();closed=None;west=None
+        with recorded_mount(tuple(D['camera_mount_m'])):
+            for r in D['sequences']['angled_from_north']:
+                new=cam.process(cv2.imread(str(F/r['image']),cv2.IMREAD_GRAYSCALE),r['meta'],np.array(r['pose']))
+                if len(new):g.add_camera_obstacles(new,margin=0)
+                if len(cam.new_overhangs):
+                    g.add_overhang_shadow(cam.new_overhangs,cam.camera_xy)
+                    if west is None:west=r['turret_face_gap_m']
+                if closed is None and not len(g.path((-2.43,-.35),self.UNDER)):closed=r['turret_face_gap_m']
+        self.assertIsNotNone(west,'the camera confirms the west part');self.assertGreaterEqual(west,.40)
+        self.assertIsNotNone(closed,'the gap stays open: the turret meets the end');self.assertGreaterEqual(closed,.20)
+
 class PushedStallTests(unittest.TestCase):
     """The LiDAR turret meeting furniture in the blind band stops the wheels in Unreal (full-mapping-20261012T144002: 0.10 m/s
     commanded for 6 s, no motion, the wheels stopped, so no jam and no stall mark; the robot pushed at the sofa's end for 270 s
@@ -173,10 +227,10 @@ class PushedStallTests(unittest.TestCase):
         b,t=self.brain(PUSH_V/2);self.assertFalse(b.pushed_stalled(t),'a creep slower than PUSH_V')
         b,t=self.brain(.10,pressed=True);self.assertFalse(b.pushed_stalled(t),'a bumper contact has its own handling')
         b,t=self.brain(.10,span=PUSH_STALL_S/2);self.assertFalse(b.pushed_stalled(t),'too short')
-    def test_the_drive_loop_settles_it_as_a_jam(self):
-        b,t=self.brain(.10);b.mode='mapping';b.phase='follow';b.requested_motion=(.10,0.);b.maneuver=None
-        b.jammed=lambda t:False;b.translation_stalled=lambda t:False
+    def test_the_three_drive_loops_call_it(self):
+        # Wiring only: the behaviour in the drive loop is tested end to end by scenarios_round's overhang_sofa_wheels_stop.
         src=Path(__file__).resolve().parents[1].joinpath('controller/autonomy/lidar_brain.py').read_text()
         self.assertIn("if self.pushed_stalled(t):",src);self.assertIn("self.begin_jam_settle(t,'Pushing forward does not move the robot.')",src)
+        self.assertEqual(src.count('self.pushed_stalled(t)'),3,'follow, straight retry and Go-to approach')
 
 if __name__=='__main__':unittest.main()

@@ -47,8 +47,32 @@
       "status": "Buy",
       "new_cost_usd": 14.99,
       "source": "https://www.waveshare.com/ov2735-2mp-usb-camera-a.htm",
-      "notes": "Single 25 x 25 mm USB camera; 1080p30, 5 V. Video and future recognition only; no stereo depth. Camera board, lens depth and USB position require actual fit check. Listed price checked 2026-10-03.",
+      "notes": "Single 25 x 25 mm USB camera; 1080p30, 5 V. Video and future recognition only; no stereo depth. Camera board, lens depth and USB position require actual fit check. Listed price checked 2026-10-03. Task N (LIO-134): the white LED E19 sits above the lens on a printed shelf (P_camera_led_shelf) clamped under the two upper board screws (M2 × 8, see H09).",
       "model": "camera"
+    },
+    {
+      "id": "E19",
+      "category": "Sensors",
+      "item": "Samsung LM281B+ Pro 2835 white LED, 5000 K, CRI 80 (SPMWH1228MD5WAR0VK)",
+      "quantity": 2,
+      "unit": "LEDs (one fitted, one spare)",
+      "status": "Buy",
+      "new_cost_usd": 1.0,
+      "source": "https://led.samsung.com/lighting/mid-power-leds/2835-leds/lm281b-plus-pro",
+      "notes": "Task N (LIO-134): one white LED above the front camera lens, facing forward, so the camera has light on the floor and the band in front of the robot in a dark corner. Datasheet values: 37.5 lm at 65 mA, forward voltage 2.7 V, beam angle 120°. Run from J15 pin 5 (5 V) through a 39 Ω resistor: (5 − 2.7) / 39 = 59 mA, so about 37.5 × 59 / 65 = 34 lm and about 10.8 cd on the axis; 0.16 W in the LED, 0.14 W in the resistor, about 0.30 W in all. Emitting face at x 145.8, y 0, z 89.45 mm; the light leaves through the existing camera window in the bumper. A 2.8 × 3.5 × 0.8 mm SMD part: solder it across the cut of the carrier E20 and mind its polarity mark (BRINGUP.md section 10 item 6). On while a task drives, off when idle; no PWM dimming (a rolling-shutter camera would show bands). The price is an estimate; the second LED is a spare for a burnt one. The figures are on the verify list.",
+      "model": "camera_led"
+    },
+    {
+      "id": "E20",
+      "category": "Sensors",
+      "item": "Camera LED carrier: 10 × 3.1 mm piece of 0.8 mm single-sided copper-clad board",
+      "quantity": 1,
+      "unit": "piece (cut from a small sheet)",
+      "status": "Buy / reuse stock",
+      "new_cost_usd": 1.0,
+      "source": "",
+      "notes": "Task N (LIO-134). Cut a piece 10 × 3.1 mm from single-sided copper-clad board (0.8 mm as modelled; check another thickness against the shelf). Split the copper into two pads with a knife cut about 0.5 mm wide across the middle; scrape until a meter shows no connection between the pads. Solder the LED (E19) across the cut, one terminal on each pad, then solder the two wires (26 AWG) to the pads beside the LED and lead them back along the shelf block's sides (keep them under the carrier's top edge: the bumper seam backer passes 2.1 mm over it). Mark the anode pad (BRINGUP.md section 10 item 6). Glue the carrier's back face to the front face of the printed shelf P_camera_led_shelf (epoxy F04 or cyanoacrylate). The price is an estimate for a small sheet; most of it is left over.",
+      "model": "camera_led"
     },
     {
       "id": "E05",
@@ -371,7 +395,7 @@
       "status": "Purchased — verify stock",
       "new_cost_usd": 0,
       "source": "https://www.amazon.com/dp/B09MY5MJ36",
-      "notes": "Two 1×20 male strips, soldered to the Pico (E02) if it has none, before it goes into the bay board's sockets. The board's own sockets and the J4 / J5 right-angle headers are board parts (E18); J14 / J15 are DNP pad rows (fit a bare header only if needed).",
+      "notes": "Two 1×20 male strips, soldered to the Pico (E02) if it has none, before it goes into the bay board's sockets. The board's own sockets and the J4 / J5 right-angle headers are board parts (E18); J14 is a DNP pad row (fit a bare header only if needed). J15 is a DNP pad row that now carries the camera LED lead (task N, LIO-134): its three wires are soldered into the holes, no header.",
       "model": "headers"
     },
     {
@@ -395,7 +419,7 @@
       "status": "Check existing; budget to buy",
       "new_cost_usd": 15,
       "source": "",
-      "notes": "Signal leads from cable-cut-list.json: four cliff-sensor leads W10–W13 (5 wires each: 200 / 250 / 250 / 200 mm), two bumper leads (2 × 250 mm), the arm-button lead W15 (2 × 200 mm) and the toggle loop W14 (2 × 150 mm, 24 AWG): about 6.2 m in all. Multiple colours (the cut list suggests one per pin); twist each signal with its ground where practical. The motor pigtails are 28 AWG silicone (C18).",
+      "notes": "Signal leads from cable-cut-list.json: four cliff-sensor leads W10–W13 (5 wires each: 200 / 250 / 250 / 200 mm), two bumper leads (2 × 250 mm), the arm-button lead W15 (2 × 200 mm) and the toggle loop W14 (2 × 150 mm, 24 AWG): about 6.2 m in all. Multiple colours (the cut list suggests one per pin); twist each signal with its ground where practical. The motor pigtails are 28 AWG silicone (C18). The camera LED lead W21 adds about 0.6 m (3 wires of about 50 mm and 2 of about 230 mm: an estimate).",
       "model": "signal_harness"
     },
     {
@@ -527,7 +551,7 @@
       "status": "Buy",
       "new_cost_usd": 2,
       "source": "",
-      "notes": "Three M3 × 5 socket-head screws for the LD14 lugs, from above through the lugs' Ø3.24 holes (heads in their Ø5.96 counterbores) into M3 heat-set inserts (H12) pressed flush into the LiDAR tray's plate top (task L: the LD14 sits straight on the plate, no towers; confirm the lug web is 2 mm on the delivered LD14P, else pick the length that gives 3 mm of thread), four M3 × 12 screws and nyloc nuts for the tray on the lid (holes at (-35, ±38) and (83, ±35)), two M2.5 × 12 thread-forming screws (camera holder arms into the mount crossbar, from its rear face) and four M2 × 6 thread-forming screws (camera board corners onto the holder; confirm the board's hole pattern).",
+      "notes": "Three M3 × 5 socket-head screws for the LD14 lugs, from above through the lugs' Ø3.24 holes (heads in their Ø5.96 counterbores) into M3 heat-set inserts (H12) pressed flush into the LiDAR tray's plate top (task L: the LD14 sits straight on the plate, no towers; confirm the lug web is 2 mm on the delivered LD14P, else pick the length that gives 3 mm of thread), four M3 × 12 screws and nyloc nuts for the tray on the lid (holes at (-35, ±38) and (83, ±35)), two M2.5 × 12 thread-forming screws (camera holder arms into the mount crossbar, from its rear face) and four thread-forming screws at the camera board corners onto the holder (confirm the board's hole pattern): two M2 × 6 at the lower corners and, since task N (LIO-134), two M2 × 8 at the upper corners, which also clamp the camera LED shelf P_camera_led_shelf (its 2 mm plate takes the extra 2 mm).",
       "model": "fasteners"
     },
     {
@@ -599,7 +623,7 @@
       "status": "Check existing; budget",
       "new_cost_usd": 40,
       "source": "",
-      "notes": "Structural base, round bumper arcs, rear shell, riders, mounts, ventilated cover and the bay board's spacers and bearing ribs (no deck: low-profile layout) (about 0.977 kg as modelled: solid walls ≤ 3 mm, 62 % from 3.6 mm (4 perimeters), linear between), plus the test coupon (print-parts/coupons/P_coupon.stl, about 12 g) and one failed arc (120–150 g each). User has Prusa MK3S (250 × 210 × 210 mm); every part and the coupon pass cad/check_printability.py. P_base (244 × 200 mm): no brim, skirt 1 mm or off. Arcs and shells: 4 perimeters, about 245 °C, part cooling ≤ 30 % up to the rim, then a 50–60 % fan height-range modifier for the inner top rims; brim on the arc ends. Bay board printed parts: four 2.4 mm spacers (bay_spacer_0–3) and two clamp spacers (bay_clamp_spacer_1 / _3), 100 % infill; two bearing ribs (bay_rib_0 / _1, bonded with epoxy F04); the battery tray carries the three hold-down springs (bay_holddown, printed with P_battery_tray, beams freed with a razor saw); the LD14 lead grommet (P_ld14_grommet).",
+      "notes": "Structural base, round bumper arcs, rear shell, riders, mounts, ventilated cover and the bay board's spacers and bearing ribs (no deck: low-profile layout) (about 0.977 kg as modelled: solid walls ≤ 3 mm, 62 % from 3.6 mm (4 perimeters), linear between), plus the test coupon (print-parts/coupons/P_coupon.stl, about 12 g) and one failed arc (120–150 g each). User has Prusa MK3S (250 × 210 × 210 mm); every part and the coupon pass cad/check_printability.py. P_base (244 × 200 mm): no brim, skirt 1 mm or off. Arcs and shells: 4 perimeters, about 245 °C, part cooling ≤ 30 % up to the rim, then a 50–60 % fan height-range modifier for the inner top rims; brim on the arc ends. Bay board printed parts: four 2.4 mm spacers (bay_spacer_0–3) and two clamp spacers (bay_clamp_spacer_1 / _3), 100 % infill; two bearing ribs (bay_rib_0 / _1, bonded with epoxy F04); the battery tray carries the three hold-down springs (bay_holddown, printed with P_battery_tray, beams freed with a razor saw); the LD14 lead grommet (P_ld14_grommet). Camera LED shelf (P_camera_led_shelf, task N): clamped on the camera board's front under its two upper screws, holds the LED carrier above the lens.",
       "model": "printed_parts"
     },
     {
@@ -671,7 +695,7 @@
       "status": "Buy",
       "new_cost_usd": 3,
       "source": "",
-      "notes": "Planning allowance. Task F turned the LD14 round (spin axis x 54), so its side-entry socket faces the other way. Task L (LD14 20 mm lower): the lead now drops straight down from the J28 plug through the lid aperture (grommet) beside it and runs forward under the lid to the adapter; the modelled route is about 71 mm (cable-cut-list.json W20). The supplied ~90 mm lead would leave only about 20 mm of slack for plugging J28 with the LD14 lifted off the tray, so keep this 0.2 m lead. Confirm exact latch, mating gender and pin order; do not substitute a lookalike JST connector without checking.",
+      "notes": "Planning allowance. Task F turned the LD14 round (spin axis x 54), so its side-entry socket faces the other way. Task L (LD14 20 mm lower): the lead now drops straight down from the J28 plug through the lid aperture (grommet) beside it and runs forward under the lid to the adapter; the modelled route is about 71 mm (cable-cut-list.json W20). The supplied ~90 mm lead would leave only about 20 mm of slack for plugging J28 with the LD14 lifted off the tray, so keep this 0.2 m lead (the cut list's 150 mm for W20 is the route plus the usual cutting allowance; 0.2 m is the stock length to buy). Confirm exact latch, mating gender and pin order; do not substitute a lookalike JST connector without checking.",
       "model": "lidar_lead"
     },
     {
@@ -685,6 +709,30 @@
       "source": "Sullins PPPC061LGBN-RC via Digi-Key / Mouser; Pololu 1905 housings and male crimp pins (pololu.com); a 6-colour 28 AWG silicone wire set",
       "notes": "One per motor (ruling PB25 amended; B9). Board end: Sullins PPPC061LGBN-RC: 1x6 2.54 mm right-angle female socket header, through-hole (2.54 mm insulator lying on the board, 8.51 mm deep, tails 3.15 mm; verify), pushed onto J4 / J5's right-angle pins with its six solder tails pointing upward; each wire is lapped 2 mm on a tail tip and soldered under a Ø1.8 mm heat-shrink sleeve, so the wires leave the board upward (socket 2.54 mm tall on the board, tails and sleeves to 8.19 mm over it, inside the 16.27 mm under-carrier zone; the socket and the wires' exit stay 3.2 mm off the motor face) and turn over at >= 3.1 mm radius for the innermost wire (>= 3 × the 1 mm insulation OD). Joint end: a Pololu 1905 1×6 0.1 in crimp housing with six male crimp pins (or a 1×6 straight male header with the wires soldered on if no DuPont crimper). Wire: six 28 AWG silicone wires (Ø1.0 mm), colour-coded red, black, green, blue, yellow, white = pins 1-6 (pins 1-2, the motor pair: 26 AWG thin-wall PTFE / ETFE, OD <= 1.0 mm, preferred if available), in the factory cable's colour order. Pre-cut length = the drawn route + 8.5 mm of terminations (2 lapped on the tail, 2.5 in the sleeve past the tip, 4 in the crimp housing) + the full 12.7 mm pin spread (the six wires fan out 6.35 mm either side of the drawn Ø3 bundle axis at the socket's sleeves and again at the male housing's cavities), rounded up to the mm: left (J4) 61 mm, right (J5) 57 mm per wire. Make each pigtail like this: pre-cut the wires, solder the socket end first, dress the bundle along its route (assembly step 4), then trim each wire to its finished length at its own cavity of the male housing (about 48.1 mm on the J4 bundle axis, 43.8 mm on J5's, each wire within the pin spread of that) and crimp the male pin; no slack (the joint is unplugged before the board is lifted, PB25 amended); cut from bulk wire and crimped (not a stock lead). Tag the two pigtails \"L / J4\" and \"R / J5\" right after making them (they differ in length and pin-1 order). Built alike: looking into the socket's mating face with its tails up, the red wire is on the left (pin 1 on J4's rear end, J5's front end). Polarity: the inline joint is not keyed, so pin 1 is marked on both halves: a paint-pen stripe on the pigtail's male housing at the red wire and on the factory female housing at its red wire; mate stripe to stripe and check the colours run straight across. Each joint is tied down on P_base and the factory cable's spare length is coiled and tied (C12 ties; assembly step 4). They stay with the board. About USD 17 for two (2 sockets about 2.2, the 6-colour 28 AWG set about 12, 2 housings + 12 pins about 3): estimate, verify.",
       "model": "signal_harness"
+    },
+    {
+      "id": "E21",
+      "category": "Connections",
+      "item": "Camera LED inline switch: Microchip TN0702N3-G MOSFET (TO-92), 39 Ω 0.25 W, 100 Ω and 100 kΩ resistors, heat-shrink",
+      "quantity": 1,
+      "unit": "set (buy a spare MOSFET)",
+      "status": "Buy",
+      "new_cost_usd": 3.0,
+      "source": "https://www.microchip.com/content/dam/mchp/documents/APID/ProductDocuments/DataSheets/TN0702-N-Channel-Enhancement-Mode-Vertical-DMOS-FET-Data-Sheet-20005941A.pdf",
+      "notes": "Task N (LIO-134). Built inline in the LED lead W21 on the bench, before the bay board goes in; the routed board does not change. Circuit: J15 hole 5 (5 V) → 39 Ω 0.25 W → LED anode; LED cathode → MOSFET drain; MOSFET source → J15 hole 6 (GND); MOSFET gate ← 100 Ω ← J15 hole 3 (GP20 (SPARE3)); 100 kΩ from gate to source keeps the LED off while the Pico boots or resets. Current: (5 − 2.7 V) / 39 Ω = 59 mA, inside the 0.10 A budget of J15 pin 5; 0.16 W in the LED, 0.14 W in the 39 Ω, about 0.30 W in all. The three wires are soldered into J15 (no header: a mated housing would not fit under the Jetson carrier); the switch sits in heat-shrink in the front bay, past the carrier's front edge, each joint in its own sleeve and the bundle in one more. Check the TN0702N3-G pin order (TO-92) against the datasheet before soldering. About USD 3: estimate, verify.",
+      "model": "camera_led"
+    },
+    {
+      "id": "C21",
+      "category": "Connections",
+      "item": "JST-PH 2-pin plug pair for the camera LED lead (housings PHR-2 and its mate, crimp pins)",
+      "quantity": 1,
+      "unit": "pair (inline plug by the camera mount)",
+      "status": "Buy",
+      "new_cost_usd": 0.5,
+      "source": "",
+      "notes": "Task N (LIO-134). Inline in the LED lead W21, by the camera mount, so the camera unit (with its LED shelf) comes out without desoldering. Pin 1 = LED anode side (red), pin 2 = cathode side (black). Crimp with a JST-PH crimper or buy pre-crimped leads. J15 itself gets no header: the lead is soldered into its holes 3, 5 and 6, because a header with a mated housing (about 17-20 mm with the wire bend) would not fit the 16.27 mm under the Jetson carrier; soldered and laid flat it stays under 6 mm.",
+      "model": "camera_led"
     }
   ],
   "spares": [
@@ -893,6 +941,14 @@
       "Pin 1 PWR/RX, 2 GND, 3 TX, 4 5 V",
       "Use matched 0.2 m replacement/extension; 230400 baud",
       "Do not feed 5 V to RX/TX. No separate power feed when USB adapter supplies 5 V."
+    ],
+    [
+      "J29",
+      "Camera LED lead (W21)",
+      "Soldered into board J15 holes 3, 5 and 6 (DNP spare row under the carrier, no header) → inline switch (E21) in the front bay → JST-PH 2-pin plug (C21) by the camera mount → white LED E19 on its carrier E20, on the camera LED shelf above the lens",
+      "J15: hole 3 = GP20 (SPARE3) (white, gate drive), hole 5 = 5V (red), hole 6 = GND (black); holes 1, 2 and 4 stay empty (hole 4 is 3V3)",
+      "26 AWG silicone",
+      "Inline switch (E21): 5V → 39 Ω → LED anode; LED cathode → TN0702N3-G drain; source → GND; gate ← 100 Ω ← GP20 (SPARE3); 100 kΩ gate to source. 59 mA when on (budget 0.10 A on J15 pin 5). The Pico sets GP20 (SPARE3) high while a task drives and low when idle; no PWM. Solder it on the bench before the board goes in, and check it (BRINGUP.md section 10 item 6)."
     ]
   ],
   "pico_pins": [
@@ -987,9 +1043,14 @@
       "PWM slice 1 A / B; 10k pulldowns"
     ],
     [
-      "GP20 / GP21 / GP22",
-      "Spare GPIO on J15 pins 3 / 2 / 1 (SPARE3 / SPARE2 / SPARE1)",
-      "J15 is a DNP pad row (fit a bare 1×6 header if needed)"
+      "GP20",
+      "Camera LED switch on J15 pin 3 (SPARE3)",
+      "Output, default low; high = LED on while a task drives (via a 100 Ω gate resistor to the TN0702N3-G, 100 kΩ pull-down). Not PWM"
+    ],
+    [
+      "GP21 / GP22",
+      "Spare GPIO on J15 pins 2 / 1 (SPARE2 / SPARE1)",
+      "J15 is a DNP pad row; the camera LED lead is soldered into its holes 3, 5 and 6; holes 1 and 2 are free"
     ],
     [
       "GP26 / ADC0",
@@ -1022,7 +1083,7 @@
       "Pico powered from USB only"
     ]
   ],
-  "base_new_cost_usd": 587.96,
+  "base_new_cost_usd": 593.46,
   "verify": [
     {
       "item": "Sullins PPTC201LFBN-RC / Sullins PPTC081LFBN-RC / Sullins PPTC071LFBN-RC (U1A/U1B, U2, U3L/U3P/U4L/U4P)",
@@ -1184,6 +1245,36 @@
       "item": "JLCPCB plating and default copper",
       "figure": "hole-wall copper about 18 µm minimum (B7: U3P.2 3.11 A against 2.1 A); 4-layer default 1 oz outer / 0.5 oz inner",
       "source": "ORDERING.md verify list",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Samsung LM281B+ Pro 2835 LED, SPMWH1228MD5WAR0VK (E19)",
+      "figure": "5000 K, CRI 80; 37.5 lm at 65 mA; forward voltage 2.7 V; beam angle 120°; package 2.8 × 3.5 × 0.8 mm (the CAD box); with 39 Ω from 5 V: 59 mA, about 34 lm, about 10.8 cd on axis. Also check the polarity mark and the maximum forward current",
+      "source": "https://led.samsung.com/lighting/mid-power-leds/2835-leds/lm281b-plus-pro (Samsung product page; figures from the task N brief, the page was not re-read when these docs were written)",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Microchip TN0702N3-G (E21, the camera LED switch)",
+      "figure": "TO-92 logic-level N-MOSFET; gate threshold at most 1.0–1.6 V; on-resistance specified at gate voltages of 2, 3 and 5 V (check the value at 3.3 V against 59 mA); also check the TO-92 pin order and the maximum gate voltage",
+      "source": "https://www.microchip.com/content/dam/mchp/documents/APID/ProductDocuments/DataSheets/TN0702-N-Channel-Enhancement-Mode-Vertical-DMOS-FET-Data-Sheet-20005941A.pdf (figures from the task N brief; the PDF could not be fetched when these docs were written)",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "J15 pin 5 budget for the camera LED",
+      "figure": "SPARE_5V_A = 0.10 A against 59 mA from the 39 Ω resistor",
+      "source": "pcb/board_spec.py SPARE_5V_A; (5 − 2.7) / 39",
+      "status": "in the repo"
+    },
+    {
+      "item": "Camera lens holder height under the LED shelf block (E04, P_camera_led_shelf)",
+      "figure": "the block's underside is z 87.9, 0.9 mm over the CAD's Ø14 lens allowance (axis z 80): measure the delivered camera's lens holder (it must stay under z 87)",
+      "source": "cad/build_robot.py P_camera_led_shelf note",
+      "status": "from memory: verify"
+    },
+    {
+      "item": "Prices of E19, E20, E21 and C21: about USD 1.0 / 1.0 / 3.0 / 0.5",
+      "figure": "base_new_cost_usd uses them",
+      "source": "task N estimates (LIO-134)",
       "status": "from memory: verify"
     }
   ],
@@ -1699,6 +1790,19 @@
         "pinout": [
           "1 5V (red)",
           "2 GND (black)"
+        ]
+      },
+      {
+        "id": "W21",
+        "name": "Camera LED lead (soldered into J15 → inline switch → JST-PH plug → LED above the camera lens)",
+        "board_end": null,
+        "wire": "3 × 26 AWG silicone (white GP20 (SPARE3), red 5 V, black GND) from J15 to the inline switch, then 2 × 26 AWG (red, black) to the LED",
+        "route_mm": 200,
+        "cut_mm": 300,
+        "pinout": [
+          "3 SPARE3 (white)",
+          "5 5V (red)",
+          "6 GND (black)"
         ]
       }
     ],

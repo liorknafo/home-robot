@@ -69,6 +69,20 @@ public:
  double BumperCostSum=0,BumperCostMax=0,BumperNearCostSum=0,BumperFullCostSum=0,BumperFullCostMax=0;
  int64 BumperTicks=0,BumperNearTicks=0,BumperFullTicks=0;int32 BumperFullRays=0;
  void LogSensorCost();
+ // Camera auto-exposure (task O, LIO-133): a USB-webcam-like loop on the robot camera, see ExposeCamera. CameraEV: exposure
+ // compensation (EV) of the next capture; 0 = the fixed exposure the house was tuned with. CameraNoiseDN: read noise (8-bit
+ // counts) at 0 EV; it grows with the gain above 0 EV.
+ bool bCameraAE=true;double CameraEV=0,CameraNoiseDN=.5;FRandomStream CameraNoise{2741};
+ void ExposeCamera(TArray<FColor>& Pixels);
+ // Render cost (task O): wall time per frame and GPU time, logged as RENDER_COST every 10 s of wall time.
+ double CostWallStart=0,CostLastWall=0,CostSim=0,CostFrameSum=0,CostFrameMax=0,CostGpuSum=0;int64 CostFrames=0;int32 CostCaptures=0;
+ void LogRenderCost();
+ // Camera LED (task N, LIO-134): spot lights at camera_led_mounts_m (robot frame, cm here), one per LED, on-axis
+ // CameraLedCd real candela each, scaled by CameraLedScale to the house's light level (see SetupCameraLeds), switched by
+ // UDP camera_led (duty 0..1).
+ UPROPERTY() TArray<class USpotLightComponent*> CameraLeds;
+ TArray<FVector> CameraLedMounts;double CameraLedCd=0,CameraLedBeamDeg=120,CameraLedCct=5000,CameraLedScale=.020,CameraLedDuty=0;
+ void SetupCameraLeds();void SetCameraLed(double Duty);
  FString LastFaultEvent="none",PreviousFault="startup";double LastFaultTime=-1;
  FVector PreviousVelocity=FVector::ZeroVector;FVector SpecificForce=FVector::ZeroVector;
 };

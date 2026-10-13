@@ -161,6 +161,13 @@ class RobotTests(unittest.TestCase):
             self.assertTrue(calls[-1]['relocalizing']);self.assertFalse(calls[-1]['mapping']);self.assertEqual(b.grid.updates,0);self.assertEqual(b.phase,'recover_view')
             b.localizer.update=lambda frame,**kw:(True,np.zeros(3));b.observe(None,None,{})
             self.assertEqual(b.phase,'plan');self.assertEqual(b.grid.updates,0)
+    def test_camera_led_is_on_while_a_task_drives_and_off_when_idle(self):
+        # Task N (LIO-134): the bridge switches the camera LED with the task (capture active), fully on (no PWM bands).
+        from autonomy_service import bridge_payload
+        self.assertEqual(bridge_payload(.1,0.,False,True)['camera_led'],1.)
+        self.assertEqual(bridge_payload(0.,0.,False,False)['camera_led'],0.)
+        self.assertTrue(bridge_payload(0.,0.,True,True)['motor_power_on'])
+
     def test_brief_simulator_hitch_stops_motion_and_long_outage_disarms(self):
         from autonomy_service import command_freshness
         self.assertEqual(command_freshness(.1,.1),(False,False,'none'))

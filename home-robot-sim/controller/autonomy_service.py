@@ -1,14 +1,22 @@
 """Local robot modes and dashboard. Commands use measured LiDAR/IMU/encoders (or legacy stereo)."""
-import argparse,json,socket,threading,time,queue,cv2,os
+import argparse,json,socket,threading,time,queue,cv2,os,re,ipaddress,subprocess
 from pathlib import Path
 from collections import deque
 from http.server import ThreadingHTTPServer,SimpleHTTPRequestHandler
-from urllib.parse import urlparse
+from urllib.parse import urlparse,urlsplit,unquote
 from autonomy.brain import Brain
 from autonomy.lidar_brain import LidarBrain
 # Simulator only: MPU-6050 / wheel-calibration errors on the raw Unreal sensors (Content/RobotData/sensor-errors.json).
 from sim_sensor_model import SensorErrorModel
 ROOT=Path(__file__).resolve().parents[1]
+# Task N (LIO-134): the camera LED's duty while a task drives (bridge_payload). R1_CAMERA_LED=0 turns it off (simulator A/B runs only).
+CAMERA_LED_DUTY=float(os.environ.get('R1_CAMERA_LED','1'))
+def bridge_payload(v,w,arm,active):
+    """The command sent to the simulator every 50 ms. Camera LED (task N, LIO-134): on while the robot drives a task (mapping
+    or Go-to: capture active), off when idle. Fully on, no PWM dimming: a rolling-shutter camera would show PWM as bands."""
+    payload=dict(v_m_s=v,w_rad_s=w,arm=arm,capture=active,camera_hz=5,motor_power_off=not active,camera_led=CAMERA_LED_DUTY if active else 0.)
+    if arm:payload['motor_power_on']=True
+    return payload
 def command_freshness(decision_age,sensor_age):
     """Simulator bridge: stop motion immediately, disarm on sustained loss."""
     stop_motion=decision_age>.6 or sensor_age>.6
@@ -35,8 +43,7 @@ class RobotIO(threading.Thread):
                     if active and disarm:active=False;self.interlock_reason=reason
                     if self.interlock_reason!='none':self.last_interlock_reason=self.interlock_reason
                     arm=self.arm_pending and active
-                payload=dict(v_m_s=v,w_rad_s=w,arm=arm,capture=active,camera_hz=5,motor_power_off=not active)
-                if arm:payload['motor_power_on']=True
+                payload=bridge_payload(v,w,arm,active)
                 self.sock.sendto(json.dumps(payload).encode(),('127.0.0.1',8767));self.next_send=now+.05
             try:
                 raw=json.loads(self.sock.recv(65535))
@@ -133,10 +140,60 @@ class Application:
         except Exception as exc:
             self.brain.idle('Controller error: '+str(exc));self.status_data=json.dumps(self.brain.status(self.io.latest())).encode();(ROOT/'reports/autonomy-error.json').write_bytes(self.status_data);raise
         finally:self.io.stop()
+# What the dashboard pages load: autonomy.html, the two pages it links, their script, textures and scene data, and the
+# test results lidar-review.html shows. When the service listens on the home network nothing else in the sim folder is
+# served. Only fixed names and plain [A-Za-z0-9_-] folder names match, so '..', '%2e', '\', '//' and '%00' never do.
+DASHBOARD_FILES=re.compile(r'/(?:autonomy|house-preview|lidar-review)\.html'
+    r'|/assets/(?:three\.min\.js|terrazzo-floor\.png|white-paint\.png|house/[a-z]+\.png)'
+    r'|/Content/RobotData/(?:house-scene|house-meshes|assembly-meshes|robot-parameters)\.json'
+    r'|/reports/(?:house-assets-robot-camera\.png|latest-(?:full-mapping|camera|go-to)-test\.json|camera-lidar-tests\.txt'
+    r'|d200-model-test\.txt|camera-replay\.json|house-native-collision\.json|sensor-model\.json)'
+    r'|/reports/[A-Za-z0-9_-]+/(?:trial\.json|results\.json|camera-results\.json|coverage-and-path\.png|final-camera\.png'
+    r'|first-slipper-detection\.png)')
+def serves_lan(host):
+    """True unless the service listens only on this Mac (127.x / localhost)."""
+    if host=='localhost':return False
+    try:return not ipaddress.ip_address(host).is_loopback
+    except ValueError:return True
+def local_host_name():
+    """This Mac's Bonjour name (System Settings > General > Sharing), e.g. Liors-MacBook-Pro; it answers as <name>.local."""
+    try:return subprocess.run(['scutil','--get','LocalHostName'],capture_output=True,text=True,timeout=2).stdout.strip() or None
+    except (OSError,subprocess.SubprocessError):return socket.gethostname().removesuffix('.local') or None
+def lan_address():
+    """The address other devices reach this Mac at (the one on the default route). Connecting a UDP socket sends nothing."""
+    try:
+        with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as s:s.connect(('192.0.2.1',9));return s.getsockname()[0]
+    except OSError:return None
+def dashboard_urls(host,port,name,lan_ip):
+    """The dashboard addresses that answer for this --host."""
+    page=f':{port}/autonomy.html'
+    if not serves_lan(host):return ['http://127.0.0.1'+page]
+    every=host=='0.0.0.0';address=lan_ip if every else host
+    urls=(['http://127.0.0.1'+page] if every else [])+([f'http://{name}.local'+page] if name else [])+([f'http://{address}'+page] if address else [])
+    return list(dict.fromkeys(urls))
 class Handler(SimpleHTTPRequestHandler):
-    app=None
-    def __init__(self,*a,**kw):super().__init__(*a,directory=str(ROOT),**kw)
+    app=None;root=ROOT;restricted=False;host_names=frozenset({'localhost'})
+    def __init__(self,*a,**kw):super().__init__(*a,directory=str(self.root),**kw)
+    def host_ok(self):
+        """Host must be an IP address or one of this Mac's own names. A web page whose domain is re-pointed at this Mac
+        (DNS rebinding) sends its own name, with a matching Origin, and is refused here."""
+        try:name=urlsplit('//'+self.headers.get('Host','')).hostname
+        except ValueError:return False
+        if not name:return False
+        try:ipaddress.ip_address(name);return True
+        except ValueError:return name in self.host_names
+    def send_head(self):
+        # GET and HEAD of files both come here; /api routes are answered before.
+        if self.restricted:
+            path=unquote(urlsplit(self.path).path)
+            if path=='/':self.send_response(302);self.send_header('Location','/autonomy.html');self.send_header('Content-Length','0');self.end_headers();return None
+            if not DASHBOARD_FILES.fullmatch(path):self.send_error(404);return None
+        return super().send_head()
+    def do_HEAD(self):
+        if self.restricted and not self.host_ok():self.send_error(403);return
+        return super().do_HEAD()
     def do_GET(self):
+        if self.restricted and not self.host_ok():self.send_error(403);return
         route=urlparse(self.path).path
         if route=='/api/truth':
             # Display only (3D house view): where the simulator has the robot. The controller never reads this.
@@ -148,8 +205,9 @@ class Handler(SimpleHTTPRequestHandler):
         return super().do_GET()
     def do_POST(self):
         if self.path!='/api/mode':self.send_error(404);return
+        # Same-page check: the dashboard posts from the address it was opened at (127.0.0.1, <name>.local or the LAN IP).
         origin=self.headers.get('Origin');host=self.headers.get('Host')
-        if origin and origin not in ['http://'+host]:self.send_error(403);return
+        if not self.host_ok() or origin and origin!='http://'+host:self.send_error(403);return
         try:
             n=int(self.headers.get('Content-Length','0'))
             if not 0<n<2048:raise ValueError('Invalid message length')
@@ -161,8 +219,21 @@ class Handler(SimpleHTTPRequestHandler):
             self.app.commands.put(obj);self.send_response(202);self.send_header('Content-Type','application/json');self.end_headers();self.wfile.write(b'{"queued":true}')
         except (ValueError,AssertionError):self.send_error(400,'Invalid mode or target')
     def log_message(self,*args):pass
+def parse_args(argv=None):
+    p=argparse.ArgumentParser();p.add_argument('--backend',default='lidar',choices=['lidar','orb','superpoint_lightglue']);p.add_argument('--port',type=int,default=8771)
+    # 127.0.0.1: this Mac only, whole sim folder served. 0.0.0.0 (or this Mac's LAN address): phones and laptops on the
+    # home Wi-Fi can open the dashboard, no password, and only the dashboard files are served (DASHBOARD_FILES).
+    p.add_argument('--host',default='127.0.0.1',help='address to listen on; 0.0.0.0 opens the dashboard to the home network')
+    return p.parse_args(argv)
+def make_server(host,port,app,restricted=None,root=ROOT,local_name=None):
+    name=local_name or local_host_name()
+    names={'localhost',socket.gethostname().lower()}|({name.lower()+'.local'} if name else set())
+    handler=type('DashboardHandler',(Handler,),dict(app=app,root=root,restricted=serves_lan(host) if restricted is None else restricted,host_names=frozenset(names)))
+    return ThreadingHTTPServer((host,port),handler)
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--backend',default='lidar',choices=['lidar','orb','superpoint_lightglue']);p.add_argument('--port',type=int,default=8771);args=p.parse_args();app=Application(args.backend);Handler.app=app;server=ThreadingHTTPServer(('127.0.0.1',args.port),Handler);threading.Thread(target=server.serve_forever,daemon=True).start();print(f'Robot controls: http://127.0.0.1:{args.port}/autonomy.html',flush=True)
+    args=parse_args();app=Application(args.backend);Handler.app=app;server=make_server(args.host,args.port,app);threading.Thread(target=server.serve_forever,daemon=True).start()
+    for url in dashboard_urls(args.host,args.port,local_host_name(),lan_address()):print(f'Robot controls: {url}',flush=True)
+    if serves_lan(args.host):print('Open to the home network: no password, anyone on this Wi-Fi can switch modes. Only the dashboard files are served.',flush=True)
     try:app.run()
     except KeyboardInterrupt:app.stop=True
     finally:server.shutdown()

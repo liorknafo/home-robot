@@ -14,7 +14,7 @@ from pathlib import Path
 P=str(Path(__file__).resolve().parents[1])   # project root
 sys.path.insert(0,P+'/controller');sys.path.insert(0,P+'/tests')
 from autonomy.lidar_brain import LidarBrain,STALL_MARK_SPACING
-from sim2d import World,Sim,Bridge,box,inside,poly_segments,seg_point_distance,run_kitchen_corner,run_side_press,run_overhang,reverse_audit,run_contact_recovery,run_pocket,run_ledge
+from sim2d import World,Sim,Bridge,box,inside,poly_segments,seg_point_distance,run_kitchen_corner,run_side_press,run_overhang,reverse_audit,run_contact_recovery,run_pocket,run_ledge,run_retreat_after_reverse
 walls=[((-1,-1.5),(3,-1.5)),((3,-1.5),(3,1.5)),((3,1.5),(-1,1.5)),((-1,1.5),(-1,-1.5)),((1,-1.5),(1,.6)),((-.6,.9),(-.4,.9)),((2.3,-.9),(2.3,-.6)),((.5,-1.1),(.5,-.8))]
 SC={'tray':dict(low=[box(.45,0.,.5,.5)]),'tray_far':dict(low=[box(.75,-.9,.5,.4)]),'bath':dict(low=[box(2.3,1.1,.8,.4)]),'curb':dict(curbs=[box(.5,.6,.06,.8)]),'empty':{},'sticky':dict(sticky=[(box(.4,0,.3,.3),'turn'),(box(1.8,0,.3,.3),'stop')]),
     'clutter':dict(low=[box(1.8,-.3,.25,.12),box(-.3,.9,.06,.06),box(2.4,.8,.4,.3)],curbs=[box(.3,-.9,.3,.04)])}
@@ -95,17 +95,33 @@ KG={'kitchen_corner_3mm_slip_s4_give_up':dict(diagonal=True,gap=.003,spin_slip_m
 #     room for the 2 cm back-off, so the robot waited for ever (3 mm: the touch comes after 1.6 mm of driving, under the
 #     first version's 2 mm creep minimum).
 #   contact_spin_start_<gap>: the quarter turn at the session start (the trail behind is only the start position).
+#   contact_turn_roll_on_s<seed> (task P): the Unreal GI trials full-mapping-20261012T183238 / T192331 at the shower tray: straight,
+#     then an 11 deg turn at 10 cm/s right before the touch, and the body rolls on 7.5 mm into the skin after the press (sim2d
+#     press_roll_m; the bumper stop is 7.9 mm past the trip). The first reverse tick had fixed the trail's newest end; the
+#     guard then refused every reverse while the plan still fitted: pressed for 60 s, then "Stuck". Seeds 0 and 3 met that.
+#   contact_after_reverse_arc_s<seed> (task P): task N's GI trial full-mapping-20261012T220759 at 585-587 s: weaving, a reverse arc
+#     (-.04 m/s, .4 rad/s, .6 s), forward on an arc (.1 m/s, .4 rad/s, .5 s), then the step 5 mm ahead. Before task P the drive after
+#     the reverse was not on the trail: seeds 0 and 1 refused the back-off and waited pressed (in Unreal: 60 s, then "Stuck").
 # PASS: released within 15 s of the touch, off the step (>= .3 m from the touch) and mapping on, 0 body blocks, the
 # reverse audit clean, the contact on the map.
 CR={'contact_weave':dict(approach='weave',gap=.02),'contact_after_spin_3mm':dict(approach='spin',gap=.003),'contact_after_spin_5mm':dict(approach='spin',gap=.005),'contact_after_spin_10mm':dict(approach='spin',gap=.01),
-    'contact_after_spin_20mm':dict(approach='spin',gap=.02),'contact_spin_start_10mm':dict(approach='spin_start',gap=.01),'contact_spin_start_30mm':dict(approach='spin_start',gap=.03)}
+    'contact_after_spin_20mm':dict(approach='spin',gap=.02),'contact_spin_start_10mm':dict(approach='spin_start',gap=.01),'contact_spin_start_30mm':dict(approach='spin_start',gap=.03),
+    'contact_turn_roll_on_s0':dict(approach='turn',gap=.005,press_roll_m=.0075,seed=0),'contact_turn_roll_on_s3':dict(approach='turn',gap=.005,press_roll_m=.0075,seed=3),
+    'contact_after_reverse_arc_s0':dict(approach='reverse_arc',gap=.005,seed=0),'contact_after_reverse_arc_s1':dict(approach='reverse_arc',gap=.005,seed=1)}
+# Stall retreat after a short reverse (task P, sim2d.run_retreat_after_reverse): the Unreal GI trial full-mapping-20261012T184036 under
+# the dining table: a 1.5 cm reverse, then forward on the local planner's arc (5 cm/s, -.4 rad/s) for .50 / .54 s, just past where the
+# reverse began, then the stall retreat; before task P both were refused at once (.58 s and longer got out on the old code too).
+# PASS: it backs out >= 2.5 cm with no 'Reverse refused', the reverse audit clean, 0 body blocks, mapping on.
+RA={'retreat_after_short_reverse_500ms':dict(forward_s=.50),'retreat_after_short_reverse_540ms':dict(forward_s=.54)}
 # Overhang in the LiDAR's blind band (between the LiDAR plane and the robot top; 147.5-155.15 mm until task L): furniture on legs
 # with its underside in the band (sim2d overhang_world: midway) gives no LiDAR return, no bumper touch and no cliff; only the LiDAR turret meets its edge (sim2d
 # overhang_world / run_overhang). overhang_sofa: mapping beside a 2 x .85 m sofa against a wall; overhang_table: mapping
 # around a 1 x .6 m coffee table; overhang_table_goto: the same room mapped, then Go-to targets straight across the
 # table (the shortest route passes between its legs, under it), each must end 'Arrived'. PASS: see run_overhang
 # (no blind reverse, not stuck, every hit spot recorded as an obstacle and never hit again, at most 3 hits per spot).
-OH={'overhang_sofa':dict(kind='sofa'),'overhang_table':dict(kind='table'),'overhang_table_goto':dict(kind='table',goals=((1.3,-.9),(1.3,.9)))}
+# overhang_sofa_wheels_stop (task M): the same sofa, but the turret's push stops the wheels, as in Unreal (no encoder ticks, so
+# no jam by wheel slip): only LidarBrain.pushed_stalled notices it; the same PASS rules (every hit spot marked, <= 3 hits each).
+OH={'overhang_sofa':dict(kind='sofa'),'overhang_sofa_wheels_stop':dict(kind='sofa',stops_wheels=True),'overhang_table':dict(kind='table'),'overhang_table_goto':dict(kind='table',goals=((1.3,-.9),(1.3,.9)))}
 # Caster caught on a rug edge (sim2d sticky kind 'catch': forward motion that would carry the rear caster onto the strip
 # is blocked at any speed, the wheels keep turning, nothing is sensed): the general jam handling (jam_settle, measured
 # retreat, straight retry, then mark_stall), not only overhangs. Mapping in the room above, with:
@@ -182,7 +198,7 @@ def stat_verdict(name,results):
     return ok,(f"{name} {'PASS' if ok else 'FAIL'} statistical (rulings PB29, PB32), Sim seeds {STAT_SEEDS[0]}-{STAT_SEEDS[-1]}: errors on passed {n['on']}/{len(STAT_SEEDS)}, "
                f"errors off {n['off']}/{len(STAT_SEEDS)}; fails only if on < off - 1"+(f"; '{key}' seeds: on {covered['on']}, off {covered['off']} (>= 1 each)" if key else '')
                +(f'; crashed: {crashed}' if crashed else ''))
-names=sys.argv[1:] or list(SC)+list(KC)+list(SP)+list(GU)+list(KG)+list(CR)+list(OH)+list(CT)+list(PK)+list(LG)
+names=sys.argv[1:] or list(SC)+list(KC)+list(SP)+list(GU)+list(KG)+list(CR)+list(RA)+list(OH)+list(CT)+list(PK)+list(LG)
 runs=[r for n in names for r in (stat_runs(n) if n in STAT else [n])]
 if len(runs)>1:
     # One fresh process per scenario run (module-level state cannot leak between scenarios).
@@ -227,6 +243,9 @@ for name in runs:
         ok&=r['passed'];print(name,'PASS' if r['passed'] else 'FAIL',r,flush=True);continue
     if name in CR:
         r=run_contact_recovery(lambda:LidarBrain(tmp.name),**CR[name]);ok&=r['passed']
+        print(name,'PASS' if r['passed'] else 'FAIL',{k:v for k,v in r.items() if k!='passed'},flush=True);continue
+    if name in RA:
+        r=run_retreat_after_reverse(lambda:LidarBrain(tmp.name),**RA[name]);ok&=r['passed']
         print(name,'PASS' if r['passed'] else 'FAIL',{k:v for k,v in r.items() if k!='passed'},flush=True);continue
     if name in CT:
         r=run_catch(name);ok&=r['passed']

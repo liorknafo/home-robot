@@ -23,12 +23,15 @@ Per frame (5 Hz):
    long straight edge: its flow round trip is checked across it only, the edge must make >= 37 deg with the epipolar line
    (band_min_dg) and each point's uncertainty grows as that angle shrinks. Recorded Unreal drives at the sofa (task M): main's
    detector 0 cells in 5/5; this one 11-17 cells per drive, the first 0.42-0.79 m before the lens reaches the face (the
-   turret is 62 mm behind the lens). Viewed obliquely the edge is ranged short: cells up to ~25 cm in front of it.
+   turret is 62 mm behind the lens). Viewed obliquely the edge is ranged short: cells up to ~25 cm in front of it. Band-pass
+   points lower than OVERHANG_MIN_H (the LiDAR plane - 3 cm) are low obstacles, never overhangs: legs and posts (task Q).
  5 vote: a 5 cm map cell is confirmed once >=2 frames whose camera centres are >=3 cm apart each
    put >=2 points in it. Only newly confirmed cells are returned; reset_history() keeps them. A cell confirmed by band-pass
-   points only, with no floor-pass point ever within one cell of it, is an overhang edge (new_overhangs): a low object taller
-   than the camera also shows its lower part to the floor pass; an overhang has nothing below its edge. The controller maps
-   the free floor behind an overhang edge as under it (LidarGrid.add_overhang_shadow).
+   points at least OVERHANG_MIN_H high only, one view from within OVERHANG_MAX_RANGE, with no lower point ever within one cell
+   of it, is an overhang edge
+   (new_overhangs): a low object taller than the camera also shows its lower part to the floor pass, a leg its lower part to
+   the band pass; an overhang has nothing below its edge. The controller maps the free floor behind an overhang edge as under
+   it (LidarGrid.add_overhang_shadow).
 
 OVERHANG_MARGIN (2 cm above ROBOT_TOP): nose-up pitch raises the turret's front edge (x .084 m) 5 mm at 3.5 deg and 8-9 mm at
 6 deg (the largest pitch in the Unreal trials, a rug edge); the camera height scales every height (2 mm on 80 mm is 4 mm at
@@ -44,6 +47,20 @@ CAMERA_HEIGHT_RANGE=(CAMERA_MOUNT[2]-.03,CAMERA_MOUNT[2]+.03)
 # Highest point reported: the robot top (geometry.ROBOT_TOP, the LiDAR turret cap) plus OVERHANG_MARGIN (see the docstring).
 OVERHANG_MARGIN=.02
 HMAX=ROBOT_TOP+OVERHANG_MARGIN
+# Lowest band-pass point that counts (task Q, LIO-137): the LiDAR plane less 3 cm. The band pass measures every image row above
+# the floor pass's, which at 1 m reaches down to ~5 cm; the floor pass skips near-vertical image edges there, the band pass
+# measures them as well. In task N's Unreal trial 2 it took dining-chair legs 0.8-1.3 m away for overhang edges: points 31-87 mm
+# high, ranged up to 11 cm short, and the edge cells and the floor mapped behind them sealed the robot into a pocket. Something
+# lower than the LiDAR plane is not in its blind band; every point on the Unreal sofa base was 110-155 mm (recorded drives:
+# oblique views range it short and low, the rug lowers it ~1 cm). Band-pass points below this veto the overhang label within
+# one cell, as floor-pass points do (CellVoter); they still confirm cells as low obstacles (the band pass's rows also find the
+# 6 cm shower tray's edge from 0.9 m, which only the camera sees; dropping them cost 1-3 of 3-5 tray cells per recorded trial).
+OVERHANG_MIN_H=LIDAR_MOUNT[2]-.03
+# An overhang edge also needs one of its confirming views from within this range (task Q): seen obliquely the band pass ranges an
+# edge short (sofa: cells up to 25 cm in front of it), the more so the farther. Replays of 4 Unreal trials: every sofa-base
+# overhang cell had a view within 0.8 m (0 of 94 lost); the chair-leg cells the old rule took for overhang edges had 14 of 20
+# none. A cell seen only from farther is a plain obstacle (no floor mapped under it).
+OVERHANG_MAX_RANGE=.8
 from .stereo import wrap
 _POOL=[]
 def _pool():
@@ -188,11 +205,15 @@ class FloorParallax:
 
 class CellVoter:
     """Confirm a map cell after >=need frames (camera centres >=min_move apart) each put >=min_points in it. With band (a mask of
-    the points from the detector's band pass) it also tells overhang edges apart: a cell confirmed by band-pass points only,
-    with no floor-pass point ever within one cell of it (a low object taller than the camera shows its lower part to the floor
-    pass; an overhang has nothing below its edge)."""
-    def __init__(self,res=.05,need=2,min_points=2,min_move=.03,max_age=None):
+    the points from the detector's band pass) it also tells overhang edges apart: a cell confirmed by band-pass points at least
+    overhang_min_h high (OVERHANG_MIN_H) only, one of its views from within overhang_max_range (OVERHANG_MAX_RANGE), with no
+    lower point ever within one cell of it (a low object taller than the
+    camera shows its lower part to the floor pass, a leg or post its lower part to the band pass; an overhang has nothing below
+    its edge). Lower band-pass points still confirm a cell, as a low obstacle (task Q: see OVERHANG_MIN_H)."""
+    def __init__(self,res=.05,need=2,min_points=2,min_move=.03,max_age=None,overhang_min_h=None,overhang_max_range=None):
         self.res=res;self.need=need;self.min_points=min_points;self.min_move=min_move;self.max_age=max_age;self.hits={};self.confirmed=set()
+        self.overhang_min_h=OVERHANG_MIN_H if overhang_min_h is None else overhang_min_h
+        self.overhang_max_range=OVERHANG_MAX_RANGE if overhang_max_range is None else overhang_max_range
         self.floor_seen=set();self.floor_votes=set();self.overhangs=set();self.new_overhangs=np.empty((0,2))
     def clear_pending(self):self.hits={}
     def add(self,world,camera_xy,stamp=0.,band=None):
@@ -202,7 +223,8 @@ class CellVoter:
         if not len(world):return np.empty((0,2)),np.zeros(0,bool)
         ij=np.floor(world[:,:2]/self.res).astype(int);u,inv,cnt=np.unique(ij,axis=0,return_inverse=True,return_counts=True);cam=np.asarray(camera_xy,float)[:2]
         if band is not None:
-            low={tuple(c) for c in ij[~np.asarray(band,bool)].tolist()};self.floor_seen|=low
+            high=np.asarray(band,bool)&(world[:,2]>=self.overhang_min_h)
+            low={tuple(c) for c in ij[~high].tolist()};self.floor_seen|=low
         for cell,m in zip(map(tuple,u.tolist()),cnt):
             if m<self.min_points or cell in self.confirmed:continue
             h=self.hits.setdefault(cell,[])
@@ -211,7 +233,8 @@ class CellVoter:
             if not h or np.linalg.norm(h[-1][0]-cam)>self.min_move:h.append((cam,stamp))
             if len(h)>=self.need:
                 self.confirmed.add(cell);self.hits.pop(cell,None);new.append(cell)
-                if cell not in self.floor_votes and not any((cell[0]+a,cell[1]+b) in self.floor_seen for a in (-1,0,1) for b in (-1,0,1)):self.overhangs.add(cell)
+                near=min(np.linalg.norm(c-(np.array(cell)+.5)*self.res) for c,_ in h)<=self.overhang_max_range
+                if near and cell not in self.floor_votes and not any((cell[0]+a,cell[1]+b) in self.floor_seen for a in (-1,0,1) for b in (-1,0,1)):self.overhangs.add(cell)
         fresh=set(new);mask=np.array([cell in fresh for cell in map(tuple,u.tolist())],bool)[inv.ravel()]
         self.new_overhangs=(np.array([c for c in new if c in self.overhangs],float).reshape(-1,2)+.5)*self.res
         return (np.array(new,float).reshape(-1,2)+.5)*self.res,mask
@@ -228,6 +251,12 @@ class LowObstacleCamera:
         self.detector.reset();self.voter.clear_pending()
         self.status=dict(state='waiting for stable, localized view',new_cells=0,confirmed_cells=len(self.voter.confirmed),obstacle_pixels=[])
     def confirmed_points(self):return self.voter.cells()
+    def forget(self,points):
+        """The map released these cells (the LiDAR cleared what stood there, or the robot stood on them): confirm them afresh
+        if the camera sees something there again."""
+        v=self.voter
+        for p in np.asarray(points,float).reshape(-1,2):
+            c=tuple(np.floor(p/v.res).astype(int).tolist());v.confirmed.discard(c);v.overhangs.discard(c);v.hits.pop(c,None)
     def process(self,image,meta,pose):
         t0=time.perf_counter();gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY) if image.ndim==3 else image.copy()  # history keeps it
         pose=np.asarray(pose,float);world,pixels=self.detector.process(gray,meta,pose)

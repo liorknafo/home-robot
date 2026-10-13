@@ -1,6 +1,6 @@
 import unittest,sys,tempfile,json,math
 from pathlib import Path
-import numpy as np
+import numpy as np,cv2
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'controller'))
 from autonomy.lidar import LidarLocalizer,LidarGrid,scan_points,transform,inverse,relocalization_failure_message
 from autonomy.lidar_brain import LidarBrain
@@ -83,5 +83,45 @@ class RelocalizationTests(unittest.TestCase):
             old.pose[:]=truth;old.last_good_stamp=50.;old.history.append((50.,truth.copy()));b.localizer=old
             b.begin_go_to([-2.35,-1.45],60.)
             self.assertIsNot(b.localizer,old);self.assertEqual(b.phase,'relocalizing');self.assertTrue(near(b.localizer.pose,truth,.001,.001))
+
+TVTILT=Path(__file__).resolve().parent/'fixtures/tv-console-tilt/scans.npz'
+class TvConsoleTiltTests(unittest.TestCase):
+    """Task R (LIO-153). Task Q's Unreal trial 2 (full-mapping-20261013T010812) lost its position 8.8 cm by the TV console while
+    the robot turned in place tilted 1.5-2.6 deg nose-down on the living rug's edge: the console's underside (124.6 mm) is 2.9 mm
+    below the lowered LiDAR plane, so the tilted beams passed under it and returned the partition 0.5 m behind instead of its
+    face. Those returns, about a fifth of each scan, pulled every fit ~2 cm east: in this fixture's loop 9.4 cm while tilted, back to
+    about 1 cm once level. (In Unreal the offset then stayed 6-7.5 cm until 240 s; why is not known.) The fixture
+    (tests/cut_tv_console_fixture.py) re-casts those scans from the true pose and tilt. Not fixed (backlog, LIO-110): leaving such
+    returns out of the fit judged from the prediction locked Unreal trial 2 of task R onto a pose 0.21 m off after the 10 mm
+    threshold (test below), and judged from the full fit's result it ended this fixture 7.7 cm off."""
+    def setUp(self):
+        cv2.setRNGSeed(0)      # the scan matcher's KD-tree index is randomized
+    def run_fixture(self):
+        d=np.load(TVTILT);loc=LidarLocalizer();loc.points=d['map_points'];loc.rebuild();loc.last_key_pose=d['last_key_pose'].copy()
+        est=d['start_estimate'].copy();prev=d['start_true'].copy();errors=[];k=0
+        for stamp,truth,n in zip(d['stamps'],d['true_poses'],d['counts']):
+            points=d['points'][k:k+n];k+=n
+            # Perfect odometry: the prediction is the previous estimate moved by the true motion.
+            c,s=math.cos(prev[2]),math.sin(prev[2]);dx,dy=truth[:2]-prev[:2];delta=np.array([c*dx+s*dy,-s*dx+c*dy,math.remainder(truth[2]-prev[2],2*math.pi)])
+            c,s=math.cos(est[2]),math.sin(est[2]);pred=np.array([est[0]+c*delta[0]-s*delta[1],est[1]+s*delta[0]+c*delta[1],est[2]+delta[2]]);prev=truth
+            loc.pose=pred.copy();loc.history.clear();loc.history.append((float(stamp),pred.copy()))
+            _,est=loc.update_scan(points,float(stamp),mapping=True);est=np.asarray(est,float).copy();errors.append(np.linalg.norm(est[:2]-truth[:2]))
+        return np.array(errors)
+    @unittest.expectedFailure
+    def test_tilted_scans_passing_under_low_furniture_do_not_move_the_estimate(self):
+        e=self.run_fixture();self.assertEqual(len(e),53)
+        self.assertLess(e.max(),.03,'tracking error %.3f m while tilted next to the TV console'%e.max())
+    def test_an_estimate_far_off_is_refused_not_locked_onto_a_false_pose(self):
+        # Task R's Unreal trial 2 (full-mapping-20261013T023710): after the 10 mm threshold at 950.5 s the estimate was 0.39 m off.
+        # A first fix for the class above judged "seen through" from that prediction, dropped the very returns that would correct
+        # it, and tracking accepted poses 0.20-0.22 m off for the last 18 s. With all returns the true fit is more than .20 m from
+        # such a prediction, so it is refused and the robot relocalizes (task Q's trial 4 recovered so within 2 s).
+        d=np.load(Path(__file__).resolve().parent/'fixtures/threshold-offset/scans.npz');loc=LidarLocalizer();loc.points=d['map_points'];loc.rebuild();k=0
+        for stamp,truth,n in zip(d['stamps'],d['true_poses'],d['counts']):
+            points=d['points'][k:k+n];k+=n
+            for off in ([.39,0,0],[.30,0,0]):
+                pred=truth+off;loc.pose=pred.copy();loc.history.clear();loc.history.append((float(stamp),pred.copy()))
+                good,pose=loc.update_scan(points,float(stamp))
+                self.assertTrue(not good or np.linalg.norm(pose[:2]-truth[:2])<.05,(float(stamp),off,good,np.linalg.norm(pose[:2]-truth[:2])))
 
 if __name__=='__main__':unittest.main(verbosity=2)
