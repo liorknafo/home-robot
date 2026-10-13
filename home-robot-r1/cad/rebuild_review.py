@@ -1,5 +1,5 @@
 from pathlib import Path
-import json,html,re
+import json,html,re,sys
 R=Path(__file__).resolve().parents[1];D=json.loads((R/'parts-and-connections.json').read_text());P=json.loads((R/'cad/component-manifest.json').read_text());V=json.loads((R/'cad/validation.json').read_text());C=json.loads((R/'cable-cut-list.json').read_text())
 e=html.escape
 def row(cells):return '<tr>'+''.join('<td>'+x+'</td>' for x in cells)+'</tr>'
@@ -64,5 +64,6 @@ for png in ['robot-assembled.png','robot-exploded.png','robot-internal.png']:   
 s=Path(__file__).with_name('review-template.html').read_text()
 for key,val in repl.items():s=s.replace('@@'+key+'@@',val)
 assert '@@' not in s
-(R/'design-review.html').write_text(s)
+out=Path(sys.argv[sys.argv.index('--out')+1]) if '--out' in sys.argv else R/'design-review.html'   # --out FILE: write there instead (the stale-page test)
+out.write_text(s)
 print('HTML generated:',len(s),'characters')

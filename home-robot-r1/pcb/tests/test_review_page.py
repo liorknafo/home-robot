@@ -81,6 +81,28 @@ class PartsTableLinks(unittest.TestCase):
         has('Specification / allowance', e)
 
 
+@left_out.needs(PAGE)
+@left_out.needs('cad/assembly-meshes.json')
+class PageIsCurrent(unittest.TestCase):
+    def test_committed_page_is_what_the_builder_makes_from_the_current_data(self):
+        """LIO-173: design-review.html was stale for a day after the camera LED commit (cost, part counts, new rows) because nothing checked it.
+        Build the page into a temp file (cad/rebuild_review.py --out) and compare it byte for byte with the committed one."""
+        with tempfile.TemporaryDirectory() as t:
+            out = Path(t) / PAGE
+            r = subprocess.run([sys.executable, str(ROOT / 'cad/rebuild_review.py'), '--out', str(out)], capture_output=True, text=True)
+            self.assertEqual(r.returncode, 0, 'cad/rebuild_review.py failed (if it says an image is older than the meshes: run cad/render_review_images.py first, then '
+                             'python cad/rebuild_review.py): ' + (r.stderr or r.stdout)[-400:])
+            new, old = out.read_bytes(), (ROOT / PAGE).read_bytes()
+        if new != old:
+            lo, hi = 0, min(len(new), len(old))                    # first differing byte, by bisection (only on failure)
+            while lo < hi:
+                mid = (lo + hi) // 2
+                lo, hi = (mid + 1, hi) if new[:mid + 1] == old[:mid + 1] else (lo, mid)
+            self.fail(f'{PAGE} is stale: it differs from what cad/rebuild_review.py builds from the current data (committed {len(old)} bytes, built {len(new)}, '
+                      f'first difference at byte {lo}: committed {old[lo:lo + 60]!r}, built {new[lo:lo + 60]!r}). '
+                      'Run `python cad/rebuild_review.py` and commit the page (if the builder says an image is older than the meshes, run cad/render_review_images.py first).')
+
+
 class StepOnlyBuild(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
