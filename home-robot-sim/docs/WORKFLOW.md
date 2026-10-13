@@ -66,6 +66,9 @@ Scripts/start-autonomy.command --host 0.0.0.0        # or: cd controller && $SIM
 - Only the dashboard is shared: autonomy.html, the house preview and LiDAR review pages it links, the files those pages load and the
   `/api` routes. Every other file in the sim folder answers 404 (not found), on this Mac too while the flag is on (restart without
   the flag to see the other review pages). Without `--host` nothing changes.
+- The robot model page (the R1 design review, with the 3D robot and the STL/STEP downloads) is at `/robot/design-review.html` on the same
+  address, in both modes. It is read from the `home-robot-r1` folder next to the sim folder; from anywhere else add `--r1-dir <folder>`.
+  Only the files that page loads or links are served from the R1 folder.
 - Double-clicking `Scripts/start-autonomy.command` in Finder starts it for this Mac only; the flag needs Terminal.
 
 ## Notes, reports, review

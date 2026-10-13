@@ -150,6 +150,15 @@ DASHBOARD_FILES=re.compile(r'/(?:autonomy|house-preview|lidar-review)\.html'
     r'|d200-model-test\.txt|camera-replay\.json|house-native-collision\.json|sensor-model\.json)'
     r'|/reports/[A-Za-z0-9_-]+/(?:trial\.json|results\.json|camera-results\.json|coverage-and-path\.png|final-camera\.png'
     r'|first-slipper-detection\.png)')
+# LIO-168: the robot model page is the R1 design review, served from the R1 folder under /robot/ (loopback and LAN alike). Exactly what
+# design-review.html loads or links, as the page names it: the page, three.js, its two picture fallbacks, the downloads (GLB, STEP, CAD
+# source, parts data, BOM and ordering notes) and the print-parts STL/STEP files. Nothing else in the R1 folder is served.
+ROBOT_PREFIX='/robot/'
+ROBOT_FILES=re.compile(r'design-review\.html|assets/three\.min\.js|robot-(?:internal|exploded)\.png'
+    r'|cad/(?:home-robot-r1\.(?:glb|step)|build_robot\.py)|parts-and-connections\.json|pcb/fab/(?:ORDERING\.md|r1_power_io-bom\.csv)'
+    r'|print-parts/(?:coupons/)?[A-Za-z0-9_]+\.(?:stl|step)')
+# The R1 repo sits next to this one in the delivered folder. A worktree has no such sibling: pass --r1-dir there.
+DEFAULT_R1_DIR=ROOT.parent/'home-robot-r1'
 def serves_lan(host):
     """True unless the service listens only on this Mac (127.x / localhost)."""
     if host=='localhost':return False
@@ -172,7 +181,7 @@ def dashboard_urls(host,port,name,lan_ip):
     urls=(['http://127.0.0.1'+page] if every else [])+([f'http://{name}.local'+page] if name else [])+([f'http://{address}'+page] if address else [])
     return list(dict.fromkeys(urls))
 class Handler(SimpleHTTPRequestHandler):
-    app=None;root=ROOT;restricted=False;host_names=frozenset({'localhost'})
+    app=None;root=ROOT;restricted=False;host_names=frozenset({'localhost'});r1_dir=DEFAULT_R1_DIR
     def __init__(self,*a,**kw):super().__init__(*a,directory=str(self.root),**kw)
     def host_ok(self):
         """Host must be an IP address or one of this Mac's own names. A web page whose domain is re-pointed at this Mac
@@ -182,8 +191,22 @@ class Handler(SimpleHTTPRequestHandler):
         if not name:return False
         try:ipaddress.ip_address(name);return True
         except ValueError:return name in self.host_names
+    def send_robot_head(self,path):
+        """/robot/<name>: a file of the R1 folder, only if the robot model page uses it (ROBOT_FILES). Same name rule as the dashboard:
+        the matched path has no '..', '%', '\\' or '//', and a link inside the R1 folder that points outside it is refused."""
+        name=path[len(ROBOT_PREFIX):]
+        if not ROBOT_FILES.fullmatch(name):self.send_error(404);return None
+        r1=Path(self.r1_dir)
+        if not r1.is_dir():self.send_error(404,'Robot model not available','The robot model page needs the home-robot-r1 folder next to the sim folder, or start the autonomy service with --r1-dir <folder>.');return None
+        try:
+            if not (r1/name).resolve().is_relative_to(r1.resolve()):self.send_error(404);return None
+        except (OSError,RuntimeError):self.send_error(404);return None
+        self.directory=str(r1);self.path='/'+name   # per-request handler: the next request starts from the sim folder again
+        return super(Handler,self).send_head()
     def send_head(self):
         # GET and HEAD of files both come here; /api routes are answered before.
+        path=unquote(urlsplit(self.path).path)
+        if path.startswith(ROBOT_PREFIX):return self.send_robot_head(path)
         if self.restricted:
             path=unquote(urlsplit(self.path).path)
             if path=='/':self.send_response(302);self.send_header('Location','/autonomy.html');self.send_header('Content-Length','0');self.end_headers();return None
@@ -224,15 +247,18 @@ def parse_args(argv=None):
     # 127.0.0.1: this Mac only, whole sim folder served. 0.0.0.0 (or this Mac's LAN address): phones and laptops on the
     # home Wi-Fi can open the dashboard, no password, and only the dashboard files are served (DASHBOARD_FILES).
     p.add_argument('--host',default='127.0.0.1',help='address to listen on; 0.0.0.0 opens the dashboard to the home network')
+    # The robot model page (/robot/design-review.html) is read from the R1 repo folder; missing folder = that page answers 404.
+    p.add_argument('--r1-dir',type=Path,default=DEFAULT_R1_DIR,help='home-robot-r1 folder that holds design-review.html (default: next to the sim folder)')
     return p.parse_args(argv)
-def make_server(host,port,app,restricted=None,root=ROOT,local_name=None):
+def make_server(host,port,app,restricted=None,root=ROOT,local_name=None,r1_dir=None):
     name=local_name or local_host_name()
     names={'localhost',socket.gethostname().lower()}|({name.lower()+'.local'} if name else set())
-    handler=type('DashboardHandler',(Handler,),dict(app=app,root=root,restricted=serves_lan(host) if restricted is None else restricted,host_names=frozenset(names)))
+    handler=type('DashboardHandler',(Handler,),dict(app=app,root=root,restricted=serves_lan(host) if restricted is None else restricted,host_names=frozenset(names),r1_dir=DEFAULT_R1_DIR if r1_dir is None else Path(r1_dir)))
     return ThreadingHTTPServer((host,port),handler)
 if __name__=='__main__':
-    args=parse_args();app=Application(args.backend);Handler.app=app;server=make_server(args.host,args.port,app);threading.Thread(target=server.serve_forever,daemon=True).start()
+    args=parse_args();app=Application(args.backend);Handler.app=app;server=make_server(args.host,args.port,app,r1_dir=args.r1_dir);threading.Thread(target=server.serve_forever,daemon=True).start()
     for url in dashboard_urls(args.host,args.port,local_host_name(),lan_address()):print(f'Robot controls: {url}',flush=True)
+    print(f'Robot model page: /robot/design-review.html from {args.r1_dir}' if (args.r1_dir/'design-review.html').is_file() else f'Robot model page unavailable: {args.r1_dir/"design-review.html"} not found (start with --r1-dir <home-robot-r1 folder>)',flush=True)
     if serves_lan(args.host):print('Open to the home network: no password, anyone on this Wi-Fi can switch modes. Only the dashboard files are served.',flush=True)
     try:app.run()
     except KeyboardInterrupt:app.stop=True
