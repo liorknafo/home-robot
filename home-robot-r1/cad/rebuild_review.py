@@ -1,12 +1,14 @@
 from pathlib import Path
-import json,html
+import json,html,re
 R=Path(__file__).resolve().parents[1];D=json.loads((R/'parts-and-connections.json').read_text());P=json.loads((R/'cad/component-manifest.json').read_text());V=json.loads((R/'cad/validation.json').read_text());C=json.loads((R/'cable-cut-list.json').read_text())
 e=html.escape
 def row(cells):return '<tr>'+''.join('<td>'+x+'</td>' for x in cells)+'</tr>'
 bom=[]
 for p in D['parts']:
     kind='conditional' if p['status']=='Conditional buy' else ('reuse' if p['new_cost_usd']==0 else 'buy')
-    link='<a href="'+e(p['source'])+'" target="_blank" rel="noopener">Product / source ↗</a>' if p['source'] else 'Specification / allowance; choose supplier after fit check.'
+    src=p['source']   # a web page, or a file of this repo (pcb/fab/ORDERING.md); anything else is shown as plain text, never as a dead link
+    if re.fullmatch(r'https?://\S+',src) or src and (R/src).is_file() and (R/src).resolve().is_relative_to(R.resolve()):link='<a href="'+e(src)+'" target="_blank" rel="noopener">'+e(p.get('source_label','Product / source'))+' ↗</a>'
+    else:link=('Source (no link): '+e(src)) if src else 'Specification / allowance; choose supplier after fit check.'
     bom.append(f'<tr data-kind="{kind}"><td class="id">{p["id"]}</td><td class="item"><strong>{e(p["item"])}</strong><details><summary>Specification and source</summary><p>{e(p["notes"])}</p><p>{link}</p></details></td><td>{p["quantity"]} {e(p["unit"])}</td><td>{e(p["status"])}</td><td class="number">${p["new_cost_usd"]:.2f}</td></tr>')
 prints=[]
 byid={p['id']:p for p in P}
@@ -56,8 +58,9 @@ repl={'COSTNOTE':costnote,'MUCRIT':str(fl['min_mu_vert_crit']),'MUEQ':str(fl['mi
     'CASTERPCT':f"{100*c['caster_load_fraction']:.0f}",'PITCH':f"{c['forward_pitch_onset_decel_m_s2']:.2f}",'THRESH':vd('step_8mm')+', and '+vd('step_10mm'),
     'LEAD':str(cl['rear_cliff_lead_over_caster_reverse_mm']),'COASTLEAD':str(cl['stopping']['coast_without_rolling_drag']['required_lead_mm']),**extra,'NLINES':str(len(D['parts'])),
     'OPTIONS':''.join(f'<option value="{p["id"]}">{e(p["name"])} · {p["id"]}</option>' for p in P),'BOM':''.join(bom),'SPARES':''.join(row([e(c) for c in a]) for a in D['spares']),'CONNECTORS':''.join(conn),'PINS':''.join(row([e(c) for c in a]) for a in D['pico_pins']),'CABLES':''.join(cables),'PRINTS':''.join(prints),'MESH':(R/'cad/assembly-meshes.json').read_text(),'CHECKSUMMARY':summary(),'COST':f"${D['base_new_cost_usd']:.2f}",'W20ROUTE':str(next(c['route_mm'] for c in C if c['id']=='W20')),'LIDARX':fx(PA['lidar_x']),'LIDARH':fx(PA['lidar_height']),'CAMH':fx(PA['camera_height']),'BUMPZ':'–'.join(fx(z) for z in PA['bumper_z']),'BUMPTOP':fx(PA['bumper_z'][1]),'HEIGHT':f"{V['summary']['robot_height_mm']:.0f}",'NPRINT':str(len(V['printed_parts']))}
+SLACK_S=120   # a git checkout stamps the meshes and the images within seconds, in any order; a real stale image is minutes older than the build
 for png in ['robot-assembled.png','robot-exploded.png','robot-internal.png']:   # the review images must be rendered from the current build
-    if (R/png).stat().st_mtime<(R/'cad/assembly-meshes.json').stat().st_mtime:raise SystemExit(f'{png} is older than cad/assembly-meshes.json: re-render it (cad/render_review_images.py) before rebuilding the review')
+    if (R/png).stat().st_mtime<(R/'cad/assembly-meshes.json').stat().st_mtime-SLACK_S:raise SystemExit(f'{png} is older than cad/assembly-meshes.json: re-render it (cad/render_review_images.py) before rebuilding the review')
 s=Path(__file__).with_name('review-template.html').read_text()
 for key,val in repl.items():s=s.replace('@@'+key+'@@',val)
 assert '@@' not in s

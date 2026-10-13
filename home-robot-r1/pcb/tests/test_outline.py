@@ -4,6 +4,7 @@ from pathlib import Path
 try: import numpy as np
 except ImportError: np = None            # the mesh tests need numpy (the CAD venv has it); the JSON-only tests do not
 from pcb import board_spec as B
+from pcb.tests.left_out import needs
 OUT = Path(B.__file__).parent / 'board_outline.json'
 CAD = Path(B.__file__).parents[1] / 'cad'
 MANIFEST = CAD / 'component-manifest.json'
@@ -312,6 +313,7 @@ def board_cells(on_board, size=1.0):
             cells.append(((min(xa, xb) + e, min(ya, yb) + e, max(xa, xb) - e, max(ya, yb) - e), B.max_part_h_at(*c), c))
     return cells
 
+@needs('cad/assembly-meshes.json')
 @unittest.skipIf(np is None, 'needs numpy (CAD venv)')
 class RealGeometryTests(unittest.TestCase):
     """Independent of extract_outline.py: sample the real meshes of every part that stays and check the written outline against them."""
@@ -414,6 +416,7 @@ class RealGeometryTests(unittest.TestCase):
             for _, P in self.slab_points(win, ids=[i], sweep=[(s * travel * d[0], s * travel * d[1]) for s in np.linspace(0, 1, 6)]):
                 self.assertGreaterEqual(float(self.clear_of_board(P).min()), MARGIN - 1e-6, i)
 
+@needs('cad/assembly-meshes.json')
 @unittest.skipIf(np is None, 'needs numpy (CAD venv)')
 class BoardHeightTests(unittest.TestCase):
     @classmethod

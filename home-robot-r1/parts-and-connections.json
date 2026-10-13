@@ -58,7 +58,8 @@
       "unit": "LEDs (one fitted, one spare)",
       "status": "Buy",
       "new_cost_usd": 1.0,
-      "source": "https://led.samsung.com/lighting/mid-power-leds/2835-leds/lm281b-plus-pro",
+      "source": "https://www1.futurelightingsolutions.com/FutureLightingFiles/Datasheets/LEDDatasheets/Data_Sheet_LM281B_plus_Pro_VK_General_Rev_1.2.pdf",
+      "source_label": "Samsung LM281B+ Pro datasheet (VK rank, via Future Lighting)",
       "notes": "Task N (LIO-134): one white LED above the front camera lens, facing forward, so the camera has light on the floor and the band in front of the robot in a dark corner. Datasheet values: 37.5 lm at 65 mA, forward voltage 2.7 V, beam angle 120°. Run from J15 pin 5 (5 V) through a 39 Ω resistor: (5 − 2.7) / 39 = 59 mA, so about 37.5 × 59 / 65 = 34 lm and about 10.8 cd on the axis; 0.16 W in the LED, 0.14 W in the resistor, about 0.30 W in all. Emitting face at x 145.8, y 0, z 89.45 mm; the light leaves through the existing camera window in the bumper. A 2.8 × 3.5 × 0.8 mm SMD part: solder it across the cut of the carrier E20 and mind its polarity mark (BRINGUP.md section 10 item 6). On while a task drives, off when idle; no PWM dimming (a rolling-shutter camera would show bands). The price is an estimate; the second LED is a spare for a burnt one. The figures are on the verify list.",
       "model": "camera_led"
     },
@@ -346,7 +347,8 @@
       "unit": "connector (buy a few: they are sold in pairs / packs)",
       "status": "Buy",
       "new_cost_usd": 1.0,
-      "source": "AMASS XT30U-F (LCSC / hobby suppliers)",
+      "source": "https://www.lcsc.com/product-detail/plug_Changzhou-Amass-Elec-XT30U-F_C99102.html",
+      "source_label": "AMASS XT30U-F at LCSC",
       "notes": "Mates J1, the board's AMASS XT30UPB-M vertical PCB male (E18), from above with the lid off; the female (shrouded) half is on the source side, as the XT30 convention says. Solder 18 AWG: the red battery-plus wire on its \"+\" contact (cavity 2, mates J1 pin 2 BAT+), the black battery-minus wire on its \"−\" contact (cavity 1, mates J1 pin 1 GND); heat-shrink each joint; tag the lead \"J1 BATT\". The housing is D-shaped (it mates only one way round), but a lead soldered the wrong way round still mates: do the fail-safe meter check (assembly step 0). XT30: 15 A continuous (verify before ordering). Ruling PB30: J1 / J2 / J3 are three connector families, so this lead fits no other header.",
       "model": "bay_plug_J1"
     },
@@ -358,7 +360,8 @@
       "unit": "set (buy spare terminals)",
       "status": "Buy",
       "new_cost_usd": 1.5,
-      "source": "Molex 43645-0200 and the 43030-series crimp terminal for 18 AWG (Digi-Key / Mouser)",
+      "source": "https://www.digikey.com/en/products/detail/molex/0436450200/268974",
+      "source_label": "Molex 43645-0200 at Digi-Key",
       "notes": "Mates J3, the board's Molex 43650-0200 right-angle Micro-Fit header (E18), from beyond the board's right edge, latch up. Circuit 1 = 5 V (red, to the barrel plug centre), circuit 2 = GND (black, to the sleeve); tag the lead \"J3 JETSON 5V\". Micro-Fit 3.0, 2 circuits on 18 AWG: 8.5 A per circuit (Molex derating table, from memory) against the Jetson's 4.5 A. Crimp with a Micro-Fit crimper (or a good open-barrel crimper); the exact 43030 terminal part number for 18 AWG and the rating: verify before ordering. Ruling PB30: a Micro-Fit fits neither J1 (XT30) nor J2 (JST VH).",
       "model": "bay_plug_J3"
     },
@@ -706,7 +709,8 @@
       "unit": "pigtails (made up)",
       "status": "Buy",
       "new_cost_usd": 17.0,
-      "source": "Sullins PPPC061LGBN-RC via Digi-Key / Mouser; Pololu 1905 housings and male crimp pins (pololu.com); a 6-colour 28 AWG silicone wire set",
+      "source": "https://www.digikey.com/en/products/detail/sullins-connector-solutions/PPPC061LGBN-RC/775939",
+      "source_label": "Sullins PPPC061LGBN-RC at Digi-Key",
       "notes": "One per motor (ruling PB25 amended; B9). Board end: Sullins PPPC061LGBN-RC: 1x6 2.54 mm right-angle female socket header, through-hole (2.54 mm insulator lying on the board, 8.51 mm deep, tails 3.15 mm; verify), pushed onto J4 / J5's right-angle pins with its six solder tails pointing upward; each wire is lapped 2 mm on a tail tip and soldered under a Ø1.8 mm heat-shrink sleeve, so the wires leave the board upward (socket 2.54 mm tall on the board, tails and sleeves to 8.19 mm over it, inside the 16.27 mm under-carrier zone; the socket and the wires' exit stay 3.2 mm off the motor face) and turn over at >= 3.1 mm radius for the innermost wire (>= 3 × the 1 mm insulation OD). Joint end: a Pololu 1905 1×6 0.1 in crimp housing with six male crimp pins (or a 1×6 straight male header with the wires soldered on if no DuPont crimper). Wire: six 28 AWG silicone wires (Ø1.0 mm), colour-coded red, black, green, blue, yellow, white = pins 1-6 (pins 1-2, the motor pair: 26 AWG thin-wall PTFE / ETFE, OD <= 1.0 mm, preferred if available), in the factory cable's colour order. Pre-cut length = the drawn route + 8.5 mm of terminations (2 lapped on the tail, 2.5 in the sleeve past the tip, 4 in the crimp housing) + the full 12.7 mm pin spread (the six wires fan out 6.35 mm either side of the drawn Ø3 bundle axis at the socket's sleeves and again at the male housing's cavities), rounded up to the mm: left (J4) 61 mm, right (J5) 57 mm per wire. Make each pigtail like this: pre-cut the wires, solder the socket end first, dress the bundle along its route (assembly step 4), then trim each wire to its finished length at its own cavity of the male housing (about 48.1 mm on the J4 bundle axis, 43.8 mm on J5's, each wire within the pin spread of that) and crimp the male pin; no slack (the joint is unplugged before the board is lifted, PB25 amended); cut from bulk wire and crimped (not a stock lead). Tag the two pigtails \"L / J4\" and \"R / J5\" right after making them (they differ in length and pin-1 order). Built alike: looking into the socket's mating face with its tails up, the red wire is on the left (pin 1 on J4's rear end, J5's front end). Polarity: the inline joint is not keyed, so pin 1 is marked on both halves: a paint-pen stripe on the pigtail's male housing at the red wire and on the factory female housing at its red wire; mate stripe to stripe and check the colours run straight across. Each joint is tied down on P_base and the factory cable's spare length is coiled and tied (C12 ties; assembly step 4). They stay with the board. About USD 17 for two (2 sockets about 2.2, the 6-colour 28 AWG set about 12, 2 housings + 12 pins about 3): estimate, verify.",
       "model": "signal_harness"
     },

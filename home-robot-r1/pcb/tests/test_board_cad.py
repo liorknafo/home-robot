@@ -12,6 +12,7 @@ from pathlib import Path
 try: import numpy as np
 except ImportError: np = None            # the lid-coverage test needs numpy (the CAD venv has it); the JSON-only tests do not
 from pcb import board_spec as B
+from pcb.tests.left_out import needs
 D = Path(B.__file__).parent
 BC_PATH = D / 'board_cad.json'
 OUTLINE = json.loads((D / 'board_outline.json').read_text())
@@ -311,6 +312,7 @@ class RobotCadTests(unittest.TestCase):
         self.assertLessEqual(fs['bypass_fraction_of_grille_open_area'], fs['bypass_limit_fraction'])
         self.assertTrue(self.v['jetson_cooling']['ok'])
 
+    @needs('cad/assembly-meshes.json')
     @unittest.skipIf(np is None, 'needs numpy (the CAD venv has it)')
     def test_lid_closes_the_front_bay(self):
         """Task I: the lid's old front notch (x 88 to the rim, |y| <= 58, cut for the camera tower that task F removed) is closed: every
@@ -352,6 +354,7 @@ class RobotCadTests(unittest.TestCase):
             self.assertAlmostEqual(lowest(px, py), sr['ceiling_z_mm'], places=2)
         self.assertAlmostEqual(lowest(sr['x_from_mm'] - 2.0, 0.0), self.v['jetson_cooling']['lid_underside_z_mm'], places=2)
 
+    @needs('cad/assembly-meshes.json')
     def test_cooling_counts_the_ld14_overhang_and_the_exhaust(self):
         """Task I: the turned-round LD14's motor end overhangs the fan grille's front edge (task F open item); the cooling gate counts its plan
         shadow as closed and still keeps half the fan bore open; the shadowed open cells' side-entry curtain exceeds their area; and the exhaust

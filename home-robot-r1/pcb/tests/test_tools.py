@@ -1,6 +1,7 @@
 import subprocess, unittest
 from pathlib import Path
 from pcb import tools
+from pcb.tests import left_out
 
 class ToolTests(unittest.TestCase):
     def test_kicad_cli_is_version_9(self):
@@ -17,6 +18,7 @@ class ToolTests(unittest.TestCase):
         JVM / jar mismatch (UnsupportedClassVersionError) can never slip through again (ruling R14)."""
         r = subprocess.run([tools.JAVA, '-version'], capture_output=True, text=True)
         self.assertIn('version "25', r.stderr)
+        if left_out.missing('pcb/tools/freerouting.jar'): self.skipTest(left_out.reason('pcb/tools/freerouting.jar'))   # the JVM check above still ran
         self.assertGreater(Path(tools.FREEROUTING).stat().st_size, 1_000_000)
         r = subprocess.run([tools.JAVA, '-Djava.awt.headless=true', '-jar', tools.FREEROUTING, '--help'],
                            capture_output=True, text=True, timeout=120)
