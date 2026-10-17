@@ -74,7 +74,8 @@ scp -r home-robot-sim\vision\yoloseg robot@jetson.local:~/home-robot-sim/vision/
 scp -r home-robot-sim\jetson robot@jetson.local:~/home-robot-sim/
 ```
 
-The `jetson` folder may already contain the PC's test engine (`*-pc-trt11.engine`). It is useless on the Nano and safe to delete there.
+The `jetson` folder may already contain the PC's own engine (`*-pc-trt*.engine`, used by the dashboard). It is useless on the Nano and
+safe to delete there.
 
 ## Step 3 — Install PyTorch, torchvision and the camera libraries (once, about 1 to 1.5 hours)
 
@@ -270,7 +271,8 @@ journalctl -u robot-vision -f        # its output
 | `jetson/setup_jetson.sh` | Jetson | One-time installation |
 | `jetson/build_engine.py` | Jetson (also PC) | ONNX to TensorRT engine (FP16 where supported) |
 | `jetson/detect_service.py` | Jetson (also PC) | Camera to engine to live view and detections, plus `--benchmark` |
-| `vision/vision_service.py` | PC | The dashboard's version: simulator frames with the same pipeline. `--model jetson\models\X.engine` runs a TensorRT engine on the PC |
+| `vision/vision_service.py` | PC | The dashboard's version: simulator frames with the same pipeline. `Scripts\start-vision.cmd` (and `launch.cmd`) run it on a TensorRT engine for the PC's GPU by default |
+| `vision/ensure_engine.py` | PC | Finds this PC's engine (`jetson/models/*-pc-trt<version>-<gpu>.engine`) or builds it on the fly: ONNX export plus engine build, about 1-2 minutes the first time |
 
 ## What has and has not been verified
 

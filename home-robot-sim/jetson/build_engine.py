@@ -21,29 +21,34 @@ def main():
     parser.add_argument('--fp32', action='store_true', help='keep FP32 (default FP16: about 2x faster on the Nano)')
     parser.add_argument('--workspace', type=int, default=1024, help='builder workspace in MB (the Nano shares 4 GB with the CPU)')
     args = parser.parse_args()
+    build(args.onnx, args.out, args.fp32, args.workspace)
+
+
+def build(onnx_path, out=None, fp32=False, workspace=1024):
+    """Builds and writes the engine (plus the class-name .json next to it); returns the engine path."""
     import tensorrt as trt
-    out = args.out or os.path.splitext(args.onnx)[0] + '.engine'
+    out = out or os.path.splitext(onnx_path)[0] + '.engine'
     logger = trt.Logger(trt.Logger.WARNING)
     builder = trt.Builder(logger)
     major = int(trt.__version__.split('.')[0])
     flags = 1 << int(trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH) if major < 10 else 0   # explicit batch is default in 10+
     network = builder.create_network(flags)
     onnx_parser = trt.OnnxParser(network, logger)
-    with open(args.onnx, 'rb') as f:
+    with open(onnx_path, 'rb') as f:
         if not onnx_parser.parse(f.read()):
             for i in range(onnx_parser.num_errors):
                 print(onnx_parser.get_error(i))
-            sys.exit('TensorRT %s could not parse %s' % (trt.__version__, args.onnx))
+            sys.exit('TensorRT %s could not parse %s' % (trt.__version__, onnx_path))
     config = builder.create_builder_config()
     if hasattr(config, 'set_memory_pool_limit'):                         # TensorRT >= 8.4
-        config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, args.workspace << 20)
+        config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, workspace << 20)
     else:                                                                 # TensorRT 8.2
-        config.max_workspace_size = args.workspace << 20
+        config.max_workspace_size = workspace << 20
     has_flag = hasattr(trt.BuilderFlag, 'FP16')        # gone in TensorRT 11 (strongly typed: precision from the ONNX)
-    fp16 = not args.fp32 and has_flag and getattr(builder, 'platform_has_fast_fp16', True)
+    fp16 = not fp32 and has_flag and getattr(builder, 'platform_has_fast_fp16', True)
     if fp16:
         config.set_flag(trt.BuilderFlag.FP16)
-    elif not args.fp32 and not has_flag:
+    elif not fp32 and not has_flag:
         print('TensorRT %s has no FP16 builder flag (precision follows the ONNX): building FP32' % trt.__version__)
     for i in range(network.num_inputs):
         print('input  %s %s' % (network.get_input(i).name, tuple(network.get_input(i).shape)))
@@ -56,10 +61,11 @@ def main():
         sys.exit('Engine build failed (see the TensorRT messages above)')
     with open(out, 'wb') as f:
         f.write(engine)
-    meta = os.path.splitext(args.onnx)[0] + '.json'
+    meta = os.path.splitext(onnx_path)[0] + '.json'
     if os.path.exists(meta) and os.path.abspath(meta) != os.path.abspath(os.path.splitext(out)[0] + '.json'):
         shutil.copy(meta, os.path.splitext(out)[0] + '.json')
     print('wrote %s (%.1f MB) in %.0f s' % (out, os.path.getsize(out) / 1e6, time.time() - start))
+    return out
 
 
 if __name__ == '__main__':

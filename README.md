@@ -75,7 +75,10 @@ Status: work in progress. Nothing has been ordered or printed yet.
      - `tools/fetch_reference_models.sh` runs in Git Bash. Verified with Python 3.13 + CadQuery 2.6.1 for the CAD build.
    - **Live object recognition (display only):** started by `launch.cmd`, or alone with `start-vision.cmd`. It runs
      YOLO26n-seg on each robot camera frame on the PC's NVIDIA GPU and shows boxes + masks under the dashboard's camera
-     image. `start-vision.cmd --model <weights>` swaps the model: any Ultralytics name (e.g. `yolo11n-seg.pt`), or
+     image. By default it runs a TensorRT engine for this PC's GPU, built on the fly the first time (about 1-2 minutes,
+     `vision/ensure_engine.py`; the file name records the GPU and TensorRT version, so a new GPU or TensorRT gets a fresh
+     build). It falls back to PyTorch when TensorRT is unavailable, or with `NO_TRT=1`.
+     `start-vision.cmd --model <weights or .engine>` picks the model: any Ultralytics name (e.g. `yolo11n-seg.pt`), or
      `yolov12n-seg.pt`, fetched from the YOLOv12 authors' release and loaded through `vision/yolov12_compat.py`
      (Ultralytics publishes no YOLO12 segmentation weights). The robot does not act on these detections.
      The pipeline is PyTorch end to end (`vision/yoloseg`, no OpenCV) and is the same one the robot runs.

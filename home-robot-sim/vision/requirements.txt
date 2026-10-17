@@ -5,3 +5,4 @@ ultralytics
 onnx
 onnxslim
 onnxruntime
+tensorrt-cu12
