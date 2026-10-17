@@ -4016,7 +4016,7 @@
           "face_normal": [
             0.972,
             0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4033,7 +4033,7 @@
           "face_normal": [
             0.972,
             0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4050,7 +4050,7 @@
           "face_normal": [
             0.972,
             0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4067,7 +4067,7 @@
           "face_normal": [
             0.972,
             0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4237,7 +4237,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4254,7 +4254,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4271,7 +4271,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4288,7 +4288,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4526,7 +4526,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4543,7 +4543,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4560,7 +4560,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4577,7 +4577,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4594,7 +4594,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4611,7 +4611,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4815,7 +4815,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -4832,7 +4832,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            -0.0
+            0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -5291,7 +5291,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -5308,7 +5308,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -5325,7 +5325,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -5342,7 +5342,7 @@
           "face_normal": [
             0.972,
             0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -5512,7 +5512,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -5529,7 +5529,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -5546,7 +5546,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -5563,7 +5563,7 @@
           "face_normal": [
             0.972,
             -0.236,
-            0.0
+            -0.0
           ],
           "drive": 0.724,
           "drive_with_friction_0p5": 0.379,
@@ -14497,7 +14497,7 @@
         "mass_kg": 0.01385,
         "position_mm": [
           105.2,
-          -0.0,
+          0.0,
           62.6
         ],
         "mean_wall_mm": 3.38,
@@ -14521,7 +14521,7 @@
         "mass_kg": 0.0006,
         "position_mm": [
           139.1,
-          -0.0,
+          0.0,
           90.4
         ],
         "mean_wall_mm": 1.57,
@@ -14804,7 +14804,7 @@
         "item": "Left motor",
         "mass_kg": 0.09,
         "position_mm": [
-          0.0,
+          -0.0,
           70.1,
           40.0
         ],
@@ -14814,7 +14814,7 @@
         "item": "Right motor",
         "mass_kg": 0.09,
         "position_mm": [
-          0.0,
+          -0.0,
           -70.1,
           40.0
         ],
@@ -14935,7 +14935,7 @@
         "mass_kg": 0.03,
         "position_mm": [
           -75.0,
-          0.0,
+          -0.0,
           22.3
         ],
         "sim_item": "Caster housing"
@@ -15169,8 +15169,8 @@
         {
           "fan_screw": 2,
           "centre": [
-            9.999999950000003,
-            6.217248937900877e-15
+            9.999999999999998,
+            5.329070518200751e-15
           ],
           "half_angle_deg": 7.81,
           "z_mm": 97.88,

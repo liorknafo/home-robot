@@ -57,7 +57,9 @@ class RobotIO(threading.Thread):
                     self.state=state;self.samples.append(state);self.received_at=time.monotonic()
                     if truth:self.display_truth=dict(sim_time_s=raw['sim_time_s'],**{k:truth[k] for k in ('position_m','yaw_rad','pitch_deg','roll_deg') if k in truth})
                     if state['armed']:self.arm_pending=False
-            except socket.timeout:pass
+            # Windows reports an earlier datagram that found no simulator listening (ICMP port unreachable) as a reset on
+            # the next recv; it only means no packet yet, like the timeout.
+            except (socket.timeout,ConnectionResetError):pass
             except (ValueError,KeyError):pass
     def latest(self):
         with self.lock:return self.state

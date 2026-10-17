@@ -3,7 +3,8 @@ import hashlib, json, math, os, pathlib, socket, subprocess, sys, time
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'controller'))
 from robot_client import RobotClient,wrap
-ENGINE=pathlib.Path(os.environ.get('UE_ROOT','/Users/Shared/Epic Games/UE_5.8'))
+ENGINE=pathlib.Path(os.environ.get('UE_ROOT','C:/Program Files/Epic Games/UE_5.8' if os.name=='nt' else '/Users/Shared/Epic Games/UE_5.8'))
+EDITOR_CMD=ENGINE/('Engine/Binaries/Win64/UnrealEditor-Cmd.exe' if os.name=='nt' else 'Engine/Binaries/Mac/UnrealEditor-Cmd')
 REPORT=ROOT/'reports';REPORT.mkdir(exist_ok=True)
 results=[];traces={};sensor_cost={};TAGS_USED=set()
 SOURCES=['Source/HomeRobotSim/DriveCore.h','Source/HomeRobotSim/RobotGeometry.h','Source/HomeRobotSim/RobotPawn.cpp','Source/HomeRobotSim/RobotPawn.h','Content/RobotData/robot-parameters.json']
@@ -105,7 +106,7 @@ def launch(scenario,extra=()):
     if tag in TAGS_USED:raise RuntimeError(f'run tag {tag} used twice; logs and traces would overwrite each other')
     TAGS_USED.add(tag)
     log=open(REPORT/f'physics-{tag}.log','w')
-    p=subprocess.Popen([str(ENGINE/'Engine/Binaries/Mac/UnrealEditor-Cmd'),str(ROOT/'HomeRobotSim.uproject'),'/Engine/Maps/Entry','-game','-nullrhi','-unattended','-nosound','-nosplash',f'-Scenario={scenario}','-stdout',*extra],stdout=log,stderr=subprocess.STDOUT)
+    p=subprocess.Popen([str(EDITOR_CMD),str(ROOT/'HomeRobotSim.uproject'),'/Engine/Maps/Entry','-game','-nullrhi','-unattended','-nosound','-nosplash',f'-Scenario={scenario}','-stdout',*extra],stdout=log,stderr=subprocess.STDOUT)
     deadline=time.monotonic()+150
     while time.monotonic()<deadline:
         if p.poll() is not None:raise RuntimeError(f'Unreal exited {p.returncode}; inspect {log.name}')

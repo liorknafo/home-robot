@@ -20,3 +20,6 @@ home-robot-sim/Binaries/
 home-robot-sim/.venv/
 home-robot-sim/reports/*
 !home-robot-sim/reports/.gitkeep
+home-robot-r1/cad/.venv/
+home-robot-sim/vision/weights/
+home-robot-sim/jetson/models/

@@ -61,6 +61,26 @@ Status: work in progress. Nothing has been ordered or printed yet.
    - Launch with `Scripts/launch.command house polished`.
    - Start the autonomy service: `Scripts/start-autonomy.command`, then open http://127.0.0.1:8771/autonomy.html.
    - Python deps: `home-robot-sim/controller/requirements.txt`.
+   - **Windows:** every `.command` script has a `.cmd` twin in `home-robot-sim/Scripts` (`build.cmd`, `launch.cmd house polished`,
+     `start-autonomy.cmd`, `run-tests.cmd`, `drive-house.cmd`, `drive-square.cmd`, `process-cameras.cmd`).
+     - One command runs everything: `.\home-robot-sim\Scripts\launch.cmd house polished` starts the simulator plus, in
+       minimized windows, the autonomy service and object detection, then open http://127.0.0.1:8771/autonomy.html.
+       Every launcher first stops its own earlier runs, so rerunning it never leaves duplicates (`NO_AUTONOMY=1` /
+       `NO_VISION=1` skip a part).
+     - Needs Unreal Engine 5.8 from the Epic Games Launcher (the scripts find it on any drive through the launcher's install record,
+       or set `UE_ROOT`) and
+       Visual Studio 2022 17.14+ with the "Game development with C++" workload, MSVC 14.38+ and Windows SDK 10.0.22621+.
+     - The scripts make `home-robot-sim\.venv` on first use and run Python in UTF-8 mode (`PYTHONUTF8=1`). Set it yourself when you
+       run the Python tools directly, e.g. the CAD build, or they read the UTF-8 sources in the ANSI code page.
+     - `tools/fetch_reference_models.sh` runs in Git Bash. Verified with Python 3.13 + CadQuery 2.6.1 for the CAD build.
+   - **Live object recognition (display only):** started by `launch.cmd`, or alone with `start-vision.cmd`. It runs
+     YOLO26n-seg on each robot camera frame on the PC's NVIDIA GPU and shows boxes + masks under the dashboard's camera
+     image. `start-vision.cmd --model <weights>` swaps the model: any Ultralytics name (e.g. `yolo11n-seg.pt`), or
+     `yolov12n-seg.pt`, fetched from the YOLOv12 authors' release and loaded through `vision/yolov12_compat.py`
+     (Ultralytics publishes no YOLO12 segmentation weights). The robot does not act on these detections.
+     The pipeline is PyTorch end to end (`vision/yoloseg`, no OpenCV) and is the same one the robot runs.
+   - **On the Jetson Nano (TensorRT):** [`home-robot-sim/jetson/JETSON.md`](home-robot-sim/jetson/JETSON.md) goes step by step
+     from the ONNX export on the PC to the FP16 engine and the live camera view on the Nano.
 5. **Tests:**
    - Simulator: `cd home-robot-sim && python -m unittest discover -s tests`, plus `tests/scenarios_round.py`.
    - Robot pure tests: `python -m unittest discover` in `home-robot-r1/pcb/tests` and `cad/`.

@@ -1,10 +1,10 @@
 {
-  "body_mass_kg": 2.3014,
+  "body_mass_kg": 2.3011,
   "body_com_x_cm": -1.489,
   "body_com_z_cm": 6.201,
   "wheel_mass_kg": 0.035,
   "caster_ball_mass_kg": 0.068,
-  "total_mass_kg": 2.4394,
+  "total_mass_kg": 2.4391,
   "estimated_body_com_mm": [
     -14.89,
     -1.11,
@@ -21,7 +21,7 @@
   "records": [
     {
       "item": "P_base",
-      "mass_kg": 0.13622,
+      "mass_kg": 0.1359,
       "position_mm": [
         -3.2,
         0.1,
@@ -647,7 +647,7 @@
   "robot_com_mm": [
     -16.14,
     -1.05,
-    60.0
+    60.01
   ],
   "robot_com_behind_axle_m": 0.01614,
   "frame": "metres unless noted; robot frame x forward, y left, z up. base_link = round-shell centre = drive-axle midpoint, AT FLOOR LEVEL; every mount z (camera_mount_m, lidar_mount_m, cliff_z_m, shell_bottom_z_m, body_top_z_m, robot_top_z_m) is a height above the floor. base_link_height_m is the nominal body-origin height (RobotPawn BodyHeight) used by the controller convention base_link + offset, e.g. camera z 0.085 + -0.005 = 0.08 above the floor; camera_mount_from_body_origin_m and lidar_mount_from_body_origin_m give the mounts in that body-origin form (z minus base_link_height_m). rigid_radius_m is the fixed rear shell, bumper_shell_radius_m the moving bumper shell under the skin (body_radius_m); bumper_top_z_m is the skin top edge (no bumper sensing above it); body_top_z_m the lid top; robot_top_z_m the whole robot top (LiDAR turret cap); lidar_turret_* the turret cylinder (centre xy, radius, z range), the only part above the LiDAR plane. rear_caster_z_m is the ball bottom above the floor at rest (0 = touching). bump_zone_edges_deg is the full ascending list: zone i (bump_zones bit i, named bump_zone_names[i]) spans edges[i]..edges[i+1], azimuth about base_link, + = left; its outer values are -/+bumper_span_deg (the half-span). bump_left/right_switch_zone_mask: zones that trip each switch. Masses kg, positions mm: records = the chassis Body (sum = body_mass_kg); separate_body_records = the drive-wheel pair (wheel_mass_kg each) and the caster ball; body_inertia_kg_m2 is about estimated_body_com_mm.",
@@ -685,25 +685,25 @@
   ],
   "body_inertia_kg_m2": [
     [
-      0.011378,
+      0.011377,
       8e-05,
       -0.000843
     ],
     [
       8e-05,
-      0.015144,
+      0.015142,
       7.1e-05
     ],
     [
       -0.000843,
       7.1e-05,
-      0.02279
+      0.022786
     ]
   ],
   "body_inertia_about": "body_com_mm (the inertia set was built from the same records: centre [-14.88, -1.11, 62.01] mm)",
   "mass_properties_source": {
     "file": "home-robot-r1/cad/mass-properties.json",
-    "cad_commit": "f53a454"
+    "cad_commit": "6b952c9+dirty"
   },
   "camera_led_mounts_m": [
     0.1458,
