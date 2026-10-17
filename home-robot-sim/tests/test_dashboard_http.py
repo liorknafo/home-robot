@@ -169,7 +169,8 @@ class RobotModelPage(unittest.TestCase):
     def test_a_symlink_in_an_allowed_name_still_stays_inside_the_r1_folder(self):
         # The allowlist is on names; a link planted at an allowed name must not turn into a read of a file outside R1.
         outside=self.r1.parent/'outside-r1.txt';link=self.r1/'print-parts'/'P_link.stl'
-        link.symlink_to(outside)
+        try:link.symlink_to(outside)
+        except OSError as e:self.skipTest(f'cannot create symlinks here (Windows needs Developer Mode): {e}')
         for mode,s in self.each():self.assertEqual(s.request('GET','/robot/print-parts/P_link.stl')[0],404,mode)
     def test_host_and_origin_checks_apply_to_robot_files(self):
         p=self.servers['lan'].port

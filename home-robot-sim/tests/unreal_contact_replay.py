@@ -22,7 +22,7 @@ import json,math,os,socket,sys,threading,time
 from pathlib import Path
 import numpy as np
 HERE=Path(__file__).resolve().parents[1]
-SIM=Path(os.environ.get('SIM_ROOT','/Users/liorknafo/Documents/Codex/2026-10-03/i-x20/outputs/home-robot-sim'))
+SIM=Path(os.environ.get('SIM_ROOT',HERE))
 sys.path.insert(0,str(HERE/'controller'));sys.path.insert(0,str(HERE/'tests'))
 import autonomy_service as svc
 from sim2d import CONTACT_APPROACHES,reverse_audit

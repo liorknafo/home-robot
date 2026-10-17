@@ -29,7 +29,11 @@ class RobotClient:
         payload={'v_m_s':v,'w_rad_s':w,**fields}
         self.sock.sendto(json.dumps(payload,allow_nan=False).encode(),('127.0.0.1',8767))
     def receive(self):
-        msg=self.sensor_model.apply(json.loads(self.sock.recv(65535)));self.state=msg;self.odom.update(msg['sensors']);return msg
+        while True:
+            # Windows turns each earlier datagram that found no simulator listening into a reset on a later recv; skip them.
+            try:raw=self.sock.recv(65535);break
+            except ConnectionResetError:continue
+        msg=self.sensor_model.apply(json.loads(raw));self.state=msg;self.odom.update(msg['sensors']);return msg
     def close(self):
         self.send(motor_power_off=True);self.sock.close()
     def settle(self,seconds=2):

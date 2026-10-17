@@ -747,7 +747,9 @@ void AHomeRobotGameMode::StartPlay() {
   BoxInWorld(W,FVector(300,-100,.95),FVector(2,2,1.9),FColor(200,60,40),TEXT("Low box 1.9 cm (1 mm above the 1.8 cm shell bottom)"));
   PoleInWorld(W,FVector(-150,-200,0),1,60,FColor(60,60,200),TEXT("2 cm pole"));
  }
- auto* Sun=W->SpawnActor<ADirectionalLight>(FVector(0,0,300),FRotator(-60,-30,0));Sun->GetLightComponent()->SetIntensity(4.0f);
+ // Movable like the sky and lamps: the house is built at run time, so a (default) Stationary sun has no baked lighting and
+ // Unreal flags every house mesh with "LIGHTING NEEDS TO BE REBUILT"; Lumen lights the scene either way.
+ auto* Sun=W->SpawnActor<ADirectionalLight>(FVector(0,0,300),FRotator(-60,-30,0));Sun->GetLightComponent()->SetMobility(EComponentMobility::Movable);Sun->GetLightComponent()->SetIntensity(4.0f);
  auto* Sky=W->SpawnActor<ASkyLight>();Sky->GetLightComponent()->SetIntensity(1.f);Sky->GetLightComponent()->SetMobility(EComponentMobility::Movable);
  W->SpawnActor<ARobotPawn>(FVector(0,0,BodyHeight+.3),FRotator::ZeroRotator);
  if(auto* C=IConsoleManager::Get().FindConsoleVariable(TEXT("t.MaxFPS")))C->Set(60.f);
