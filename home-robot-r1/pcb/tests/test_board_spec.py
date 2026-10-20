@@ -491,16 +491,17 @@ class SpecTests(unittest.TestCase):
 
     def test_pad_current_per_trunk_pin(self):
         """PB12 (B4 fix 1): every POWER_TRUNK pin has its own load, board_spec.pad_current (PAD_CURRENT_A, else CURRENT_A[net]): the battery
-        path (J1, J2, F1) 7.5 A, the motor fuse and relay (F2, K1) 5.0 A, the Jetson lead (J3) 4.5 A, the P03 input 5 V x 4.5 A / (6.0 V x
-        0.9) = 4.17 A and its output 4.5 A, each driver's VIN / GND pin and C1 2.1 A."""
+        path (J1, J2, F1) 7.5 A, the motor fuse and relay (F2, K1) 5.0 A, the Jetson lead (J3) 4.5 A, the P03 output 4.71 A (the Jetson +
+        the 5V taps, LIO-227) and its input 5 V x 4.71 A / (6.0 V x 0.85) = 4.62 A, each driver's VIN / GND pin and C1 2.1 A."""
         pins = [(r, p) for pads in B.POWER_TRUNK.values() for r, p in pads]
         self.assertLessEqual(set(B.PAD_CURRENT_A), set(pins))
         want = {**{(r, p): 7.5 for r in ('J1', 'J2', 'F1') for p in ('1', '2')}, **{(r, p): 5.0 for r in ('F2',) for p in ('1', '2')},
                 ('K1', B.RELAY_PINS['COM']): 5.0, ('K1', B.RELAY_PINS['NO']): 5.0, ('J3', '1'): 4.5, ('J3', '2'): 4.5,
-                ('U5B', '1'): 4.5, ('U5B', '2'): 4.5, ('C1', '1'): 2.1, ('C1', '2'): 2.1,
+                ('U5B', '1'): 4.71, ('U5B', '2'): 4.71, ('C1', '1'): 2.1, ('C1', '2'): 2.1,
                 **{(r, p): 2.1 for r in ('U3P', 'U4P') for p in ('1', '2')}}
         for k, a in want.items(): self.assertAlmostEqual(B.pad_current(*k), a, 6, k)
-        self.assertAlmostEqual(B.P03_IN_A, 5.0 * 4.5 / (6.0 * 0.9), 6)
+        self.assertAlmostEqual(B.P03_IN_A, 5.0 * 4.71 / (6.0 * 0.85), 6)
+        self.assertAlmostEqual(B.P03_OUT_A, B.CURRENT_A['5V'], 9)
         for k in (('U5A', '1'), ('U5A', '2')): self.assertAlmostEqual(B.pad_current(*k), B.P03_IN_A, 6, k)
         for r, p in pins: self.assertGreater(B.pad_current(r, p), 0, (r, p))
     def test_tap_loads_cover_every_tap_pad(self):
@@ -518,6 +519,9 @@ class SpecTests(unittest.TestCase):
         total = lambda net: sum(a for p, a in B.TAP_LOAD_A.items() if p in B.NETS[net])
         self.assertLessEqual(total('3V3'), 0.300)
         self.assertLessEqual(total('5V'), 0.5)
+        # LIO-227: the 5V trunk and the P03 output carry the Jetson's 4.5 A (J3) and every 5V tap (0.207 A, rounded up to 0.21)
+        self.assertGreaterEqual(B.CURRENT_A['5V'], B.pad_current('J3', '1') + total('5V'))
+        self.assertLess(B.CURRENT_A['5V'], B.pad_current('J3', '1') + total('5V') + 0.01)
 
     def test_c3_ripple_and_height_data(self):
         """B6 carry item 6 / ruling PB20 (d): C3's datasheet ripple rating, its ESR and C1's, the DRV8874 PWM frequency assumed, and C3's

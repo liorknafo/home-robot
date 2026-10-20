@@ -22,8 +22,12 @@ def ipc2221_current_a(width_mm, oz, rise_c=RISE_C, internal=False):
     return k * rise_c ** 0.44 * area_mil2 ** 0.725
 
 def capacity_a(widths_by_layer, rise_c=RISE_C):
-    """Summed IPC current of parallel copper: {layer: width_mm} -> A."""
-    return sum(ipc2221_current_a(w, COPPER_OZ[l], rise_c, is_internal(l)) for l, w in widths_by_layer.items() if w > 0)
+    """IPC current of stacked parallel copper {layer: width_mm} -> A, on the layers' combined cross-section (LIO-227): each layer's area
+    scaled to its external equivalent, A_eq = sum A_i (k_i / 0.048)^(1 / 0.725), then I = 0.048 dT^0.44 A_eq^0.725 (one layer: exactly
+    ipc2221_current_a). Summing the per-layer currents would credit every layer the cooling of a lone track: 3 mm F.Cu + 3 mm B.Cu carry
+    8.77 A combined, not 10.6 A."""
+    a_eq = sum(w / MIL * 1.378 * COPPER_OZ[l] * (0.5 if is_internal(l) else 1.0) ** (1 / 0.725) for l, w in widths_by_layer.items() if w > 0)
+    return 0.048 * rise_c ** 0.44 * a_eq ** 0.725
 
 
 # Via barrels (bay B6, carry item 1). Hole-wall copper: IPC-6012 class 2 average plating, 20 um (JLCPCB builds to class 2; its own

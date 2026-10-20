@@ -328,7 +328,8 @@ class FabPackageTests(unittest.TestCase):
         text = ORDERING.read_text(encoding='utf-8')
         sec = text[text.index('## Verify before ordering'):]
         for s in ('hole-wall copper', 'DRV8874', 'R_DS(on)', 'EEE-FK1C101P', 'ESR', 'ripple', 'EEU-FR1E471', 'G5LE-1', 'coil',
-                  'encoder', 'VL53L0X', '3V3', 'JLC04161H-7628', 'silk'):
+                  'encoder', 'VL53L0X', '3V3', 'JLC04161H-7628', 'silk', 'slow decay', 'fast', '100 kHz rating', 'Fuse hold current',
+                  '110 %', '12 °C', 'P03 efficiency', '85 %', 'typical R_DS(on)', '40 °C', '18 µm'):
             self.assertIn(s, sec, s)
 
     def test_ordering_names_c3_and_the_dnp_rows(self):
@@ -339,7 +340,8 @@ class FabPackageTests(unittest.TestCase):
     @needs_kicad()
     def test_bringup_notes_for_b10(self):
         text = BRINGUP.read_text(encoding='utf-8')
-        for s in ('1.8 A', f'{B.DRV_PWM_HZ / 1e3:g} kHz', 'pin 1 = GND, pin 2 = BAT+', 'under the carrier'):
+        for s in ('1.8 A', f'{B.DRV_PWM_HZ / 1e3:g} kHz', 'pin 1 = GND, pin 2 = BAT+', 'under the carrier', 'with slow decay',
+                  'IN1 = 1 and IN2 = inverted PWM', 'Fast decay is not allowed', '100 kHz figure'):
             self.assertIn(s, text, s)
         for ref in [r for r in B.PARTS if r.startswith(('LED', 'TP')) and B.UNDER_CARRIER(r)] + ['TP2']:
             self.assertIn(ref, text, ref)

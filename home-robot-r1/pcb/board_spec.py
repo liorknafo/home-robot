@@ -266,12 +266,15 @@ NC = ([pico(n) for n in ('RUN', 'ADC_VREF', '3V3_EN', 'VSYS', 'VBUS')] + [imu(n)
       + [('K1', RELAY_PINS['NC'])] + [(f'U{u}{row}', str(pin)) for u in (3, 4) for (row, pin) in DRV_UNUSED])
 
 NETCLASS_POWER = ['BAT+', 'F1_OUT', 'VBAT_SW', 'F2_OUT', 'VMOT', '5V', 'GND', 'L_M1', 'L_M2', 'R_M1', 'R_M2']
-CURRENT_A = {'BAT+': 7.5, 'F1_OUT': 7.5, 'VBAT_SW': 7.5, 'F2_OUT': 5.0, 'VMOT': 5.0, '5V': 4.5, 'GND': 7.5,
+CURRENT_A = {'BAT+': 7.5, 'F1_OUT': 7.5, 'VBAT_SW': 7.5, 'F2_OUT': 5.0, 'VMOT': 5.0, '5V': 4.71, 'GND': 7.5,
              'L_M1': 2.1, 'L_M2': 2.1, 'R_M1': 2.1, 'R_M2': 2.1}
+# '5V' (LIO-227): the P03's whole output, the Jetson's 4.5 A + the 5V taps (TAP_LOAD_A: relay coil 83 mA, J15 spare 0.10 A, encoders
+# 20 mA, LED2 3.5 mA = 0.207 A, rounded up to 0.21; test_board_spec checks the sum).
 # Net classes. Ruling R4, recomputed for the ordered copper (bay B4, copper.py: 1 oz outer, 0.5 oz inner, IPC-2221 at 10 degC rise):
 # every power trunk (BAT+, F1_OUT, VBAT_SW, F2_OUT, VMOT, 5V; GND on the In1 plane) is a copper zone, POWER_ZONES below. The Power class
-# keeps 3.0 mm for the short stubs B5 may add where every pad has >= 3.96 mm pitch: two 1-oz outer layers in parallel, 10.6 A > 7.5 A at
-# 10 degC (copper.capacity_a({'F.Cu': 3.0, 'B.Cu': 3.0})); one layer alone carries 5.3 A. PowerTap 0.8 mm (1.0 A on 1 oz) feeds the small
+# keeps 3.0 mm for the short stubs B5 may add where every pad has >= 3.96 mm pitch: two 1-oz outer layers in parallel, 8.77 A > 7.5 A at
+# 10 degC (copper.capacity_a({'F.Cu': 3.0, 'B.Cu': 3.0}), rated on the combined cross-section, LIO-227: summing the layers' 5.3 A each
+# gave 10.6 A); one layer alone carries 5.3 A. PowerTap 0.8 mm (1.0 A on 1 oz) feeds the small
 # loads off the trunks; Motor 1.0 mm carries 2.1 A on 1 oz (IPC width 0.84 mm).
 # Default (every other net, the signals; ruling PB17): 0.15 mm track, 0.15 mm clearance, so two tracks pass between 2.54 mm header pins
 # (1.7 mm pads, 0.84 mm gap: 2 x 0.15 + 3 x 0.15 = 0.75). 0.15 mm carries about 0.6 A on 1 oz outer, 0.25 A on 0.5 oz inner, against signal
@@ -306,25 +309,26 @@ POWER_TRUNK = {   # pads the high-current path must join with >= 3 mm zone coppe
     '5V': [('U5B', '1'), ('J3', '1')],
     'GND': [J1_GND_PIN, ('J3', '2'), ('U5A', '2'), ('U5B', '2'), ('C1', '2'), drv('L', 'GND'), drv('R', 'GND')],
 }
-# Each trunk pin's own load (ruling PB12, B4 fix 1): what its thermal spokes must carry, summed over the layers (zone_check.pin_spoke_capacity).
+# Each trunk pin's own load (ruling PB12, B4 fix 1): what its thermal spokes must carry, over its layers (zone_check.pin_spoke_capacity).
 # A fuse contact (4 pads) is one pin. Any trunk pin not listed carries CURRENT_A[net] (pad_current).
 # P03_OUT_V is the design nominal; the bench trim is 5.1 V (BRINGUP.md section 5, BOM_EXTRAS), raised up to V5_MAX if the Jetson's barrel
 # plug reads under 5.0 V under load (BRINGUP.md section 7 step 3; about 65 mOhm, 0.3 V at 4.5 A, from the P03 to the plug).
 # P03_VIN_MIN is the firmware's low-battery stop. BRINGUP.md section 5 tests the P03 at 6.0 V in, 4.5 A out (the XL4015 needs about
 # 0.6-0.8 V of headroom; motor starts sag the pack 0.3-0.5 V more). If it fails, the stop (BRINGUP.md section 8, BRINGUP-NOTES.md) rises
 # to the lowest passing input + 0.5 V and P03_VIN_MIN is set to match (LIO-229).
-P03_OUT_V, P03_OUT_A = 5.0, 4.5     # the P03 regulator's output: the Jetson's 5 V at 4.5 A (CURRENT_A['5V'])
-P03_VIN_MIN, P03_EFF = 6.0, 0.9      # its lowest input (the 6-cell NiMH pack near its 1.0 V/cell cut-off; full charge VBAT_MAX 8.7 V) and its efficiency there
-P03_IN_A = P03_OUT_V * P03_OUT_A / (P03_VIN_MIN * P03_EFF)      # 4.17 A drawn through U5A
+P03_OUT_V, P03_OUT_A = 5.0, CURRENT_A['5V']     # the P03 regulator's output: the Jetson's 4.5 A + the 5V taps, 4.71 A (LIO-227)
+P03_VIN_MIN, P03_EFF = 6.0, 0.85     # its lowest input (the 6-cell NiMH pack near its 1.0 V/cell cut-off; full charge VBAT_MAX 8.7 V) and its
+                                     # efficiency there: an XL4015 buck near dropout at 4.7 A, 0.85 assumed (LIO-227; was 0.9) - verify on the bench
+P03_IN_A = P03_OUT_V * P03_OUT_A / (P03_VIN_MIN * P03_EFF)      # 4.62 A drawn through U5A
 PAD_CURRENT_A = {
     ('J1', '1'): 7.5, ('J1', '2'): 7.5,       # battery connector: the whole pack current, F1's 7.5 A rating
     ('J2', '1'): 7.5, ('J2', '2'): 7.5,       # master rocker: the same current through the switch
     ('F1', '1'): 7.5, ('F1', '2'): 7.5,       # F1 contacts: 7.5 A fuse
     ('F2', '1'): 5.0, ('F2', '2'): 5.0,       # F2 contacts: the motors' 5 A fuse
     ('K1', RELAY_PINS['COM']): 5.0, ('K1', RELAY_PINS['NO']): 5.0,   # relay contacts switch the motor supply (behind F2)
-    ('J3', '1'): 4.5, ('J3', '2'): 4.5,       # Jetson 5 V lead: CURRENT_A['5V']
-    ('U5A', '1'): P03_IN_A, ('U5A', '2'): P03_IN_A,       # P03 input: 5 V x 4.5 A / (6.0 V x 0.9)
-    ('U5B', '1'): P03_OUT_A, ('U5B', '2'): P03_OUT_A,     # P03 output
+    ('J3', '1'): 4.5, ('J3', '2'): 4.5,       # Jetson 5 V lead: the Jetson's 4.5 A alone
+    ('U5A', '1'): P03_IN_A, ('U5A', '2'): P03_IN_A,       # P03 input: 5 V x 4.71 A / (6.0 V x 0.85)
+    ('U5B', '1'): P03_OUT_A, ('U5B', '2'): P03_OUT_A,     # P03 output: the Jetson + the 5V taps
     ('U3P', '1'): 2.1, ('U3P', '2'): 2.1, ('U4P', '1'): 2.1, ('U4P', '2'): 2.1,   # each driver's VIN and GND: its 2.1 A motor channel
     ('C1', '1'): 2.1, ('C1', '2'): 2.1,       # bulk capacitor: up to one driver's current in ripple
 }
@@ -377,7 +381,9 @@ TAP_LOAD_A = {
 }
 # Bay B6 (carry item 6): C3's ripple share. C3 = Panasonic EEE-FK1C101P (FK, 100 uF 16 V, 6.3 x 5.8 mm; PB20 - was EEE-FK1E101P,
 # 6.3 x 7.7 mm, 0.34 ohm / 0.23 A), C1 = EEU-FR1E471 (FR, 470 uF 25 V). Datasheet figures at 100 kHz / 20 degC (ESR) and 105 degC
-# (ripple), quoted from memory: verify before ordering.
+# (ripple), quoted from memory: verify before ordering. The ripple rating is the 100 kHz figure, not derated to DRV_PWM_HZ (an
+# electrolytic's frequency multiplier is below 1 under 100 kHz). LIO-227: C3's share is 0.10 A with slow-decay PWM and about 0.20 A with
+# fast decay, over the rating, so the firmware must PWM with slow decay (power_check.c3_ripple, BRINGUP-NOTES.md).
 C3_ESR_OHM, C3_RIPPLE_RATING_A = 0.44, 0.16
 C1_ESR_OHM = 0.04
 DRV_PWM_HZ = 20e3          # the motor PWM the firmware is expected to use (not in the repo; the DRV8874 takes up to 100 kHz)

@@ -12,10 +12,22 @@ class CopperTests(unittest.TestCase):
         for i in (0.5, 2.1, 5.0, 7.5):
             self.assertAlmostEqual(C.ipc2221_current_a(C.ipc2221_width_mm(i, 1.0), 1.0), i, places=6)
 
-    def test_parallel_copper_adds(self):
+    def test_stacked_copper_is_rated_on_its_combined_area(self):
+        """LIO-227: layers in parallel are rated on their combined cross-section, each scaled to its external equivalent
+        (A_i (k_i / 0.048)^(1 / 0.725)), not by summing per-layer currents. One layer is exactly ipc2221_current_a."""
         one = C.capacity_a({'F.Cu': 3.0})
-        self.assertAlmostEqual(C.capacity_a({'F.Cu': 3.0, 'B.Cu': 3.0}), 2 * one, places=6)
-        self.assertGreater(C.capacity_a({'F.Cu': 3.0, 'B.Cu': 3.0}), 7.5)   # BAT+ on two outer layers
+        self.assertAlmostEqual(one, C.ipc2221_current_a(3.0, 1.0), places=9)
+        self.assertAlmostEqual(C.capacity_a({'In2.Cu': 2.0}), C.ipc2221_current_a(2.0, 0.5, internal=True), places=9)
+        two = C.capacity_a({'F.Cu': 3.0, 'B.Cu': 3.0})
+        self.assertAlmostEqual(two, C.ipc2221_current_a(6.0, 1.0), places=9)         # two 1 oz layers = one track of the summed width
+        self.assertAlmostEqual(two, 8.77, delta=0.01)
+        self.assertLess(two, 2 * one)                                                # the per-layer sum (10.6 A) is optimistic
+        self.assertGreater(two, 7.5)                                                 # BAT+ on two outer layers
+        # an internal 0.5 oz layer adds its area scaled by (0.024 / 0.048)^(1 / 0.725)
+        a_eq = (3.0 + 2.0 * 0.5 * 0.5 ** (1 / 0.725)) / C.MIL * 1.378
+        self.assertAlmostEqual(C.capacity_a({'F.Cu': 3.0, 'In2.Cu': 2.0}), 0.048 * C.RISE_C ** 0.44 * a_eq ** 0.725, places=9)
+        self.assertLess(C.capacity_a({'F.Cu': 3.0, 'In2.Cu': 2.0}), one + C.capacity_a({'In2.Cu': 2.0}))
+        self.assertEqual(C.capacity_a({}), 0.0)
 
     def test_stackup_is_the_ordered_default(self):
         self.assertEqual(C.STACKUP, ('F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu'))
