@@ -1,4 +1,4 @@
-import hashlib, subprocess, unittest
+import hashlib, shutil, subprocess, unittest
 from pathlib import Path
 from pcb import tools
 from pcb.tests import left_out
@@ -18,7 +18,9 @@ class ToolTests(unittest.TestCase):
         self.assertTrue((tools.FOOTPRINT_DIR / 'Connector_JST.pretty').is_dir())
     def test_java_25_and_freerouting(self):
         """Freerouting 2.4.1 is built for Java 25 (class file 69): check the JVM version AND actually start the jar headless, so a
-        JVM / jar mismatch (UnsupportedClassVersionError) can never slip through again (ruling R14)."""
+        JVM / jar mismatch (UnsupportedClassVersionError) can never slip through again (ruling R14). LIO-233: the JVM tools.JAVA chose
+        (JAVA, JAVA_HOME, a pinned JDK 25, PATH); skips when there is none."""
+        if not (Path(tools.JAVA).is_file() or shutil.which(tools.JAVA)): self.skipTest(f'no Java found ({tools.JAVA}): install JDK 25 (README, Build, step 3)')
         r = subprocess.run([tools.JAVA, '-version'], capture_output=True, text=True)
         self.assertIn('version "25', r.stderr)
         if not Path(tools.FREEROUTING).is_file(): self.skipTest(left_out.reason('pcb/tools/freerouting.jar'))   # the JVM check above still ran

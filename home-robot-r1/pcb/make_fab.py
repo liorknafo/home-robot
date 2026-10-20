@@ -104,7 +104,7 @@ def part_note(ref):
     if ref in ('C1', 'C3'): return 'polarised: + on silk' + ('; under the IMU module (5.8 mm can, PB16 / PB20)' if ref == 'C3' else '')
     if ref == 'D1' or ref.startswith('LED'): return 'cathode mark on silk'
     if ref == 'D2': return ("DNP (LIO-226): 5V to the Pico's VSYS, fit it to run the Pico and 3V3 without the Jetson USB (BRINGUP.md "
-                            'section 2); under the DRV_R carrier; cathode mark on silk')
+                            'section 4 item 2); under the DRV_R carrier; cathode mark on silk')
     if ref in ('F1', 'F2'):            # one note for both holders (the rows join equal notes once); the fuses are plug-in rows (BOM_EXTRAS)
         fuses = ', '.join(f'{B.PARTS[r]["value"]} in {r}' for r in ('F1', 'F2'))
         return (f'fuse holder only (the fuses are the plug-in rows: {fuses}); the KiCad footprint gives PCB <= 1.5 mm for its snap lock, '

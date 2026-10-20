@@ -59,7 +59,7 @@ Status: work in progress. Nothing has been ordered or printed yet.
    - Re-routing needs Java 25 and Freerouting 2.4.1 at `home-robot-r1/pcb/tools/freerouting.jar`. It isn't redistributed; download it from the Freerouting releases
      (`pcb/tools.py` pins its sha256, `FREEROUTING_SHA256`).
    - `pcb/tools.py` finds these per OS. Override any of them with `KICAD_CLI`, `KICAD_PYTHON`, `KICAD9_SYMBOL_DIR`, `KICAD9_FOOTPRINT_DIR`,
-     `KICAD9_3DMODEL_DIR`, `JAVA` (or `JAVA_HOME`, not on macOS) and `FREEROUTING_JAR`.
+     `KICAD9_3DMODEL_DIR`, `JAVA` (or `JAVA_HOME`) and `FREEROUTING_JAR`.
    - `pcb/route.py` with no arguments reproduces the committed routing with these versions; it records them in the board's `ROUTED_WITH`.
 4. **Simulator:**
    - Unreal Engine 5.8 (macOS): build with `home-robot-sim/Scripts/build.command`.
