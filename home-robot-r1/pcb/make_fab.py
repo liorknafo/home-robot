@@ -22,10 +22,12 @@ Writes (pcb/fab/, committed; ORDERING.md and BRINGUP-NOTES.md there are hand-wri
                             y = -v (KiCad's board frame, y flipped), z 0 = the bottom of KiCad's laminate body (B.Cu copper -0.035, the
                             parts' seating plane z 1.595 = the board top): robot (x, y, z) = STEP (x + BOARD_X0, y + BOARD_Y0, z +
                             Z_PCB_BOTTOM). The stock models show untrimmed leads (down to about z -1.9); the assembled board trims them
-                            to <= 1.4 mm (ORDERING.md).
+                            to <= 1.4 mm (ORDERING.md);
+ - SOURCE.sha256            the sha256 of the board, its DRC rules and its project (LF line endings, so a CRLF checkout hashes the
+                            same), one `<sha256>  <file>` line each: test_fab fails when the board changed after the package was made.
 The board itself is never changed: every export that needs a change (the PDF's page position, the STEP's envelope models) works on a copy
 in a temp dir. pcb/tests/test_fab.py checks the package (pure)."""
-import csv, math, re, shutil, subprocess, sys, tempfile, zipfile
+import csv, hashlib, math, re, shutil, subprocess, sys, tempfile, zipfile
 from pathlib import Path
 import pcbnew
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -307,6 +309,10 @@ def step(tmp):
     return dest, sorted(env, key=natural)
 
 
+def source_sha256():
+    return ''.join(hashlib.sha256(p.read_bytes().replace(b'\r\n', b'\n')).hexdigest() + f'  {p.name}\n' for p in (PCB, DRU, PRO))
+
+
 def main():
     FAB.mkdir(exist_ok=True)
     with tempfile.TemporaryDirectory() as t:
@@ -314,6 +320,7 @@ def main():
         out = [gerbers(tmp), bom(), positions()]
         (tmp / 'p').mkdir(); out.append(pdf(tmp / 'p'))
         (tmp / 's').mkdir(); st, env = step(tmp / 's'); out.append(st)
+    out.append(FAB / 'SOURCE.sha256'); out[-1].write_bytes(source_sha256().encode())
     for p in out: print(f'{p.relative_to(D.parent)}  {p.stat().st_size / 1e3:9.1f} kB')
     print('envelopes (no KiCad model, or too low a one):', ', '.join(env))
     return 0

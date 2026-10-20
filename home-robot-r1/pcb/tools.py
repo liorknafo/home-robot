@@ -32,3 +32,4 @@ def _java():
     return next((j for j in found if j and shutil.which(j)), 'java')
 JAVA = env('JAVA') or _java()
 FREEROUTING = env('FREEROUTING_JAR', str(PCB_DIR / 'tools' / 'freerouting.jar'))
+FREEROUTING_SHA256 = '251101c3eeac22d7e7dfcf6796603279e5d1000283eb82d8f093780f7afc6aa9'   # freerouting-2.4.1.jar (test_tools checks it)

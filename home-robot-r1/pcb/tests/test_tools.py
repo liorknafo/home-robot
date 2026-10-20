@@ -1,4 +1,4 @@
-import subprocess, unittest
+import hashlib, subprocess, unittest
 from pathlib import Path
 from pcb import tools
 from pcb.tests import left_out
@@ -22,7 +22,8 @@ class ToolTests(unittest.TestCase):
         r = subprocess.run([tools.JAVA, '-version'], capture_output=True, text=True)
         self.assertIn('version "25', r.stderr)
         if not Path(tools.FREEROUTING).is_file(): self.skipTest(left_out.reason('pcb/tools/freerouting.jar'))   # the JVM check above still ran
-        self.assertGreater(Path(tools.FREEROUTING).stat().st_size, 1_000_000)
+        self.assertEqual(hashlib.sha256(Path(tools.FREEROUTING).read_bytes()).hexdigest(), tools.FREEROUTING_SHA256,
+                         f'{tools.FREEROUTING} is not the Freerouting 2.4.1 jar the board was routed with')
         r = subprocess.run([tools.JAVA, '-Djava.awt.headless=true', '-jar', tools.FREEROUTING, '--help'],
                            capture_output=True, text=True, timeout=120)
         out = r.stdout + r.stderr
