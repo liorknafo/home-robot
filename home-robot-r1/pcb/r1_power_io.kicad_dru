@@ -5,3 +5,25 @@
 (rule "U3P.2 one spoke per outer layer"
   (constraint min_resolved_spokes 1)
   (condition "A.Type == 'Pad' && A.memberOfFootprint('U3P') && A.Pad_Number == '2'"))
+(rule "JLCPCB annular ring"
+  (constraint annular_width (min 0.13mm)))
+(rule "JLCPCB plated hole"
+  (condition "A.isPlated()")
+  (constraint hole_size (min 0.3mm)))
+(rule "JLCPCB non-plated hole"
+  (condition "!A.isPlated()")
+  (constraint hole_size (min 0.5mm)))
+(rule "JLCPCB hole to hole"
+  (constraint hole_to_hole (min 0.5mm)))
+(rule "JLCPCB copper to edge"
+  (constraint edge_clearance (min 0.5mm)))
+(rule "JLCPCB silk to mask"
+  (layer "?.Mask")
+  (condition "!A.existsOnLayer('Edge.Cuts') && !B.existsOnLayer('Edge.Cuts')")
+  (constraint silk_clearance (min 0.1mm)))
+(rule "JLCPCB silk text stroke"
+  (condition "A.Type == 'Text' && (A.Layer == 'F.Silkscreen' || A.Layer == 'B.Silkscreen')")
+  (constraint text_thickness (min 0.12mm)))
+(rule "JLCPCB silk line width"
+  (condition "A.Type == 'Graphic' && (A.Layer == 'F.Silkscreen' || A.Layer == 'B.Silkscreen')")
+  (constraint assertion "A.Line_Width >= 0.12mm"))

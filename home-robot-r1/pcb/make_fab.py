@@ -25,8 +25,8 @@ Writes (pcb/fab/, committed; ORDERING.md and BRINGUP-NOTES.md there are hand-wri
                             to <= 1.4 mm (ORDERING.md);
  - SOURCE.sha256            the sha256 of the board, its DRC rules and its project (LF line endings, so a CRLF checkout hashes the
                             same), one `<sha256>  <file>` line each: test_fab fails when the board changed after the package was made.
-The board itself is never changed: every export that needs a change (the PDF's page position, the STEP's envelope models) works on a copy
-in a temp dir. pcb/tests/test_fab.py checks the package (pure)."""
+The board itself is never changed: every export that needs a change (the PDF's page position, the STEP's envelope models, the DNP pads
+off the stencil) works on a copy in a temp dir. pcb/tests/test_fab.py checks the package (pure)."""
 import csv, hashlib, math, re, shutil, subprocess, sys, tempfile, zipfile
 from pathlib import Path
 import pcbnew
@@ -75,9 +75,18 @@ def board_copy(tmp):
 
 # --- Gerbers and drill ------------------------------------------------------------------------------------------------------------------
 def gerbers(tmp):
+    """LIO-226: from a board copy whose DNP parts' pads are off F.Paste - KiCad plots a DNP footprint's paste, and the stencil must leave
+    D2's pads bare."""
+    path = board_copy(tmp)
+    b = pcbnew.LoadBoard(str(path))
+    for fp in b.GetFootprints():
+        if not fp.IsDNP(): continue
+        for p in fp.Pads():
+            ls = p.GetLayerSet(); ls.RemoveLayer(pcbnew.F_Paste); p.SetLayerSet(ls)
+    pcbnew.SaveBoard(str(path), b, True)
     out = tmp / 'gerbers'; out.mkdir()
-    kcli('pcb', 'export', 'gerbers', '--layers', ','.join(GERBER_LAYERS), '-o', f'{out}/', PCB)
-    kcli('pcb', 'export', 'drill', '--format', 'excellon', '--excellon-units', 'mm', '--excellon-separate-th', '-o', f'{out}/', PCB)
+    kcli('pcb', 'export', 'gerbers', '--layers', ','.join(GERBER_LAYERS), '-o', f'{out}/', path)
+    kcli('pcb', 'export', 'drill', '--format', 'excellon', '--excellon-units', 'mm', '--excellon-separate-th', '-o', f'{out}/', path)
     files = [f for f in sorted(out.iterdir()) if f.suffix != '.gbrjob']        # no job file: it states the size as 100.1 mm (line width added)
     assert any(f.name.endswith('-PTH.drl') for f in files) and any(f.name.endswith('-NPTH.drl') for f in files), files
     assert len(files) == len(GERBER_LAYERS) + 2, [f.name for f in files]       # one Gerber per layer + the PTH and NPTH drill files
@@ -94,6 +103,8 @@ def part_note(ref):
     if ref == 'J1': return 'battery: pin 1 = GND, pin 2 = BAT+ (PB20; silk - / +): the battery lead GND in cavity 1'
     if ref in ('C1', 'C3'): return 'polarised: + on silk' + ('; under the IMU module (5.8 mm can, PB16 / PB20)' if ref == 'C3' else '')
     if ref == 'D1' or ref.startswith('LED'): return 'cathode mark on silk'
+    if ref == 'D2': return ("DNP (LIO-226): 5V to the Pico's VSYS, fit it to run the Pico and 3V3 without the Jetson USB (BRINGUP.md "
+                            'section 2); under the DRV_R carrier; cathode mark on silk')
     if ref in ('F1', 'F2'):            # one note for both holders (the rows join equal notes once); the fuses are plug-in rows (BOM_EXTRAS)
         fuses = ', '.join(f'{B.PARTS[r]["value"]} in {r}' for r in ('F1', 'F2'))
         return (f'fuse holder only (the fuses are the plug-in rows: {fuses}); the KiCad footprint gives PCB <= 1.5 mm for its snap lock, '
@@ -175,7 +186,7 @@ def pdf(tmp):
     tb.SetTitle(f'R1 bay board, 4 layers, {B.BOARD_W:g} x {B.BOARD_H:g} mm, 1:1')
     tb.SetCompany('home-robot R1'); tb.SetRevision('B7')
     tb.SetComment(0, 'Pages: F.Fab, F.Silkscreen, F.Cu, B.Cu - top view')
-    tb.SetComment(1, 'J1: pin 1 = GND, pin 2 = BAT+. J14 / J15 DNP.')
+    tb.SetComment(1, 'J1: pin 1 = GND, pin 2 = BAT+. J14 / J15 / D2 DNP.')
     pcbnew.SaveBoard(str(path), b, True)
     out = tmp / 'pdf'; out.mkdir()
     kcli('pcb', 'export', 'pdf', '--mode-multipage', '--layers', ','.join(PDF_LAYERS), '--common-layers', ','.join(PDF_COMMON),

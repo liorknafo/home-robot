@@ -64,7 +64,7 @@ FUSE_MPN = 'Littelfuse 178.6165.0001'
 Q_SYM = 'Transistor_FET:2N7002'
 Q_PINS = {'G': '1', 'S': '2', 'D': '3'}
 def q(i, role): return (f'Q{i}', Q_PINS[role])
-# D1 is an SS14 (SMA). Diode:SS14 and Device:D_Schottky both number K=1, A=2; Diode_SMD:D_SMA pad 1 is the cathode (band side).
+# D1 / D2 are SS14 (SMA). Diode:SS14 and Device:D_Schottky both number K=1, A=2; Diode_SMD:D_SMA pad 1 is the cathode (band side).
 D_SYM = 'Diode:SS14'
 D_PINS = {'K': '1', 'A': '2'}
 def dio(ref, role): return (ref, D_PINS[role])
@@ -167,8 +167,13 @@ PARTS = {
     'F1': P('Device:Fuse', FUSE_FP, '7.5 A ATO', FUSE_MPN, 30), 'F2': P('Device:Fuse', FUSE_FP, '5 A ATO', FUSE_MPN, 30),
     'K1': P(RELAY_SYM, 'Relay_THT:Relay_SPDT_Omron-G5LE-1', 'G5LE-1 DC5', 'Omron G5LE-1 DC5', 19),
     'D1': SMD(D_SYM, FP['D'], 'SS14', 'Vishay SS14-E3/61T (SMA 40 V 1 A Schottky; verify before ordering)', 2.7),      # SMA body 2.7 mm max: the tallest SMD part after C3
+    # LIO-226: D2, 5V -> the Pico's VSYS, DNP. As delivered the Pico and the whole 3V3 rail run from the Jetson's USB port only (VBUS /
+    # VSYS were NC); fitting D2 runs them from the board's 5V too (the Pico's own VBUS diode blocks the back-feed into the USB host).
+    'D2': DNP(SMD(D_SYM, FP['D'], 'SS14', 'Vishay SS14-E3/61T (SMA 40 V 1 A Schottky; verify before ordering)', 2.7)),
     'C1': P('Device:C_Polarized', FP['CP'], '470uF 25V', 'Panasonic EEU-FR1E471', 20),
     'C2': SMD('Device:C', FP['C'], '100nF', 'Samsung CL21B104KBCNNNC (100 nF 50 V X7R 0805; verify before ordering)', 1.25),
+    # LIO-226: C4 / C5, the 100 nF of the L_CS / R_CS RC filters (with R24 / R25: 4.7 k x 100 nF = 0.47 ms), cap to GND as C2
+    **{c: SMD('Device:C', FP['C'], '100nF', 'Samsung CL21B104KBCNNNC (100 nF 50 V X7R 0805; verify before ordering)', 1.25) for c in ('C4', 'C5')},
     # PB16: DRV_L's bulk cap. PB20 (d): the 6.3 x 5.8 mm FK can (5.8 + 0.3 mm worst case, under C3_H_MAX), 16 V >= 1.5 x VBAT_MAX
     'C3': SMD('Device:C_Polarized', FP['CPV'], '100uF 16V', 'Panasonic EEE-FK1C101P (FK, low ESR, 6.3 x 5.8 mm; verify before ordering)', 5.8),
     **{f'Q{i}': SMD(Q_SYM, FP['Q'], '2N7002', 'Nexperia 2N7002,215', 1.2) for i in range(1, 6)},
@@ -184,8 +189,16 @@ RES = {  # ref: (value, net a, net b)
     'R11': ('100k', 'VBAT_SW', 'VSENSE'), 'R12': ('33k', 'VSENSE', 'GND'),
     'R13': ('10k', 'L_IN1', 'GND'), 'R14': ('10k', 'L_IN2', 'GND'), 'R15': ('10k', 'R_IN1', 'GND'), 'R16': ('10k', 'R_IN2', 'GND'),
     'R17': ('100k', 'DRV_SLEEP', 'GND'), 'R18': ('10k', 'DRV_FAULT', '3V3'),
-    'R19': ('4.7k', 'SDA', '3V3'), 'R20': ('4.7k', 'SCL', '3V3'),
+    # LIO-226: 10 k (were 4.7 k). With the GY-521's 2.2 k and the four VL53L0X carriers' 10 k on the bus, 4.7 k made 0.94 k in all
+    # (3.1 mA at 0.4 V, over I2C's 3 mA); 10 k makes 1.05 k (2.8 mA)
+    'R19': ('10k', 'SDA', '3V3'), 'R20': ('10k', 'SCL', '3V3'),
     'R21': ('3.3k', 'VBAT_SW', 'LED1_A'), 'R22': ('1k', '5V', 'LED2_A'), 'R23': ('3.3k', 'VMOT', 'LED3_A'),
+    # LIO-226: the DRV8874 CS outputs (1.1 V/A, a 20 kHz chopped waveform, about 3.2-3.3 V at the current limit against the ADC pin's
+    # IOVDD + 0.3 V) reach GP27 / GP28 through 4.7 k, with C4 / C5 (100 nF) to GND on the ADC side
+    'R24': ('4.7k', 'L_CS', 'L_CS_ADC'), 'R25': ('4.7k', 'R_CS', 'R_CS_ADC'),
+    # LIO-226: ARM (normally-open button on a 200 mm lead) pulled up on the board, not by the RP2040's 50-80 k next to the motor PWM.
+    # BUMP_L / BUMP_R (normally closed: an open lead reads as a bump, fail-safe) stay on the internal pull-ups.
+    'R26': ('10k', 'ARM', '3V3'),
 }
 def res_mpn(value):
     """Yageo RC0805FR-07<value>L: 0805, 1 %, 0.125 W thick film ('4.7k' -> 4K7, '100k' -> 100K); the part number is from memory (verify before ordering)."""
@@ -213,7 +226,7 @@ PICO_GPIO = {
     'XSHUT1': 'GP0', 'ENC_LA_3V3': 'GP1', 'SDA': 'GP2', 'SCL': 'GP3', 'ENC_LB_3V3': 'GP4', 'XSHUT3': 'GP5', 'BUMP_L': 'GP6',
     'DRV_SLEEP': 'GP7', 'DRV_FAULT': 'GP8', 'MOTOR_ON_N': 'GP9', 'XSHUT2': 'GP10', 'ENC_RA_3V3': 'GP11', 'ENC_RB_3V3': 'GP12',
     'XSHUT4': 'GP13', 'ARM': 'GP14', 'BUMP_R': 'GP15', 'L_IN1': 'GP16', 'L_IN2': 'GP17', 'R_IN1': 'GP18', 'R_IN2': 'GP19',
-    'SPARE1': 'GP22', 'SPARE2': 'GP21', 'SPARE3': 'GP20', 'VSENSE': 'GP26', 'L_CS': 'GP27', 'R_CS': 'GP28',
+    'SPARE1': 'GP22', 'SPARE2': 'GP21', 'SPARE3': 'GP20', 'VSENSE': 'GP26', 'L_CS_ADC': 'GP27', 'R_CS_ADC': 'GP28',   # LIO-226: CS after its RC
 }
 def gp(net): return pico(PICO_GPIO[net])
 
@@ -232,11 +245,12 @@ def _nets():
     add('VBAT_SW', ('J2', '2'), ('F2', '1'), ('U5A', '1'), ('TP1', '1'))
     add('F2_OUT', ('F2', '2'), ('K1', RELAY_PINS['COM']))
     add('VMOT', ('K1', RELAY_PINS['NO']), ('C1', '1'), ('C3', '1'), drv('L', 'VIN'), drv('R', 'VIN'), ('TP2', '1'))
-    add('5V', ('U5B', '1'), ('J3', '1'), ('J4', '4'), ('J5', '4'), ('J13', '1'), ('J15', '5'), ('TP3', '1'))
+    add('5V', ('U5B', '1'), ('J3', '1'), ('J4', '4'), ('J5', '4'), ('J13', '1'), ('J15', '5'), ('TP3', '1'), dio('D2', 'A'))
+    add('VSYS', dio('D2', 'K'), pico('VSYS'))                                       # LIO-226: D2 (DNP) 5V -> VSYS
     add('3V3', pico('3V3_OUT'), imu('VCC'), *[(f'J{6 + i}', '1') for i in range(4)], ('J14', '1'), ('J15', '4'), ('TP4', '1'))
     if DRV_PMODE_NET == '3V3': add('3V3', drv('L', 'PMODE'), drv('R', 'PMODE'))
     gnd = [J1_GND_PIN, ('J3', '2'), ('J4', '3'), ('J5', '3'), ('J10', '2'), ('J11', '2'), ('J12', '2'), ('J14', '2'), ('J15', '6'),
-           ('U5A', '2'), ('U5B', '2'), ('C1', '2'), ('C2', '2'), ('C3', '2'), ('K1', RELAY_PINS['COIL_N']), ('TP5', '1'),
+           ('U5A', '2'), ('U5B', '2'), ('C1', '2'), ('C2', '2'), ('C3', '2'), ('C4', '2'), ('C5', '2'), ('K1', RELAY_PINS['COIL_N']), ('TP5', '1'),
            *[(f'J{6 + i}', '2') for i in range(4)], *[pico(g) for g in ('GND1', 'GND2', 'GND3', 'GND4', 'GND5', 'GND6', 'AGND', 'GND7')],
            imu('GND'), imu('AD0'), drv('L', 'GND'), drv('R', 'GND'), *[(f'H{i}', '1') for i in range(1, 5)], dio('D1', 'A'),
            *[(f'U{u}{row}', str(pin)) for u in (3, 4) for (row, pin) in DRV_EXTRA_GND],
@@ -247,7 +261,8 @@ def _nets():
     for side, j in (('L', 'J4'), ('R', 'J5')):
         add(f'{side}_M1', (j, '1'), drv(side, 'OUT1')); add(f'{side}_M2', (j, '2'), drv(side, 'OUT2'))
         add(f'{side}_CS', drv(side, 'CS')); add(f'{side}_IN1', drv(side, 'IN1')); add(f'{side}_IN2', drv(side, 'IN2'))
-    for net in ('L_CS', 'R_CS', 'L_IN1', 'L_IN2', 'R_IN1', 'R_IN2'): add(net, gp(net))
+    for net in ('L_CS_ADC', 'R_CS_ADC', 'L_IN1', 'L_IN2', 'R_IN1', 'R_IN2'): add(net, gp(net))
+    add('L_CS_ADC', ('C4', '1')); add('R_CS_ADC', ('C5', '1'))                      # LIO-226: the RC filters' caps (R24 / R25 in RES)
     add('DRV_SLEEP', gp('DRV_SLEEP'), drv('L', 'SLEEP'), drv('R', 'SLEEP')); add('DRV_FAULT', gp('DRV_FAULT'), drv('L', 'FAULT'), drv('R', 'FAULT'))
     for i, (sig, j, pin) in enumerate((('LA', 'J4', '5'), ('LB', 'J4', '6'), ('RA', 'J5', '5'), ('RB', 'J5', '6')), 1):
         add(f'ENC_{sig}_5V', (j, pin), q(i, 'G')); add(f'ENC_{sig}_3V3', q(i, 'D'), gp(f'ENC_{sig}_3V3'))
@@ -262,14 +277,15 @@ def _nets():
     return n
 
 NETS = _nets()
-NC = ([pico(n) for n in ('RUN', 'ADC_VREF', '3V3_EN', 'VSYS', 'VBUS')] + [imu(n) for n in ('XDA', 'XCL', 'INT')]
+NC = ([pico(n) for n in ('RUN', 'ADC_VREF', '3V3_EN', 'VBUS')] + [imu(n) for n in ('XDA', 'XCL', 'INT')]
       + [('K1', RELAY_PINS['NC'])] + [(f'U{u}{row}', str(pin)) for u in (3, 4) for (row, pin) in DRV_UNUSED])
 
 NETCLASS_POWER = ['BAT+', 'F1_OUT', 'VBAT_SW', 'F2_OUT', 'VMOT', '5V', 'GND', 'L_M1', 'L_M2', 'R_M1', 'R_M2']
 CURRENT_A = {'BAT+': 7.5, 'F1_OUT': 7.5, 'VBAT_SW': 7.5, 'F2_OUT': 5.0, 'VMOT': 5.0, '5V': 4.71, 'GND': 7.5,
              'L_M1': 2.1, 'L_M2': 2.1, 'R_M1': 2.1, 'R_M2': 2.1}
 # '5V' (LIO-227): the P03's whole output, the Jetson's 4.5 A + the 5V taps (TAP_LOAD_A: relay coil 83 mA, J15 spare 0.10 A, encoders
-# 20 mA, LED2 3.5 mA = 0.207 A, rounded up to 0.21; test_board_spec checks the sum).
+# 20 mA, LED2 3.5 mA = 0.207 A, rounded up to 0.21; test_board_spec checks the sum). LIO-226: not D2's PICO_VSYS_A - the DNP VSYS diode,
+# fitted, moves the Pico's draw off the Jetson's USB port (inside the Jetson's 4.5 A) onto its tap.
 # Net classes. Ruling R4, recomputed for the ordered copper (bay B4, copper.py: 1 oz outer, 0.5 oz inner, IPC-2221 at 10 degC rise):
 # every power trunk (BAT+, F1_OUT, VBAT_SW, F2_OUT, VMOT, 5V; GND on the In1 plane) is a copper zone, POWER_ZONES below. The Power class
 # keeps 3.0 mm for the short stubs B5 may add where every pad has >= 3.96 mm pitch: two 1-oz outer layers in parallel, 8.77 A > 7.5 A at
@@ -292,6 +308,11 @@ NETCLASSES = {
 # 1.0 mm) south and the L_M1 track (u 49.85, held west of H3's washer) east leave the west side alone - so its GND patch joins it with one
 # F.Cu spoke and the B.Cu GND fill with one B.Cu spoke, below KiCad's default of 2 (starved_thermal). The rule accepts 1 for that pad
 # alone; ktest_power proves those spokes' current (pad metric) and ktest_pcb that no other pad is excused.
+# LIO-226: JLCPCB's 4-layer minimums, so "DRC clean" means manufacturable rather than KiCad's defaults (annular ring 0.1, hole to hole
+# 0.25, no silk rules): annular ring >= 0.13, plated hole >= 0.3, non-plated >= 0.5, hole edge to hole edge >= 0.5, silk lines and text
+# strokes >= 0.12 (the stock footprints draw 0.12), silk >= 0.1 off the mask openings (not off the board edge: the stock silk of the
+# edge headers sits 0.09-0.10 mm inside it, which the fab may clip: ORDERING.md). Copper to edge: JLCPCB needs 0.3, but a custom rule replaces KiCad's 0.5
+# default (the zones would fill 0.2 mm nearer the edge), so the rule keeps the board's 0.5, which the router keeps too.
 DRC_RULES = '''(version 1)
 (rule "motor pins within one footprint"
   (constraint clearance (min 0.3mm))
@@ -299,6 +320,28 @@ DRC_RULES = '''(version 1)
 (rule "U3P.2 one spoke per outer layer"
   (constraint min_resolved_spokes 1)
   (condition "A.Type == 'Pad' && A.memberOfFootprint('U3P') && A.Pad_Number == '2'"))
+(rule "JLCPCB annular ring"
+  (constraint annular_width (min 0.13mm)))
+(rule "JLCPCB plated hole"
+  (condition "A.isPlated()")
+  (constraint hole_size (min 0.3mm)))
+(rule "JLCPCB non-plated hole"
+  (condition "!A.isPlated()")
+  (constraint hole_size (min 0.5mm)))
+(rule "JLCPCB hole to hole"
+  (constraint hole_to_hole (min 0.5mm)))
+(rule "JLCPCB copper to edge"
+  (constraint edge_clearance (min 0.5mm)))
+(rule "JLCPCB silk to mask"
+  (layer "?.Mask")
+  (condition "!A.existsOnLayer('Edge.Cuts') && !B.existsOnLayer('Edge.Cuts')")
+  (constraint silk_clearance (min 0.1mm)))
+(rule "JLCPCB silk text stroke"
+  (condition "A.Type == 'Text' && (A.Layer == 'F.Silkscreen' || A.Layer == 'B.Silkscreen')")
+  (constraint text_thickness (min 0.12mm)))
+(rule "JLCPCB silk line width"
+  (condition "A.Type == 'Graphic' && (A.Layer == 'F.Silkscreen' || A.Layer == 'B.Silkscreen')")
+  (constraint assertion "A.Line_Width >= 0.12mm"))
 '''
 POWER_TRUNK = {   # pads the high-current path must join with >= 3 mm zone copper on every trunk layer (zone_check; B6 sizes it by IPC-2221)
     'BAT+': [J1_BAT_PIN, ('F1', '1')],                  # bay B4: the battery-side nets are zone trunks too (PB20: J1.2)
@@ -363,6 +406,8 @@ TOF_A = 0.040           # Pololu 2490 VL53L0X carrier: ranging peaks near 40 mA 
                         # s.6 budgets IMU + 4 ToF at about 100 mA average
 SPARE_5V_A, SPARE_3V3_A = 0.10, 0.02   # budgets of the DNP spare rows' supply pins (J15.5 5V, J14.1 / J15.4 3V3): a fitted load above
                                        # them needs this check re-run
+PICO_VSYS_A = 0.20      # LIO-226, D2 fitted (DNP as delivered): the Pico (~25 mA) and its 3V3 loads here (~0.21 A, TAP_LOAD_A) at 3.3 V
+                        # through its buck-boost (~90 %) from ~4.5 V (5 V less the SS14's drop); the VSYS track's 0.15 mm carries 0.25 A inner
 def _lamp_a(v, ohm): return (v - LED_VF_MIN) / ohm
 TAP_LOAD_A = {
     **{(f'TP{i}', '1'): 0.0 for i in range(1, 5)},                 # probe pads: no load (TP5 is GND)
@@ -374,10 +419,10 @@ TAP_LOAD_A = {
     ('J4', '4'): ENC_SUPPLY_A, ('J5', '4'): ENC_SUPPLY_A,           # motor encoder supplies
     ('J13', '1'): RELAY_COIL_A,      # the motor toggle loop feeds K1's coil (J13.2 -> COIL_P)
     ('J15', '5'): SPARE_5V_A, ('J14', '1'): SPARE_3V3_A, ('J15', '4'): SPARE_3V3_A,
+    dio('D2', 'A'): PICO_VSYS_A,                                   # LIO-226: the DNP VSYS diode, if fitted
     imu('VCC'): IMU_A, **{(f'J{6 + i}', '1'): TOF_A for i in range(4)},
     drv('L', 'PMODE'): 0.0001, drv('R', 'PMODE'): 0.0001,          # DRV8874 PMODE: a logic input (uA)
-    **{(r, '2'): 3.3 / 10e3 for r in ('R2', 'R4', 'R6', 'R8', 'R10', 'R18')},   # 10 k pull-ups to 3V3
-    **{(r, '2'): 3.3 / 4.7e3 for r in ('R19', 'R20')},                          # 4.7 k I2C pull-ups
+    **{(r, '2'): 3.3 / 10e3 for r in ('R2', 'R4', 'R6', 'R8', 'R10', 'R18', 'R19', 'R20', 'R26')},   # 10 k pull-ups to 3V3 (I2C, ARM: LIO-226)
 }
 # Bay B6 (carry item 6): C3's ripple share. C3 = Panasonic EEE-FK1C101P (FK, 100 uF 16 V, 6.3 x 5.8 mm; PB20 - was EEE-FK1E101P,
 # 6.3 x 7.7 mm, 0.34 ohm / 0.23 A), C1 = EEU-FR1E471 (FR, 470 uF 25 V). Datasheet figures at 100 kHz / 20 degC (ESR) and 105 degC
@@ -468,7 +513,7 @@ def silk_label(ref):
     """The F.SilkS label of a part (None for the M3 holes)."""
     if ref.startswith('H') and ref[1:].isdigit(): return None
     return f"{ref} {SILK_FUNCTION.get(ref, PARTS[ref]['value'])}"
-POLARISED = ['LED1', 'LED2', 'LED3', 'D1', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'C1', 'C3']
+POLARISED = ['LED1', 'LED2', 'LED3', 'D1', 'D2', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'C1', 'C3']
 # PB20: connector pin marks build_pcb draws on F.SilkS: '+' at a supply pin, '-' at a GND pin. Each mark is PIN_MARK_LEN strokes (a '+'
 # two crossing, a '-' one along the pin row, the way the J1 label reads) at the pin centre + PIN_MARK_AT[ref][pin] (board frame mm),
 # outside the part's F.Fab housing, so it stays visible once the part is soldered and mated, nearer its own pin than any other pad on the
@@ -665,6 +710,10 @@ PLACEMENT = {
     # B5 / PB13: the relay driver (coil sense Q5 + R9, flyback D1) leaves DRV_R's interior for the Pico pocket, beside MOTOR_ON_N (U1A.12,
     # R10) and on the way of COIL_P to J13; K1's own courtyard and the VMOT / F2_OUT / J3 copper leave no SMD room at the coil itself
     'Q5': (14.0, 46.0, 0), 'D1': (15.0, 20.5, 180), 'R9': (14.0, 35.0, 0),
+    # LIO-226: R26 (ARM pull-up) at the foot of the U1A pull-up column, under Q5 beside U1A.19 (ARM): the column holds no free slot at the
+    # label pitch, so the VBAT_SW F.Cu strip under the Pico's south end gets a notch for it (gen_power_zones). v 49.65: 1.0 mm off Q5's
+    # courtyard, and the strip below it to J2.2 / F2.1's relief rings keeps 4.93 mm (>= 4.84 mm, 7.5 A on 1 oz)
+    'R26': (13.2, 49.65, 0),
     # IMU (U2 at v 17.3: the VBAT_SW corridor passes U3P's last pin), bumpers on the side edges
     'U2': (31.2, 17.3, 0), 'J10': (39.8, 2.9, 0), 'J11': (42.4, 97.1, 180),
     # status lamps and test pads under the carrier (no room in the band; listed for BRINGUP): LED2 north of the IMU, LED1 / R21 and TP1 /
@@ -683,6 +732,16 @@ PLACEMENT = {
     # south of DRV_R that link found no path even routed first (run 23), so LED1 follows to the north edge too (PB13a: LEDs move within
     # the B3 rules), 12 mm from R21, turned 270 so its LP12 via clears the Pico-side 5V tap's In2 diagonal.
     'LED1': (35.75, 4.0, 270), 'R21': (47.25, 2.25, 0), 'J14': (59.3, 46.4, 0),
+    # LIO-226: the CS RC filters beside the drivers' CS pins (U3P.7 / U4P.7), not under the Pico by U1B.9 / U1B.7: both Pico columns
+    # are full at the label pitch (no legal 0805 spot under the Pico or between U1B and U2), and here they need no part moved. The ADC
+    # sees the same RC, the series R still guards the pin (all of L_CS_ADC lies behind it) and the long run to the Pico carries the
+    # filtered level, not the 20 kHz chopped one. R24 / C4 east of U3P, in the pocket between its pins, J14 and the H3 / H4 washers;
+    # R25 / C5 inside DRV_R by U4P.7 (east of U4P the J5 plug's lane leaves 1.15 mm), C5's GND via east of the 5V B.Cu strip.
+    'R24': (51.5, 51.5, 90), 'C4': (53.0, 47.25, 0), 'R25': (42.95, 81.49, 90), 'C5': (42.25, 77.5, 0),
+    # LIO-226: D2 (DNP VSYS diode) at the north end of DRV_R's interior, under the carrier module (2.7 mm < MODULE_CLEARANCE: unplug
+    # DRV_R to fit it), anode over the 5V B.Cu strip, VSYS run to the Pico's pin 39 (U1B.2). No legal SMA spot lies within 25 mm of
+    # U1B.2, and the tongue's free strip is J4's motor plug and cable band; DRV_R's interior is the only one left.
+    'D2': (40.5, 66.0, 0),
     # --- tongue: motor headers (pins toward the notches), P03 terminals and front cliffs on the front edge, DNP J15
     'J4': (48.2, 35.2, 90), 'J5': (65.21, 64.8, 270),
     # B3 fix 1: the front edge keeps the motor-cable bands clear (v 15..21 / 79..85, MOTOR_CABLE_EXIT + MOTOR_CABLE_W)
@@ -737,7 +796,7 @@ POWER_ZONES = [
                (22.71, 57.22), (22.52, 57.3), (22.35, 57.4), (22.2, 57.52), (22.06, 57.66), (21.94, 57.81), (21.84, 57.98),
                (21.76, 58.17), (21.73, 58.3), (21.69, 58.3), (21.69, 58.51), (21.68, 58.55), (21.68, 58.75), (21.69, 58.79),
                (21.69, 62.1), (6.1, 62.1), (6.1, 59.36), (2.6, 59.36), (2.6, 52.9), (4.5, 52.9), (4.5, 52.3), (7.6, 52.3), (7.6, 51.65),
-               (8.26, 52.31), (9.34, 52.31), (10.1, 51.55), (10.1, 50.6), (10.2, 50.6), (10.2, 49.2), (19.5, 49.2), (19.5, 51.6),
+               (8.26, 52.31), (9.34, 52.31), (10.1, 51.55), (10.1, 50.7), (15.2, 50.7), (15.2, 49.2), (19.5, 49.2), (19.5, 51.6),
                (25.47, 51.6), (25.53, 51.71), (25.63, 51.84), (25.75, 51.96), (25.88, 52.06), (26.02, 52.14), (26.18, 52.2),
                (26.33, 52.24), (26.5, 52.27), (26.66, 52.27), (26.83, 52.24), (26.98, 52.2), (27.14, 52.14), (27.28, 52.06),
                (27.41, 51.96), (27.53, 51.84), (27.63, 51.71), (27.69, 51.6), (27.85, 51.6), (27.85, 36), (30.35, 36), (30.37, 36.03),
@@ -879,6 +938,9 @@ PREROUTES = [
     dict(net='3V3', layer='F.Cu', width=0.15, pts=[(14.91, 41.5), (14.91, 39.2)]),
     dict(net='3V3', layer='F.Cu', width=0.15, pts=[(14.91, 39.2), (14.91, 38.0)]),
     dict(net='3V3', layer='In2.Cu', width=0.15, pts=[(14.91, 39.2), (14.91, 33.6)]),
+    # LIO-226: R26.2 (the ARM pull-up's 3V3 end, under Q5) up past Q5's drain pad into the 3V3 hop via above (15.12, 44.68); the first
+    # route left it open.
+    dict(net='3V3', layer='F.Cu', width=0.15, pts=[(14.112, 49.65), (14.112, 48.6), (16.2, 46.512), (16.2, 45.76), (15.12, 44.68)]),
     # PB17: DRV_SLEEP's own link (R17.1 -> U3L.6; open in every variant once 3V3 took the route above). West of U3L, L_IN1 (U1B.20 ->
     # U3L.3) and L_IN2 (U1B.19 -> U3L.4) cross each other, so a net from the far west into U3L.6 that passes U1B north of .19 crosses
     # both. Through U1B's .19 / .20 gap it crosses L_IN1 only: B.Cu under the Pico (over 3V3's In2 run), a via clear of the F1_OUT
@@ -939,6 +1001,8 @@ def narrow_track_keys():
 SMD_GND_VIAS = {
     'C2': (23.15, 26.5),
     'C3': (40.3, 29.85),           # PB16
+    'C4': (54.75, 47.25),          # LIO-226
+    'C5': (44.0, 77.5),            # LIO-226
     'D1': (11.45, 20.5),
     'Q1': (35.52, 16.95),
     'Q2': (36.52, 21.95),
@@ -974,9 +1038,15 @@ HOP_VIAS = [
     ('VBAT_SW', (51.75, 16.6)), ('VBAT_SW', (51.75, 19.6))]                    # PB18b: TP1's feed
 # Via size per net class (diameter, drill) mm: the one table - make_schematic.py writes it to the .kicad_pro, route.py and ktest_route import it.
 CLASS_VIA = {'Default': (0.6, 0.3), 'Power': (1.2, 0.6), 'PowerTap': (0.8, 0.4), 'Motor': (0.8, 0.4)}   # PB17: signal vias 0.6 / 0.3
-# The GND vias (LP12 SMD-pad vias, GND stitching vias) keep 0.8 / 0.4 (PB17: pinned at their size; GND is a Default-class net).
+# The GND stitching vias keep 0.8 / 0.4 (PB17: pinned at their size; GND is a Default-class net). LIO-226: the LP12 SMD-pad vias
+# (SMD_GND_VIAS) drill 0.3 - at 0.4 their drill came within 0.095-0.105 mm of their pad's mask opening, at 0.3 the web is ~0.15 mm;
+# they carry mA (C3's ripple share, the most, is under its 0.76 A barrel, ktest_power).
 GND_VIA = (0.8, 0.4)
-def net_via(net):
-    if net == 'GND': return GND_VIA
+SMD_PAD_VIA = (0.8, 0.3)
+def net_via(net, at=None):
+    """(diameter, drill) of a via of `net`; at: its (u, v), so a GND via at an SMD_GND_VIAS spot is SMD_PAD_VIA."""
+    if net == 'GND':
+        lp12 = at is not None and (round(at[0], 3), round(at[1], 3)) in {(round(u, 3), round(v, 3)) for u, v in SMD_GND_VIAS.values()}
+        return SMD_PAD_VIA if lp12 else GND_VIA
     return CLASS_VIA[next((name for name, c in NETCLASSES.items() if net in c['nets']), 'Default')]
 PREROUTE_VIAS = [('GND', uv) for uv in SMD_GND_VIAS.values()] + STITCH_VIAS + HOP_VIAS

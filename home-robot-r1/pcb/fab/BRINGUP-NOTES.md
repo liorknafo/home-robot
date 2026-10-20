@@ -21,14 +21,22 @@ Collected in B7 from the B3–B6 rulings. B10 folds these into `BRINGUP.md`.
   Jetson is connected, with the rocker on: U5A pin 1 reads the pack voltage and U5B pin 1 reads 5.1 V, both positive, against GND.
 - Fit the fuses only with the rocker off (F2 last). Shut the Jetson down before the rocker goes off; rocker off before the battery is
   plugged or unplugged.
+- **Pico power (LIO-226):** the Pico's VBUS is not connected to the board and its VSYS (pin 39, U1B.2) only through D2, an SS14 from
+  the board's 5V, DNP. As delivered the Pico and the whole 3V3 rail run from the Jetson's USB port only: with the Jetson off, the
+  sensors are off. Fit D2 if the robot must run its sensors without the Jetson's USB (it sits inside DRV_R's socket rows: fit it with
+  the DRV_R carrier out); the Pico's own VBUS diode blocks the back-feed into the USB host.
 
 ## Motor drivers (DRV8874, Pololu 4035)
 
 - **Continuous current limit: 1.8 A per channel.** At 2.1 A continuous, T_J is 88–136 °C (40 °C air under the carrier; R_θJA 40 °C/W
   JEDEC, 70 °C/W assumed for the 2-layer carrier). 1.8 A keeps T_J ≤ about 110 °C on the carrier (`power_check.drv8874_current_for_tj`).
   The figures are quoted from memory (see ORDERING.md, "Verify before ordering").
-- Firmware enforces the limit from CS (about 1.1 V/A on the carrier's 2.49 kΩ, read on GP27 L_CS / GP28 R_CS). Short peaks (starts,
-  stall up to the 2.1 A design current) are fine; a stall must be cut within seconds.
+- Firmware enforces the limit from CS (about 1.1 V/A on the carrier's 2.49 kΩ, read on GP27 L_CS_ADC / GP28 R_CS_ADC). Short peaks
+  (starts, stall up to the 2.1 A design current) are fine; a stall must be cut within seconds.
+- **CS filters (LIO-226):** each CS reaches its ADC pin through 4.7 kΩ (R24 / R25) with 100 nF to GND on the pin side (C4 / C5),
+  RC ≈ 0.47 ms (about 340 Hz). The ADC reads the 20 kHz chopped CS averaged, settled within about 2.4 ms (5 RC). At the current limit
+  CS sits near 3.2–3.3 V, the top of the ADC range and close to the pin's IOVDD + 0.3 V rating: the 4.7 kΩ limits the current into the
+  pin's clamp. The filters sit by the drivers' CS pins (U3P.7, U4P.7), so the long run to the Pico carries the filtered level.
 - **Motor PWM ≈ 20 kHz** (`board_spec.DRV_PWM_HZ`), **with slow decay** (LIO-227): forward IN1 = 1 and IN2 = inverted PWM (reverse:
   IN2 = 1, IN1 = inverted PWM), so the off-time brakes on the low sides and the duty is the fraction with IN2 low. C3 (100 µF FK at
   DRV_L's VIN) then carries 0.10 A of ripple against its 0.16 A rating, with C1 fitted. **Fast decay is not allowed:** PWM on IN1 with
@@ -40,13 +48,16 @@ Collected in B7 from the B3–B6 rulings. B10 folds these into `BRINGUP.md`.
 
 ## Firmware: inputs, buses, battery
 
-- **Internal pull-ups:** BUMP_L (GP6), BUMP_R (GP15) and ARM (GP14) have no pull-up resistors on the board (the switches pull to GND).
-  Enable the RP2040's internal pull-ups on them.
+- **Switch inputs** (the switches pull to GND): ARM (GP14), a normally-open button on a 200 mm lead, has a 10 kΩ pull-up on the board
+  (R26, LIO-226), not the RP2040's 50–80 kΩ beside the motor PWM. BUMP_L (GP6) and BUMP_R (GP15) are normally closed (an open lead
+  reads as a bump, fail-safe) and have none: enable the RP2040's internal pull-ups on those two.
 - **Encoders:** the right encoder's A / B are adjacent pins (GP11 / GP12), so a standard two-pin PIO quadrature program reads it. The
   left one's are not (GP1 / GP4, `PICO_GPIO`): read it with GPIO edge interrupts on both pins, or a PIO program that takes one pin as
   its `jmp pin` condition and the other through `in` / `wait`. No board change.
-- **I2C:** I2C1 on GP2 (SDA) / GP3 (SCL) at 100 kHz. R19 / R20 are 4.7 kΩ pull-ups; the bus runs over cables to four ToF boards and
-  the IMU.
+- **I2C:** I2C1 on GP2 (SDA) / GP3 (SCL) at 100 kHz. R19 / R20 are 10 kΩ pull-ups (LIO-226; 4.7 kΩ made the bus 0.94 kΩ, 3.1 mA at
+  0.4 V, over I2C's 3 mA); the bus runs over cables to four ToF boards and the IMU. With the GY-521's 2.2 kΩ and the four ToF carriers'
+  10 kΩ the bus totals about 1.05 kΩ (2.8 mA): measure SDA / SCL to 3V3 with everything plugged in (BRINGUP.md section 4 item 4), and
+  leave R19 / R20 off below 1 kΩ.
 - **ToF addresses:** the four VL53L0X all start at 0x29. At boot, hold all four in reset with XSHUT1–XSHUT4 (GP0, GP10, GP5, GP13),
   then release one at a time and give each a new address: 0x30, 0x31, 0x32, 0x33 (cliff 1–4 = J6, J7, J8, J9). The IMU stays at 0x68.
 - **MOTOR_ON_N (GP9) reports the toggle, not VMOT:** Q5's gate is on COIL_P, so it reads low ("on") whenever the J13 loop energises

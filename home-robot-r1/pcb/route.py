@@ -71,8 +71,9 @@ def add_track(board, net, layer, width, a, b, locked=True):
 
 
 def add_via(board, net, at, locked=True):
-    """A through via (F.Cu to B.Cu: all four layers) of the net's via size (board_spec.net_via: the class's, GND pinned at 0.8 / 0.4)."""
-    dia, drill = B.net_via(net)
+    """A through via (F.Cu to B.Cu: all four layers) of the net's via size (board_spec.net_via: the class's, GND pinned at 0.8 / 0.4, an
+    LP12 SMD-pad via 0.8 / 0.3)."""
+    dia, drill = B.net_via(net, at)
     v = pcbnew.PCB_VIA(board); v.SetViaType(pcbnew.VIATYPE_THROUGH); v.SetLayerPair(pcbnew.F_Cu, pcbnew.B_Cu)
     v.SetPosition(V(*at)); v.SetWidth(MM(dia)); v.SetDrill(MM(drill)); v.SetNet(board.FindNet(net)); v.SetLocked(locked); board.Add(v)
     return v
@@ -223,7 +224,7 @@ def normalize_vias(board):
     """Every via back to its net class's via size (board_spec.CLASS_VIA): ImportSpecctraSES takes the diameter from the session's
     padstack."""
     for v in [t for t in board.GetTracks() if t.GetClass() == 'PCB_VIA']:
-        dia, drill = B.net_via(v.GetNetname())
+        dia, drill = B.net_via(v.GetNetname(), (TOMM(v.GetPosition().x), TOMM(v.GetPosition().y)))
         v.SetWidth(MM(dia)); v.SetDrill(MM(drill))
 
 
@@ -536,7 +537,7 @@ def foreign_zone_copper(board):
 
 def narrow_tracks(board):
     """[(net, layer or 'via', size mm)] - tracks narrower than their net class's width and vias smaller than its via (board_spec.CLASS_VIA,
-    GND at GND_VIA), the board_spec.NARROW_TRACKS segments aside (PB18: scripted probe feeds with no load). ktest_route checks the same."""
+    GND at board_spec.net_via), the board_spec.NARROW_TRACKS segments aside (PB18: scripted probe feeds with no load). ktest_route checks the same."""
     width = {n: c['width'] for n, c in B.NETCLASSES.items()}
     ok = B.narrow_track_keys()
     r3 = lambda p: (round(TOMM(p.x), 3), round(TOMM(p.y), 3))
@@ -544,7 +545,7 @@ def narrow_tracks(board):
     for t in board.GetTracks():
         net, cls = t.GetNetname(), t.GetNet().GetNetClassName()
         if t.GetClass() == 'PCB_VIA':
-            dia, drill = B.GND_VIA if net == 'GND' else B.CLASS_VIA.get(cls, B.CLASS_VIA['Default'])
+            dia, drill = B.net_via(net, r3(t.GetPosition())) if net == 'GND' else B.CLASS_VIA.get(cls, B.CLASS_VIA['Default'])
             if TOMM(t.GetWidth(pcbnew.F_Cu)) < dia - 1e-6 or TOMM(t.GetDrillValue()) < drill - 1e-6:
                 bad.append((net, 'via', round(TOMM(t.GetWidth(pcbnew.F_Cu)), 3)))
         elif TOMM(t.GetWidth()) < width.get(cls, B.DEFAULT_CLASS['width']) - 1e-6:
@@ -630,7 +631,7 @@ def evaluate(board, workdir, base):
 # Routed first (stage A, alone, before the tap nets), on a free board: the Motor class (1.0 mm wide, 1.0 mm clearance, R16 - the
 # hardest to fit once the signals are down) and, since PB17, the driver bundle - the Pico -> DRV_L / DRV_R logic links that cross the
 # strip between U1B and the drivers (DRIVER_BUNDLE). --critical NET,NET,... replaces the list, --critical none empties it.
-DRIVER_BUNDLE = ['R_IN1', 'R_IN2', 'R_CS', 'DRV_FAULT', 'L_CS', 'BUMP_R', 'COIL_P']
+DRIVER_BUNDLE = ['R_IN1', 'R_IN2', 'R_CS_ADC', 'DRV_FAULT', 'L_CS_ADC', 'BUMP_R', 'COIL_P']   # LIO-226: CS crosses after its RC
 CRITICAL_NETS = list(B.NETCLASSES['Motor']['nets']) + DRIVER_BUNDLE
 STAGE2_MARGIN = 6.0       # mm round each missing connection where the completion run (C) lifts the ordinary GND pads' B.Cu guards
 

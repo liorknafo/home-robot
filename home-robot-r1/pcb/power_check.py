@@ -224,7 +224,7 @@ def c3_ripple(i_motor=None, f=None, slow_decay=True):
     z3 = complex(B.C3_ESR_OHM, -1 / (w * _farads('C3')))
     z1 = complex(B.C1_ESR_OHM + B.C3_C1_PATH['r_ohm'], w * B.C3_C1_PATH['l_h'] - 1 / (w * _farads('C1')))
     return dict(f_hz=f, slow_decay=slow_decay, i_motor_a=i_motor, i_ac_a=i_ac, c3_a=i_ac * abs(z1) / abs(z1 + z3), c1_a=i_ac * abs(z3) / abs(z1 + z3),
-                c3_alone_a=i_ac, rating_a=B.C3_RIPPLE_RATING_A, via_a=C.via_current_a(B.GND_VIA[1]))
+                c3_alone_a=i_ac, rating_a=B.C3_RIPPLE_RATING_A, via_a=C.via_current_a(B.SMD_PAD_VIA[1]))
 
 
 # --- carry item 7: DRV8874 dissipation (report only) -------------------------------------------------------------------------------------
