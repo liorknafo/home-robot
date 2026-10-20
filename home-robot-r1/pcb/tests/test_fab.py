@@ -3,8 +3,9 @@
 The package: r1_power_io-gerbers.zip (the ten plotted layers + PTH / NPTH Excellon drill, 12 files, no job file), -bom.csv (from board_spec.PARTS and BOM_EXTRAS),
 -pos.csv (placement, DNP rows left out), -1to1.pdf (printable at 100 %), r1_power_io.step (B8 reads it: every fitted part, envelopes
 where KiCad has no model), ORDERING.md and BRINGUP-NOTES.md (for B10)."""
-import csv, hashlib, json, math, re, unittest, zipfile, zlib
+import csv, hashlib, json, math, re, sys, unittest, zipfile, zlib
 from pathlib import Path
+from unittest import mock
 from pcb import board_spec as B
 from pcb.tests.left_out import needs_kicad
 
@@ -209,6 +210,15 @@ class FabPackageTests(unittest.TestCase):
             if fitted(ref): self.assertTrue(part['mpn'].strip(), ref)
         self.assertEqual({r for r, row in seen.items() if row['Fit'] == 'DNP'}, {'J14', 'J15', 'D2'})     # LIO-226: D2, the VSYS diode
         self.assertIn('EEE-FK1C101P', seen['C3']['MPN'])                  # PB16 / PB20: C3's part
+
+    def test_bom_is_board_spec_now(self):
+        """LIO-233: the BOM's rows and notes come from board_spec (PARTS, BOM_EXTRAS) through make_fab.bom_rows / part_note, which
+        SOURCE.sha256 does not cover: the committed csv must be what bom_rows() gives now (else run $KPY pcb/make_fab.py)."""
+        # ponytail: bom_rows needs no pcbnew, only make_fab's import does - a stub lets this pure test load it
+        with mock.patch.dict(sys.modules, {'pcbnew': sys.modules.get('pcbnew') or mock.MagicMock()}):
+            from pcb import make_fab
+            want = [{k: str(v) for k, v in row.items()} for row in make_fab.bom_rows()]
+        self.assertEqual(self.bom, want, 'the BOM is stale: run $KPY pcb/make_fab.py')
 
     def test_bom_lists_the_plug_in_items(self):
         """The modules and fuses that plug into the board's parts (board_spec.BOM_EXTRAS) are rows of their own, naming what they plug into."""

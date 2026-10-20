@@ -277,6 +277,18 @@ def freeroute(dsn, ses, passes, log):
     return time.time() - t0
 
 
+def router_tools():
+    """(jar sha256, Java version) of the Freerouting jar and JVM freeroute runs, for ROUTED_WITH: read before routing, so a missing jar
+    or a JVM that does not say its version stops route.py at once, not after the whole route."""
+    try:
+        jar = hashlib.sha256(Path(tools.FREEROUTING).read_bytes()).hexdigest()
+        out = subprocess.run([tools.JAVA, '-version'], capture_output=True, text=True)
+    except OSError as e: sys.exit(f'route.py: cannot read the Freerouting jar or run Java ({e}); see pcb/tools.py')
+    m = re.search(r'version "([^"]+)"', out.stderr + out.stdout)
+    if not m: sys.exit(f'route.py: {tools.JAVA} -version gave no version "...": {(out.stderr + out.stdout)[-300:]!r}')
+    return jar, m[1]
+
+
 JVM_HEAP = '1g'           # Freerouting's heap cap (its peak is ~150 MB): the routing machine is short of memory and swap (L5b)
 RUN_TIMEOUT = 900         # s per Freerouting run: a normal run takes under 5 min; now and then one hangs in a pass, and that variant is
                           # then dropped (its worker fails) instead of stalling route.py
@@ -640,8 +652,8 @@ def quality(board, base):
 
 def evaluate(board, workdir, base):
     """Fill the zones and measure a routed board: (score tuple, report dict). Lower score is better; score[:4] == (0, 0, 0, 0) is a
-    clean board (connected, no DRC errors, R4 trunks, every GND pad on the In1 plane, the quality checks); score[4] = vias, score[5] =
-    track mm."""
+    clean board (connected, no DRC violation of any severity (LIO-233: warnings too), R4 trunks, every GND pad on the In1 plane, the
+    quality checks); score[4] = vias, score[5] = track mm."""
     pcbnew.ZONE_FILLER(board).Fill(board.Zones())
     board.BuildConnectivity()
     unconnected = board.GetConnectivity().GetUnconnectedCount(False)
@@ -652,7 +664,7 @@ def evaluate(board, workdir, base):
     out = workdir / 'eval.kicad_pcb'
     pcbnew.SaveBoard(str(out), board, True)
     shutil.copy(PRO, workdir / 'eval.kicad_pro'); shutil.copy(DRU, workdir / 'eval.kicad_dru')
-    subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--format', 'json', '--severity-error', '-o', str(workdir / 'drc.json'), str(out)],
+    subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--format', 'json', '--severity-all', '-o', str(workdir / 'drc.json'), str(out)],
                    check=True, capture_output=True)
     drc = json.loads((workdir / 'drc.json').read_text(encoding='utf-8'))
     drc_errors = len(drc['violations'])
@@ -1019,6 +1031,7 @@ def main():
     if args.critical: CRITICAL_NETS = [] if args.critical == 'none' else args.critical.split(',')
     if args.worker is not None:
         worker(args.worker, args.order, Path(args.work), args.passes); return 0
+    jar, java = router_tools()
     grids = list(range(len(SETUPS))) if args.grids == 'all' else [int(i) for i in args.grids.split(',')]
     cands = [(g, o) for o in args.orders.split(',') for g in grids]
     tmp = None if args.keep else tempfile.TemporaryDirectory()
@@ -1075,9 +1088,7 @@ def main():
         return 1
     props = pcbnew.MAP_STRING_STRING(best.GetProperties())
     # the effective configuration and the tools it ran on (ktest_route prints and checks it): the DSN order follows KiCad's footprint
-    # library, the routing the exact Freerouting jar and JVM (LIO-228)
-    jar = hashlib.sha256(Path(tools.FREEROUTING).read_bytes()).hexdigest()
-    java = re.search(r'version "([^"]+)"', subprocess.run([tools.JAVA, '-version'], capture_output=True, text=True).stderr)[1]
+    # library, the routing the exact Freerouting jar and JVM (LIO-228; read at start-up, LIO-233)
     props['ROUTED_WITH'] = (f'route.py set-up {g} {SETUPS[g]["name"]} wiring {o} stage {rep["stage"]} passes {args.passes} '
                             f'critical {",".join(CRITICAL_NETS) or "none"} kicad {pcbnew.Version()} freerouting-sha256 {jar} java {java}')
     best.SetProperties(props)
