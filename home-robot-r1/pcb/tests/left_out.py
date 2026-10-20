@@ -2,8 +2,9 @@
 
 A test that reads one of them skips, with a reason that names the file and the command that makes it. Only a missing file skips:
 a file that is there and fails its check still fails."""
-import unittest
+import os, shutil, unittest
 from pathlib import Path
+from pcb import tools
 ROOT = Path(__file__).resolve().parents[2]
 HOW = {
     'cad/assembly-meshes.json': 'it holds manufacturer geometry; run tools/fetch_reference_models.sh, then python cad/build_robot.py (about 33 min)',
@@ -17,3 +18,11 @@ def reason(rel): return f'{rel} is not in this copy: {HOW[rel]}'
 def needs(rel):
     """Decorator for a test or test class that reads `rel` (a path under the R1 folder, one of HOW)."""
     return unittest.skipIf(missing(rel), reason(rel))
+
+
+def needs_kicad():
+    """Decorator for a test or test class that runs kicad-cli or reads KiCad's libraries: skips when KiCad 9 is not where pcb/tools.py
+    looks, unless R1_REQUIRE_KICAD=1 (then it runs, and fails)."""
+    absent = not (shutil.which(tools.KICAD_CLI) and tools.FOOTPRINT_DIR.is_dir())
+    return unittest.skipIf(absent and os.environ.get('R1_REQUIRE_KICAD') != '1',
+                           f'KiCad 9 is not found ({tools.KICAD_CLI}, {tools.FOOTPRINT_DIR}): install it, or set KICAD_CLI / KICAD9_FOOTPRINT_DIR (README, Build, step 3)')

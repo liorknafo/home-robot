@@ -175,7 +175,7 @@ def pad_all(ref, pin):
     lib, name = B.PARTS[ref]['fp'].split(':')
     base = B.CUSTOM_FP_DIR if lib == 'R1' else B.tools.FOOTPRINT_DIR / f'{lib}.pretty'
     out = []
-    for p in find(parse((base / f'{name}.kicad_mod').read_text())[0], 'pad'):
+    for p in find(parse((base / f'{name}.kicad_mod').read_text(encoding='utf-8'))[0], 'pad'):
         if str(p[1]) == pin:
             at = find(p, 'at')[0]
             out.append(tuple(round(x, 4) for x in B.local_to_board(B.PLACEMENT[ref], (float(at[1]), float(at[2])))))
@@ -238,14 +238,14 @@ def block():
 
 
 def main():
-    text = SPEC.read_text()
+    text = SPEC.read_text(encoding='utf-8')
     i, j = text.index(BEGIN), text.index(END) + len(END)
     new = text[:i] + block() + text[j:]
     if '--check' in sys.argv:
         if new != text:
             print('board_spec.py POWER_ZONES / GND_PATCHES / STITCH_VIAS are stale: run  $KPY pcb/gen_power_zones.py'); return 1
         print('board_spec.py generated block is current'); return 0
-    SPEC.write_text(new); print('wrote', SPEC.name)
+    SPEC.write_bytes(new.encode()); print('wrote', SPEC.name)
     return 0
 
 

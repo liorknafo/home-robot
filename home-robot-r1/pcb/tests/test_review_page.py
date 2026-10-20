@@ -66,9 +66,9 @@ class PartsTableLinks(unittest.TestCase):
             for f in ('cad/rebuild_review.py', 'cad/review-template.html', 'cad/component-manifest.json', 'cad/validation.json', 'cad/parameters.json', 'cable-cut-list.json'):
                 (t / f).write_bytes((ROOT / f).read_bytes())
             (t / 'parts-and-connections.json').write_text(json.dumps(data), encoding='utf8')
-            (t / 'pcb/fab/ORDERING.md').write_text('x'); (t / 'cad/assembly-meshes.json').write_text('[]')
+            (t / 'pcb/fab/ORDERING.md').write_text('x', encoding='utf-8'); (t / 'cad/assembly-meshes.json').write_text('[]', encoding='utf-8')
             for png in ('robot-assembled.png', 'robot-exploded.png', 'robot-internal.png'): (t / png).write_bytes(b'')       # newer than the stub meshes
-            r = subprocess.run([sys.executable, str(t / 'cad/rebuild_review.py')], capture_output=True, text=True)
+            r = subprocess.run([sys.executable, '-X', 'utf8', str(t / 'cad/rebuild_review.py')], capture_output=True, text=True)
             self.assertEqual(r.returncode, 0, r.stderr[-600:] + r.stdout[-300:])
             page = (t / PAGE).read_text(encoding='utf8')
         def row(i): return re.search(r'<td class="id">' + i + r'</td>.*?</details>', page, re.S).group(0)
@@ -89,7 +89,7 @@ class PageIsCurrent(unittest.TestCase):
         Build the page into a temp file (cad/rebuild_review.py --out) and compare it byte for byte with the committed one."""
         with tempfile.TemporaryDirectory() as t:
             out = Path(t) / PAGE
-            r = subprocess.run([sys.executable, str(ROOT / 'cad/rebuild_review.py'), '--out', str(out)], capture_output=True, text=True)
+            r = subprocess.run([sys.executable, '-X', 'utf8', str(ROOT / 'cad/rebuild_review.py'), '--out', str(out)], capture_output=True, text=True)
             self.assertEqual(r.returncode, 0, 'cad/rebuild_review.py failed (if it says an image is older than the meshes: run cad/render_review_images.py first, then '
                              'python cad/rebuild_review.py): ' + (r.stderr or r.stdout)[-400:])
             new, old = out.read_bytes(), (ROOT / PAGE).read_bytes()

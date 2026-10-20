@@ -142,7 +142,7 @@ def main():
                outline_xy=outline, cutouts_xy=cutouts, outline_area_mm2=round(net_area, 2),
                holes=[hole(r) for r in ('H1', 'H2', 'H3', 'H4')], clamp_holes=[hole(r) for r in ('H5', 'H6')],
                tht_pads=tht, parts=parts, connectors=connectors, modules=modules, pico_usb=pico_usb, motor_cables=motor)
-    OUT.write_text(json.dumps(out, indent=1))
+    OUT.write_bytes(json.dumps(out, indent=1).encode())
     print(f'{OUT.name}: outline {len(outline)} points, {net_area:.1f} mm2; holes {len(out["holes"])} + clamps {len(out["clamp_holes"])}; '
           f'{len(tht)} THT pads; {len(connectors)} edge connectors; modules {", ".join(modules)}; Pico USB face {pico_usb["face_centre_xyz"]}')
 

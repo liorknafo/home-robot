@@ -4,10 +4,11 @@ from functools import lru_cache
 from collections import Counter
 from pcb import board_spec as B, copper as C, tools
 from pcb.sexpr import parse, find
+from pcb.tests.left_out import needs_kicad
 
 @lru_cache(maxsize=None)
 def lib_symbols(lib):
-    return {c[1]: c for c in find(parse((tools.SYMBOL_DIR / f'{lib}.kicad_sym').read_text())[0], 'symbol')}
+    return {c[1]: c for c in find(parse((tools.SYMBOL_DIR / f'{lib}.kicad_sym').read_text(encoding='utf-8'))[0], 'symbol')}
 
 def symbol_pins(lib_id):
     """{pin number: pin name} of a library symbol (follows 'extends')."""
@@ -21,13 +22,13 @@ def footprint_pads(fp_id):
     """Set of numbered pad names of a library footprint (unnumbered mounting pads are ignored)."""
     flib, fname = fp_id.split(':')
     base = B.CUSTOM_FP_DIR if flib == 'R1' else tools.FOOTPRINT_DIR / f'{flib}.pretty'
-    return {str(p[1]) for p in find(parse((base / f'{fname}.kicad_mod').read_text())[0], 'pad') if str(p[1])}
+    return {str(p[1]) for p in find(parse((base / f'{fname}.kicad_mod').read_text(encoding='utf-8'))[0], 'pad') if str(p[1])}
 
 def footprint_pad_types(fp_id):
     """Pad types ('smd', 'thru_hole', 'np_thru_hole', ...) of a library footprint's numbered pads."""
     flib, fname = fp_id.split(':')
     base = B.CUSTOM_FP_DIR if flib == 'R1' else tools.FOOTPRINT_DIR / f'{flib}.pretty'
-    return {str(p[2]) for p in find(parse((base / f'{fname}.kicad_mod').read_text())[0], 'pad') if str(p[1])}
+    return {str(p[2]) for p in find(parse((base / f'{fname}.kicad_mod').read_text(encoding='utf-8'))[0], 'pad') if str(p[1])}
 
 # Vendor ground truth, transcribed from pcb/reference/*.txt (Pololu 4035 schematic + labelled top-view photo, Pololu 2851 top view).
 POLOLU_4035_ROWS = {'L': ['VM', 'GND', 'EN/IN1', 'PH/IN2', 'PMODE', 'SLEEP', 'VREF'],
@@ -63,12 +64,14 @@ class SpecTests(unittest.TestCase):
         self.assertEqual([p for p, n in seen.items() if n > 1], [])
         self.assertEqual([n for n, pins in B.NETS.items() if len(pins) < 2], [])
         self.assertEqual(set(B.NC) & set(seen), set())
+    @needs_kicad()
     def test_every_symbol_pin_is_netted_or_nc(self):
         for ref, part in B.PARTS.items():
             lib, name = part['sym'].split(':')
             pins = B.symbol_pin_numbers(part['sym'])
             used = {p for pins_ in B.NETS.values() for (r, p) in pins_ if r == ref} | {p for (r, p) in B.NC if r == ref}
             self.assertEqual(used, pins, f'{ref}: pins not netted {pins - used}, unknown pins {used - pins}')
+    @needs_kicad()
     def test_symbols_and_footprints_exist(self):
         for ref, part in B.PARTS.items():
             lib, name = part['sym'].split(':')
@@ -88,7 +91,7 @@ class SpecTests(unittest.TestCase):
 
     # --- additions required by the controller rulings ---
     def test_removed_cad_ids_exist(self):
-        manifest = json.loads((tools.PCB_DIR.parent / 'cad' / 'component-manifest.json').read_text())
+        manifest = json.loads((tools.PCB_DIR.parent / 'cad' / 'component-manifest.json').read_text(encoding='utf-8'))
         ids = {c['id'] for c in manifest}
         self.assertEqual([i for i in B.REMOVED_CAD_IDS if i not in ids], [])
         self.assertEqual([i for i, n in Counter(B.REMOVED_CAD_IDS).items() if n > 1], [], 'duplicate ids')
@@ -130,9 +133,11 @@ class SpecTests(unittest.TestCase):
         # Omron G5LE datasheet p.3, SPDT bottom view: 1 COM, 2 / 5 coil, 3 NO, 4 NC (contact rests on 4).
         self.assertEqual({k: v for k, v in B.RELAY_PINS.items() if k in ('COM', 'NO', 'NC')}, {'COM': '1', 'NO': '3', 'NC': '4'})
         self.assertEqual({B.RELAY_PINS['COIL_P'], B.RELAY_PINS['COIL_N']}, {'2', '5'})
+    @needs_kicad()
     def test_footprint_pads_cover_symbol_pins(self):
         for ref, part in B.PARTS.items():
             self.assertEqual(B.symbol_pin_numbers(part['sym']) - footprint_pads(part['fp']), set(), f'{ref}: symbol pins without a pad on {part["fp"]}')
+    @needs_kicad()
     def test_polarity_and_pin_roles(self):
         self.assertEqual(symbol_pins(B.PARTS['D1']['sym'])['1'], 'K'); self.assertIn(('D1', '1'), B.NETS['COIL_P'])
         self.assertIn(('D1', '2'), B.NETS['GND'])
@@ -141,6 +146,7 @@ class SpecTests(unittest.TestCase):
         for i in range(1, 6):   # 2N7002 SOT-23 (KiCad Transistor_FET:2N7002): 1 = G, 2 = S, 3 = D
             self.assertEqual(symbol_pins(B.PARTS[f'Q{i}']['sym']), {'1': 'G', '2': 'S', '3': 'D'}); self.assertIn((f'Q{i}', '2'), B.NETS['GND'])
         self.assertIn(('C1', '1'), B.NETS['VMOT']); self.assertIn(('C1', '2'), B.NETS['GND'])   # Device:C_Polarized pin 1 is '+'
+    @needs_kicad()
     def test_fuse_holder_is_a_standard_library_part(self):
         self.assertEqual(B.FUSE_FP, 'Fuse:FuseHolder_Blade_ATO_Littelfuse_FLR_178.6165')
         self.assertEqual(footprint_pads(B.FUSE_FP), {'1', '2'})
@@ -194,6 +200,7 @@ class SpecTests(unittest.TestCase):
     # --- Task L3b: small parts are SMD, reflowed (spec 2026-10-06-r1-low-profile section 3) ---
     SMD_REFS = ([f'R{i}' for i in range(1, 24)] + ['C2', 'C3', 'D1'] + [f'LED{i}' for i in range(1, 4)] + [f'Q{i}' for i in range(1, 6)]
                 + [f'TP{i}' for i in range(1, 6)])
+    @needs_kicad()
     def test_small_parts_use_standard_smd_footprints(self):
         want = {**{f'R{i}': 'Resistor_SMD:R_0805_2012Metric' for i in range(1, 24)}, 'C2': 'Capacitor_SMD:C_0805_2012Metric',
                 'C3': 'Capacitor_SMD:CP_Elec_6.3x5.8',     # PB16: DRV_L's bulk capacitor, a V-chip (PB20: the 5.8 mm can)
@@ -202,6 +209,7 @@ class SpecTests(unittest.TestCase):
         self.assertEqual({r: B.PARTS[r]['fp'] for r in self.SMD_REFS}, want)
         for r in self.SMD_REFS:
             self.assertEqual(footprint_pad_types(B.PARTS[r]['fp']), {'smd'}, r)
+    @needs_kicad()
     def test_mount_field_is_smd_top_for_small_parts_and_tht_for_the_rest(self):
         for ref, part in B.PARTS.items():
             self.assertIn(part['mount'], ('smd_top', 'tht'), ref)
@@ -218,6 +226,7 @@ class SpecTests(unittest.TestCase):
         self.assertEqual((B.PARTS['D1']['value'], B.PARTS['D1']['sym']), ('SS14', 'Diode:SS14'))
         for r in self.SMD_REFS:      # PB16 / PB20: C3 (DRV_L's 100 uF V-chip, 5.8 mm) is the one tall SMD part, below MODULE_CLEARANCE
             self.assertLessEqual(B.PARTS[r]['h'], 5.8 if r == 'C3' else 3.0, f'{r}: tallest SMD bodies - C3 5.8 mm (PB20), else the SMA diode 2.7 mm')
+    @needs_kicad()
     def test_transistor_and_diode_remap_by_symbol_pin_name(self):
         """THT 2N7000 (1 = S, 2 = G, 3 = D) -> SOT-23 2N7002 (1 = G, 2 = S, 3 = D) and 1N5819 -> SS14: the same signals sit on the same
         functional pins, checked through the pin NAMES of the library symbols rather than the numbers."""
@@ -333,6 +342,7 @@ class SpecTests(unittest.TestCase):
         for ref, r in B.MATED_REACH.items():                                  # PB6: only right-angle parts whose plug lies on the board
             self.assertTrue(B.PARTS[ref]['fp'].endswith('_Horizontal'), ref); self.assertGreater(r, 0.0, ref)
         for ref in conns: self.assertIn(B.PARTS[ref]['fp'].split(':')[1], B.ENTRY_LOCAL, ref)
+    @needs_kicad()
     def test_under_carrier_connectors_are_right_angle_or_low_enough(self):
         """Step 3: a connector whose courtyard reaches under the carrier (UNDER_CARRIER) keeps MATED_H (+ the wire bend over a vertical
         part) within UNDER_CARRIER_MAX_H; the 0.1 in motor / spare headers (14 mm housing: 16.54 mm mated) and the VH Jetson lead (16.5 mm)
@@ -342,6 +352,7 @@ class SpecTests(unittest.TestCase):
             need = B.MATED_H[ref] + (B.CABLE_BEND_MM[B.connector_family(ref)] if vertical else 0.0)
             if B.UNDER_CARRIER(ref): self.assertLessEqual(need, B.UNDER_CARRIER_MAX_H, ref)
         for ref in ('J4', 'J5'): self.assertEqual(B.PARTS[ref]['fp'], 'Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal', ref)
+    @needs_kicad()
     def test_under_carrier_flag_follows_the_courtyard(self):
         """UNDER_CARRIER(ref) is True exactly when the part's courtyard (from its footprint file, placed by PLACEMENT) reaches u >= CARRIER_U.
         B12a (carry 8): checked against the placement's expected set, not the same formula - the Pico's right socket (PB7: u 28.33), the IMU
@@ -358,7 +369,7 @@ class SpecTests(unittest.TestCase):
         """B3 fix 1: MOTOR_CABLE_EXIT (board u, v and height over the board top) is where each factory cable leaves its motor: on the
         motor's axis (u of the motor_left / right box centre in cad/component-manifest.json), on its inner end face (the box face nearest the
         board), at a height inside the motor's z range; the cable section is positive and the exit lies on the notch side of its connector."""
-        manifest = {c['id']: c for c in json.loads((tools.PCB_DIR.parent / 'cad' / 'component-manifest.json').read_text())}
+        manifest = {c['id']: c for c in json.loads((tools.PCB_DIR.parent / 'cad' / 'component-manifest.json').read_text(encoding='utf-8'))}
         for ref, motor in (('J4', 'motor_left'), ('J5', 'motor_right')):
             x0, y0, z0, x1, y1, z1 = manifest[motor]['bounds']
             eu, ev, ez = B.MOTOR_CABLE_EXIT[ref]
@@ -375,7 +386,7 @@ class SpecTests(unittest.TestCase):
         scanned too - it names no net in parentheses, so it takes the "GPn (NET)" rule of the rest of the file, and a "PWM slice k A / B"
         note must be the RP2040's slice of the row's pins (GPn: slice (n / 2) mod 8, channel A even, B odd)."""
         import re
-        d = json.loads((tools.PCB_DIR.parent / 'parts-and-connections.json').read_text())
+        d = json.loads((tools.PCB_DIR.parent / 'parts-and-connections.json').read_text(encoding='utf-8'))
         gp_of = dict(B.PICO_GPIO)
         seen, slices = set(), 0
         for row in d['pico_pins']:
@@ -421,7 +432,7 @@ class SpecTests(unittest.TestCase):
     def test_holes_in_placement_match_the_outline(self):
         """PLACEMENT holds H1-H4 at board_outline holes_uv and the clamp holes H5 / H6 at clamp_holes_uv (rotation 0); H5 / H6 are the
         Ø3.0 NPTH holes of ruling PB3 (no pad copper, no net)."""
-        o = json.loads((tools.PCB_DIR / 'board_outline.json').read_text())
+        o = json.loads((tools.PCB_DIR / 'board_outline.json').read_text(encoding='utf-8'))
         for i, (u, v) in enumerate(o['holes_uv'] + o['clamp_holes_uv'], 1): self.assertEqual(B.PLACEMENT[f'H{i}'], (u, v, 0), f'H{i}')
         for r in ('H5', 'H6'):
             self.assertEqual(B.PARTS[r]['fp'], 'MountingHole:MountingHole_3mm', r)
@@ -445,6 +456,7 @@ class SpecTests(unittest.TestCase):
             else: self.assertIn(ref, B.SILK_FUNCTION)
         self.assertEqual([B.SILK_FUNCTION[f'J{6 + i}'] for i in range(4)], ['CLIFF1', 'CLIFF2', 'CLIFF3', 'CLIFF4'])
         self.assertEqual([B.PARTS[f'J{6 + i}']['value'] for i in range(4)], ['Cliff 1', 'Cliff 2', 'Cliff 3', 'Cliff 4'])
+    @needs_kicad()
     def test_power_zones_are_the_trunks_on_their_layers(self):
         """Bay B4 (4 layers): POWER_ZONES entries are dict(net, layers, poly[, trunk]) on F.Cu / In2.Cu / B.Cu (In1.Cu is the solid GND
         plane and the B.Cu GND fill is build_pcb's own, so no entry is GND). A (net, layer) has one polygon at most. Every POWER_TRUNK net
@@ -533,6 +545,7 @@ class SpecTests(unittest.TestCase):
         self.assertIn(('J1', '1'), B.POWER_TRUNK['GND']); self.assertNotIn(('J1', '2'), B.POWER_TRUNK['GND'])
         self.assertEqual(B.PIN_MARKS['J1'], {'2': '+', '1': '-'})
 
+    @needs_kicad()
     def test_pin_marks_b12a(self):
         """PB20 / B12a (final review N2): '+' / '-' silk marks at J1's BAT+ / GND pins and a '+' at pin 1 of both P03 terminals (U5A.1
         VBAT_SW in, U5B.1 5V out: the screw nearer the robot centre line) and of the Jetson 5 V header (J3.1). A '+' pin is a supply pin whose

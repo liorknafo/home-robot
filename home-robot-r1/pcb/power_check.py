@@ -528,7 +528,7 @@ def main():
     args = ap.parse_args()
     text = report(pcbnew.LoadBoard(args.board))
     print(text)
-    if args.out: Path(args.out).write_text(text + '\n')
+    if args.out: Path(args.out).write_bytes((text + '\n').encode())
     return 0
 
 

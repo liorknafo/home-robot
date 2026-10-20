@@ -36,7 +36,7 @@ NAME = 'r1_power_io'
 PCB, PRO, DRU = D / f'{NAME}.kicad_pcb', D / f'{NAME}.kicad_pro', D / f'{NAME}.kicad_dru'
 FAB = D / 'fab'
 MM, TOMM = pcbnew.FromMM, pcbnew.ToMM
-MODEL_DIR = tools.APP / 'Contents/SharedSupport/3dmodels'
+MODEL_DIR = tools.MODEL_DIR
 
 GERBER_LAYERS = ['F.Cu', 'In1.Cu', 'In2.Cu', 'B.Cu', 'F.Mask', 'B.Mask', 'F.Silkscreen', 'B.Silkscreen', 'F.Paste', 'Edge.Cuts']
 PDF_LAYERS, PDF_COMMON = ['F.Fab', 'F.Silkscreen', 'F.Cu', 'B.Cu'], ['Edge.Cuts', 'Cmts.User']
@@ -143,7 +143,7 @@ def bom_rows():
 
 def bom():
     dest = FAB / f'{NAME}-bom.csv'
-    with open(dest, 'w', newline='') as f:
+    with open(dest, 'w', newline='', encoding='utf-8') as f:
         w = csv.DictWriter(f, BOM_FIELDS); w.writeheader(); w.writerows(bom_rows())
     return dest
 
@@ -281,7 +281,7 @@ def box_step(path, name, boxes):
     head = ("ISO-10303-21;\nHEADER;\nFILE_DESCRIPTION(('envelope of a part with no KiCad 3D model (pcb/make_fab.py)'),'2;1');\n"
             f"FILE_NAME('{path.name}','2026-10-09T00:00:00',(''),(''),'pcb/make_fab.py','pcb/make_fab.py','');\n"
             "FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));\nENDSEC;\nDATA;\n")
-    path.write_text(head + ''.join(f'#{i}={e};\n' for i, e in enumerate(ents, 1)) + 'ENDSEC;\nEND-ISO-10303-21;\n')
+    path.write_bytes((head + ''.join(f'#{i}={e};\n' for i, e in enumerate(ents, 1)) + 'ENDSEC;\nEND-ISO-10303-21;\n').encode())
     return path
 
 

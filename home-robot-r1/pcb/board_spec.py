@@ -396,7 +396,7 @@ REMOVED_CAD_IDS = [
 ]
 @lru_cache(maxsize=None)
 def _symbols(lib):
-    return {c[1]: c for c in find(parse((tools.SYMBOL_DIR / f'{lib}.kicad_sym').read_text())[0], 'symbol')}
+    return {c[1]: c for c in find(parse((tools.SYMBOL_DIR / f'{lib}.kicad_sym').read_text(encoding='utf-8'))[0], 'symbol')}
 def symbol_pin_numbers(lib_id):
     lib, name = lib_id.split(':')
     syms = _symbols(lib)
@@ -556,7 +556,7 @@ def _footprint_geometry(fp_id):
     (pure Python, so UNDER_CARRIER and pad_uv work in the CAD venv too)."""
     lib, name = fp_id.split(':')
     base = CUSTOM_FP_DIR if lib == 'R1' else tools.FOOTPRINT_DIR / f'{lib}.pretty'
-    root = parse((base / f'{name}.kicad_mod').read_text())[0]
+    root = parse((base / f'{name}.kicad_mod').read_text(encoding='utf-8'))[0]
     xs, ys = [], []
     for kind in ('fp_line', 'fp_rect', 'fp_poly', 'fp_circle', 'fp_arc'):
         for item in find(root, kind):

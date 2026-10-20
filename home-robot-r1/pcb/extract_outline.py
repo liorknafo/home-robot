@@ -45,8 +45,8 @@ COMPACT = 40.0                                  # a part whose xy bounds exceed 
 Z0, Z1 = 33.0, B.UNDER_CARRIER_Z               # board + components slab (robot z): from the P_base top (the ribs, spacers and the tray wall stand on it) to the carrier's lowest lead
 ENV = (-70.0, B.BOARD_Y0 - B.BOARD_H, B.BOARD_X0 + B.BOARD_W, B.BOARD_Y0)   # robot-frame xmin, ymin, xmax, ymax: x -70..7.5, y -50..50
 assert ENV[0] <= B.BOARD_X0 and ENV[2] >= B.BOARD_X0 + B.BOARD_W and (ENV[1], ENV[3]) == (B.BOARD_Y0 - B.BOARD_H, B.BOARD_Y0), 'the envelope must contain the nominal board'
-PAR = json.loads((ROOT / 'cad/parameters.json').read_text())
-MAN = {c['id']: c['bounds'] for c in json.loads((ROOT / 'cad/component-manifest.json').read_text())}
+PAR = json.loads((ROOT / 'cad/parameters.json').read_text(encoding='utf-8'))
+MAN = {c['id']: c['bounds'] for c in json.loads((ROOT / 'cad/component-manifest.json').read_text(encoding='utf-8'))}
 TRAVEL, AXIS = PAR['bumper_travel'], math.radians(PAR['bumper_axis_deg'])   # build_robot.py: ft=(-cos BA, -sin BA) left half; right half mirrors y
 SWEEP_S = np.linspace(0.0, 1.0, 11)
 WINDOW = 5.0                                    # mm around the envelope: material farther out can neither bite the board (1.5) nor change the opening (2 * CLOSE)
@@ -216,7 +216,7 @@ def swept(a, d):
     """Copies of array a (..., 2) shifted by s*TRAVEL*d for s in SWEEP_S, stacked along a new leading axis."""
     return np.stack([a + s * TRAVEL * d for s in SWEEP_S])
 
-meshes = json.loads((ROOT / 'cad/assembly-meshes.json').read_text())
+meshes = json.loads((ROOT / 'cad/assembly-meshes.json').read_text(encoding='utf-8'))
 infl = (ENV[0] - MARGIN, ENV[1] - MARGIN, ENV[2] + MARGIN, ENV[3] + MARGIN)     # envelope grown by the margin: a hull this close still bites the board
 win = (ENV[0] - WINDOW, ENV[1] - WINDOW, ENV[2] + WINDOW, ENV[3] + WINDOW)
 keep, shells = [], []
@@ -351,7 +351,7 @@ def hole_uv(spot):
 holes = [hole_uv(spot) for spot in HOLE_SPOTS_ROBOT]
 clamp_holes = [hole_uv(spot) for spot in CLAMP_SPOTS_ROBOT]
 out = dict(outline_uv=outline, holes_uv=holes, clamp_holes_uv=clamp_holes, cutouts_uv=cutouts, keepouts_robot=keep, max_part_h=B.MAX_PART_H, height_zones=[list(z) for z in B.HEIGHT_ZONES])
-(Path(__file__).parent / 'board_outline.json').write_text(json.dumps(out, indent=1))
+(Path(__file__).parent / 'board_outline.json').write_bytes(json.dumps(out, indent=1).encode())
 
 def rbox(poly_uv):
     xs, ys = zip(*[B.board_to_robot(u, v) for u, v in poly_uv]); return f'x {min(xs):.1f}..{max(xs):.1f}, y {min(ys):.1f}..{max(ys):.1f}'
