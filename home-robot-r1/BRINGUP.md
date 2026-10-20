@@ -79,7 +79,7 @@ Order: **reflow SMD → inspect → iron THT, trimming leads to ≤ 1.4 mm → m
    - the FLR fuse holders, K1, and C1 ("+" on the silk).
 
    The power pads keep thermal-relief spokes, so use a large tip. U3P.2 (DRV_L GND) has one spoke per outer layer by design (ruling
-   PB22): give it time to wet.
+   PB21): give it time to wet.
 
    **Trim every lead to ≤ 1.4 mm under the board.** The board sits on 2.4 mm spacers and printed ribs, which leaves 1.0 mm of air.
 4. **Modules come last** (section 4 onward): the Pico first, on USB (section 4), then the P03, set on the bench (section 5), then the
@@ -114,7 +114,14 @@ Do the fail-safe check in section 0 now, on the bench. It is ASSY step 0.
 ## 5. Set the P03 5 V converter (before the Jetson)
 
 1. Set the P03 on the bench, with a bench supply on its input: **trimpot to 5.1 V**.
-2. Then verify it at **6.6 V input, with the intended load and motor starts**. Its rating alone is not acceptance.
+2. Then verify it at **6.0 V input with a 4.5 A load**: the firmware's low-battery stop, at the Jetson's full current (`board_spec`
+   P03_VIN_MIN, P03_OUT_A). Use an electronic load at 4.5 A, or about 1.1 Ω rated 25 W or more, and set 6.0 V at the P03's IN terminal
+   (the bench leads drop too). Pass: the output holds the set 5.1 V within 0.1 V for a minute. Its rating alone is not acceptance: the
+   HW-316E's XL4015 (datasheet input 8–36 V; the seller says 4–38 V) is a non-synchronous buck with a sense shunt and needs about
+   0.6–0.8 V of headroom at 4.5 A, and motor starts sag the pack 0.3–0.5 V more, so the Jetson could brown out (SD-card corruption)
+   before the clean shutdown.
+   **If it fails,** raise the input in 0.1 V steps to the lowest input at which it passes. The firmware stop (section 8) becomes that
+   input + 0.5 V (the motor-start sag), and `board_spec.P03_VIN_MIN` is set to match (a comment there; no board change).
 3. Only then connect it to U5A (input) / U5B (output) and fit it (ASSY step 5).
 4. **Polarity: pin 1 is "+" on both terminals.**
    - U5A pin 1 = P03 IN+ (VBAT_SW); U5B pin 1 = P03 OUT+ (5 V). Pin 2 is GND on both (IN− / OUT−).
@@ -255,6 +262,12 @@ Steps:
    - U5B pin 1 ("+", P03 OUT+) reads the set 5.1 V, positive. TP3 reads the same, and LED2 is on.
 
    A negative or 0 V reading at U5B pin 1 means the P03 leads are swapped or loose: rocker off, battery out, fix them before going on.
+
+   **5 V at the Jetson, under load** (after the W04 check in section 0). From the P03 to the Jetson there is about 65 mΩ (board copper,
+   W04's 18 AWG, the Micro-Fit, the barrel jack): about 0.3 V at 4.5 A. Run the Jetson under load (a CPU + GPU stress) on W04, beside
+   the robot and not yet fitted (the trimpot cannot be reached once it is on). Its barrel plug must read **≥ 5.0 V**; if not, trim the
+   P03 up, but never so far that U5B pin 1 reads above `board_spec.V5_MAX` **5.25 V** with the Jetson unplugged. If both cannot hold,
+   stop and report it (a shorter or heavier W04). A trim above 5.1 V is the new set-point for the 5.1 V readings in sections 0 and 6.
 4. **Motor toggle on** (the J13 loop). K1 clicks, and MOTOR_ON_N (GP9) reads low. With F2 still out, VMOT stays dead.
 5. **Rocker off, fit F2, rocker on.** F2 goes in only with the rocker off: fitted live, it would charge C1 + C3 (570 µF) through the
    fuse contacts. Expect:
@@ -265,7 +278,7 @@ Steps:
    - Spin each motor both ways at 20 kHz PWM.
    - Check that the encoder counts follow (GP1 / GP4 left, GP11 / GP12 right).
    - Check that L_CS (GP27) and R_CS (GP28) read about 1.1 V/A.
-7. **After a stall test,** touch U3P.2 (DRV_L GND, ruling PB22): its joint must not be hot.
+7. **After a stall test,** touch U3P.2 (DRV_L GND, ruling PB21): its joint must not be hot.
 
 ## 8. Firmware limits (from BRINGUP-NOTES.md)
 
@@ -296,7 +309,8 @@ Steps:
   - VSENSE (GP26, ADC0) = VBAT_SW × 33 kΩ / (100 kΩ + 33 kΩ) = **0.248 × VBAT_SW** (R11 100 k top, R12 33 k bottom, C2 100 nF).
     Full charge (8.7 V) reads 2.16 V, inside the 3.3 V ADC range.
   - **Warn at 6.6 V** (1.1 V per cell; VSENSE 1.64 V).
-  - **Stop at 6.0 V** (1.0 V per cell; VSENSE 1.49 V, an ADC count of about 1847 of 4095 at the 3.3 V reference).
+  - **Stop at 6.0 V** (1.0 V per cell; VSENSE 1.49 V, an ADC count of about 1847 of 4095 at the 3.3 V reference). This assumes the
+    P03 passed the 6.0 V / 4.5 A test in section 5; if it failed, the stop is the lowest passing input + 0.5 V.
   - Average over about 2 s, so motor starts do not trip it.
   - At the stop: stop the motors and tell the Jetson to shut down. Then switch the rocker off and charge the pack.
   - Do not run NiMH below 1.0 V per cell.

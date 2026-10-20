@@ -146,6 +146,9 @@ class FabPackageTests(unittest.TestCase):
         np_holes = excellon(self.files[npth[0]])
         for u, v in json.loads((FAB.parent / 'board_outline.json').read_text(encoding='utf-8'))['clamp_holes_uv']:
             self.assertTrue(any(abs(x - u) < 0.01 and abs(y + v) < 0.01 for x, y in np_holes.get(3.0, [])), (u, v))  # PB3: Ø3.0 NPTH
+        # LIO-229: H5, H6 and J3's Micro-Fit peg at Ø3.0, the two FLR pegs at Ø2.4, as ORDERING.md states
+        self.assertEqual({d: len(p) for d, p in np_holes.items()}, {3.0: 3, 2.4: 2})
+        self.assertIn('NPTH holes are three Ø3.0 mm', ORDERING.read_text(encoding='utf-8'))
 
     def test_edge_cuts_extent_fits_the_price_tier(self):
         """The Edge.Cuts outline spans <= 100.0 x 100.0 mm (JLCPCB's 4-layer price tier); it is the 74 x 100 mm bay board."""
@@ -268,12 +271,15 @@ class FabPackageTests(unittest.TestCase):
         self.assertIn('agents never order: the user places the order', last)
 
     def test_ordering_has_the_size_check_step(self):
-        """B7 fix 1 (ruling PB23): the outline is not changed (74.0 x 100.0 mm on the line centre); the order page may read the line width
-        (74.1 x 100.1), so ORDERING.md says what to check before paying and what to do if it shows 100.1."""
+        """B7 fix 1 (ruling PB23): the outline is not changed (73.9 x 100.0 mm on the line centre: Edge.Cuts u 0.1-74.0, LIO-229); the
+        order page may read the line width (the Gerber image, 74.0 x 100.1), so ORDERING.md says what to check before paying and what to do
+        if it shows 100.1."""
         flat = ' '.join(ORDERING.read_text(encoding='utf-8').split())
         w, h = f'{B.BOARD_W:g}', f'{B.BOARD_H:g}'
+        us, vs = zip(*json.loads((FAB.parent / 'board_outline.json').read_text(encoding='utf-8'))['outline_uv'])
+        cw, ch = max(us) - min(us), max(vs) - min(vs)          # on the Edge.Cuts line centre; the 0.1 mm line adds 0.1 to the image
         for s in (f'check the detected size reads {w} × {h} mm', 'the price is the ≤ 100 × 100 tier', 'before paying',
-                  f'{B.BOARD_W + 0.1:.1f} × {B.BOARD_H + 0.1:.1f}', f'set the size to {w} × {h} or ask JLCPCB support',
+                  f'{cw:.1f} × {ch:.1f} mm on the centre', f'{cw + 0.1:.1f} × {ch + 0.1:.1f}', f'set the size to {w} × {h} or ask JLCPCB support',
                   "don't pay for a larger tier", 'no job file', '±0.2 mm'):
             self.assertIn(s, flat, s)
         self.assertLess(flat.index('check the detected size reads'), flat.index('Add a **stencil**'))      # next to the size line, not far below

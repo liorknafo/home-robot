@@ -973,7 +973,7 @@ class PcbTests(unittest.TestCase):
 
     def test_lib_footprint_mismatch_is_exactly_the_modified_footprints(self):
         """B7 fix 1 (ruling PB23, item 7): kicad-cli DRC on a temp copy with lib_footprint_mismatch back at its default (warning) flags
-        exactly F1, F2, J1, U1A, U1B, U2, U3L, U3P, U4L and U4P - one report each - and nothing else; the committed project keeps the check
+        exactly F1, F2, J1, J3, U1A, U1B, U2, U3L, U3P, U4L, U4P, U5A and U5B (LIB_MISMATCH_REFS, 13) - one report each - and nothing else; the committed project keeps the check
         ignored. A footprint that drifts from its library (or a new deliberate change) is a new mismatch and fails here."""
         import subprocess
         from pcb import tools

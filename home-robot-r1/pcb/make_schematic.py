@@ -22,12 +22,12 @@ def U(*key): return Q(str(uuid.uuid5(_NS, '/'.join(map(str, key)))))
 ERC_SEVERITY = {}
 # Board DRC severity changes (everything else keeps KiCad's default). B7: lib_footprint_mismatch is off - build_pcb loads every footprint
 # from its library at build time (so it cannot drift from it) and then changes it on purpose (module outlines on F.Fab, J1's +/- marks,
-# R13's inherited zone connections, U3P.2's spoke angle), which that check reports as a mismatch on exactly 10 footprints: F1, F2, J1, U1A,
-# U1B, U2, U3L, U3P, U4L, U4P. B7 fix 1: per-item exclusions for those 10 (board.design_settings.drc_exclusions in this file, keys
-# 'lib_footprint_mismatch|x|y|footprint uuid|aux uuid', the footprint UUIDs are seeded) were tried and are not usable: kicad-cli 9.0.9 does not
-# apply them (the same 10 warnings, and a track_width exclusion in a scratch copy was ignored too), and the CLI is what the tests and any
+# R13's inherited zone connections, U3P.2's spoke angle), which that check reports as a mismatch on exactly 13 footprints: F1, F2, J1, J3,
+# U1A, U1B, U2, U3L, U3P, U4L, U4P, U5A, U5B (B12a added J3 / U5A / U5B: their '+' marks). B7 fix 1: per-item exclusions for the then 10
+# (board.design_settings.drc_exclusions in this file, keys 'lib_footprint_mismatch|x|y|footprint uuid|aux uuid', the footprint UUIDs are
+# seeded) were tried and are not usable: kicad-cli 9.0.9 does not apply them (the same 10 warnings, and a track_width exclusion in a scratch copy was ignored too), and the CLI is what the tests and any
 # batch DRC run. So the check stays off project-wide, and ktest_pcb.test_lib_footprint_mismatch_is_exactly_the_modified_footprints runs
-# DRC with it on (a temp copy) and fails if the flagged set is not those 10, so a new mismatch cannot hide behind the ignore.
+# DRC with it on (a temp copy) and fails if the flagged set is not those 13 (LIB_MISMATCH_REFS), so a new mismatch cannot hide behind the ignore.
 DRC_SEVERITY = {'lib_footprint_mismatch': 'ignore'}
 
 def lib_symbol(lib_id):
