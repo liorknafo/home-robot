@@ -172,7 +172,8 @@ PARTS = {
     'D2': DNP(SMD(D_SYM, FP['D'], 'SS14', 'Vishay SS14-E3/61T (SMA 40 V 1 A Schottky; verify before ordering)', 2.7)),
     'C1': P('Device:C_Polarized', FP['CP'], '470uF 25V', 'Panasonic EEU-FR1E471', 20),
     'C2': SMD('Device:C', FP['C'], '100nF', 'Samsung CL21B104KBCNNNC (100 nF 50 V X7R 0805; verify before ordering)', 1.25),
-    # LIO-226: C4 / C5, the 100 nF of the L_CS / R_CS RC filters (with R24 / R25: 4.7 k x 100 nF = 0.47 ms), cap to GND as C2
+    # LIO-226: C4 / C5, the 100 nF of the L_CS / R_CS RC filters (with R24 / R25 and the carrier's 2.49 k CS load: (2.49 k + 4.7 k) x
+    # 100 nF = 0.72 ms, LIO-234), cap to GND as C2
     **{c: SMD('Device:C', FP['C'], '100nF', 'Samsung CL21B104KBCNNNC (100 nF 50 V X7R 0805; verify before ordering)', 1.25) for c in ('C4', 'C5')},
     # PB16: DRV_L's bulk cap. PB20 (d): the 6.3 x 5.8 mm FK can (5.8 + 0.3 mm worst case, under C3_H_MAX), 16 V >= 1.5 x VBAT_MAX
     'C3': SMD('Device:C_Polarized', FP['CPV'], '100uF 16V', 'Panasonic EEE-FK1C101P (FK, low ESR, 6.3 x 5.8 mm; verify before ordering)', 5.8),
@@ -193,8 +194,9 @@ RES = {  # ref: (value, net a, net b)
     # (3.1 mA at 0.4 V, over I2C's 3 mA); 10 k makes 1.05 k (2.8 mA)
     'R19': ('10k', 'SDA', '3V3'), 'R20': ('10k', 'SCL', '3V3'),
     'R21': ('3.3k', 'VBAT_SW', 'LED1_A'), 'R22': ('1k', '5V', 'LED2_A'), 'R23': ('3.3k', 'VMOT', 'LED3_A'),
-    # LIO-226: the DRV8874 CS outputs (1.1 V/A, a 20 kHz chopped waveform, about 3.2-3.3 V at the current limit against the ADC pin's
-    # IOVDD + 0.3 V) reach GP27 / GP28 through 4.7 k, with C4 / C5 (100 nF) to GND on the ADC side
+    # LIO-226: the DRV8874 CS outputs (1.1 V/A of the high-side current, so I x duty under slow decay (LIO-234); a 20 kHz chopped
+    # waveform, about 3.2-3.3 V at the current limit against the ADC pin's IOVDD + 0.3 V) reach GP27 / GP28 through 4.7 k, with C4 / C5
+    # (100 nF) to GND on the ADC side
     'R24': ('4.7k', 'L_CS', 'L_CS_ADC'), 'R25': ('4.7k', 'R_CS', 'R_CS_ADC'),
     # LIO-226: ARM (normally-open button on a 200 mm lead) pulled up on the board, not by the RP2040's 50-80 k next to the motor PWM.
     # BUMP_L / BUMP_R (normally closed: an open lead reads as a bump, fail-safe) stay on the internal pull-ups.
@@ -356,8 +358,8 @@ POWER_TRUNK = {   # pads the high-current path must join with >= 3 mm zone coppe
 # A fuse contact (4 pads) is one pin. Any trunk pin not listed carries CURRENT_A[net] (pad_current).
 # P03_OUT_V is the design nominal; the bench trim is 5.1 V (BRINGUP.md section 5, BOM_EXTRAS), raised up to V5_MAX if the Jetson's barrel
 # plug reads under 5.0 V under load (BRINGUP.md section 7 step 3; about 65 mOhm, 0.3 V at 4.5 A, from the P03 to the plug).
-# P03_VIN_MIN is the firmware's low-battery stop. BRINGUP.md section 5 tests the P03 at 6.0 V in, 4.5 A out (the XL4015 needs about
-# 0.6-0.8 V of headroom; motor starts sag the pack 0.3-0.5 V more). If it fails, the stop (BRINGUP.md section 8, BRINGUP-NOTES.md) rises
+# P03_VIN_MIN is the firmware's low-battery stop. BRINGUP.md section 5 tests the P03 at 6.0 V in, 4.71 A out (P03_OUT_A; LIO-234) with
+# its input current read against P03_EFF (the XL4015 needs about 0.6-0.8 V of headroom; motor starts sag the pack 0.3-0.5 V more). If it fails, the stop (BRINGUP.md section 8, BRINGUP-NOTES.md) rises
 # to the lowest passing input + 0.5 V and P03_VIN_MIN is set to match (LIO-229).
 P03_OUT_V, P03_OUT_A = 5.0, CURRENT_A['5V']     # the P03 regulator's output: the Jetson's 4.5 A + the 5V taps, 4.71 A (LIO-227)
 P03_VIN_MIN, P03_EFF = 6.0, 0.85     # its lowest input (the 6-cell NiMH pack near its 1.0 V/cell cut-off; full charge VBAT_MAX 8.7 V) and its
