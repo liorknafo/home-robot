@@ -8,7 +8,7 @@ D = Path(B.__file__).parent
 PCB, PRO, DRU = D / 'r1_power_io.kicad_pcb', D / 'r1_power_io.kicad_pro', D / 'r1_power_io.kicad_dru'
 LAYER = {L: getattr(pcbnew, L.replace('.', '_')) for L in C.STACKUP}      # STACKUP name -> pcbnew layer id (F_Cu, In1_Cu, ...)
 MM, TOMM = pcbnew.FromMM, pcbnew.ToMM
-OUTLINE = json.loads((D / 'board_outline.json').read_text())
+OUTLINE = json.loads((D / 'board_outline.json').read_text(encoding='utf-8'))
 
 
 def polyset(pts):
@@ -200,7 +200,7 @@ class PcbTests(unittest.TestCase):
             b = pcbnew.LoadBoard(str(Path(t) / PCB.name))
             dsn = Path(t) / 'export.dsn'
             self.assertTrue(pcbnew.ExportSpecctraDSN(b, str(dsn)))
-            root = parse(dsn.read_text())[0]
+            root = parse(dsn.read_text(encoding='utf-8'))[0]
         (structure,) = find(root, 'structure')
         self.assertEqual(find(root, 'resolution')[0][1], 'um')                 # coordinates below are in micrometres
         cut = pcbnew.SHAPE_POLY_SET()
@@ -238,7 +238,7 @@ class PcbTests(unittest.TestCase):
             self.assertEqual(self.b.FindNet(net).GetNetClassName(), cls, net)
 
     def test_project_file_keeps_net_classes(self):
-        ns = json.loads(PRO.read_text())['net_settings']
+        ns = json.loads(PRO.read_text(encoding='utf-8'))['net_settings']
         classes = {c['name']: c for c in ns['classes']}
         pats = {(p['netclass'], p['pattern']) for p in ns['netclass_patterns']}
         for name, c in B.NETCLASSES.items():
@@ -264,7 +264,7 @@ class PcbTests(unittest.TestCase):
         self.assertEqual(self.b.GetCopperLayerCount(), 4)
         self.assertTrue(all(self.b.IsLayerEnabled(LAYER[L]) for L in C.STACKUP))
         self.assertAlmostEqual(TOMM(self.b.GetDesignSettings().GetBoardThickness()), B.PCB_T, 4)
-        (setup,) = find(parse(PCB.read_text())[0], 'setup')
+        (setup,) = find(parse(PCB.read_text(encoding='utf-8'))[0], 'setup')
         (stack,) = find(setup, 'stackup')
         items = [(str(l[1]), {c[0]: c[1] for c in l[2:] if isinstance(c, list) and len(c) > 1}) for l in find(stack, 'layer')]
         copper = [(n, float(d['thickness'])) for n, d in items if d.get('type') == 'copper']
@@ -945,7 +945,7 @@ class PcbTests(unittest.TestCase):
             out = Path(t) / 'drc.json'
             subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--format', 'json', '--units', 'mm', '-o', str(out), str(Path(t) / PCB.name)],
                            check=True, capture_output=True)
-            drc = json.loads(out.read_text())
+            drc = json.loads(out.read_text(encoding='utf-8'))
         silk = [(v['type'], [i['description'] for i in v['items']]) for v in drc['violations'] if v['type'].startswith('silk')]
         self.assertEqual(silk, [])
 
@@ -960,7 +960,7 @@ class PcbTests(unittest.TestCase):
             out = Path(t) / 'drc.json'
             subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--schematic-parity', '--severity-all', '--format', 'json', '--units', 'mm',
                             '-o', str(out), str(Path(t) / PCB.name)], check=True, capture_output=True)
-            drc = json.loads(out.read_text())
+            drc = json.loads(out.read_text(encoding='utf-8'))
         self.assertEqual([(v['type'], v['description']) for v in drc['schematic_parity']][:10], [])
         self.assertEqual([(v['type'], v['description']) for v in drc['violations']][:10], [])
         self.assertEqual(drc['unconnected_items'][:5], [])
@@ -977,16 +977,16 @@ class PcbTests(unittest.TestCase):
         ignored. A footprint that drifts from its library (or a new deliberate change) is a new mismatch and fails here."""
         import subprocess
         from pcb import tools
-        self.assertEqual(json.loads(PRO.read_text())['board']['design_settings']['rule_severities'], {'lib_footprint_mismatch': 'ignore'})
+        self.assertEqual(json.loads(PRO.read_text(encoding='utf-8'))['board']['design_settings']['rule_severities'], {'lib_footprint_mismatch': 'ignore'})
         with tempfile.TemporaryDirectory() as t:
             for f in (PCB, DRU, D / 'r1_power_io.kicad_sch', D / 'sym-lib-table'): shutil.copy(f, Path(t) / f.name)
-            pro = json.loads(PRO.read_text())
+            pro = json.loads(PRO.read_text(encoding='utf-8'))
             pro['board']['design_settings']['rule_severities'] = {}                       # every check at KiCad's default
-            (Path(t) / PRO.name).write_text(json.dumps(pro, indent=2))
+            (Path(t) / PRO.name).write_bytes(json.dumps(pro, indent=2).encode())
             out = Path(t) / 'drc.json'
             subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--severity-all', '--format', 'json', '--units', 'mm', '-o', str(out),
                             str(Path(t) / PCB.name)], check=True, capture_output=True)
-            drc = json.loads(out.read_text())
+            drc = json.loads(out.read_text(encoding='utf-8'))
         flagged = [v['items'][0]['description'].removeprefix('Footprint ') for v in drc['violations'] if v['type'] == 'lib_footprint_mismatch']
         self.assertEqual(sorted(flagged), sorted(self.LIB_MISMATCH_REFS), 'a footprint differs from its library that build_pcb does not mean to change')
         self.assertEqual([v['type'] for v in drc['violations'] if v['type'] != 'lib_footprint_mismatch'], [])

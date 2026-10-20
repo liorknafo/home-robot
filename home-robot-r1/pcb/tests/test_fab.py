@@ -6,6 +6,7 @@ where KiCad has no model), ORDERING.md and BRINGUP-NOTES.md (for B10)."""
 import csv, json, math, re, unittest, zipfile, zlib
 from pathlib import Path
 from pcb import board_spec as B
+from pcb.tests.left_out import needs_kicad
 
 FAB = Path(B.__file__).parent / 'fab'
 ZIP, BOM, POS, PDF, STEP = (FAB / f'r1_power_io{s}' for s in ('-gerbers.zip', '-bom.csv', '-pos.csv', '-1to1.pdf', '.step'))
@@ -117,7 +118,7 @@ class FabPackageTests(unittest.TestCase):
         for L, func in LAYER_FUNCTION.items():
             hits = [n for n, t in cls.files.items() if L.replace('.', '_') in n and f'%TF.FileFunction,{func}*%' in t]
             cls.layer_file[L] = hits[0] if len(hits) == 1 else None
-        with open(BOM, newline='') as f: cls.bom = list(csv.DictReader(f))
+        with open(BOM, newline='', encoding='utf-8') as f: cls.bom = list(csv.DictReader(f))
 
     # --- brief step 1: the zip ---
     def test_zip_holds_every_layer(self):
@@ -143,7 +144,7 @@ class FabPackageTests(unittest.TestCase):
         self.assertEqual(min(holes), min(VIA_DRILLS))               # the smallest hole is the PB17 signal via (ORDERING.md states it)
         for d in VIA_DRILLS: self.assertIn(d, holes)
         np_holes = excellon(self.files[npth[0]])
-        for u, v in json.loads((FAB.parent / 'board_outline.json').read_text())['clamp_holes_uv']:
+        for u, v in json.loads((FAB.parent / 'board_outline.json').read_text(encoding='utf-8'))['clamp_holes_uv']:
             self.assertTrue(any(abs(x - u) < 0.01 and abs(y + v) < 0.01 for x, y in np_holes.get(3.0, [])), (u, v))  # PB3: Ø3.0 NPTH
 
     def test_edge_cuts_extent_fits_the_price_tier(self):
@@ -165,7 +166,7 @@ class FabPackageTests(unittest.TestCase):
         pth = next(t for n, t in self.files.items() if n.endswith('-PTH.drl'))
         vias = via_holes(pth)
         self.assertEqual(sorted({d for _, _, d in vias}), VIA_DRILLS)
-        self.assertEqual(len(vias), len(re.findall(r'^\s*\(via\b', BOARD.read_text(), re.M)))
+        self.assertEqual(len(vias), len(re.findall(r'^\s*\(via\b', BOARD.read_text(encoding='utf-8'), re.M)))
 
     def test_vias_are_tented(self):
         """Every via's drill is covered by solder mask on both sides: no mask opening overlaps the drill circle (as ORDERING.md orders
@@ -185,7 +186,7 @@ class FabPackageTests(unittest.TestCase):
         print(f'\ntented vias: minimum mask web over a drill {web:.3f} mm; F.Mask {webs["F.Mask"][0][0]:.3f} mm, B.Mask {webs["B.Mask"][0][0]:.3f} mm; '
               f'{sum(1 for w in webs["F.Mask"] if w[0] < 0.15)} F.Mask vias under 0.15 mm')
         self.assertGreaterEqual(web, 0.09)                      # the LP12 GND vias keep 0.095 mm: a thinner web is a regression
-        self.assertIn(f'{web:.3f} mm', ' '.join(ORDERING.read_text().split()), 'ORDERING.md quotes the minimum web')
+        self.assertIn(f'{web:.3f} mm', ' '.join(ORDERING.read_text(encoding='utf-8').split()), 'ORDERING.md quotes the minimum web')
 
     # --- brief step 1: the BOM ---
     def test_bom_lists_every_part_with_its_mpn(self):
@@ -243,7 +244,7 @@ class FabPackageTests(unittest.TestCase):
         'Verify before ordering' checklist names the manufacturer of each such row."""
         rows = {ref: row for row in self.bom for ref in row['Refs'].split()}
         for ref in self.MEMORY_MPN_REFS: self.assertIn('verify before ordering', rows[ref]['MPN'], ref)
-        text = ORDERING.read_text()
+        text = ORDERING.read_text(encoding='utf-8')
         sec = ' '.join(text[text.index('## Verify before ordering'):].split())
         marked = [row for row in self.bom if 'verify before ordering' in row['MPN']]
         self.assertGreaterEqual(len(marked), 10)
@@ -251,12 +252,12 @@ class FabPackageTests(unittest.TestCase):
         for mfr in ('Samsung', 'Yageo', 'Sullins', 'Amphenol', 'Phoenix', 'Vishay', 'Lite-On', 'Littelfuse'): self.assertIn(mfr, sec, mfr)
 
     def test_position_file_leaves_out_dnp_and_bare_pads(self):
-        with open(POS, newline='') as f: refs = {row['Ref'] for row in csv.DictReader(f)}
+        with open(POS, newline='', encoding='utf-8') as f: refs = {row['Ref'] for row in csv.DictReader(f)}
         self.assertEqual(refs, {r for r in B.PARTS if fitted(r)})
 
     # --- brief step 1: ORDERING.md (the brief's strings, the carry list's facts) ---
     def test_ordering_states_the_order(self):
-        text = ORDERING.read_text()
+        text = ORDERING.read_text(encoding='utf-8')
         for s in ('4 layers', '1 oz outer', '0.5 oz inner', 'stencil', 'reflow', 'trim', 'tented',
                   'JLCPCB', f'{B.PCB_T:g} mm', f'{B.BOARD_W:g} × {B.BOARD_H:g} mm', '≤ 100 × 100', '5 pcs', '$8', 'check on the order page',
                   'FLR', 'up-angled micro-USB', 'no D24V50F5', 'P03', 'foam tape', 'measure it first',
@@ -269,7 +270,7 @@ class FabPackageTests(unittest.TestCase):
     def test_ordering_has_the_size_check_step(self):
         """B7 fix 1 (ruling PB23): the outline is not changed (74.0 x 100.0 mm on the line centre); the order page may read the line width
         (74.1 x 100.1), so ORDERING.md says what to check before paying and what to do if it shows 100.1."""
-        flat = ' '.join(ORDERING.read_text().split())
+        flat = ' '.join(ORDERING.read_text(encoding='utf-8').split())
         w, h = f'{B.BOARD_W:g}', f'{B.BOARD_H:g}'
         for s in (f'check the detected size reads {w} × {h} mm', 'the price is the ≤ 100 × 100 tier', 'before paying',
                   f'{B.BOARD_W + 0.1:.1f} × {B.BOARD_H + 0.1:.1f}', f'set the size to {w} × {h} or ask JLCPCB support',
@@ -280,7 +281,7 @@ class FabPackageTests(unittest.TestCase):
     def test_ordering_recommends_green_mask_and_the_inspect_check(self):
         """B7 fix 1: green mask (the smallest mask dam, verify) instead of 'any colour'; the GND joints are inspected for solder wicking
         into the tented vias; the order-number mark stays at its default; the inner-layer order is given in case the page asks."""
-        flat = ' '.join(ORDERING.read_text().split())
+        flat = ' '.join(ORDERING.read_text(encoding='utf-8').split())
         self.assertNotIn('Any (green', flat)
         for s in ('**Green** mask', 'smallest solder-mask dam (verify)', 'GND 0805 / SOT-23 joints for solder wicking into the tented vias',
                   'Order number mark', 'removing it costs extra', 'L2 = In1.Cu', '.g1', 'L3 = In2.Cu', '.g2'):
@@ -288,7 +289,7 @@ class FabPackageTests(unittest.TestCase):
 
     def test_ordering_states_the_design_rules(self):
         """Carry (PB17): the minimum track / space and via sizes, and that no surcharge option is needed."""
-        text = ORDERING.read_text()
+        text = ORDERING.read_text(encoding='utf-8')
         w, c = B.DEFAULT_CLASS['width'], B.DEFAULT_CLASS['clearance']
         for s in (f'{w:g} / {c:g} mm', '6 / 6 mil', 'no surcharge',
                   *(f'{d:g} / {h:g} mm' for d, h in {*B.CLASS_VIA.values(), B.GND_VIA})):
@@ -297,23 +298,24 @@ class FabPackageTests(unittest.TestCase):
     def test_ordering_puts_the_j1_pinout_in_bold(self):
         """Carry (PB20): J1 pin 1 = GND, pin 2 = BAT+, the battery lead GND in cavity 1 - in bold."""
         self.assertEqual(B.J1_PINOUT, {'1': 'GND', '2': 'BAT+'})
-        self.assertRegex(ORDERING.read_text(), r'\*\*[^*]*J1[^*]*pin 1 = GND, pin 2 = BAT\+[^*]*GND in cavity 1[^*]*\*\*')
+        self.assertRegex(ORDERING.read_text(encoding='utf-8'), r'\*\*[^*]*J1[^*]*pin 1 = GND, pin 2 = BAT\+[^*]*GND in cavity 1[^*]*\*\*')
 
     def test_ordering_has_the_verify_checklist(self):
         """Carry items 3 / 4: the figures quoted from memory, each with its part number and parameter."""
-        text = ORDERING.read_text()
+        text = ORDERING.read_text(encoding='utf-8')
         sec = text[text.index('## Verify before ordering'):]
         for s in ('hole-wall copper', 'DRV8874', 'R_DS(on)', 'EEE-FK1C101P', 'ESR', 'ripple', 'EEU-FR1E471', 'G5LE-1', 'coil',
                   'encoder', 'VL53L0X', '3V3', 'JLC04161H-7628', 'silk'):
             self.assertIn(s, sec, s)
 
     def test_ordering_names_c3_and_the_dnp_rows(self):
-        text = ORDERING.read_text()
+        text = ORDERING.read_text(encoding='utf-8')
         for s in ('EEE-FK1C101P', 'J14', 'J15', 'DNP'): self.assertIn(s, text, s)
 
     # --- carry item 5: bring-up notes for B10 ---
+    @needs_kicad()
     def test_bringup_notes_for_b10(self):
-        text = BRINGUP.read_text()
+        text = BRINGUP.read_text(encoding='utf-8')
         for s in ('1.8 A', f'{B.DRV_PWM_HZ / 1e3:g} kHz', 'pin 1 = GND, pin 2 = BAT+', 'under the carrier'):
             self.assertIn(s, text, s)
         for ref in [r for r in B.PARTS if r.startswith(('LED', 'TP')) and B.UNDER_CARRIER(r)] + ['TP2']:
@@ -340,7 +342,7 @@ class FabPackageTests(unittest.TestCase):
         """Every fitted part is a component of the STEP (DNP rows, bare pads and holes are not), named by its reference, placed at
         (u, -v, board top) with its rotation: STEP x = u, y = -v (KiCad's frame, --user-origin 0x0mm), so robot = STEP + (BOARD_X0,
         BOARD_Y0, Z_PCB_BOTTOM). The parts with no KiCad model are envelopes."""
-        e = step_entities(STEP.read_text())
+        e = step_entities(STEP.read_text(encoding='utf-8'))
         nauo = {i: re.match(r"NEXT_ASSEMBLY_USAGE_OCCURRENCE\('[^']*','([^']*)','[^']*',\s*#(\d+),\s*#(\d+)", s) for i, s in e.items()
                 if s.startswith('NEXT_ASSEMBLY_USAGE_OCCURRENCE')}
         refs = {m.group(1): (i, int(m.group(3))) for i, m in nauo.items() if m.group(1) in B.PARTS}
@@ -413,7 +415,7 @@ class FabPackageTests(unittest.TestCase):
         lower = {r for r in top if r in B.PARTS and top[r] - seat < B.PARTS[r]['h'] - 0.2}
         higher = {r for r in top if r in B.PARTS and top[r] - seat > B.PARTS[r]['h'] + 0.2}
         self.assertEqual((lower, higher), (self.STEP_LOWER, self.STEP_HIGHER))
-        text = ORDERING.read_text()
+        text = ORDERING.read_text(encoding='utf-8')
         sec = ' '.join(text[text.index('### STEP heights'):text.index('## The board order')].split())
         self.assertIn('STEP heights: max(model, PARTS h)', sec)
         for ref in sorted(lower | higher | {'C1'}): self.assertRegex(sec, rf'\b{ref}\b', ref)

@@ -52,8 +52,13 @@ Status: work in progress. Nothing has been ordered or printed yet.
    - Python 3.14 with CadQuery 2.8 (`home-robot-r1/cad/requirements.txt`; 2.8.0 + cadquery-ocp 7.9.3.1.1 verified).
    - Run `python home-robot-r1/cad/build_robot.py`. It takes about 25 min, and writes the meshes, STEP, print STLs and validation report.
 3. **Board (optional):**
-   - KiCad 9 (its bundled Python runs the `pcb/` scripts and `ktest_*` tests).
-   - Re-routing needs Java and Freerouting 2.x at `home-robot-r1/pcb/tools/freerouting.jar`. It isn't redistributed; download it from the Freerouting releases.
+   - KiCad 9 (its bundled Python, `$KPY` in the script headers, runs the `pcb/` scripts and `ktest_*` tests): on macOS
+     `/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/Current/bin/python3`, on Windows
+     `C:\Program Files\KiCad\9.0\bin\python.exe` (or `%LOCALAPPDATA%\Programs\KiCad\9.0\bin\python.exe` for a per-user install), on
+     Linux the system `python3` with the distribution's KiCad 9 packages.
+   - Re-routing needs Java 25 and Freerouting 2.4.1 at `home-robot-r1/pcb/tools/freerouting.jar`. It isn't redistributed; download it from the Freerouting releases.
+   - `pcb/tools.py` finds these per OS. Override any of them with `KICAD_CLI`, `KICAD_PYTHON`, `KICAD9_SYMBOL_DIR`, `KICAD9_FOOTPRINT_DIR`,
+     `KICAD9_3DMODEL_DIR`, `JAVA` (or `JAVA_HOME`, not on macOS) and `FREEROUTING_JAR`.
    - `pcb/route.py` with no arguments reproduces the committed routing.
 4. **Simulator:**
    - Unreal Engine 5.8 (macOS): build with `home-robot-sim/Scripts/build.command`.
@@ -86,7 +91,9 @@ Status: work in progress. Nothing has been ordered or printed yet.
      from the ONNX export on the PC to the FP16 engine and the live camera view on the Nano.
 5. **Tests:**
    - Simulator: `cd home-robot-sim && python -m unittest discover -s tests`, plus `tests/scenarios_round.py`.
-   - Robot pure tests: `python -m unittest discover` in `home-robot-r1/pcb/tests` and `cad/`.
+   - Robot pure tests: `cd home-robot-r1 && python -m unittest discover -s pcb/tests -t .` (or `python -m pytest pcb/tests`), and
+     `python -m unittest discover` in `cad/`. The tests that need KiCad skip when it isn't found; `R1_REQUIRE_KICAD=1` makes them run (and fail).
+   - Board tests in KiCad's Python: `cd home-robot-r1 && $KPY -m unittest pcb.tests.ktest_pcb pcb.tests.ktest_power pcb.tests.ktest_route`.
 
 ## Licence
 

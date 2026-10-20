@@ -43,7 +43,7 @@ class RouteTests(unittest.TestCase):
             out = Path(t) / 'drc.json'
             subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--format', 'json', '--units', 'mm', '-o', str(out), str(PCB)],
                            check=True, capture_output=True)
-            cls.drc = json.loads(out.read_text())
+            cls.drc = json.loads(out.read_text(encoding='utf-8'))
 
     # --- acceptance 1: DRC (errors and unconnected items; warnings are listed, not failed) ---
     def test_drc_no_errors(self):
@@ -197,7 +197,7 @@ class RouteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             b = copy_board(t)
             self.assertTrue(pcbnew.ExportSpecctraDSN(b, str(Path(t) / 'x.dsn')))
-            dsn = (Path(t) / 'x.dsn').read_text()
+            dsn = (Path(t) / 'x.dsn').read_text(encoding='utf-8')
         types = dict(re.findall(r'\(layer (\S+)\s+\(type (\w+)\)', dsn))
         self.assertEqual(types, {'F.Cu': 'signal', 'In1.Cu': 'power', 'In2.Cu': 'signal', 'B.Cu': 'signal'})
 
@@ -287,7 +287,7 @@ class RouteTests(unittest.TestCase):
         for net, cls in (('BAT+', 'Power'), ('F2_OUT', 'Power'), ('VMOT', 'PowerTap'), ('5V', 'PowerTap'), ('L_M1', 'Motor'),
                          ('SDA', 'Default')):
             self.assertEqual(self.b.FindNet(net).GetNetClassName(), cls, net)
-        classes = {c['name']: c for c in json.loads(PRO.read_text())['net_settings']['classes']}
+        classes = {c['name']: c for c in json.loads(PRO.read_text(encoding='utf-8'))['net_settings']['classes']}
         for name, c in B.NETCLASSES.items():
             self.assertAlmostEqual(classes[name]['track_width'], c['width'])
             self.assertAlmostEqual(classes[name]['clearance'], c['clearance'])
@@ -296,7 +296,7 @@ class RouteTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             b = copy_board(t)
             self.assertTrue(pcbnew.ExportSpecctraDSN(b, str(Path(t) / 'x.dsn')))
-            dsn = (Path(t) / 'x.dsn').read_text()
+            dsn = (Path(t) / 'x.dsn').read_text(encoding='utf-8')
         for name, c in B.NETCLASSES.items():
             m = re.search(r'\(class ' + name + r' .*?\(clearance ([\d.]+)\)', dsn, re.S)
             self.assertIsNotNone(m, name)

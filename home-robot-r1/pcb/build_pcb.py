@@ -83,9 +83,9 @@ def new_board():
     with tempfile.TemporaryDirectory() as t:
         path = Path(t) / 'stackup.kicad_pcb'
         assert pcbnew.SaveBoard(str(path), blank, True)
-        text = path.read_text()
+        text = path.read_text(encoding='utf-8')
         assert text.count('\t(setup\n') == 1, 'unexpected board file layout'
-        path.write_text(text.replace('\t(setup\n', '\t(setup\n' + stackup_sexpr(), 1))
+        path.write_bytes(text.replace('\t(setup\n', '\t(setup\n' + stackup_sexpr(), 1).encode())
         board = pcbnew.LoadBoard(str(path))
     # bay B5 (hand-over 1): In1.Cu is the solid GND plane, layer type power - the Specctra export writes it (type power) and Freerouting
     # then never routes on it (route.py checks the DSN); F.Cu / In2.Cu / B.Cu stay signal layers
@@ -254,7 +254,7 @@ LAYER = {L: getattr(pcbnew, L.replace('.', '_')) for L in C.STACKUP}      # STAC
 def build(out=OUT):
     board = new_board()
     pcbnew.KIID.SeedGenerator(UUID_SEED)               # after the stack-up template is read: the board's items get the seeded UUIDs
-    outline = json.loads((D / 'board_outline.json').read_text())
+    outline = json.loads((D / 'board_outline.json').read_text(encoding='utf-8'))
 
     for ring in [outline['outline_uv']] + outline['cutouts_uv']:
         for (u1, v1), (u2, v2) in zip(ring, ring[1:] + ring[:1]):

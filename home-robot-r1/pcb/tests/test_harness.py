@@ -24,7 +24,7 @@ ROOT = D.parent
 STOCK_OR_CRIMPED = ('stock', 'crimped')
 
 
-def load(p): return json.loads(p.read_text())
+def load(p): return json.loads(p.read_text(encoding='utf-8'))
 
 
 def pin_nets(ref):

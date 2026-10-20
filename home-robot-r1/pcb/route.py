@@ -47,7 +47,7 @@ from pcb import board_spec as B, copper as C, gridroute, tools, zone_check
 
 D = Path(__file__).parent
 PCB, PRO, DRU = D / 'r1_power_io.kicad_pcb', D / 'r1_power_io.kicad_pro', D / 'r1_power_io.kicad_dru'   # DRU: custom DRC rules
-OUTLINE = json.loads((D / 'board_outline.json').read_text())
+OUTLINE = json.loads((D / 'board_outline.json').read_text(encoding='utf-8'))
 MM, TOMM = pcbnew.FromMM, pcbnew.ToMM
 LAYER = zone_check.LAYER                                           # STACKUP name -> pcbnew layer id
 PLANE = C.GND_PLANE_LAYER                                          # In1.Cu: the GND plane, not routed
@@ -267,7 +267,7 @@ def freeroute(dsn, ses, passes, log):
            '--router.fanout.enabled=false', '--router.automatic_neckdown=false', '--router.neck_width_um=0',
            '-de', str(dsn), '-do', str(ses), '-mp', str(passes), '-mt', '1']
     t0 = time.time()
-    with open(log, 'w') as f:
+    with open(log, 'w', encoding='utf-8') as f:
         try: r = subprocess.run(cmd, stdout=f, stderr=subprocess.STDOUT, timeout=RUN_TIMEOUT)
         except subprocess.TimeoutExpired: raise RuntimeError(f'Freerouting ran over {RUN_TIMEOUT} s, see {log}')
     if r.returncode != 0 or not Path(ses).is_file(): raise RuntimeError(f'Freerouting failed, see {log}')
@@ -611,7 +611,7 @@ def evaluate(board, workdir, base):
     shutil.copy(PRO, workdir / 'eval.kicad_pro'); shutil.copy(DRU, workdir / 'eval.kicad_dru')
     subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--format', 'json', '--severity-error', '-o', str(workdir / 'drc.json'), str(out)],
                    check=True, capture_output=True)
-    drc = json.loads((workdir / 'drc.json').read_text())
+    drc = json.loads((workdir / 'drc.json').read_text(encoding='utf-8'))
     drc_errors = len(drc['violations'])
     drc_types = {}
     for v in drc['violations']: drc_types[v['type']] = drc_types.get(v['type'], 0) + 1
@@ -681,7 +681,7 @@ SPLIT_NET = re.compile(r'\(net "?([^"\s()]+?)__(?:\d+|[wp]\d+)"?(?=[\s)])')   # 
 
 def unrouted(log):
     """Connections Freerouting left unrouted (from its log)."""
-    found = re.findall(r'final score: [\d.]+ \((\d+) unrouted', Path(log).read_text())
+    found = re.findall(r'final score: [\d.]+ \((\d+) unrouted', Path(log).read_text(encoding='utf-8'))
     return int(found[-1]) if found else 999
 
 
@@ -690,10 +690,10 @@ def route_step(name, d, start, dsn_of, passes):
     Returns (board, unrouted count)."""
     b = pcbnew.LoadBoard(str(start))
     assert pcbnew.ExportSpecctraDSN(b, str(d / f'{name}_raw.dsn')), 'DSN export failed'
-    (d / f'{name}.dsn').write_text(dsn_of((d / f'{name}_raw.dsn').read_text(), b))
+    (d / f'{name}.dsn').write_bytes(dsn_of((d / f'{name}_raw.dsn').read_text(encoding='utf-8'), b).encode())
     freeroute(d / f'{name}.dsn', d / f'{name}.ses', passes, d / f'{name}.log')
     ses = d / f'{name}.ses'                        # only_nets' one-item nets back to their own names (else KiCad imports them netless)
-    ses.write_text(SPLIT_NET.sub(lambda m: f'(net "{m.group(1)}"', ses.read_text()))
+    ses.write_bytes(SPLIT_NET.sub(lambda m: f'(net "{m.group(1)}"', ses.read_text(encoding='utf-8')).encode())
     b = pcbnew.LoadBoard(str(start))
     assert pcbnew.ImportSpecctraSES(b, str(d / f'{name}.ses')), f'{name}: SES import failed'
     normalize_vias(b)
@@ -948,7 +948,7 @@ def worker(g, order, work, passes):
     pcbnew.SaveBoard(str(d / 'result.kicad_pcb'), b, True)
     shutil.copy(PRO, d / 'result.kicad_pro')        # LoadBoard takes the net classes (zone clearances) from it
     rep.pop('_pairs', None)
-    (d / 'result.json').write_text(json.dumps(dict(score=list(score), rep=rep)))
+    (d / 'result.json').write_bytes(json.dumps(dict(score=list(score), rep=rep)).encode())
 
 
 def main():
@@ -995,7 +995,7 @@ def main():
     while waiting or running:
         while waiting and len(running) < args.parallel:
             g, o = waiting.pop(0)
-            log = open(work / f'worker{g}-{o}.log', 'w')
+            log = open(work / f'worker{g}-{o}.log', 'w', encoding='utf-8')
             running.append((g, o, subprocess.Popen([sys.executable, __file__, '--worker', str(g), '--order', o, '--work', str(work),
                                                     '--passes', str(args.passes), '--critical', args.critical], stdout=log, stderr=subprocess.STDOUT)))
         time.sleep(2)
@@ -1004,7 +1004,7 @@ def main():
             f = work / f'setup{g}-{o}' / 'result.json'
             if p.returncode != 0 or not f.is_file():
                 print(f'set-up {g} {o}: worker failed (see {work / f"worker{g}-{o}.log"})'); continue
-            r = json.loads(f.read_text())
+            r = json.loads(f.read_text(encoding='utf-8'))
             print(f'set-up {g} {SETUPS[g]["name"]} {o}: score {r["score"]} {r["rep"]}', flush=True)
             results.append((tuple(r['score']), g, o, r['rep']))
     router_s = time.time() - t0

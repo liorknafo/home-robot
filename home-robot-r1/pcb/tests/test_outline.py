@@ -4,7 +4,7 @@ from pathlib import Path
 try: import numpy as np
 except ImportError: np = None            # the mesh tests need numpy (the CAD venv has it); the JSON-only tests do not
 from pcb import board_spec as B
-from pcb.tests.left_out import needs
+from pcb.tests.left_out import needs, needs_kicad
 OUT = Path(B.__file__).parent / 'board_outline.json'
 CAD = Path(B.__file__).parents[1] / 'cad'
 MANIFEST = CAD / 'component-manifest.json'
@@ -67,7 +67,7 @@ def neck_violations(rings, on_board, step=0.25):
                         bad.append(((round(x, 3), round(y, 3)), (round(xj, 3), round(yj, 3)), round(d, 3)))
     return bad
 
-def manifest_bounds(): return {p['id']: p['bounds'] for p in json.loads(MANIFEST.read_text())}
+def manifest_bounds(): return {p['id']: p['bounds'] for p in json.loads(MANIFEST.read_text(encoding='utf-8'))}
 def xy_centre(b): return ((b[0] + b[3]) / 2, (b[1] + b[4]) / 2)
 
 EXTRACT_LISTS = ('CLAMP_STACK_IDS', 'SUPPORT_IDS', 'PLUGGED_CABLE_IDS', 'BOARD_CONTACT_IDS', 'NOT_OBSTACLE_IDS')
@@ -77,7 +77,7 @@ def extractor_lists():
     there), read from its source so the ids have one home. Importing the extractor would run it (it needs CadQuery and writes
     board_outline.json), so only those five top-level assignments are run, with the manifest's {id: bounds} as its MAN."""
     ns = {'MAN': manifest_bounds()}
-    for node in ast.parse((Path(B.__file__).parent / 'extract_outline.py').read_text()).body:
+    for node in ast.parse((Path(B.__file__).parent / 'extract_outline.py').read_text(encoding='utf-8')).body:
         if isinstance(node, ast.Assign) and len(node.targets) == 1 and getattr(node.targets[0], 'id', None) in EXTRACT_LISTS:
             exec(compile(ast.Module([node], []), 'extract_outline.py', 'exec'), ns)
     missing = [n for n in EXTRACT_LISTS if n not in ns]
@@ -86,7 +86,7 @@ def extractor_lists():
 EXTRACT = extractor_lists()
 NOT_OBSTACLES = set(EXTRACT['NOT_OBSTACLE_IDS'])
 BAY_INSERTS = {i for i in EXTRACT['SUPPORT_IDS'] if i.startswith('insert_bay_')}    # heat-set inserts in P_base under the M3 holes (z 30..33)
-PAR_ALL = json.loads((CAD / 'parameters.json').read_text())
+PAR_ALL = json.loads((CAD / 'parameters.json').read_text(encoding='utf-8'))
 BAY = PAR_ALL['bay_board']     # build_robot.py BAY_MOUNTS / BAY_CLAMPS as written to parameters.json
 MOTORS = ('motor_left', 'motor_right')
 def crossings(poly, c, axis=0):
@@ -98,7 +98,7 @@ def box_gap(a, b):
     return math.hypot(max(a[0] - b[2], b[0] - a[2], 0.0), max(a[1] - b[3], b[1] - a[3], 0.0))
 
 class OutlineTests(unittest.TestCase):
-    def setUp(self): self.o = json.loads(OUT.read_text())
+    def setUp(self): self.o = json.loads(OUT.read_text(encoding='utf-8'))
     def on_board(self, p): return inside(self.o['outline_uv'], p) and not any(inside(c, p) for c in self.o['cutouts_uv'])
     def at(self, x, y): return self.on_board(B.robot_to_board(x, y))
     def test_json_keys(self):
@@ -133,6 +133,7 @@ class OutlineTests(unittest.TestCase):
         for (x, y), (gx, gy) in zip(ins, got): self.assertLess(math.hypot(x - gx, y - gy), 0.1, ((x, y), (gx, gy)))
         for (x, y), (gx, gy) in zip(BAY['mounts_mm'], got): self.assertLess(math.hypot(x - gx, y - gy), 0.1, 'BAY_MOUNTS in parameters.json')
         self.assertEqual([i for i in B.REMOVED_CAD_IDS if i.startswith('insert_')], [], 'the inserts stay')
+    @needs_kicad()
     def test_h3_h4_sit_beside_the_tongue_centre(self):
         """Ruling PB4: H3 / H4 moved to robot (-11.5, +-8.5) = board (55, 41.5) / (55, 58.5), either side of the tongue's centre line, clear of the
         right-angle motor connectors J4 / J5 and their lay-flat plugs at the motor notches; H1 / H2 stay at (-19.5, +-38). B12a (carry 7): the
@@ -243,7 +244,7 @@ ENV = (B.BOARD_X0, B.BOARD_Y0 - B.BOARD_H, B.BOARD_X0 + B.BOARD_W, B.BOARD_Y0)  
 Z0, Z1 = B.Z_PCB_BOTTOM - 1.0, B.Z_PCB_TOP + B.MAX_PART_H                             # the slab the board's parts can reach (1 mm under the board up to the ceiling)
 
 @lru_cache(maxsize=None)
-def cad_meshes(): return {m['id']: m for m in json.loads(MESHES.read_text())}
+def cad_meshes(): return {m['id']: m for m in json.loads(MESHES.read_text(encoding='utf-8'))}
 def tri_array(m):
     V = np.asarray(m['vertices'], float).reshape(-1, 3)
     return V[np.asarray(m['faces'], int).reshape(-1, 3)]
@@ -319,7 +320,7 @@ class RealGeometryTests(unittest.TestCase):
     """Independent of extract_outline.py: sample the real meshes of every part that stays and check the written outline against them."""
     @classmethod
     def setUpClass(cls):
-        cls.o = json.loads(OUT.read_text())
+        cls.o = json.loads(OUT.read_text(encoding='utf-8'))
         def ring(r): return np.array([B.board_to_robot(u, v) for u, v in r])
         cls.rings = [ring(cls.o['outline_uv'])] + [ring(c) for c in cls.o['cutouts_uv']]
     def inside_np(self, ring, P):
@@ -421,7 +422,7 @@ class RealGeometryTests(unittest.TestCase):
 class BoardHeightTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.o = json.loads(OUT.read_text())
+        cls.o = json.loads(OUT.read_text(encoding='utf-8'))
     def on_board(self, p): return inside(self.o['outline_uv'], p) and not any(inside(c, p) for c in self.o['cutouts_uv'])
     def test_height_zones_cover_the_area_under_the_jetson_carrier(self):
         """Real meshes: every board cell under the Jetson carrier's xy hull is in the under-carrier zone (u >= CARRIER_U, x >= -38.5), the zone is the

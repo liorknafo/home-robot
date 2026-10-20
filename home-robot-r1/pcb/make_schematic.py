@@ -60,7 +60,7 @@ def pretty(x, d=0):
 
 def read_netlist(path):
     """KiCad S-expression netlist -> {net name: {(ref, pin)}}. A local label in the root sheet exports as '/NAME'; the leading '/' is stripped."""
-    tree = parse(Path(path).read_text())[0]; out = {}
+    tree = parse(Path(path).read_text(encoding='utf-8'))[0]; out = {}
     for net in find(find(tree, 'nets')[0], 'net'):
         name = str(find(net, 'name')[0][1])
         out[name[1:] if name.startswith('/') else name] = {(str(find(n, 'ref')[0][1]), str(find(n, 'pin')[0][1])) for n in find(net, 'node')}
@@ -131,10 +131,10 @@ def sym_lib_table():
 
 def main(out_dir=D):
     out = Path(out_dir)
-    (out / f'{PROJECT}.kicad_sch').write_text(pretty(schematic()) + '\n')
-    (out / f'{PROJECT}.kicad_pro').write_text(json.dumps(project(), indent=2) + '\n')
-    (out / 'sym-lib-table').write_text(sym_lib_table())
-    (out / f'{PROJECT}.kicad_dru').write_text(B.DRC_RULES)
+    (out / f'{PROJECT}.kicad_sch').write_bytes((pretty(schematic()) + '\n').encode())
+    (out / f'{PROJECT}.kicad_pro').write_bytes((json.dumps(project(), indent=2) + '\n').encode())
+    (out / 'sym-lib-table').write_bytes(sym_lib_table().encode())
+    (out / f'{PROJECT}.kicad_dru').write_bytes(B.DRC_RULES.encode())
     export_netlist(out / f'{PROJECT}.kicad_sch', out / f'{PROJECT}.net')
 if __name__ == '__main__':
     main()

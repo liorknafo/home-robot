@@ -12,10 +12,10 @@ from pathlib import Path
 try: import numpy as np
 except ImportError: np = None            # the lid-coverage test needs numpy (the CAD venv has it); the JSON-only tests do not
 from pcb import board_spec as B
-from pcb.tests.left_out import needs
+from pcb.tests.left_out import needs, needs_kicad
 D = Path(B.__file__).parent
 BC_PATH = D / 'board_cad.json'
-OUTLINE = json.loads((D / 'board_outline.json').read_text())
+OUTLINE = json.loads((D / 'board_outline.json').read_text(encoding='utf-8'))
 CAD = D.parent / 'cad'
 DIRS = {'+u': (1.0, 0.0), '-u': (-1.0, 0.0), '+v': (0.0, -1.0), '-v': (0.0, 1.0)}      # board entry direction -> robot (x, y) unit vector
 REAR_ROW = ('J1', 'J2', 'J6', 'J7', 'J12', 'J13')
@@ -36,7 +36,7 @@ def robot_box(uv_box):
 class BoardCadTests(unittest.TestCase):
     """board_cad.json, as pcb/export_cad.py writes it from pcb/r1_power_io.kicad_pcb (robot frame, mm)."""
     @classmethod
-    def setUpClass(cls): cls.bc = json.loads(BC_PATH.read_text())
+    def setUpClass(cls): cls.bc = json.loads(BC_PATH.read_text(encoding='utf-8'))
 
     def test_frame_is_the_board_spec_frame_and_the_step_offset(self):
         f = self.bc['frame']
@@ -65,6 +65,7 @@ class BoardCadTests(unittest.TestCase):
         self.assertTrue(-66.5 <= min(xs) <= -66.3 and 7.4 <= max(xs) <= 7.5 + 1e-6, (min(xs), max(xs)))
         self.assertAlmostEqual(min(ys), -50.0, 2); self.assertAlmostEqual(max(ys), 50.0, 2)
 
+    @needs_kicad()
     def test_every_fitted_tht_pad_is_listed_at_its_place(self):
         """Every plated pad of every fitted through-hole part (and the fuse holders' NPTH pegs) is in tht_pads at board_spec's place
         (PLACEMENT parity, robot frame) with its bounding box; the mounting holes' via rings carry no lead and are not listed."""
@@ -86,6 +87,7 @@ class BoardCadTests(unittest.TestCase):
             self.assertTrue(x0 < p['xy'][0] < x1 and y0 < p['xy'][1] < y1, p)
         self.assertTrue(any(p['pin'] == '' and p['ref'] == 'F1' for p in self.bc['tht_pads']), 'the fuse holder pegs')
 
+    @needs_kicad()
     def test_edge_connectors(self):
         """Every board_spec.EDGE_CONNECTORS ref: courtyard (robot box, = board_spec.courtyard_box), centre, entry direction (robot unit
         vector), family, vertical or not, mated height (MATED_H), the wire bend over a vertical plug (CABLE_BEND_MM), the lay-flat reach
@@ -116,6 +118,7 @@ class BoardCadTests(unittest.TestCase):
             bx0, by0, bx1, by1 = c['body_xy']                       # F.Fab body, inside the courtyard
             self.assertTrue(x0 - 1e-6 <= bx0 < bx1 <= x1 + 1e-6 and y0 - 1e-6 <= by0 < by1 <= y1 + 1e-6, ref)
 
+    @needs_kicad()
     def test_module_sockets_and_bodies(self):
         """The four plug-in modules: every socket pin at pad_uv, the module body (board_spec.MODULES on its first socket, robot polygon)
         and the module PCB underside over the board top (socket body + header plastic)."""
@@ -161,9 +164,9 @@ class RobotCadTests(unittest.TestCase):
     """The robot CAD after B8: real board and modules, ribs from the real pads, rear-edge support, plug and cable checks."""
     @classmethod
     def setUpClass(cls):
-        cls.bc = json.loads(BC_PATH.read_text())
-        cls.v = json.loads((CAD / 'validation.json').read_text())
-        cls.man = {p['id']: p for p in json.loads((CAD / 'component-manifest.json').read_text())}
+        cls.bc = json.loads(BC_PATH.read_text(encoding='utf-8'))
+        cls.v = json.loads((CAD / 'validation.json').read_text(encoding='utf-8'))
+        cls.man = {p['id']: p for p in json.loads((CAD / 'component-manifest.json').read_text(encoding='utf-8'))}
 
     def test_b8_validation_keys_are_true(self):
         for k in ('bay_rear_connectors_supported', 'pico_usb_insert_path_clear', 'under_carrier_cable_paths_clear', 'motor_joints_serviceable'):
@@ -181,7 +184,7 @@ class RobotCadTests(unittest.TestCase):
         x 39.5 over the two cap tops, clear of the terminals, their wire entries and leads, the trimpot, the display and the buttons."""
         man, v = self.man['p03_regulator'], self.v['p03_model']
         self.assertIs(man['vertex_colors'], True); self.assertEqual(man['bounds'], [9.0, -31.0, 33.0, 47.0, 31.0, 48.0])
-        M = next(m for m in json.loads((CAD / 'assembly-meshes.json').read_text()) if m['id'] == 'p03_regulator')
+        M = next(m for m in json.loads((CAD / 'assembly-meshes.json').read_text(encoding='utf-8')) if m['id'] == 'p03_regulator')
         xyz = np.array(M['vertices']).reshape(-1, 3)
         self.assertEqual(len(M['vpal']), len(xyz)); self.assertGreaterEqual(len(M['palette']), 12)
         self.assertTrue((xyz >= np.array(man['bounds'][:3]) - 0.01).all() and (xyz <= np.array(man['bounds'][3:]) + 0.01).all())
@@ -190,7 +193,7 @@ class RobotCadTests(unittest.TestCase):
         self.assertTrue(all(e[k][1] == 31.0 for k in ('IN+', 'IN-')) and all(e[k][1] == -31.0 for k in ('OUT+', 'OUT-')), e)
         self.assertTrue(e['IN+'][0] > e['IN-'][0] and e['OUT+'][0] > e['OUT-'][0], e)
         for ref in ('U5A', 'U5B'): self.assertGreater(self.bc['connectors'][ref]['centre_xy'][1], 0)   # both board terminals on the +y side
-        cuts = {c['id']: c for c in json.loads((CAD.parent / 'cable-cut-list.json').read_text())}
+        cuts = {c['id']: c for c in json.loads((CAD.parent / 'cable-cut-list.json').read_text(encoding='utf-8'))}
         for cid, tm, ref in (('W_p03_in', 'IN', 'U5A'), ('W_p03_out', 'OUT', 'U5B')):
             c = cuts[cid]; pts = c['points']
             self.assertTrue(close(pts[0], [(a + b) / 2 for a, b in zip(e[tm + '+'], e[tm + '-'])], 0.01), (cid, pts[0]))
@@ -286,8 +289,8 @@ class RobotCadTests(unittest.TestCase):
             self.assertGreaterEqual(r['pigtail_exit_bend']['to_motor_face_mm'], 0.3)
             self.assertTrue(r['pigtail']['ok']); self.assertEqual(r['pigtail_lift_hits'], [])
             self.assertIn(f'motor_joint_{side}', self.man)
-        cut = {c['id']: c for c in json.loads((D.parent / 'cable-cut-list.json').read_text())}
-        bom = {p['id']: p for p in json.loads((D.parent / 'parts-and-connections.json').read_text())['parts']}
+        cut = {c['id']: c for c in json.loads((D.parent / 'cable-cut-list.json').read_text(encoding='utf-8'))}
+        bom = {p['id']: p for p in json.loads((D.parent / 'parts-and-connections.json').read_text(encoding='utf-8'))['parts']}
         for side in ('left', 'right'):
             c = cut[f'motor_pigtail_{side}']
             self.assertEqual(c['pigtail']['precut_mm'], c['suggested_cut_mm'])                       # B9 fix 2: the cut is the pre-cut length
@@ -313,7 +316,7 @@ class RobotCadTests(unittest.TestCase):
 
     def test_rib_print_orientation_matches_its_note(self):
         """Review M4: the rib note names the orientation cad/printability.json picks for it."""
-        pr = {p['part']: p for p in json.loads((CAD / 'printability.json').read_text())['parts']}
+        pr = {p['part']: p for p in json.loads((CAD / 'printability.json').read_text(encoding='utf-8'))['parts']}
         for i in (i for i in self.man if i.startswith('bay_rib_')):
             self.assertIn(f"'{pr[i]['best_orientation']}'", self.man[i]['note'], i)
 
@@ -334,7 +337,7 @@ class RobotCadTests(unittest.TestCase):
 
     def test_lid_sector_stls_are_bed_ready(self):
         """Deferred L2 item: the lid sectors are written in print orientation (top face on the bed; task L moved the fan skirt to the tray)."""
-        pr = {p['part']: p for p in json.loads((CAD / 'printability.json').read_text())['parts']}
+        pr = {p['part']: p for p in json.loads((CAD / 'printability.json').read_text(encoding='utf-8'))['parts']}
         for i in ('P_lid_front', 'P_lid_left', 'P_lid_rear', 'P_lid_right'):
             self.assertEqual(pr[i]['best_orientation'], 'as exported', i)
             self.assertTrue(pr[i]['pass'], i)
@@ -353,7 +356,7 @@ class RobotCadTests(unittest.TestCase):
         point of it lies under a lid sector's top face (cad/assembly-meshes.json). Over the bumper seam the lid's underside is lifted by a
         shallow pocket (validation perimeter_rod_intrusion.lid_seam_relief), not a slot through it: high enough for a Ø3 rod resting on the
         bumper top, long enough for the seam backer's full travel, and at most 10 mm × 10 mm."""
-        M = {m['id']: m for m in json.loads((CAD / 'assembly-meshes.json').read_text())}
+        M = {m['id']: m for m in json.loads((CAD / 'assembly-meshes.json').read_text(encoding='utf-8'))}
         top = self.v['jetson_cooling']['lid_top_z_mm']
         T = np.vstack([tri for i in ('P_lid_front', 'P_lid_left', 'P_lid_rear', 'P_lid_right')
                        for tri in [np.asarray(M[i]['vertices'], float).reshape(-1, 3)[np.asarray(M[i]['faces'], int).reshape(-1, 3)]]])
@@ -396,7 +399,7 @@ class RobotCadTests(unittest.TestCase):
         inside the intake duct and its own footprint is not open area (test_cooling_open_area_leaves_the_ld14_motor_out); what stays shadowed
         is the 1.0 mm ring round it under the LD14 housing, which draws room air in over the plate."""
         jc = self.v['jetson_cooling']; g, it, ex = jc['grille'], jc['intake'], jc['exhaust']
-        M = {m['id']: m for m in json.loads((CAD / 'assembly-meshes.json').read_text())}
+        M = {m['id']: m for m in json.loads((CAD / 'assembly-meshes.json').read_text(encoding='utf-8'))}
         front_edge = jc['lid_fan_window']['centre_mm'][0] + jc['lid_fan_window']['diameter_mm'] / 2
         overhangs = min(min(v[0] for v in zip(*[iter(M[i]['vertices'])] * 3)) for i in ('lidar', 'lidar_motor')) < front_edge
         self.assertEqual(overhangs, g['open_area_shadowed_in_plan_mm2'] > 0)
@@ -446,7 +449,7 @@ class RobotCadTests(unittest.TestCase):
         self.assertLessEqual(abs(fs['section_area_mm2'] - fs['section_area_unbroken_mm2']), 0.01 * fs['section_area_unbroken_mm2'])
         self.assertGreaterEqual(fs['bypass_margin_fraction'], 0.01)
         self.assertIn('lidar_motor', it['parts_over_grille'])
-        pr = {p['part']: p for p in json.loads((CAD / 'printability.json').read_text())['parts']}
+        pr = {p['part']: p for p in json.loads((CAD / 'printability.json').read_text(encoding='utf-8'))['parts']}
         self.assertTrue(pr['P_lidar_tray']['pass']); self.assertEqual(pr['P_lidar_tray']['best_orientation'], 'as exported')
         self.assertTrue(jc['ok'])
 

@@ -1,7 +1,8 @@
 import json, subprocess, tempfile, unittest
 from pathlib import Path
 from pcb import board_spec as B, tools
-from pcb.make_schematic import read_netlist, export_netlist, main as make_schematic_main
+from pcb.make_schematic import read_netlist, export_netlist, project, sym_lib_table, main as make_schematic_main
+from pcb.tests import left_out
 D = Path(B.__file__).parent
 SCH, PRO = D / 'r1_power_io.kicad_sch', D / 'r1_power_io.kicad_pro'
 
@@ -10,6 +11,30 @@ def unconnected_pins(nets):
     return {p for n, pins in nets.items() if n.startswith('unconnected-(') for p in pins}
 
 class SchematicTests(unittest.TestCase):
+    """The checks that need no KiCad."""
+    def test_connectivity_erc_rules_are_never_downgraded(self):
+        sev = json.loads(PRO.read_text(encoding='utf-8'))['erc']['rule_severities']
+        for rule in ('pin_not_connected', 'label_dangling', 'wire_dangling', 'pin_not_driven', 'power_pin_not_driven'):
+            self.assertEqual(sev.get(rule, 'error'), 'error', rule)
+
+    def test_project_netclasses_match_board_spec(self):
+        ns = json.loads(PRO.read_text(encoding='utf-8'))['net_settings']
+        classes = {c['name']: c for c in ns['classes']}
+        self.assertEqual(set(classes), {'Default', *B.NETCLASSES})
+        self.assertEqual((classes['Default']['track_width'], classes['Default']['clearance']), (0.15, 0.15))   # PB17
+        for name, spec in B.NETCLASSES.items():
+            self.assertEqual((classes[name]['track_width'], classes[name]['clearance']), (spec['width'], spec['clearance']), name)
+            got = sorted(p['pattern'] for p in ns['netclass_patterns'] if p['netclass'] == name)
+            self.assertEqual(got, sorted(spec['nets']), name)
+        self.assertEqual(len(ns['netclass_patterns']), sum(len(s['nets']) for s in B.NETCLASSES.values()))
+
+    def test_project_rules_and_sym_lib_table_are_current(self):
+        for f, text in ((PRO.name, json.dumps(project(), indent=2) + '\n'), ('sym-lib-table', sym_lib_table()), ('r1_power_io.kicad_dru', B.DRC_RULES)):
+            self.assertEqual((D / f).read_text(encoding='utf-8'), text, f'{f} is stale: run pcb/make_schematic.py')
+
+
+@left_out.needs_kicad()
+class KiCadSchematicTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
@@ -21,14 +46,9 @@ class SchematicTests(unittest.TestCase):
         out = Path(self.tmp.name) / 'erc.json'
         subprocess.run([tools.KICAD_CLI, 'sch', 'erc', '--format', 'json', '--severity-error', '-o', str(out), str(SCH)],
                        check=True, capture_output=True)
-        rep = json.loads(out.read_text())
+        rep = json.loads(out.read_text(encoding='utf-8'))
         errs = [v for s in rep['sheets'] for v in s['violations']]
         self.assertEqual(errs, [], json.dumps(errs[:5], indent=1))
-
-    def test_connectivity_erc_rules_are_never_downgraded(self):
-        sev = json.loads(PRO.read_text())['erc']['rule_severities']
-        for rule in ('pin_not_connected', 'label_dangling', 'wire_dangling', 'pin_not_driven', 'power_pin_not_driven'):
-            self.assertEqual(sev.get(rule, 'error'), 'error', rule)
 
     def test_netlist_equals_board_spec(self):
         got = {n: pins for n, pins in self.nets.items() if not n.startswith('unconnected-(')}
@@ -44,22 +64,11 @@ class SchematicTests(unittest.TestCase):
         self.assertEqual(pinless, {'H5', 'H6'})
         self.assertEqual({r for pins in self.nets.values() for r, p in pins}, set(B.PARTS) - pinless)
 
-    def test_project_netclasses_match_board_spec(self):
-        ns = json.loads(PRO.read_text())['net_settings']
-        classes = {c['name']: c for c in ns['classes']}
-        self.assertEqual(set(classes), {'Default', *B.NETCLASSES})
-        self.assertEqual((classes['Default']['track_width'], classes['Default']['clearance']), (0.15, 0.15))   # PB17
-        for name, spec in B.NETCLASSES.items():
-            self.assertEqual((classes[name]['track_width'], classes[name]['clearance']), (spec['width'], spec['clearance']), name)
-            got = sorted(p['pattern'] for p in ns['netclass_patterns'] if p['netclass'] == name)
-            self.assertEqual(got, sorted(spec['nets']), name)
-        self.assertEqual(len(ns['netclass_patterns']), sum(len(s['nets']) for s in B.NETCLASSES.values()))
-
-    def test_generated_files_are_current(self):
+    def test_schematic_is_current(self):
+        """The schematic embeds KiCad's library symbols (SchematicTests checks the other generated files)."""
         with tempfile.TemporaryDirectory() as t:
             make_schematic_main(Path(t))
-            for f in (SCH.name, PRO.name, 'sym-lib-table', 'r1_power_io.kicad_dru'):
-                self.assertEqual((Path(t) / f).read_text(), (D / f).read_text(), f'{f} is stale: run pcb/make_schematic.py')
+            self.assertEqual((Path(t) / SCH.name).read_text(encoding='utf-8'), SCH.read_text(encoding='utf-8'), f'{SCH.name} is stale: run pcb/make_schematic.py')
 
 if __name__ == '__main__':
     unittest.main()
