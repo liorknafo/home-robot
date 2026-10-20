@@ -93,7 +93,9 @@ def zones():
     VBAT_CUTS = [notch(pad('U1A', '20'), 'N', 47.0, PAD), cnotch(pad('U1B', '20'), 'N', 47.0, 0.85 + CLEAR), rect(4.0, 47.0, 7.6, 52.3),
                  rect(19.5, 47.0, 24.5, 51.6), rect(24.5, 47.0, 27.85, 51.6), cnotch(pad('U2', '8'), 'N', 30.0, 0.85 + CLEAR),
                  notch(pad('U3L', '1'), 'S', 44.0, PAD),
-                 rect(39.05, 28.95, 41.55, 34.1)                # PB16: C3's GND pad and its LP12 via
+                 rect(39.05, 28.95, 41.55, 34.1),               # PB16: C3's GND pad and its LP12 via
+                 rect(10.0, 47.0, 15.2, 50.7)                   # LIO-226: R26 (ARM pull-up) under Q5, its pads + 0.35 mm (the router keepout
+                                                                # grows 0.3): the strip down to J2.2 / F2.1's relief rings keeps >= 4.84 mm
                  ] + [circ(p, 1.1 + CLEAR) for p in pad_all('F1', '2') if p[1] < 60]    # bay B5: F1.2's north pads (fix 1: restored)
     f21 = pcbnew.SHAPE_POLY_SET()                                 # F2.1's 2 x 2 VBAT_SW pads, for F1_OUT on B.Cu
     for p in (pad_all('F2', '1')): f21.BooleanAdd(octa(p, 1.55))

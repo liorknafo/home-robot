@@ -239,11 +239,11 @@ class PowerTests(unittest.TestCase):
         r = P.c3_ripple()
         self.assertTrue(r['slow_decay'])
         self.assertLessEqual(r['c3_a'], B.C3_RIPPLE_RATING_A)
-        self.assertLessEqual(r['c3_a'], C.via_current_a(B.GND_VIA[1]))
+        self.assertLessEqual(r['c3_a'], C.via_current_a(B.SMD_PAD_VIA[1]))      # LIO-226: the LP12 via drills 0.3
         fast = P.c3_ripple(slow_decay=False)
         self.assertAlmostEqual(fast['c3_a'], 2 * r['c3_a'], 9)
         self.assertGreater(fast['c3_a'], B.C3_RIPPLE_RATING_A, 'fast decay is within the rating: BRINGUP-NOTES may allow it')
-        self.assertLessEqual(fast['c3_a'], C.via_current_a(B.GND_VIA[1]))
+        self.assertLessEqual(fast['c3_a'], C.via_current_a(B.SMD_PAD_VIA[1]))
         notes = (D / 'fab' / 'BRINGUP-NOTES.md').read_text(encoding='utf-8')
         self.assertIn('slow decay', notes); self.assertIn('IN2 = inverted PWM', notes)
 

@@ -458,7 +458,7 @@
       "status": "Buy",
       "new_cost_usd": 20.0,
       "source": "pcb/fab/r1_power_io-bom.csv",
-      "notes": "Fitted parts per pcb/fab/r1_power_io-bom.csv (MPNs from board_spec.PARTS): Pico sockets U1A / U1B (Sullins PPTC201LFBN-RC ×2), GY-521 socket U2 (PPTC081LFBN-RC), DRV8874 sockets U3L / U3P / U4L / U4P (PPTC071LFBN-RC ×4); board connectors J1 (AMASS XT30UPB-M, the vertical XT30 PCB male: battery), J2 (JST B2P-VH(LF)(SN): master rocker), J3 (Molex 43650-0200, Micro-Fit 3.0 right-angle: Jetson 5 V) - three families that cannot be cross-plugged (ruling PB30), J4 / J5 (Amphenol 68016-106HLF right-angle 1×6 headers ×2, the right-angle connectors chosen in B3), J6–J9 (JST B5B-XH-A(LF)(SN) ×4), J10–J13 (JST B2B-XH-A(LF)(SN) ×4); P03 terminals U5A / U5B (Phoenix Contact 1715721 ×2); fuse holders F1 / F2 (Littelfuse 178.6165.0001 ×2; the fuses are P07); relay K1 (Omron G5LE-1 DC5); C1 (Panasonic EEU-FR1E471); C3 (Panasonic EEE-FK1C101P); C2, D1 (SS14), Q1–Q5 (2N7002), LED1–LED3 and R1–R23 (reflowed through the stencil). J14 / J15 are DNP pad rows. The relay's coil loop (S01 toggle) is an experimental stop circuit, not a certified safety system. About USD 20 at small quantities (estimate, from memory: verify); the MPNs marked \"verify\" are on this file's verify list.",
+      "notes": "Fitted parts per pcb/fab/r1_power_io-bom.csv (MPNs from board_spec.PARTS): Pico sockets U1A / U1B (Sullins PPTC201LFBN-RC ×2), GY-521 socket U2 (PPTC081LFBN-RC), DRV8874 sockets U3L / U3P / U4L / U4P (PPTC071LFBN-RC ×4); board connectors J1 (AMASS XT30UPB-M, the vertical XT30 PCB male: battery), J2 (JST B2P-VH(LF)(SN): master rocker), J3 (Molex 43650-0200, Micro-Fit 3.0 right-angle: Jetson 5 V) - three families that cannot be cross-plugged (ruling PB30), J4 / J5 (Amphenol 68016-106HLF right-angle 1×6 headers ×2, the right-angle connectors chosen in B3), J6–J9 (JST B5B-XH-A(LF)(SN) ×4), J10–J13 (JST B2B-XH-A(LF)(SN) ×4); P03 terminals U5A / U5B (Phoenix Contact 1715721 ×2); fuse holders F1 / F2 (Littelfuse 178.6165.0001 ×2; the fuses are P07); relay K1 (Omron G5LE-1 DC5); C1 (Panasonic EEU-FR1E471); C3 (Panasonic EEE-FK1C101P); C2, C4, C5, D1 (SS14), Q1–Q5 (2N7002), LED1–LED3 and R1–R26 (reflowed through the stencil). J14 / J15 are DNP pad rows; D2 (SS14, 5 V to the Pico's VSYS) is DNP. The relay's coil loop (S01 toggle) is an experimental stop circuit, not a certified safety system. About USD 20 at small quantities (estimate, from memory: verify); the MPNs marked \"verify\" are on this file's verify list.",
       "model": "bay_board"
     },
     {
@@ -862,7 +862,7 @@
       "W-J12",
       "Arm button",
       "JST XH-2 (board J12, rear edge)",
-      "1 GP14 (ARM) input pullup, 2 GND; normally open button",
+      "1 GP14 (ARM) with the board's 10k pull-up R26, 2 GND; normally open button",
       "26 AWG",
       "Require new press after boot/stop"
     ],
@@ -974,7 +974,7 @@
     [
       "GP3",
       "I2C SCL, I2C1 (SCL)",
-      "Start at 100 kHz; check aggregate pullups"
+      "Start at 100 kHz; 10k board pull-ups R19 / R20: measure the bus total (about 1.05 k with everything plugged in)"
     ],
     [
       "GP4",
@@ -1029,7 +1029,7 @@
     [
       "GP14",
       "Arm button (ARM)",
-      "NO to GND; pullup input"
+      "NO to GND; 10k pull-up R26 on the board"
     ],
     [
       "GP15",
@@ -1063,13 +1063,13 @@
     ],
     [
       "GP27 / ADC1",
-      "Left motor current sense (L_CS)",
-      "Driver CS output"
+      "Left motor current sense (L_CS_ADC)",
+      "Driver CS output (L_CS) through 4.7k R24, 100 nF C4 to GND: RC about 0.47 ms"
     ],
     [
       "GP28 / ADC2",
-      "Right motor current sense (R_CS)",
-      "Driver CS output"
+      "Right motor current sense (R_CS_ADC)",
+      "Driver CS output (R_CS) through 4.7k R25, 100 nF C5 to GND: RC about 0.47 ms"
     ],
     [
       "3V3 OUT",
@@ -1132,7 +1132,7 @@
       "status": "from memory: verify"
     },
     {
-      "item": "Yageo RC0805FR-07100KL / Yageo RC0805FR-0710KL / Yageo RC0805FR-071KL / Yageo RC0805FR-0733KL / Yageo RC0805FR-073K3L / Yageo RC0805FR-074K7L (R1–R23)",
+      "item": "Yageo RC0805FR-07100KL / Yageo RC0805FR-0710KL / Yageo RC0805FR-071KL / Yageo RC0805FR-0733KL / Yageo RC0805FR-073K3L / Yageo RC0805FR-074K7L (R1–R26)",
       "figure": "0805, 1 %, 0.125 W thick film",
       "source": "board_spec res_mpn()",
       "status": "from memory: verify"

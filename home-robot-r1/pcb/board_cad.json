@@ -2059,7 +2059,7 @@
   {
    "ref": "U1B",
    "pin": "2",
-   "net": "unconnected-(U1B-Pin_2-Pad2)",
+   "net": "VSYS",
    "xy": [
     -39.92,
     44.71
@@ -2144,7 +2144,7 @@
   {
    "ref": "U1B",
    "pin": "7",
-   "net": "R_CS",
+   "net": "R_CS_ADC",
    "xy": [
     -39.92,
     32.01
@@ -2178,7 +2178,7 @@
   {
    "ref": "U1B",
    "pin": "9",
-   "net": "L_CS",
+   "net": "L_CS_ADC",
    "xy": [
     -39.92,
     26.93
@@ -2961,6 +2961,30 @@
    "dnp": false,
    "under_carrier": true
   },
+  "C4": {
+   "courtyard_xy": [
+    -15.245,
+    1.725,
+    -11.755,
+    3.775
+   ],
+   "h": 1.25,
+   "mount": "smd_top",
+   "dnp": false,
+   "under_carrier": true
+  },
+  "C5": {
+   "courtyard_xy": [
+    -25.995,
+    -28.525,
+    -22.505,
+    -26.475
+   ],
+   "h": 1.25,
+   "mount": "smd_top",
+   "dnp": false,
+   "under_carrier": true
+  },
   "D1": {
    "courtyard_xy": [
     -55.045,
@@ -2972,6 +2996,18 @@
    "mount": "smd_top",
    "dnp": false,
    "under_carrier": false
+  },
+  "D2": {
+   "courtyard_xy": [
+    -29.545,
+    -17.795,
+    -22.455,
+    -14.205
+   ],
+   "h": 2.7,
+   "mount": "smd_top",
+   "dnp": true,
+   "under_carrier": true
   },
   "F1": {
    "courtyard_xy": [
@@ -3632,6 +3668,42 @@
    "mount": "smd_top",
    "dnp": false,
    "under_carrier": true
+  },
+  "R24": {
+   "courtyard_xy": [
+    -15.995,
+    -3.225,
+    -14.005,
+    0.225
+   ],
+   "h": 0.6,
+   "mount": "smd_top",
+   "dnp": false,
+   "under_carrier": true
+  },
+  "R25": {
+   "courtyard_xy": [
+    -24.545,
+    -33.215,
+    -22.555,
+    -29.765
+   ],
+   "h": 0.6,
+   "mount": "smd_top",
+   "dnp": false,
+   "under_carrier": true
+  },
+  "R26": {
+   "courtyard_xy": [
+    -55.025,
+    -0.645,
+    -51.575,
+    1.345
+   ],
+   "h": 0.6,
+   "mount": "smd_top",
+   "dnp": false,
+   "under_carrier": false
   },
   "TP1": {
    "courtyard_xy": [

@@ -4264,8 +4264,194 @@
 		(uuid "1132533d-b959-5a67-bcd9-6601ee17a1af")
 	)
 	(symbol
-		(lib_id "Diode:SS14")
+		(lib_id "Device:C")
 		(at 177.8 25.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "90fa5f7c-06b8-5a08-b3b1-0fd98d926bde")
+		(property "Reference" "C4"
+			(at 178.435 22.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100nF"
+			(at 178.435 27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 178.7652 29.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 177.8 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 177.8 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cf9af975-988a-5d6e-86f5-cdcc120b3498")
+		)
+		(pin "2"
+			(uuid "6615a9b9-db9b-5ac6-8272-7596f914d3a0")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "C4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "L_CS_ADC"
+		(shape passive)
+		(at 177.8 21.59 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e06b033f-d5c5-5d61-a785-3fed75ada8ca")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 177.8 29.21 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "0de259a7-0d26-5e90-b868-0e01061b3c03")
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 228.6 25.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7d5965ac-d9e4-5bd8-b5d8-5040d9ecf46a")
+		(property "Reference" "C5"
+			(at 229.235 22.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100nF"
+			(at 229.235 27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 229.5652 29.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 228.6 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 228.6 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "15dfbc44-619f-5559-be36-edcf5097bf82")
+		)
+		(pin "2"
+			(uuid "f11f1344-08dd-539a-9744-243bd7e69905")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "C5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "R_CS_ADC"
+		(shape passive)
+		(at 228.6 21.59 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "17d03ec9-9476-5dca-aedc-bfdb0fca2efa")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 228.6 29.21 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "7939e3d7-a880-5d52-8bbe-ce3b387ca99f")
+	)
+	(symbol
+		(lib_id "Diode:SS14")
+		(at 279.4 25.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4273,7 +4459,7 @@
 		(dnp no)
 		(uuid "ec3d492f-7f90-5776-8a02-8224b0e7945f")
 		(property "Reference" "D1"
-			(at 177.8 22.86 0)
+			(at 279.4 22.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4281,7 +4467,7 @@
 			)
 		)
 		(property "Value" "SS14"
-			(at 177.8 27.94 0)
+			(at 279.4 27.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4289,7 +4475,7 @@
 			)
 		)
 		(property "Footprint" "Diode_SMD:D_SMA"
-			(at 177.8 29.845 0)
+			(at 279.4 29.845 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4298,7 +4484,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.vishay.com/docs/88746/ss12.pdf"
-			(at 177.8 25.4 0)
+			(at 279.4 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4307,7 +4493,7 @@
 			)
 		)
 		(property "Description" "40V 1A Schottky Diode, SMA"
-			(at 177.8 25.4 0)
+			(at 279.4 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4332,7 +4518,7 @@
 	)
 	(global_label "COIL_P"
 		(shape passive)
-		(at 173.99 25.4 180)
+		(at 275.59 25.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4344,7 +4530,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 181.61 25.4 0)
+		(at 283.21 25.4 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4355,8 +4541,99 @@
 		(uuid "a14095b5-0e55-5584-9cc7-c1e5cdb5e629")
 	)
 	(symbol
+		(lib_id "Diode:SS14")
+		(at 330.2 25.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(uuid "eb51a87b-2485-5aee-b7cf-f012135b8838")
+		(property "Reference" "D2"
+			(at 330.2 22.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SS14"
+			(at 330.2 27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Diode_SMD:D_SMA"
+			(at 330.2 29.845 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.vishay.com/docs/88746/ss12.pdf"
+			(at 330.2 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "40V 1A Schottky Diode, SMA"
+			(at 330.2 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "590cb886-e1fe-5502-816d-17871d162cb9")
+		)
+		(pin "2"
+			(uuid "6eb0a462-8fb8-525b-9a1a-9f15fcbe7fb2")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "D2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "VSYS"
+		(shape passive)
+		(at 326.39 25.4 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "2918a41d-3bf5-5f30-ad19-f833ab1c1548")
+	)
+	(global_label "5V"
+		(shape passive)
+		(at 334.01 25.4 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b2c005ba-3ace-567c-8f12-7241006a41a2")
+	)
+	(symbol
 		(lib_id "Device:Fuse")
-		(at 228.6 25.4 0)
+		(at 381 25.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4364,7 +4641,7 @@
 		(dnp no)
 		(uuid "d9a2525b-6864-57d8-bef9-c2ed66f955c7")
 		(property "Reference" "F1"
-			(at 230.632 25.4 90)
+			(at 383.032 25.4 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4372,7 +4649,7 @@
 			)
 		)
 		(property "Value" "7.5 A ATO"
-			(at 226.695 25.4 90)
+			(at 379.095 25.4 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4380,7 +4657,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:FuseHolder_Blade_ATO_Littelfuse_FLR_178.6165"
-			(at 226.822 25.4 90)
+			(at 379.222 25.4 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4389,7 +4666,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 228.6 25.4 0)
+			(at 381 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4398,7 +4675,7 @@
 			)
 		)
 		(property "Description" "Fuse"
-			(at 228.6 25.4 0)
+			(at 381 25.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4423,7 +4700,7 @@
 	)
 	(global_label "BAT+"
 		(shape passive)
-		(at 228.6 21.59 90)
+		(at 381 21.59 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4435,7 +4712,7 @@
 	)
 	(global_label "F1_OUT"
 		(shape passive)
-		(at 228.6 29.21 270)
+		(at 381 29.21 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4447,7 +4724,7 @@
 	)
 	(symbol
 		(lib_id "Device:Fuse")
-		(at 279.4 25.4 0)
+		(at 25.4 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4455,7 +4732,7 @@
 		(dnp no)
 		(uuid "58fddfeb-1858-5f02-8a2b-9741e009a47b")
 		(property "Reference" "F2"
-			(at 281.432 25.4 90)
+			(at 27.432 88.9 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4463,7 +4740,7 @@
 			)
 		)
 		(property "Value" "5 A ATO"
-			(at 277.495 25.4 90)
+			(at 23.495 88.9 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4471,7 +4748,7 @@
 			)
 		)
 		(property "Footprint" "Fuse:FuseHolder_Blade_ATO_Littelfuse_FLR_178.6165"
-			(at 277.622 25.4 90)
+			(at 23.622 88.9 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4480,7 +4757,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 279.4 25.4 0)
+			(at 25.4 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4489,7 +4766,7 @@
 			)
 		)
 		(property "Description" "Fuse"
-			(at 279.4 25.4 0)
+			(at 25.4 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4514,7 +4791,7 @@
 	)
 	(global_label "VBAT_SW"
 		(shape passive)
-		(at 279.4 21.59 90)
+		(at 25.4 85.09 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4526,7 +4803,7 @@
 	)
 	(global_label "F2_OUT"
 		(shape passive)
-		(at 279.4 29.21 270)
+		(at 25.4 92.71 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4538,7 +4815,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
-		(at 330.2 25.4 0)
+		(at 76.2 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -4546,234 +4823,6 @@
 		(dnp no)
 		(uuid "08f149b2-297f-5e5c-aa2b-3c6ebe12dd56")
 		(property "Reference" "H1"
-			(at 330.2 19.05 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "M3"
-			(at 330.2 20.955 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 330.2 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 330.2 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection"
-			(at 330.2 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "25922751-f405-552f-a0e8-27b6512533fa")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "H1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 330.2 27.94 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "6249885b-0464-59e9-a5e7-aec3ac6ebbd2")
-	)
-	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
-		(at 381 25.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(uuid "7d26e4fe-cd5b-58a1-836d-cc79e5fee182")
-		(property "Reference" "H2"
-			(at 381 19.05 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "M3"
-			(at 381 20.955 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 381 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 381 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection"
-			(at 381 25.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "6bd278a6-37a6-5cbc-88dc-f3d463e6db2f")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "H2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 381 27.94 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "7ed87101-92ad-58f3-bb56-eee6223ad3f9")
-	)
-	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
-		(at 25.4 88.9 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(uuid "77b98b9c-62eb-5a68-9e6a-1613c6a92efb")
-		(property "Reference" "H3"
-			(at 25.4 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "M3"
-			(at 25.4 84.455 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 25.4 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 25.4 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection"
-			(at 25.4 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "baf621ee-2f99-536d-9f3c-1c30fc089a04")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "H3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 25.4 91.44 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "9201abc2-519f-5182-ad4d-d8f4f0c50505")
-	)
-	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
-		(at 76.2 88.9 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(uuid "cae58c29-af73-549d-8ff9-4f111d09b24c")
-		(property "Reference" "H4"
 			(at 76.2 82.55 0)
 			(effects
 				(font
@@ -4817,12 +4866,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "a1c34c40-370f-5acb-a40e-87c861d9e8df")
+			(uuid "25922751-f405-552f-a0e8-27b6512533fa")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "H4")
+					(reference "H1")
 					(unit 1)
 				)
 			)
@@ -4838,34 +4887,34 @@
 			)
 			(justify right)
 		)
-		(uuid "e2199b28-4b1f-5d81-9f0e-98bd9dfbef15")
+		(uuid "6249885b-0464-59e9-a5e7-aec3ac6ebbd2")
 	)
 	(symbol
-		(lib_id "Mechanical:MountingHole")
+		(lib_id "Mechanical:MountingHole_Pad")
 		(at 127 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "b25c5925-9ebe-5da9-b068-5821c69007c6")
-		(property "Reference" "H5"
-			(at 127 83.82 0)
+		(uuid "7d26e4fe-cd5b-58a1-836d-cc79e5fee182")
+		(property "Reference" "H2"
+			(at 127 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "M2.5 clamp"
-			(at 127 85.725 0)
+		(property "Value" "M3"
+			(at 127 84.455 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "MountingHole:MountingHole_3mm"
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
 			(at 127 88.9 0)
 			(effects
 				(font
@@ -4883,8 +4932,236 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Mounting Hole without connection"
+		(property "Description" "Mounting Hole with connection"
 			(at 127 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6bd278a6-37a6-5cbc-88dc-f3d463e6db2f")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "H2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 127 91.44 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "7ed87101-92ad-58f3-bb56-eee6223ad3f9")
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 177.8 88.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "77b98b9c-62eb-5a68-9e6a-1613c6a92efb")
+		(property "Reference" "H3"
+			(at 177.8 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "M3"
+			(at 177.8 84.455 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 177.8 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 177.8 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 177.8 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "baf621ee-2f99-536d-9f3c-1c30fc089a04")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "H3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 177.8 91.44 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "9201abc2-519f-5182-ad4d-d8f4f0c50505")
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 228.6 88.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "cae58c29-af73-549d-8ff9-4f111d09b24c")
+		(property "Reference" "H4"
+			(at 228.6 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "M3"
+			(at 228.6 84.455 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 228.6 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 228.6 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 228.6 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a1c34c40-370f-5acb-a40e-87c861d9e8df")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "H4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 228.6 91.44 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e2199b28-4b1f-5d81-9f0e-98bd9dfbef15")
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole")
+		(at 279.4 88.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "b25c5925-9ebe-5da9-b068-5821c69007c6")
+		(property "Reference" "H5"
+			(at 279.4 83.82 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "M2.5 clamp"
+			(at 279.4 85.725 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3mm"
+			(at 279.4 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 279.4 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole without connection"
+			(at 279.4 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4903,7 +5180,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole")
-		(at 177.8 88.9 0)
+		(at 330.2 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -4911,7 +5188,7 @@
 		(dnp no)
 		(uuid "abf856ae-edd6-5361-8e25-1efd95e66059")
 		(property "Reference" "H6"
-			(at 177.8 83.82 0)
+			(at 330.2 83.82 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4919,7 +5196,7 @@
 			)
 		)
 		(property "Value" "M2.5 clamp"
-			(at 177.8 85.725 0)
+			(at 330.2 85.725 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4927,7 +5204,7 @@
 			)
 		)
 		(property "Footprint" "MountingHole:MountingHole_3mm"
-			(at 177.8 88.9 0)
+			(at 330.2 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4936,7 +5213,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 177.8 88.9 0)
+			(at 330.2 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4945,7 +5222,7 @@
 			)
 		)
 		(property "Description" "Mounting Hole without connection"
-			(at 177.8 88.9 0)
+			(at 330.2 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4964,7 +5241,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 228.6 88.9 0)
+		(at 381 88.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -4972,7 +5249,7 @@
 		(dnp no)
 		(uuid "469194a2-4b47-5488-b276-d3ec628e2d8e")
 		(property "Reference" "J1"
-			(at 228.6 86.36 0)
+			(at 381 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4980,7 +5257,7 @@
 			)
 		)
 		(property "Value" "Battery in"
-			(at 228.6 93.98 0)
+			(at 381 93.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4988,7 +5265,7 @@
 			)
 		)
 		(property "Footprint" "Connector_AMASS:AMASS_XT30UPB-M_1x02_P5.0mm_Vertical"
-			(at 228.6 88.9 0)
+			(at 381 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4997,7 +5274,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 228.6 88.9 0)
+			(at 381 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5006,7 +5283,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 228.6 88.9 0)
+			(at 381 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5031,7 +5308,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 223.52 88.9 180)
+		(at 375.92 88.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5043,7 +5320,7 @@
 	)
 	(global_label "BAT+"
 		(shape passive)
-		(at 223.52 91.44 180)
+		(at 375.92 91.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5055,7 +5332,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 279.4 88.9 0)
+		(at 25.4 152.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5063,279 +5340,6 @@
 		(dnp no)
 		(uuid "00be3d0d-3906-517d-94df-e86b74da021e")
 		(property "Reference" "J10"
-			(at 279.4 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Bumper L"
-			(at 279.4 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical"
-			(at 279.4 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 279.4 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 279.4 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "597e1ded-3f1e-540e-87e2-1a1d78f1aa28")
-		)
-		(pin "2"
-			(uuid "099ed542-1d25-59ee-96b1-e4dceaf66f33")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "J10")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "BUMP_L"
-		(shape passive)
-		(at 274.32 88.9 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "bd1d420e-d740-5013-a011-993370fa54a1")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 274.32 91.44 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "75592639-bdbf-5360-8ff4-adf1ade85430")
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 330.2 88.9 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "7cf3f9ad-e9fa-577d-b61c-8624da313ebf")
-		(property "Reference" "J11"
-			(at 330.2 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Bumper R"
-			(at 330.2 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical"
-			(at 330.2 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 330.2 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 330.2 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "a9b48534-0522-5605-8022-f26459520fb3")
-		)
-		(pin "2"
-			(uuid "aa7d7f83-09b4-500a-aac7-0054bdd6bfa5")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "J11")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "BUMP_R"
-		(shape passive)
-		(at 325.12 88.9 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "975974f0-5ba2-5a54-af1b-b970fe48a19f")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 325.12 91.44 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "0d9ca6ef-e7de-55de-96b0-81906fdedc72")
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 381 88.9 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "4193a3de-3b74-5f79-a46d-ffe91c870182")
-		(property "Reference" "J12"
-			(at 381 86.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Arm button"
-			(at 381 93.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical"
-			(at 381 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 381 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 381 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "cdb93b07-f9ff-5875-ae43-e74d13d5d8c7")
-		)
-		(pin "2"
-			(uuid "8dd338fc-92e3-5f39-be32-999b3388f644")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "J12")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "ARM"
-		(shape passive)
-		(at 375.92 88.9 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a11d9dd7-396f-5b1f-9ce6-7dfe3cadf0d2")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 375.92 91.44 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "96a28c4e-ecb8-5a58-9a58-a6db35256035")
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x02")
-		(at 25.4 152.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "36b4378c-104e-5035-810f-8c50ed7a04ed")
-		(property "Reference" "J13"
 			(at 25.4 149.86 0)
 			(effects
 				(font
@@ -5343,7 +5347,7 @@
 				)
 			)
 		)
-		(property "Value" "Motor toggle loop"
+		(property "Value" "Bumper L"
 			(at 25.4 157.48 0)
 			(effects
 				(font
@@ -5379,21 +5383,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "2c1ec868-3ad0-5176-8827-d1f1df83a8ce")
+			(uuid "597e1ded-3f1e-540e-87e2-1a1d78f1aa28")
 		)
 		(pin "2"
-			(uuid "7159d24d-1a06-503e-8822-0cafa246b285")
+			(uuid "099ed542-1d25-59ee-96b1-e4dceaf66f33")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "J13")
+					(reference "J10")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "5V"
+	(global_label "BUMP_L"
 		(shape passive)
 		(at 20.32 152.4 180)
 		(fields_autoplaced yes)
@@ -5403,9 +5407,9 @@
 			)
 			(justify right)
 		)
-		(uuid "c94c7b87-2251-5aad-bbab-92ca6ba357e4")
+		(uuid "bd1d420e-d740-5013-a011-993370fa54a1")
 	)
-	(global_label "COIL_P"
+	(global_label "GND"
 		(shape passive)
 		(at 20.32 154.94 180)
 		(fields_autoplaced yes)
@@ -5415,34 +5419,34 @@
 			)
 			(justify right)
 		)
-		(uuid "c0a728f8-fbf8-51a2-9bb5-bd38a5c47756")
+		(uuid "75592639-bdbf-5360-8ff4-adf1ade85430")
 	)
 	(symbol
-		(lib_id "Connector_Generic:Conn_01x04")
+		(lib_id "Connector_Generic:Conn_01x02")
 		(at 76.2 152.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp yes)
-		(uuid "9930c5da-fb47-5082-92db-6f341547f360")
-		(property "Reference" "J14"
-			(at 76.2 147.32 0)
+		(dnp no)
+		(uuid "7cf3f9ad-e9fa-577d-b61c-8624da313ebf")
+		(property "Reference" "J11"
+			(at 76.2 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "Spare I2C"
-			(at 76.2 160.02 0)
+		(property "Value" "Bumper R"
+			(at 76.2 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
+		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical"
 			(at 76.2 152.4 0)
 			(effects
 				(font
@@ -5460,8 +5464,281 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
 			(at 76.2 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a9b48534-0522-5605-8022-f26459520fb3")
+		)
+		(pin "2"
+			(uuid "aa7d7f83-09b4-500a-aac7-0054bdd6bfa5")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "J11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "BUMP_R"
+		(shape passive)
+		(at 71.12 152.4 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "975974f0-5ba2-5a54-af1b-b970fe48a19f")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 71.12 154.94 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "0d9ca6ef-e7de-55de-96b0-81906fdedc72")
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 127 152.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4193a3de-3b74-5f79-a46d-ffe91c870182")
+		(property "Reference" "J12"
+			(at 127 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Arm button"
+			(at 127 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical"
+			(at 127 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 127 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 127 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cdb93b07-f9ff-5875-ae43-e74d13d5d8c7")
+		)
+		(pin "2"
+			(uuid "8dd338fc-92e3-5f39-be32-999b3388f644")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "J12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ARM"
+		(shape passive)
+		(at 121.92 152.4 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "a11d9dd7-396f-5b1f-9ce6-7dfe3cadf0d2")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 121.92 154.94 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "96a28c4e-ecb8-5a58-9a58-a6db35256035")
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 177.8 152.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "36b4378c-104e-5035-810f-8c50ed7a04ed")
+		(property "Reference" "J13"
+			(at 177.8 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Motor toggle loop"
+			(at 177.8 157.48 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical"
+			(at 177.8 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 177.8 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 177.8 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2c1ec868-3ad0-5176-8827-d1f1df83a8ce")
+		)
+		(pin "2"
+			(uuid "7159d24d-1a06-503e-8822-0cafa246b285")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "J13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "5V"
+		(shape passive)
+		(at 172.72 152.4 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "c94c7b87-2251-5aad-bbab-92ca6ba357e4")
+	)
+	(global_label "COIL_P"
+		(shape passive)
+		(at 172.72 154.94 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "c0a728f8-fbf8-51a2-9bb5-bd38a5c47756")
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x04")
+		(at 228.6 152.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(uuid "9930c5da-fb47-5082-92db-6f341547f360")
+		(property "Reference" "J14"
+			(at 228.6 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Spare I2C"
+			(at 228.6 160.02 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
+			(at 228.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 228.6 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 228.6 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5492,7 +5769,7 @@
 	)
 	(global_label "3V3"
 		(shape passive)
-		(at 71.12 149.86 180)
+		(at 223.52 149.86 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5504,7 +5781,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 71.12 152.4 180)
+		(at 223.52 152.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5516,7 +5793,7 @@
 	)
 	(global_label "SDA"
 		(shape passive)
-		(at 71.12 154.94 180)
+		(at 223.52 154.94 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5528,7 +5805,7 @@
 	)
 	(global_label "SCL"
 		(shape passive)
-		(at 71.12 157.48 180)
+		(at 223.52 157.48 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5540,7 +5817,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x06")
-		(at 127 152.4 0)
+		(at 279.4 152.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5548,7 +5825,7 @@
 		(dnp yes)
 		(uuid "f2f78047-f728-5726-9467-514298c3e50a")
 		(property "Reference" "J15"
-			(at 127 144.78 0)
+			(at 279.4 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5556,7 +5833,7 @@
 			)
 		)
 		(property "Value" "Spare GPIO"
-			(at 127 162.56 0)
+			(at 279.4 162.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5564,7 +5841,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical"
-			(at 127 152.4 0)
+			(at 279.4 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5573,7 +5850,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 127 152.4 0)
+			(at 279.4 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5582,7 +5859,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 127 152.4 0)
+			(at 279.4 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5619,7 +5896,7 @@
 	)
 	(global_label "SPARE1"
 		(shape passive)
-		(at 121.92 147.32 180)
+		(at 274.32 147.32 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5631,7 +5908,7 @@
 	)
 	(global_label "SPARE2"
 		(shape passive)
-		(at 121.92 149.86 180)
+		(at 274.32 149.86 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5643,7 +5920,7 @@
 	)
 	(global_label "SPARE3"
 		(shape passive)
-		(at 121.92 152.4 180)
+		(at 274.32 152.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5655,7 +5932,7 @@
 	)
 	(global_label "3V3"
 		(shape passive)
-		(at 121.92 154.94 180)
+		(at 274.32 154.94 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5667,7 +5944,7 @@
 	)
 	(global_label "5V"
 		(shape passive)
-		(at 121.92 157.48 180)
+		(at 274.32 157.48 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5679,7 +5956,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 121.92 160.02 180)
+		(at 274.32 160.02 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5691,7 +5968,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 177.8 152.4 0)
+		(at 330.2 152.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5699,7 +5976,7 @@
 		(dnp no)
 		(uuid "06381245-8159-537a-90de-d0a47344e394")
 		(property "Reference" "J2"
-			(at 177.8 149.86 0)
+			(at 330.2 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5707,7 +5984,7 @@
 			)
 		)
 		(property "Value" "Master rocker"
-			(at 177.8 157.48 0)
+			(at 330.2 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5715,7 +5992,7 @@
 			)
 		)
 		(property "Footprint" "Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical"
-			(at 177.8 152.4 0)
+			(at 330.2 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5724,7 +6001,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 177.8 152.4 0)
+			(at 330.2 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5733,7 +6010,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 177.8 152.4 0)
+			(at 330.2 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5758,7 +6035,7 @@
 	)
 	(global_label "F1_OUT"
 		(shape passive)
-		(at 172.72 152.4 180)
+		(at 325.12 152.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5770,7 +6047,7 @@
 	)
 	(global_label "VBAT_SW"
 		(shape passive)
-		(at 172.72 154.94 180)
+		(at 325.12 154.94 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5782,7 +6059,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 228.6 152.4 0)
+		(at 381 152.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5790,7 +6067,7 @@
 		(dnp no)
 		(uuid "fe3dbc1c-f920-5932-b635-586409ce7667")
 		(property "Reference" "J3"
-			(at 228.6 149.86 0)
+			(at 381 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5798,7 +6075,7 @@
 			)
 		)
 		(property "Value" "Jetson 5V"
-			(at 228.6 157.48 0)
+			(at 381 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5806,7 +6083,7 @@
 			)
 		)
 		(property "Footprint" "Connector_Molex:Molex_Micro-Fit_3.0_43650-0200_1x02_P3.00mm_Horizontal"
-			(at 228.6 152.4 0)
+			(at 381 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5815,7 +6092,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 228.6 152.4 0)
+			(at 381 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5824,7 +6101,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 228.6 152.4 0)
+			(at 381 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5849,7 +6126,7 @@
 	)
 	(global_label "5V"
 		(shape passive)
-		(at 223.52 152.4 180)
+		(at 375.92 152.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5861,7 +6138,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 223.52 154.94 180)
+		(at 375.92 154.94 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5873,7 +6150,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x06")
-		(at 279.4 152.4 0)
+		(at 25.4 215.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5881,7 +6158,7 @@
 		(dnp no)
 		(uuid "716a1440-150b-577a-b353-b27fa00a20ab")
 		(property "Reference" "J4"
-			(at 279.4 144.78 0)
+			(at 25.4 208.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5889,7 +6166,7 @@
 			)
 		)
 		(property "Value" "Left motor"
-			(at 279.4 162.56 0)
+			(at 25.4 226.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5897,7 +6174,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal"
-			(at 279.4 152.4 0)
+			(at 25.4 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5906,7 +6183,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 279.4 152.4 0)
+			(at 25.4 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5915,7 +6192,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 279.4 152.4 0)
+			(at 25.4 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5952,7 +6229,7 @@
 	)
 	(global_label "L_M1"
 		(shape passive)
-		(at 274.32 147.32 180)
+		(at 20.32 210.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5964,7 +6241,7 @@
 	)
 	(global_label "L_M2"
 		(shape passive)
-		(at 274.32 149.86 180)
+		(at 20.32 213.36 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5976,7 +6253,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 274.32 152.4 180)
+		(at 20.32 215.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -5988,7 +6265,7 @@
 	)
 	(global_label "5V"
 		(shape passive)
-		(at 274.32 154.94 180)
+		(at 20.32 218.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6000,7 +6277,7 @@
 	)
 	(global_label "ENC_LA_5V"
 		(shape passive)
-		(at 274.32 157.48 180)
+		(at 20.32 220.98 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6012,7 +6289,7 @@
 	)
 	(global_label "ENC_LB_5V"
 		(shape passive)
-		(at 274.32 160.02 180)
+		(at 20.32 223.52 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6024,7 +6301,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x06")
-		(at 330.2 152.4 0)
+		(at 76.2 215.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6032,7 +6309,7 @@
 		(dnp no)
 		(uuid "6cf4aa38-8894-5fc8-84e6-91a431a75973")
 		(property "Reference" "J5"
-			(at 330.2 144.78 0)
+			(at 76.2 208.28 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6040,7 +6317,7 @@
 			)
 		)
 		(property "Value" "Right motor"
-			(at 330.2 162.56 0)
+			(at 76.2 226.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6048,7 +6325,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal"
-			(at 330.2 152.4 0)
+			(at 76.2 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6057,7 +6334,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 330.2 152.4 0)
+			(at 76.2 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6066,7 +6343,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x06, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 330.2 152.4 0)
+			(at 76.2 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6103,7 +6380,7 @@
 	)
 	(global_label "R_M1"
 		(shape passive)
-		(at 325.12 147.32 180)
+		(at 71.12 210.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6115,7 +6392,7 @@
 	)
 	(global_label "R_M2"
 		(shape passive)
-		(at 325.12 149.86 180)
+		(at 71.12 213.36 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6127,7 +6404,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 325.12 152.4 180)
+		(at 71.12 215.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6139,7 +6416,7 @@
 	)
 	(global_label "5V"
 		(shape passive)
-		(at 325.12 154.94 180)
+		(at 71.12 218.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6151,7 +6428,7 @@
 	)
 	(global_label "ENC_RA_5V"
 		(shape passive)
-		(at 325.12 157.48 180)
+		(at 71.12 220.98 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6163,7 +6440,7 @@
 	)
 	(global_label "ENC_RB_5V"
 		(shape passive)
-		(at 325.12 160.02 180)
+		(at 71.12 223.52 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6175,7 +6452,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x05")
-		(at 381 152.4 0)
+		(at 127 215.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6183,414 +6460,6 @@
 		(dnp no)
 		(uuid "ab58f5fb-781b-5816-999d-76967e1f302d")
 		(property "Reference" "J6"
-			(at 381 144.78 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Cliff 1"
-			(at 381 160.02 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical"
-			(at 381 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 381 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 381 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "6ddec67c-606e-5018-9c42-29de06bcc126")
-		)
-		(pin "2"
-			(uuid "4daa9291-e262-5082-bf2e-6659c018a1ad")
-		)
-		(pin "3"
-			(uuid "7e248bd9-523d-54f1-a80b-679dc64e57e3")
-		)
-		(pin "4"
-			(uuid "4edf34a9-08e1-5c97-9f8f-d347b5ee26f7")
-		)
-		(pin "5"
-			(uuid "514c1c57-19ff-5f78-b3cf-caf9e4509ccd")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "J6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "3V3"
-		(shape passive)
-		(at 375.92 147.32 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "00b0c22b-b7ed-5fa5-a182-57c856eeb012")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 375.92 149.86 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "b649f0dd-2394-51bd-aa1c-c4a69e42f40b")
-	)
-	(global_label "SDA"
-		(shape passive)
-		(at 375.92 152.4 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "2f2c78b3-1bde-5c96-b061-f1772d17a9f8")
-	)
-	(global_label "SCL"
-		(shape passive)
-		(at 375.92 154.94 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "2546be9b-391a-5670-b571-aeb0f2d34635")
-	)
-	(global_label "XSHUT1"
-		(shape passive)
-		(at 375.92 157.48 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ee7147c7-4dfe-5f40-8ae0-e83e434d50bf")
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x05")
-		(at 25.4 215.9 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "02f569df-438d-5007-ae2f-52f72041b8f6")
-		(property "Reference" "J7"
-			(at 25.4 208.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Cliff 2"
-			(at 25.4 223.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical"
-			(at 25.4 215.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 25.4 215.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 25.4 215.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "80ed67f4-7aec-57a3-a832-a180898e6587")
-		)
-		(pin "2"
-			(uuid "cbadb59b-8511-5172-81b6-2f0804b9556b")
-		)
-		(pin "3"
-			(uuid "c2bc73da-dd5f-56c8-ace3-aca52fde130d")
-		)
-		(pin "4"
-			(uuid "d0bea0d8-300c-5306-9278-0580e23591c4")
-		)
-		(pin "5"
-			(uuid "a7b59712-2213-5528-83bc-06c60c31dd0c")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "J7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "3V3"
-		(shape passive)
-		(at 20.32 210.82 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "aab02744-d09b-554a-815d-fcc49b292995")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 20.32 213.36 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "d915df8b-d527-519e-b585-9356d4a9f752")
-	)
-	(global_label "SDA"
-		(shape passive)
-		(at 20.32 215.9 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "1e47f71e-5660-55e6-b06f-247244c33477")
-	)
-	(global_label "SCL"
-		(shape passive)
-		(at 20.32 218.44 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "889538d6-78c5-548a-b8be-93060215b3e4")
-	)
-	(global_label "XSHUT2"
-		(shape passive)
-		(at 20.32 220.98 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "46c3704c-b69e-5b99-aa51-b950e66468a6")
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x05")
-		(at 76.2 215.9 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "b06eeccf-7a2f-56ef-aeed-043928a7ae49")
-		(property "Reference" "J8"
-			(at 76.2 208.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "Cliff 3"
-			(at 76.2 223.52 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical"
-			(at 76.2 215.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 76.2 215.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 76.2 215.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "21a55e55-a499-56a9-97f5-e02c5436f7ac")
-		)
-		(pin "2"
-			(uuid "6727700a-6e3b-5bef-b36a-ecc7067b068a")
-		)
-		(pin "3"
-			(uuid "af60cac1-01e8-59e5-8359-915c28bef95b")
-		)
-		(pin "4"
-			(uuid "c78acf4d-8f7a-531b-ba8a-51ae2f8835e6")
-		)
-		(pin "5"
-			(uuid "01273547-a8cc-59e3-98e2-83cee53403bd")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "J8")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "3V3"
-		(shape passive)
-		(at 71.12 210.82 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "3ec6df04-f413-5c44-8898-fae22a5979ed")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 71.12 213.36 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "306490e4-12fc-59c3-a329-8e0874ef5a9b")
-	)
-	(global_label "SDA"
-		(shape passive)
-		(at 71.12 215.9 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "4d1c28c7-e96f-5d0c-9099-b80086e828a3")
-	)
-	(global_label "SCL"
-		(shape passive)
-		(at 71.12 218.44 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "c9937001-08c9-53c5-ae2b-ab3ac85f8531")
-	)
-	(global_label "XSHUT3"
-		(shape passive)
-		(at 71.12 220.98 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "47d53d2d-2892-55fa-ab75-41c3686de9a7")
-	)
-	(symbol
-		(lib_id "Connector_Generic:Conn_01x05")
-		(at 127 215.9 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "f17a4824-9b66-54a0-8506-7b90e7656e51")
-		(property "Reference" "J9"
 			(at 127 208.28 0)
 			(effects
 				(font
@@ -6598,7 +6467,7 @@
 				)
 			)
 		)
-		(property "Value" "Cliff 4"
+		(property "Value" "Cliff 1"
 			(at 127 223.52 0)
 			(effects
 				(font
@@ -6634,6 +6503,414 @@
 			)
 		)
 		(pin "1"
+			(uuid "6ddec67c-606e-5018-9c42-29de06bcc126")
+		)
+		(pin "2"
+			(uuid "4daa9291-e262-5082-bf2e-6659c018a1ad")
+		)
+		(pin "3"
+			(uuid "7e248bd9-523d-54f1-a80b-679dc64e57e3")
+		)
+		(pin "4"
+			(uuid "4edf34a9-08e1-5c97-9f8f-d347b5ee26f7")
+		)
+		(pin "5"
+			(uuid "514c1c57-19ff-5f78-b3cf-caf9e4509ccd")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "J6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 121.92 210.82 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "00b0c22b-b7ed-5fa5-a182-57c856eeb012")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 121.92 213.36 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b649f0dd-2394-51bd-aa1c-c4a69e42f40b")
+	)
+	(global_label "SDA"
+		(shape passive)
+		(at 121.92 215.9 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "2f2c78b3-1bde-5c96-b061-f1772d17a9f8")
+	)
+	(global_label "SCL"
+		(shape passive)
+		(at 121.92 218.44 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "2546be9b-391a-5670-b571-aeb0f2d34635")
+	)
+	(global_label "XSHUT1"
+		(shape passive)
+		(at 121.92 220.98 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ee7147c7-4dfe-5f40-8ae0-e83e434d50bf")
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x05")
+		(at 177.8 215.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "02f569df-438d-5007-ae2f-52f72041b8f6")
+		(property "Reference" "J7"
+			(at 177.8 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Cliff 2"
+			(at 177.8 223.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical"
+			(at 177.8 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 177.8 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 177.8 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "80ed67f4-7aec-57a3-a832-a180898e6587")
+		)
+		(pin "2"
+			(uuid "cbadb59b-8511-5172-81b6-2f0804b9556b")
+		)
+		(pin "3"
+			(uuid "c2bc73da-dd5f-56c8-ace3-aca52fde130d")
+		)
+		(pin "4"
+			(uuid "d0bea0d8-300c-5306-9278-0580e23591c4")
+		)
+		(pin "5"
+			(uuid "a7b59712-2213-5528-83bc-06c60c31dd0c")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "J7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 172.72 210.82 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "aab02744-d09b-554a-815d-fcc49b292995")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 172.72 213.36 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d915df8b-d527-519e-b585-9356d4a9f752")
+	)
+	(global_label "SDA"
+		(shape passive)
+		(at 172.72 215.9 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1e47f71e-5660-55e6-b06f-247244c33477")
+	)
+	(global_label "SCL"
+		(shape passive)
+		(at 172.72 218.44 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "889538d6-78c5-548a-b8be-93060215b3e4")
+	)
+	(global_label "XSHUT2"
+		(shape passive)
+		(at 172.72 220.98 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "46c3704c-b69e-5b99-aa51-b950e66468a6")
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x05")
+		(at 228.6 215.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b06eeccf-7a2f-56ef-aeed-043928a7ae49")
+		(property "Reference" "J8"
+			(at 228.6 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Cliff 3"
+			(at 228.6 223.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical"
+			(at 228.6 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 228.6 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 228.6 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "21a55e55-a499-56a9-97f5-e02c5436f7ac")
+		)
+		(pin "2"
+			(uuid "6727700a-6e3b-5bef-b36a-ecc7067b068a")
+		)
+		(pin "3"
+			(uuid "af60cac1-01e8-59e5-8359-915c28bef95b")
+		)
+		(pin "4"
+			(uuid "c78acf4d-8f7a-531b-ba8a-51ae2f8835e6")
+		)
+		(pin "5"
+			(uuid "01273547-a8cc-59e3-98e2-83cee53403bd")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "J8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 223.52 210.82 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "3ec6df04-f413-5c44-8898-fae22a5979ed")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 223.52 213.36 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "306490e4-12fc-59c3-a329-8e0874ef5a9b")
+	)
+	(global_label "SDA"
+		(shape passive)
+		(at 223.52 215.9 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "4d1c28c7-e96f-5d0c-9099-b80086e828a3")
+	)
+	(global_label "SCL"
+		(shape passive)
+		(at 223.52 218.44 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "c9937001-08c9-53c5-ae2b-ab3ac85f8531")
+	)
+	(global_label "XSHUT3"
+		(shape passive)
+		(at 223.52 220.98 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "47d53d2d-2892-55fa-ab75-41c3686de9a7")
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x05")
+		(at 279.4 215.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f17a4824-9b66-54a0-8506-7b90e7656e51")
+		(property "Reference" "J9"
+			(at 279.4 208.28 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Cliff 4"
+			(at 279.4 223.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical"
+			(at 279.4 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 279.4 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 279.4 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
 			(uuid "c615d3b9-1184-5084-a3e4-5e2220692e4e")
 		)
 		(pin "2"
@@ -6659,7 +6936,7 @@
 	)
 	(global_label "3V3"
 		(shape passive)
-		(at 121.92 210.82 180)
+		(at 274.32 210.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6671,7 +6948,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 121.92 213.36 180)
+		(at 274.32 213.36 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6683,7 +6960,7 @@
 	)
 	(global_label "SDA"
 		(shape passive)
-		(at 121.92 215.9 180)
+		(at 274.32 215.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6695,7 +6972,7 @@
 	)
 	(global_label "SCL"
 		(shape passive)
-		(at 121.92 218.44 180)
+		(at 274.32 218.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6707,7 +6984,7 @@
 	)
 	(global_label "XSHUT4"
 		(shape passive)
-		(at 121.92 220.98 180)
+		(at 274.32 220.98 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6719,7 +6996,7 @@
 	)
 	(symbol
 		(lib_id "Relay:G5LE-1")
-		(at 177.8 215.9 0)
+		(at 330.2 215.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6727,7 +7004,7 @@
 		(dnp no)
 		(uuid "01e6badc-43ba-56b0-a31d-757cb9541f12")
 		(property "Reference" "K1"
-			(at 189.23 212.09 0)
+			(at 341.63 212.09 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6736,7 +7013,7 @@
 			)
 		)
 		(property "Value" "G5LE-1 DC5"
-			(at 189.23 214.63 0)
+			(at 341.63 214.63 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6745,7 +7022,7 @@
 			)
 		)
 		(property "Footprint" "Relay_THT:Relay_SPDT_Omron-G5LE-1"
-			(at 189.23 217.17 0)
+			(at 341.63 217.17 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6755,7 +7032,7 @@
 			)
 		)
 		(property "Datasheet" "http://www.omron.com/ecb/products/pdf/en-g5le.pdf"
-			(at 177.8 215.9 0)
+			(at 330.2 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6764,7 +7041,7 @@
 			)
 		)
 		(property "Description" "Omron G5LE relay, Miniature Single Pole, SPDT, 10A"
-			(at 177.8 215.9 0)
+			(at 330.2 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6798,7 +7075,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 172.72 208.28 90)
+		(at 325.12 208.28 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6810,7 +7087,7 @@
 	)
 	(global_label "COIL_P"
 		(shape passive)
-		(at 172.72 223.52 270)
+		(at 325.12 223.52 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6821,12 +7098,12 @@
 		(uuid "cfa8fa63-40b1-5e08-95bf-cef5d662b6af")
 	)
 	(no_connect
-		(at 180.34 208.28)
+		(at 332.74 208.28)
 		(uuid "ec33a275-1bc8-5988-af42-4ff20591aa61")
 	)
 	(global_label "F2_OUT"
 		(shape passive)
-		(at 182.88 223.52 270)
+		(at 335.28 223.52 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6838,7 +7115,7 @@
 	)
 	(global_label "VMOT"
 		(shape passive)
-		(at 185.42 208.28 90)
+		(at 337.82 208.28 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6850,7 +7127,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 228.6 215.9 0)
+		(at 381 215.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6858,7 +7135,7 @@
 		(dnp no)
 		(uuid "d30aedc0-caa5-5953-8609-72c18d35e033")
 		(property "Reference" "LED1"
-			(at 228.6 213.36 0)
+			(at 381 213.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6866,7 +7143,7 @@
 			)
 		)
 		(property "Value" "green"
-			(at 228.6 218.44 0)
+			(at 381 218.44 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6874,7 +7151,7 @@
 			)
 		)
 		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
-			(at 228.6 215.9 0)
+			(at 381 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6883,7 +7160,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 228.6 215.9 0)
+			(at 381 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6892,7 +7169,7 @@
 			)
 		)
 		(property "Description" "Light emitting diode"
-			(at 228.6 215.9 0)
+			(at 381 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6917,7 +7194,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 224.79 215.9 180)
+		(at 377.19 215.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6929,7 +7206,7 @@
 	)
 	(global_label "LED1_A"
 		(shape passive)
-		(at 232.41 215.9 0)
+		(at 384.81 215.9 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -6941,7 +7218,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 279.4 215.9 0)
+		(at 25.4 279.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6949,7 +7226,7 @@
 		(dnp no)
 		(uuid "6fba8c87-6a1e-59dd-8f7e-acfa10543ba2")
 		(property "Reference" "LED2"
-			(at 279.4 213.36 0)
+			(at 25.4 276.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6957,7 +7234,7 @@
 			)
 		)
 		(property "Value" "green"
-			(at 279.4 218.44 0)
+			(at 25.4 281.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6965,7 +7242,7 @@
 			)
 		)
 		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
-			(at 279.4 215.9 0)
+			(at 25.4 279.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6974,7 +7251,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 279.4 215.9 0)
+			(at 25.4 279.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6983,7 +7260,7 @@
 			)
 		)
 		(property "Description" "Light emitting diode"
-			(at 279.4 215.9 0)
+			(at 25.4 279.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7008,7 +7285,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 275.59 215.9 180)
+		(at 21.59 279.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7020,7 +7297,7 @@
 	)
 	(global_label "LED2_A"
 		(shape passive)
-		(at 283.21 215.9 0)
+		(at 29.21 279.4 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7032,7 +7309,7 @@
 	)
 	(symbol
 		(lib_id "Device:LED")
-		(at 330.2 215.9 0)
+		(at 76.2 279.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7040,7 +7317,7 @@
 		(dnp no)
 		(uuid "431bd607-970a-5618-97ea-0a3ae037e226")
 		(property "Reference" "LED3"
-			(at 330.2 213.36 0)
+			(at 76.2 276.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7048,7 +7325,7 @@
 			)
 		)
 		(property "Value" "yellow"
-			(at 330.2 218.44 0)
+			(at 76.2 281.94 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7056,7 +7333,7 @@
 			)
 		)
 		(property "Footprint" "LED_SMD:LED_0805_2012Metric"
-			(at 330.2 215.9 0)
+			(at 76.2 279.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7065,7 +7342,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 330.2 215.9 0)
+			(at 76.2 279.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7074,7 +7351,7 @@
 			)
 		)
 		(property "Description" "Light emitting diode"
-			(at 330.2 215.9 0)
+			(at 76.2 279.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7099,7 +7376,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 326.39 215.9 180)
+		(at 72.39 279.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7111,7 +7388,7 @@
 	)
 	(global_label "LED3_A"
 		(shape passive)
-		(at 334.01 215.9 0)
+		(at 80.01 279.4 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7123,7 +7400,7 @@
 	)
 	(symbol
 		(lib_id "Transistor_FET:2N7002")
-		(at 381 215.9 0)
+		(at 127 279.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7131,339 +7408,6 @@
 		(dnp no)
 		(uuid "4aaa01e1-85a7-59d4-a267-3cf6cccc21f1")
 		(property "Reference" "Q1"
-			(at 386.08 213.995 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2N7002"
-			(at 386.08 215.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-			(at 386.08 217.805 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF"
-			(at 386.08 219.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Description" "0.115A Id, 60V Vds, N-Channel MOSFET, SOT-23"
-			(at 381 215.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "5b979f64-a2ef-5933-809a-0b4f02f6498b")
-		)
-		(pin "3"
-			(uuid "4497d232-2b83-563a-b617-46311de4dbdf")
-		)
-		(pin "2"
-			(uuid "1cedae3b-248e-5aea-9389-1f323fea0d46")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "Q1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "ENC_LA_5V"
-		(shape passive)
-		(at 375.92 215.9 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "8a7e85a6-552e-5ea5-9cc9-3f76dc2bd738")
-	)
-	(global_label "ENC_LA_3V3"
-		(shape passive)
-		(at 383.54 210.82 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "a589254e-730f-506a-a36b-e4f9a43b7340")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 383.54 220.98 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "330089b6-600c-519c-a29d-36d5059c6bc1")
-	)
-	(symbol
-		(lib_id "Transistor_FET:2N7002")
-		(at 25.4 279.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "6a16f5a8-fe36-57a1-a7b1-7b5fdc43c565")
-		(property "Reference" "Q2"
-			(at 30.48 277.495 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2N7002"
-			(at 30.48 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-			(at 30.48 281.305 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF"
-			(at 30.48 283.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Description" "0.115A Id, 60V Vds, N-Channel MOSFET, SOT-23"
-			(at 25.4 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "356e42e3-a6d1-5702-974c-421896e5f4d0")
-		)
-		(pin "3"
-			(uuid "d6474140-de8f-57ab-b4ae-2f99e9e0c2ba")
-		)
-		(pin "2"
-			(uuid "994408b5-0e6e-552a-bf7d-8752f804ad25")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "Q2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "ENC_LB_5V"
-		(shape passive)
-		(at 20.32 279.4 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "edd9024b-a578-575b-9f39-e332d91a1565")
-	)
-	(global_label "ENC_LB_3V3"
-		(shape passive)
-		(at 27.94 274.32 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "6b95da55-874e-599d-816e-386b5907402f")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 27.94 284.48 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a94301c9-5535-5343-ba9f-a2caa96cad89")
-	)
-	(symbol
-		(lib_id "Transistor_FET:2N7002")
-		(at 76.2 279.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "f10e01ba-9c3a-51db-8969-134592934a40")
-		(property "Reference" "Q3"
-			(at 81.28 277.495 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "2N7002"
-			(at 81.28 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-			(at 81.28 281.305 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-					(italic yes)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF"
-			(at 81.28 283.21 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-				(hide yes)
-			)
-		)
-		(property "Description" "0.115A Id, 60V Vds, N-Channel MOSFET, SOT-23"
-			(at 76.2 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c3cd3114-5e56-5762-bc13-0d7c838a3fd2")
-		)
-		(pin "3"
-			(uuid "983d07f7-7336-513b-960c-549609b8c693")
-		)
-		(pin "2"
-			(uuid "3a782809-2988-5e9c-a146-695676ae2eef")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "Q3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "ENC_RA_5V"
-		(shape passive)
-		(at 71.12 279.4 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "e4c394d9-8824-557b-ac4c-182aae88f47a")
-	)
-	(global_label "ENC_RA_3V3"
-		(shape passive)
-		(at 78.74 274.32 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "7f6eafe3-9f36-5351-8117-a8748f59c9df")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 78.74 284.48 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "cdb86b1d-f61a-525e-83b3-549404f58757")
-	)
-	(symbol
-		(lib_id "Transistor_FET:2N7002")
-		(at 127 279.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "6d05a110-b0e2-57ed-9eaf-f41fc8ee41d3")
-		(property "Reference" "Q4"
 			(at 132.08 277.495 0)
 			(effects
 				(font
@@ -7512,24 +7456,24 @@
 			)
 		)
 		(pin "1"
-			(uuid "f9608e43-ef24-5c50-80eb-bc92003c4f06")
+			(uuid "5b979f64-a2ef-5933-809a-0b4f02f6498b")
 		)
 		(pin "3"
-			(uuid "fda35970-5c1f-5abc-bb24-50002532eaec")
+			(uuid "4497d232-2b83-563a-b617-46311de4dbdf")
 		)
 		(pin "2"
-			(uuid "daeb4034-9ef8-5571-ad45-5782906d96d4")
+			(uuid "1cedae3b-248e-5aea-9389-1f323fea0d46")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "Q4")
+					(reference "Q1")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "ENC_RB_5V"
+	(global_label "ENC_LA_5V"
 		(shape passive)
 		(at 121.92 279.4 180)
 		(fields_autoplaced yes)
@@ -7539,9 +7483,9 @@
 			)
 			(justify right)
 		)
-		(uuid "5f6d694d-4e6f-565f-9923-3af067a4403c")
+		(uuid "8a7e85a6-552e-5ea5-9cc9-3f76dc2bd738")
 	)
-	(global_label "ENC_RB_3V3"
+	(global_label "ENC_LA_3V3"
 		(shape passive)
 		(at 129.54 274.32 90)
 		(fields_autoplaced yes)
@@ -7551,7 +7495,7 @@
 			)
 			(justify left)
 		)
-		(uuid "5b5af888-b051-5888-a3d9-ff935793109e")
+		(uuid "a589254e-730f-506a-a36b-e4f9a43b7340")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -7563,7 +7507,7 @@
 			)
 			(justify right)
 		)
-		(uuid "95e0be92-6276-54be-9245-8e12dd91a309")
+		(uuid "330089b6-600c-519c-a29d-36d5059c6bc1")
 	)
 	(symbol
 		(lib_id "Transistor_FET:2N7002")
@@ -7573,8 +7517,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "c4f1fa29-0dd3-5176-8c86-338653668d97")
-		(property "Reference" "Q5"
+		(uuid "6a16f5a8-fe36-57a1-a7b1-7b5fdc43c565")
+		(property "Reference" "Q2"
 			(at 182.88 277.495 0)
 			(effects
 				(font
@@ -7623,6 +7567,339 @@
 			)
 		)
 		(pin "1"
+			(uuid "356e42e3-a6d1-5702-974c-421896e5f4d0")
+		)
+		(pin "3"
+			(uuid "d6474140-de8f-57ab-b4ae-2f99e9e0c2ba")
+		)
+		(pin "2"
+			(uuid "994408b5-0e6e-552a-bf7d-8752f804ad25")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "Q2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ENC_LB_5V"
+		(shape passive)
+		(at 172.72 279.4 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "edd9024b-a578-575b-9f39-e332d91a1565")
+	)
+	(global_label "ENC_LB_3V3"
+		(shape passive)
+		(at 180.34 274.32 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6b95da55-874e-599d-816e-386b5907402f")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 180.34 284.48 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "a94301c9-5535-5343-ba9f-a2caa96cad89")
+	)
+	(symbol
+		(lib_id "Transistor_FET:2N7002")
+		(at 228.6 279.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f10e01ba-9c3a-51db-8969-134592934a40")
+		(property "Reference" "Q3"
+			(at 233.68 277.495 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2N7002"
+			(at 233.68 279.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 233.68 281.305 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF"
+			(at 233.68 283.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "0.115A Id, 60V Vds, N-Channel MOSFET, SOT-23"
+			(at 228.6 279.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c3cd3114-5e56-5762-bc13-0d7c838a3fd2")
+		)
+		(pin "3"
+			(uuid "983d07f7-7336-513b-960c-549609b8c693")
+		)
+		(pin "2"
+			(uuid "3a782809-2988-5e9c-a146-695676ae2eef")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "Q3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ENC_RA_5V"
+		(shape passive)
+		(at 223.52 279.4 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "e4c394d9-8824-557b-ac4c-182aae88f47a")
+	)
+	(global_label "ENC_RA_3V3"
+		(shape passive)
+		(at 231.14 274.32 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7f6eafe3-9f36-5351-8117-a8748f59c9df")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 231.14 284.48 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "cdb86b1d-f61a-525e-83b3-549404f58757")
+	)
+	(symbol
+		(lib_id "Transistor_FET:2N7002")
+		(at 279.4 279.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "6d05a110-b0e2-57ed-9eaf-f41fc8ee41d3")
+		(property "Reference" "Q4"
+			(at 284.48 277.495 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2N7002"
+			(at 284.48 279.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 284.48 281.305 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF"
+			(at 284.48 283.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "0.115A Id, 60V Vds, N-Channel MOSFET, SOT-23"
+			(at 279.4 279.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f9608e43-ef24-5c50-80eb-bc92003c4f06")
+		)
+		(pin "3"
+			(uuid "fda35970-5c1f-5abc-bb24-50002532eaec")
+		)
+		(pin "2"
+			(uuid "daeb4034-9ef8-5571-ad45-5782906d96d4")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "Q4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ENC_RB_5V"
+		(shape passive)
+		(at 274.32 279.4 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "5f6d694d-4e6f-565f-9923-3af067a4403c")
+	)
+	(global_label "ENC_RB_3V3"
+		(shape passive)
+		(at 281.94 274.32 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5b5af888-b051-5888-a3d9-ff935793109e")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 281.94 284.48 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "95e0be92-6276-54be-9245-8e12dd91a309")
+	)
+	(symbol
+		(lib_id "Transistor_FET:2N7002")
+		(at 330.2 279.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c4f1fa29-0dd3-5176-8c86-338653668d97")
+		(property "Reference" "Q5"
+			(at 335.28 277.495 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2N7002"
+			(at 335.28 279.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
+			(at 335.28 281.305 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+					(italic yes)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/NDS7002A-D.PDF"
+			(at 335.28 283.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "0.115A Id, 60V Vds, N-Channel MOSFET, SOT-23"
+			(at 330.2 279.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
 			(uuid "9f15a1fb-1125-5c48-bbad-0b9f538e098b")
 		)
 		(pin "3"
@@ -7642,7 +7919,7 @@
 	)
 	(global_label "COIL_P"
 		(shape passive)
-		(at 172.72 279.4 180)
+		(at 325.12 279.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7654,7 +7931,7 @@
 	)
 	(global_label "MOTOR_ON_N"
 		(shape passive)
-		(at 180.34 274.32 90)
+		(at 332.74 274.32 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7666,7 +7943,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 180.34 284.48 270)
+		(at 332.74 284.48 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -7678,7 +7955,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 228.6 279.4 0)
+		(at 381 279.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7686,279 +7963,6 @@
 		(dnp no)
 		(uuid "b7d1a172-4962-5b6d-bf49-38d0bf8ace79")
 		(property "Reference" "R1"
-			(at 230.632 279.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "100k"
-			(at 228.6 279.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
-			(at 226.822 279.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 228.6 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 228.6 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "10c28a84-8c5b-59c4-8c49-c4ca16b0bfe9")
-		)
-		(pin "2"
-			(uuid "864582b5-96a5-5aaf-814d-39cb57fac1b8")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "ENC_LA_5V"
-		(shape passive)
-		(at 228.6 275.59 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "12544676-09de-5045-9fa9-28b49c7147d1")
-	)
-	(global_label "GND"
-		(shape passive)
-		(at 228.6 283.21 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "647fbdd1-2d7c-5431-9acf-ed368d5b5af6")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 279.4 279.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "50771887-b132-580d-b639-dccba5fb91b5")
-		(property "Reference" "R10"
-			(at 281.432 279.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "10k"
-			(at 279.4 279.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
-			(at 277.622 279.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 279.4 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 279.4 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "5dc53b56-2f2a-5f06-9d20-c6731ea95cae")
-		)
-		(pin "2"
-			(uuid "edb5f56e-9ed9-5ea4-b2a9-40a7695f3a74")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R10")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "MOTOR_ON_N"
-		(shape passive)
-		(at 279.4 275.59 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "a27c025f-666e-5d56-b955-373ab111e5c5")
-	)
-	(global_label "3V3"
-		(shape passive)
-		(at 279.4 283.21 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "3ea99543-2f00-5d67-abb3-f79da7975d92")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 330.2 279.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "9a9f7227-c7ac-5dec-944a-7fda01b21dc7")
-		(property "Reference" "R11"
-			(at 332.232 279.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "100k"
-			(at 330.2 279.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
-			(at 328.422 279.4 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 330.2 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 330.2 279.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "10c9067b-266f-5020-8d23-a398bdc24b63")
-		)
-		(pin "2"
-			(uuid "2609d7ec-d373-532c-a61e-452b285a8730")
-		)
-		(instances
-			(project "r1_power_io"
-				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R11")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(global_label "VBAT_SW"
-		(shape passive)
-		(at 330.2 275.59 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "a7797858-c4ca-5537-9fd2-781f26036d0e")
-	)
-	(global_label "VSENSE"
-		(shape passive)
-		(at 330.2 283.21 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "3493c600-43c4-59f9-93c6-4f2c5108eb81")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 381 279.4 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "aaa6a390-2c10-51fa-9871-266e7f434e44")
-		(property "Reference" "R12"
 			(at 383.032 279.4 90)
 			(effects
 				(font
@@ -7966,7 +7970,7 @@
 				)
 			)
 		)
-		(property "Value" "33k"
+		(property "Value" "100k"
 			(at 381 279.4 90)
 			(effects
 				(font
@@ -8002,21 +8006,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "d9ff1170-f023-5f71-a2d8-5cb659b7b8c9")
+			(uuid "10c28a84-8c5b-59c4-8c49-c4ca16b0bfe9")
 		)
 		(pin "2"
-			(uuid "8bbeeab8-0ebc-59b7-a7ff-b7b59a55a7fc")
+			(uuid "864582b5-96a5-5aaf-814d-39cb57fac1b8")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R12")
+					(reference "R1")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "VSENSE"
+	(global_label "ENC_LA_5V"
 		(shape passive)
 		(at 381 275.59 90)
 		(fields_autoplaced yes)
@@ -8026,7 +8030,7 @@
 			)
 			(justify left)
 		)
-		(uuid "febaa76e-dbee-54f9-9994-bc48e6678f71")
+		(uuid "12544676-09de-5045-9fa9-28b49c7147d1")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -8038,7 +8042,7 @@
 			)
 			(justify right)
 		)
-		(uuid "2d8440fb-b260-58a1-90d5-f0fc07870c20")
+		(uuid "647fbdd1-2d7c-5431-9acf-ed368d5b5af6")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8048,8 +8052,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "172126d9-aa3e-52b0-bd3e-d9580f85a571")
-		(property "Reference" "R13"
+		(uuid "50771887-b132-580d-b639-dccba5fb91b5")
+		(property "Reference" "R10"
 			(at 27.432 342.9 90)
 			(effects
 				(font
@@ -8093,21 +8097,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "57141a30-e0f5-5e84-b5e5-8e8e46ef89ab")
+			(uuid "5dc53b56-2f2a-5f06-9d20-c6731ea95cae")
 		)
 		(pin "2"
-			(uuid "0b9fce92-7a5f-5da1-9d8c-4865ec153d12")
+			(uuid "edb5f56e-9ed9-5ea4-b2a9-40a7695f3a74")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R13")
+					(reference "R10")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "L_IN1"
+	(global_label "MOTOR_ON_N"
 		(shape passive)
 		(at 25.4 339.09 90)
 		(fields_autoplaced yes)
@@ -8117,9 +8121,9 @@
 			)
 			(justify left)
 		)
-		(uuid "fa26bfd4-ed63-5bdf-ac2f-5f7a34bc5b81")
+		(uuid "a27c025f-666e-5d56-b955-373ab111e5c5")
 	)
-	(global_label "GND"
+	(global_label "3V3"
 		(shape passive)
 		(at 25.4 346.71 270)
 		(fields_autoplaced yes)
@@ -8129,7 +8133,7 @@
 			)
 			(justify right)
 		)
-		(uuid "bf70aa0f-d7e1-50ac-afe4-31ae09e37d8a")
+		(uuid "3ea99543-2f00-5d67-abb3-f79da7975d92")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8139,8 +8143,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "0d4d7e02-9336-5cc4-b5c9-3a7f27da1ba6")
-		(property "Reference" "R14"
+		(uuid "9a9f7227-c7ac-5dec-944a-7fda01b21dc7")
+		(property "Reference" "R11"
 			(at 78.232 342.9 90)
 			(effects
 				(font
@@ -8148,7 +8152,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "100k"
 			(at 76.2 342.9 90)
 			(effects
 				(font
@@ -8184,21 +8188,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "7a734f68-3afc-59b3-9c8a-58a41a074a81")
+			(uuid "10c9067b-266f-5020-8d23-a398bdc24b63")
 		)
 		(pin "2"
-			(uuid "73aff07e-fe2f-5895-bce0-2e90f9872aa8")
+			(uuid "2609d7ec-d373-532c-a61e-452b285a8730")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R14")
+					(reference "R11")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "L_IN2"
+	(global_label "VBAT_SW"
 		(shape passive)
 		(at 76.2 339.09 90)
 		(fields_autoplaced yes)
@@ -8208,9 +8212,9 @@
 			)
 			(justify left)
 		)
-		(uuid "f065858b-df92-5e50-a53a-6437384e4a7d")
+		(uuid "a7797858-c4ca-5537-9fd2-781f26036d0e")
 	)
-	(global_label "GND"
+	(global_label "VSENSE"
 		(shape passive)
 		(at 76.2 346.71 270)
 		(fields_autoplaced yes)
@@ -8220,7 +8224,7 @@
 			)
 			(justify right)
 		)
-		(uuid "91a485d0-e532-54a7-90da-1c91488c395f")
+		(uuid "3493c600-43c4-59f9-93c6-4f2c5108eb81")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8230,8 +8234,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "2d61010a-5494-56f4-a108-346556b229d3")
-		(property "Reference" "R15"
+		(uuid "aaa6a390-2c10-51fa-9871-266e7f434e44")
+		(property "Reference" "R12"
 			(at 129.032 342.9 90)
 			(effects
 				(font
@@ -8239,7 +8243,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "33k"
 			(at 127 342.9 90)
 			(effects
 				(font
@@ -8275,21 +8279,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "c890407a-2d47-5ffd-81d2-0492a9b8ac86")
+			(uuid "d9ff1170-f023-5f71-a2d8-5cb659b7b8c9")
 		)
 		(pin "2"
-			(uuid "89999194-b73b-5f16-b1c9-85663fdc6038")
+			(uuid "8bbeeab8-0ebc-59b7-a7ff-b7b59a55a7fc")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R15")
+					(reference "R12")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "R_IN1"
+	(global_label "VSENSE"
 		(shape passive)
 		(at 127 339.09 90)
 		(fields_autoplaced yes)
@@ -8299,7 +8303,7 @@
 			)
 			(justify left)
 		)
-		(uuid "bac3f6cc-1feb-504e-940c-6d4fa1142953")
+		(uuid "febaa76e-dbee-54f9-9994-bc48e6678f71")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -8311,7 +8315,7 @@
 			)
 			(justify right)
 		)
-		(uuid "abe6a403-a1e2-5cab-a72a-a48aa5067439")
+		(uuid "2d8440fb-b260-58a1-90d5-f0fc07870c20")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8321,8 +8325,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "f96f0a97-c014-5e23-8f38-39dbdb178714")
-		(property "Reference" "R16"
+		(uuid "172126d9-aa3e-52b0-bd3e-d9580f85a571")
+		(property "Reference" "R13"
 			(at 179.832 342.9 90)
 			(effects
 				(font
@@ -8366,21 +8370,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "50bac140-fb2a-5de8-8ae7-b55134c99410")
+			(uuid "57141a30-e0f5-5e84-b5e5-8e8e46ef89ab")
 		)
 		(pin "2"
-			(uuid "5f2eac4b-4b4c-568b-8e66-9bc6a4ed804e")
+			(uuid "0b9fce92-7a5f-5da1-9d8c-4865ec153d12")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R16")
+					(reference "R13")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "R_IN2"
+	(global_label "L_IN1"
 		(shape passive)
 		(at 177.8 339.09 90)
 		(fields_autoplaced yes)
@@ -8390,7 +8394,7 @@
 			)
 			(justify left)
 		)
-		(uuid "94a43fd3-ec51-52d1-8296-bfe4b10f798c")
+		(uuid "fa26bfd4-ed63-5bdf-ac2f-5f7a34bc5b81")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -8402,7 +8406,7 @@
 			)
 			(justify right)
 		)
-		(uuid "c18f9b5a-30ec-52ba-b17b-bf30534b7047")
+		(uuid "bf70aa0f-d7e1-50ac-afe4-31ae09e37d8a")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8412,8 +8416,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "e16aa968-ef7f-569b-b7bb-ef403a3f61b0")
-		(property "Reference" "R17"
+		(uuid "0d4d7e02-9336-5cc4-b5c9-3a7f27da1ba6")
+		(property "Reference" "R14"
 			(at 230.632 342.9 90)
 			(effects
 				(font
@@ -8421,7 +8425,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "10k"
 			(at 228.6 342.9 90)
 			(effects
 				(font
@@ -8457,21 +8461,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "d894d365-bf19-5fd7-b19d-61db21cc2aec")
+			(uuid "7a734f68-3afc-59b3-9c8a-58a41a074a81")
 		)
 		(pin "2"
-			(uuid "4330c364-70e6-53b3-a1e1-24fed3499b26")
+			(uuid "73aff07e-fe2f-5895-bce0-2e90f9872aa8")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R17")
+					(reference "R14")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "DRV_SLEEP"
+	(global_label "L_IN2"
 		(shape passive)
 		(at 228.6 339.09 90)
 		(fields_autoplaced yes)
@@ -8481,7 +8485,7 @@
 			)
 			(justify left)
 		)
-		(uuid "7f1d9ab3-63ed-5941-9820-4150fc1b71a9")
+		(uuid "f065858b-df92-5e50-a53a-6437384e4a7d")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -8493,7 +8497,7 @@
 			)
 			(justify right)
 		)
-		(uuid "96922f6d-7a85-5a32-a13f-e719ef9100d8")
+		(uuid "91a485d0-e532-54a7-90da-1c91488c395f")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8503,8 +8507,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "23f6c2e2-13bd-5e88-9695-073de10be968")
-		(property "Reference" "R18"
+		(uuid "2d61010a-5494-56f4-a108-346556b229d3")
+		(property "Reference" "R15"
 			(at 281.432 342.9 90)
 			(effects
 				(font
@@ -8548,21 +8552,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "440622e0-8c93-5699-b48b-c3fb9f154ad5")
+			(uuid "c890407a-2d47-5ffd-81d2-0492a9b8ac86")
 		)
 		(pin "2"
-			(uuid "135ed17e-4e97-5648-900c-0f808e1037b2")
+			(uuid "89999194-b73b-5f16-b1c9-85663fdc6038")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R18")
+					(reference "R15")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "DRV_FAULT"
+	(global_label "R_IN1"
 		(shape passive)
 		(at 279.4 339.09 90)
 		(fields_autoplaced yes)
@@ -8572,9 +8576,9 @@
 			)
 			(justify left)
 		)
-		(uuid "164c90fc-e74b-5bdf-aaa8-ce36343df696")
+		(uuid "bac3f6cc-1feb-504e-940c-6d4fa1142953")
 	)
-	(global_label "3V3"
+	(global_label "GND"
 		(shape passive)
 		(at 279.4 346.71 270)
 		(fields_autoplaced yes)
@@ -8584,7 +8588,7 @@
 			)
 			(justify right)
 		)
-		(uuid "cd46470a-5c1a-5189-91c8-dad019e265eb")
+		(uuid "abe6a403-a1e2-5cab-a72a-a48aa5067439")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8594,8 +8598,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "311f2b32-0919-5abd-b8a1-4b455e631371")
-		(property "Reference" "R19"
+		(uuid "f96f0a97-c014-5e23-8f38-39dbdb178714")
+		(property "Reference" "R16"
 			(at 332.232 342.9 90)
 			(effects
 				(font
@@ -8603,7 +8607,7 @@
 				)
 			)
 		)
-		(property "Value" "4.7k"
+		(property "Value" "10k"
 			(at 330.2 342.9 90)
 			(effects
 				(font
@@ -8639,21 +8643,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "c889b4b2-0e9d-5b5f-a79e-4f6139a948df")
+			(uuid "50bac140-fb2a-5de8-8ae7-b55134c99410")
 		)
 		(pin "2"
-			(uuid "b0ab1c28-b133-5633-9e36-82eb5c1dbb63")
+			(uuid "5f2eac4b-4b4c-568b-8e66-9bc6a4ed804e")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R19")
+					(reference "R16")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "SDA"
+	(global_label "R_IN2"
 		(shape passive)
 		(at 330.2 339.09 90)
 		(fields_autoplaced yes)
@@ -8663,9 +8667,9 @@
 			)
 			(justify left)
 		)
-		(uuid "a75fa25b-7fa7-534f-b631-29ca575be899")
+		(uuid "94a43fd3-ec51-52d1-8296-bfe4b10f798c")
 	)
-	(global_label "3V3"
+	(global_label "GND"
 		(shape passive)
 		(at 330.2 346.71 270)
 		(fields_autoplaced yes)
@@ -8675,7 +8679,7 @@
 			)
 			(justify right)
 		)
-		(uuid "cba46652-2fe9-5d62-80e7-8f8a3e6cb13c")
+		(uuid "c18f9b5a-30ec-52ba-b17b-bf30534b7047")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8685,8 +8689,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "b56e3d6d-8afc-51f9-b8d0-b9a48e3b0768")
-		(property "Reference" "R2"
+		(uuid "e16aa968-ef7f-569b-b7bb-ef403a3f61b0")
+		(property "Reference" "R17"
 			(at 383.032 342.9 90)
 			(effects
 				(font
@@ -8694,7 +8698,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "100k"
 			(at 381 342.9 90)
 			(effects
 				(font
@@ -8730,21 +8734,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "dd09463c-3438-528c-bb05-7b48d2658a62")
+			(uuid "d894d365-bf19-5fd7-b19d-61db21cc2aec")
 		)
 		(pin "2"
-			(uuid "f66441ce-4a4a-51cd-811d-26b0664ad1b7")
+			(uuid "4330c364-70e6-53b3-a1e1-24fed3499b26")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R2")
+					(reference "R17")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "ENC_LA_3V3"
+	(global_label "DRV_SLEEP"
 		(shape passive)
 		(at 381 339.09 90)
 		(fields_autoplaced yes)
@@ -8754,9 +8758,9 @@
 			)
 			(justify left)
 		)
-		(uuid "35d20099-0241-53ca-b36e-0332b45d2bce")
+		(uuid "7f1d9ab3-63ed-5941-9820-4150fc1b71a9")
 	)
-	(global_label "3V3"
+	(global_label "GND"
 		(shape passive)
 		(at 381 346.71 270)
 		(fields_autoplaced yes)
@@ -8766,7 +8770,7 @@
 			)
 			(justify right)
 		)
-		(uuid "d85bdcdb-1830-5c48-88e2-93395d7e61fc")
+		(uuid "96922f6d-7a85-5a32-a13f-e719ef9100d8")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8776,8 +8780,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "c540c375-0561-58e1-be5b-d2b51eafd0bd")
-		(property "Reference" "R20"
+		(uuid "23f6c2e2-13bd-5e88-9695-073de10be968")
+		(property "Reference" "R18"
 			(at 27.432 406.4 90)
 			(effects
 				(font
@@ -8785,7 +8789,7 @@
 				)
 			)
 		)
-		(property "Value" "4.7k"
+		(property "Value" "10k"
 			(at 25.4 406.4 90)
 			(effects
 				(font
@@ -8821,21 +8825,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "50f992be-efce-5965-98b4-7a9dd3ed10dd")
+			(uuid "440622e0-8c93-5699-b48b-c3fb9f154ad5")
 		)
 		(pin "2"
-			(uuid "f4b02430-7cb5-5856-8896-773fce59387b")
+			(uuid "135ed17e-4e97-5648-900c-0f808e1037b2")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R20")
+					(reference "R18")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "SCL"
+	(global_label "DRV_FAULT"
 		(shape passive)
 		(at 25.4 402.59 90)
 		(fields_autoplaced yes)
@@ -8845,7 +8849,7 @@
 			)
 			(justify left)
 		)
-		(uuid "0bd49a2f-748e-50ad-8270-078dd81cdf7c")
+		(uuid "164c90fc-e74b-5bdf-aaa8-ce36343df696")
 	)
 	(global_label "3V3"
 		(shape passive)
@@ -8857,7 +8861,7 @@
 			)
 			(justify right)
 		)
-		(uuid "fabeacf0-44ba-508a-b348-5efec50f8442")
+		(uuid "cd46470a-5c1a-5189-91c8-dad019e265eb")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8867,8 +8871,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "ec6e189c-7185-53c5-99a9-2da7d11c1853")
-		(property "Reference" "R21"
+		(uuid "311f2b32-0919-5abd-b8a1-4b455e631371")
+		(property "Reference" "R19"
 			(at 78.232 406.4 90)
 			(effects
 				(font
@@ -8876,7 +8880,7 @@
 				)
 			)
 		)
-		(property "Value" "3.3k"
+		(property "Value" "10k"
 			(at 76.2 406.4 90)
 			(effects
 				(font
@@ -8912,21 +8916,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "876891d7-fa3a-5d2b-ae03-7a3b796675fe")
+			(uuid "c889b4b2-0e9d-5b5f-a79e-4f6139a948df")
 		)
 		(pin "2"
-			(uuid "fb49d4b2-d40c-5b78-bee9-a1856ca4f053")
+			(uuid "b0ab1c28-b133-5633-9e36-82eb5c1dbb63")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R21")
+					(reference "R19")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "VBAT_SW"
+	(global_label "SDA"
 		(shape passive)
 		(at 76.2 402.59 90)
 		(fields_autoplaced yes)
@@ -8936,9 +8940,9 @@
 			)
 			(justify left)
 		)
-		(uuid "60dfc4a0-4846-5719-8273-3a6001d3139d")
+		(uuid "a75fa25b-7fa7-534f-b631-29ca575be899")
 	)
-	(global_label "LED1_A"
+	(global_label "3V3"
 		(shape passive)
 		(at 76.2 410.21 270)
 		(fields_autoplaced yes)
@@ -8948,7 +8952,7 @@
 			)
 			(justify right)
 		)
-		(uuid "0b0347ed-e787-5ca7-bccb-f06a5f3643b0")
+		(uuid "cba46652-2fe9-5d62-80e7-8f8a3e6cb13c")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -8958,8 +8962,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "ea4e243a-81c8-5864-acc2-9100015b2383")
-		(property "Reference" "R22"
+		(uuid "b56e3d6d-8afc-51f9-b8d0-b9a48e3b0768")
+		(property "Reference" "R2"
 			(at 129.032 406.4 90)
 			(effects
 				(font
@@ -8967,7 +8971,7 @@
 				)
 			)
 		)
-		(property "Value" "1k"
+		(property "Value" "10k"
 			(at 127 406.4 90)
 			(effects
 				(font
@@ -9003,21 +9007,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "b3040f7d-c6a2-5e42-865e-07f48f342fa5")
+			(uuid "dd09463c-3438-528c-bb05-7b48d2658a62")
 		)
 		(pin "2"
-			(uuid "edbfcc74-1aa2-5356-8c83-f8892886fea1")
+			(uuid "f66441ce-4a4a-51cd-811d-26b0664ad1b7")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R22")
+					(reference "R2")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "5V"
+	(global_label "ENC_LA_3V3"
 		(shape passive)
 		(at 127 402.59 90)
 		(fields_autoplaced yes)
@@ -9027,9 +9031,9 @@
 			)
 			(justify left)
 		)
-		(uuid "9526ab69-1f90-5e37-8f12-9bfe4ed8f473")
+		(uuid "35d20099-0241-53ca-b36e-0332b45d2bce")
 	)
-	(global_label "LED2_A"
+	(global_label "3V3"
 		(shape passive)
 		(at 127 410.21 270)
 		(fields_autoplaced yes)
@@ -9039,7 +9043,7 @@
 			)
 			(justify right)
 		)
-		(uuid "ee57ac9e-f5b1-564d-8384-eda4ba813ff7")
+		(uuid "d85bdcdb-1830-5c48-88e2-93395d7e61fc")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -9049,8 +9053,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "ca80e5e4-c3e5-53ed-9653-c4926c465690")
-		(property "Reference" "R23"
+		(uuid "c540c375-0561-58e1-be5b-d2b51eafd0bd")
+		(property "Reference" "R20"
 			(at 179.832 406.4 90)
 			(effects
 				(font
@@ -9058,7 +9062,7 @@
 				)
 			)
 		)
-		(property "Value" "3.3k"
+		(property "Value" "10k"
 			(at 177.8 406.4 90)
 			(effects
 				(font
@@ -9094,21 +9098,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "32b0a2f9-2e03-5a50-8907-371d0496e6e7")
+			(uuid "50f992be-efce-5965-98b4-7a9dd3ed10dd")
 		)
 		(pin "2"
-			(uuid "9a63fa30-aa11-5cbb-ac4a-72f3badf13af")
+			(uuid "f4b02430-7cb5-5856-8896-773fce59387b")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R23")
+					(reference "R20")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "VMOT"
+	(global_label "SCL"
 		(shape passive)
 		(at 177.8 402.59 90)
 		(fields_autoplaced yes)
@@ -9118,9 +9122,9 @@
 			)
 			(justify left)
 		)
-		(uuid "b4d80a7c-fa22-5522-b2a5-758a1b4877e0")
+		(uuid "0bd49a2f-748e-50ad-8270-078dd81cdf7c")
 	)
-	(global_label "LED3_A"
+	(global_label "3V3"
 		(shape passive)
 		(at 177.8 410.21 270)
 		(fields_autoplaced yes)
@@ -9130,7 +9134,7 @@
 			)
 			(justify right)
 		)
-		(uuid "9180811a-3749-5c62-bd56-c5f0abf3bcfb")
+		(uuid "fabeacf0-44ba-508a-b348-5efec50f8442")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -9140,8 +9144,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "a5937496-e248-5897-abcb-383f3124ed65")
-		(property "Reference" "R3"
+		(uuid "ec6e189c-7185-53c5-99a9-2da7d11c1853")
+		(property "Reference" "R21"
 			(at 230.632 406.4 90)
 			(effects
 				(font
@@ -9149,7 +9153,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "3.3k"
 			(at 228.6 406.4 90)
 			(effects
 				(font
@@ -9185,21 +9189,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "6642bc17-c43f-5bbc-a0f4-cfa55666ba5d")
+			(uuid "876891d7-fa3a-5d2b-ae03-7a3b796675fe")
 		)
 		(pin "2"
-			(uuid "6e6b9f8b-7377-55b4-9aea-d370a31056c6")
+			(uuid "fb49d4b2-d40c-5b78-bee9-a1856ca4f053")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R3")
+					(reference "R21")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "ENC_LB_5V"
+	(global_label "VBAT_SW"
 		(shape passive)
 		(at 228.6 402.59 90)
 		(fields_autoplaced yes)
@@ -9209,9 +9213,9 @@
 			)
 			(justify left)
 		)
-		(uuid "0c73aace-5471-5f8d-b03f-b11aca4e8c79")
+		(uuid "60dfc4a0-4846-5719-8273-3a6001d3139d")
 	)
-	(global_label "GND"
+	(global_label "LED1_A"
 		(shape passive)
 		(at 228.6 410.21 270)
 		(fields_autoplaced yes)
@@ -9221,7 +9225,7 @@
 			)
 			(justify right)
 		)
-		(uuid "ef37dc89-ba72-5d7b-a057-7f1851d4f22a")
+		(uuid "0b0347ed-e787-5ca7-bccb-f06a5f3643b0")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -9231,8 +9235,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "8c99bcaf-ea7a-54d8-8ad2-6efa0fd56168")
-		(property "Reference" "R4"
+		(uuid "ea4e243a-81c8-5864-acc2-9100015b2383")
+		(property "Reference" "R22"
 			(at 281.432 406.4 90)
 			(effects
 				(font
@@ -9240,7 +9244,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "1k"
 			(at 279.4 406.4 90)
 			(effects
 				(font
@@ -9276,21 +9280,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "58b39f00-da22-50f8-bb72-6d6aba7ea127")
+			(uuid "b3040f7d-c6a2-5e42-865e-07f48f342fa5")
 		)
 		(pin "2"
-			(uuid "d99c629e-0b8e-57bd-8e00-cdd85e97b016")
+			(uuid "edbfcc74-1aa2-5356-8c83-f8892886fea1")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R4")
+					(reference "R22")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "ENC_LB_3V3"
+	(global_label "5V"
 		(shape passive)
 		(at 279.4 402.59 90)
 		(fields_autoplaced yes)
@@ -9300,9 +9304,9 @@
 			)
 			(justify left)
 		)
-		(uuid "61fe0156-8b7c-5ebf-a7f3-bcd1f512529f")
+		(uuid "9526ab69-1f90-5e37-8f12-9bfe4ed8f473")
 	)
-	(global_label "3V3"
+	(global_label "LED2_A"
 		(shape passive)
 		(at 279.4 410.21 270)
 		(fields_autoplaced yes)
@@ -9312,7 +9316,7 @@
 			)
 			(justify right)
 		)
-		(uuid "d3244cd4-1f89-5df4-bc9c-8597722129cc")
+		(uuid "ee57ac9e-f5b1-564d-8384-eda4ba813ff7")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -9322,8 +9326,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "81d81422-746e-583d-aa74-b52016b7f0e1")
-		(property "Reference" "R5"
+		(uuid "ca80e5e4-c3e5-53ed-9653-c4926c465690")
+		(property "Reference" "R23"
 			(at 332.232 406.4 90)
 			(effects
 				(font
@@ -9331,7 +9335,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "3.3k"
 			(at 330.2 406.4 90)
 			(effects
 				(font
@@ -9367,21 +9371,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "965e351b-8603-56f9-9fe7-ec6213eecee8")
+			(uuid "32b0a2f9-2e03-5a50-8907-371d0496e6e7")
 		)
 		(pin "2"
-			(uuid "16c49cb0-f50e-54d4-9af6-3e79e8381481")
+			(uuid "9a63fa30-aa11-5cbb-ac4a-72f3badf13af")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R5")
+					(reference "R23")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "ENC_RA_5V"
+	(global_label "VMOT"
 		(shape passive)
 		(at 330.2 402.59 90)
 		(fields_autoplaced yes)
@@ -9391,9 +9395,9 @@
 			)
 			(justify left)
 		)
-		(uuid "8f3f4ab4-a305-5e6c-98e9-58646eefd149")
+		(uuid "b4d80a7c-fa22-5522-b2a5-758a1b4877e0")
 	)
-	(global_label "GND"
+	(global_label "LED3_A"
 		(shape passive)
 		(at 330.2 410.21 270)
 		(fields_autoplaced yes)
@@ -9403,7 +9407,7 @@
 			)
 			(justify right)
 		)
-		(uuid "7b3b6412-eee4-5ed8-92cf-9fb5184ee4fd")
+		(uuid "9180811a-3749-5c62-bd56-c5f0abf3bcfb")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -9413,8 +9417,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "e72f6f83-16cc-58e9-b7b9-b7e2aac0a764")
-		(property "Reference" "R6"
+		(uuid "11d98320-a13d-5feb-8c50-bac2ccf3181f")
+		(property "Reference" "R24"
 			(at 383.032 406.4 90)
 			(effects
 				(font
@@ -9422,7 +9426,7 @@
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "4.7k"
 			(at 381 406.4 90)
 			(effects
 				(font
@@ -9458,21 +9462,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "e5899754-b385-5e97-aadf-571021e2fea6")
+			(uuid "e3a31297-5b51-5de3-a82c-6d535d27a086")
 		)
 		(pin "2"
-			(uuid "70066b2d-15cd-5438-90a5-d2759e727752")
+			(uuid "b0183550-d8d6-5fd3-a6c6-313ae7f035b3")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R6")
+					(reference "R24")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "ENC_RA_3V3"
+	(global_label "L_CS"
 		(shape passive)
 		(at 381 402.59 90)
 		(fields_autoplaced yes)
@@ -9482,9 +9486,9 @@
 			)
 			(justify left)
 		)
-		(uuid "5dfc9668-224d-506a-9480-ed1b62034044")
+		(uuid "02242c2f-f9f9-5c69-a585-077b81d77d9a")
 	)
-	(global_label "3V3"
+	(global_label "L_CS_ADC"
 		(shape passive)
 		(at 381 410.21 270)
 		(fields_autoplaced yes)
@@ -9494,7 +9498,7 @@
 			)
 			(justify right)
 		)
-		(uuid "1f1e7dcb-e677-59ba-b1f7-201712d33bfb")
+		(uuid "dad4f2a9-1148-518c-a279-f6170850d2eb")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -9504,8 +9508,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "a942984f-ad6c-5a0b-b514-8e982c74fcdb")
-		(property "Reference" "R7"
+		(uuid "2cada535-5bfb-5a04-b35a-764629643453")
+		(property "Reference" "R25"
 			(at 27.432 469.9 90)
 			(effects
 				(font
@@ -9513,7 +9517,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "4.7k"
 			(at 25.4 469.9 90)
 			(effects
 				(font
@@ -9549,21 +9553,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "412e54de-cce7-56ca-8d08-b7904f654cf9")
+			(uuid "be6d20a7-990f-5391-a4c2-acecdbb9416a")
 		)
 		(pin "2"
-			(uuid "a373b026-9bb7-5862-8e87-b825471360ac")
+			(uuid "fca8ccc5-3f1c-52b0-aea3-72e46ecbd727")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R7")
+					(reference "R25")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "ENC_RB_5V"
+	(global_label "R_CS"
 		(shape passive)
 		(at 25.4 466.09 90)
 		(fields_autoplaced yes)
@@ -9573,9 +9577,9 @@
 			)
 			(justify left)
 		)
-		(uuid "afc4363e-b8c1-5914-a7f0-db67793e8036")
+		(uuid "d4a381d2-4ca9-5572-8aab-e79cd30a8688")
 	)
-	(global_label "GND"
+	(global_label "R_CS_ADC"
 		(shape passive)
 		(at 25.4 473.71 270)
 		(fields_autoplaced yes)
@@ -9585,7 +9589,7 @@
 			)
 			(justify right)
 		)
-		(uuid "eb5beef6-613d-56fa-924e-88065f8668f0")
+		(uuid "26ece1eb-7d2e-5d69-86aa-a8d4aceb7a3e")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -9595,8 +9599,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "9959b379-6484-52f9-8c9f-517924548fef")
-		(property "Reference" "R8"
+		(uuid "9bdc8dbe-835a-5426-81a9-f5414a18ae5a")
+		(property "Reference" "R26"
 			(at 78.232 469.9 90)
 			(effects
 				(font
@@ -9640,21 +9644,21 @@
 			)
 		)
 		(pin "1"
-			(uuid "feb348af-2b10-5786-807f-57ea65c426c9")
+			(uuid "79f08e5e-a344-5fc8-bce1-fd43c93af78e")
 		)
 		(pin "2"
-			(uuid "26328c5f-d02a-5bc7-a009-bbef548fec62")
+			(uuid "0d408280-5767-50b3-89b9-6912d82c1f5a")
 		)
 		(instances
 			(project "r1_power_io"
 				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
-					(reference "R8")
+					(reference "R26")
 					(unit 1)
 				)
 			)
 		)
 	)
-	(global_label "ENC_RB_3V3"
+	(global_label "ARM"
 		(shape passive)
 		(at 76.2 466.09 90)
 		(fields_autoplaced yes)
@@ -9664,7 +9668,7 @@
 			)
 			(justify left)
 		)
-		(uuid "2ef26e70-d36f-5129-8866-420d175e8fef")
+		(uuid "7c35e22b-d9a2-5ce0-a2dd-dcadf480df32")
 	)
 	(global_label "3V3"
 		(shape passive)
@@ -9676,7 +9680,7 @@
 			)
 			(justify right)
 		)
-		(uuid "ab1612a4-c464-5098-b22c-1250fe3af884")
+		(uuid "444cf17f-6c09-53e4-856f-b5020d3ebf9c")
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -9686,8 +9690,8 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "093aadd2-28c5-5545-a7ae-83143ffc9665")
-		(property "Reference" "R9"
+		(uuid "a5937496-e248-5897-abcb-383f3124ed65")
+		(property "Reference" "R3"
 			(at 129.032 469.9 90)
 			(effects
 				(font
@@ -9731,6 +9735,552 @@
 			)
 		)
 		(pin "1"
+			(uuid "6642bc17-c43f-5bbc-a0f4-cfa55666ba5d")
+		)
+		(pin "2"
+			(uuid "6e6b9f8b-7377-55b4-9aea-d370a31056c6")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "R3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ENC_LB_5V"
+		(shape passive)
+		(at 127 466.09 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "0c73aace-5471-5f8d-b03f-b11aca4e8c79")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 127 473.71 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ef37dc89-ba72-5d7b-a057-7f1851d4f22a")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 177.8 469.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8c99bcaf-ea7a-54d8-8ad2-6efa0fd56168")
+		(property "Reference" "R4"
+			(at 179.832 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 177.8 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 176.022 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 177.8 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 177.8 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "58b39f00-da22-50f8-bb72-6d6aba7ea127")
+		)
+		(pin "2"
+			(uuid "d99c629e-0b8e-57bd-8e00-cdd85e97b016")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "R4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ENC_LB_3V3"
+		(shape passive)
+		(at 177.8 466.09 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "61fe0156-8b7c-5ebf-a7f3-bcd1f512529f")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 177.8 473.71 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "d3244cd4-1f89-5df4-bc9c-8597722129cc")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 228.6 469.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "81d81422-746e-583d-aa74-b52016b7f0e1")
+		(property "Reference" "R5"
+			(at 230.632 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 228.6 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 226.822 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 228.6 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 228.6 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "965e351b-8603-56f9-9fe7-ec6213eecee8")
+		)
+		(pin "2"
+			(uuid "16c49cb0-f50e-54d4-9af6-3e79e8381481")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "R5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ENC_RA_5V"
+		(shape passive)
+		(at 228.6 466.09 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8f3f4ab4-a305-5e6c-98e9-58646eefd149")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 228.6 473.71 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "7b3b6412-eee4-5ed8-92cf-9fb5184ee4fd")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 279.4 469.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e72f6f83-16cc-58e9-b7b9-b7e2aac0a764")
+		(property "Reference" "R6"
+			(at 281.432 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 279.4 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 277.622 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 279.4 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 279.4 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e5899754-b385-5e97-aadf-571021e2fea6")
+		)
+		(pin "2"
+			(uuid "70066b2d-15cd-5438-90a5-d2759e727752")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "R6")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ENC_RA_3V3"
+		(shape passive)
+		(at 279.4 466.09 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "5dfc9668-224d-506a-9480-ed1b62034044")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 279.4 473.71 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1f1e7dcb-e677-59ba-b1f7-201712d33bfb")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 330.2 469.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a942984f-ad6c-5a0b-b514-8e982c74fcdb")
+		(property "Reference" "R7"
+			(at 332.232 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 330.2 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 328.422 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 330.2 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 330.2 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "412e54de-cce7-56ca-8d08-b7904f654cf9")
+		)
+		(pin "2"
+			(uuid "a373b026-9bb7-5862-8e87-b825471360ac")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "R7")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ENC_RB_5V"
+		(shape passive)
+		(at 330.2 466.09 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "afc4363e-b8c1-5914-a7f0-db67793e8036")
+	)
+	(global_label "GND"
+		(shape passive)
+		(at 330.2 473.71 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "eb5beef6-613d-56fa-924e-88065f8668f0")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 381 469.9 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "9959b379-6484-52f9-8c9f-517924548fef")
+		(property "Reference" "R8"
+			(at 383.032 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "10k"
+			(at 381 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 379.222 469.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 381 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 381 469.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "feb348af-2b10-5786-807f-57ea65c426c9")
+		)
+		(pin "2"
+			(uuid "26328c5f-d02a-5bc7-a009-bbef548fec62")
+		)
+		(instances
+			(project "r1_power_io"
+				(path "/cd4189dc-9d69-5f9b-b9f2-fa73633a9352"
+					(reference "R8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "ENC_RB_3V3"
+		(shape passive)
+		(at 381 466.09 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2ef26e70-d36f-5129-8866-420d175e8fef")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 381 473.71 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "ab1612a4-c464-5098-b22c-1250fe3af884")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 25.4 533.4 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "093aadd2-28c5-5545-a7ae-83143ffc9665")
+		(property "Reference" "R9"
+			(at 27.432 533.4 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100k"
+			(at 25.4 533.4 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 23.622 533.4 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 25.4 533.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 25.4 533.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
 			(uuid "1e5f8b69-7fa9-59f7-a9a4-edb8e51c3d24")
 		)
 		(pin "2"
@@ -9747,7 +10297,7 @@
 	)
 	(global_label "COIL_P"
 		(shape passive)
-		(at 127 466.09 90)
+		(at 25.4 529.59 90)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9759,7 +10309,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 127 473.71 270)
+		(at 25.4 537.21 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9771,7 +10321,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 177.8 469.9 0)
+		(at 76.2 533.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -9779,7 +10329,7 @@
 		(dnp no)
 		(uuid "c769a8e4-6027-532c-8041-cfe02492bd18")
 		(property "Reference" "TP1"
-			(at 177.8 463.042 0)
+			(at 76.2 526.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9787,7 +10337,7 @@
 			)
 		)
 		(property "Value" "VBAT_SW"
-			(at 177.8 464.82 0)
+			(at 76.2 528.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9795,7 +10345,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D2.0mm"
-			(at 182.88 469.9 0)
+			(at 81.28 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9804,7 +10354,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 182.88 469.9 0)
+			(at 81.28 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9813,7 +10363,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 177.8 469.9 0)
+			(at 76.2 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9835,7 +10385,7 @@
 	)
 	(global_label "VBAT_SW"
 		(shape passive)
-		(at 177.8 469.9 270)
+		(at 76.2 533.4 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9847,7 +10397,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 228.6 469.9 0)
+		(at 127 533.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -9855,7 +10405,7 @@
 		(dnp no)
 		(uuid "f58a2e5c-797d-54fc-82e9-6148710c9bb9")
 		(property "Reference" "TP2"
-			(at 228.6 463.042 0)
+			(at 127 526.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9863,7 +10413,7 @@
 			)
 		)
 		(property "Value" "VMOT"
-			(at 228.6 464.82 0)
+			(at 127 528.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9871,7 +10421,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D2.0mm"
-			(at 233.68 469.9 0)
+			(at 132.08 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9880,7 +10430,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 233.68 469.9 0)
+			(at 132.08 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9889,7 +10439,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 228.6 469.9 0)
+			(at 127 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9911,7 +10461,7 @@
 	)
 	(global_label "VMOT"
 		(shape passive)
-		(at 228.6 469.9 270)
+		(at 127 533.4 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9923,7 +10473,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 279.4 469.9 0)
+		(at 177.8 533.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -9931,7 +10481,7 @@
 		(dnp no)
 		(uuid "3c49c27e-042d-5ea2-99e5-53dca2432d83")
 		(property "Reference" "TP3"
-			(at 279.4 463.042 0)
+			(at 177.8 526.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9939,7 +10489,7 @@
 			)
 		)
 		(property "Value" "5V"
-			(at 279.4 464.82 0)
+			(at 177.8 528.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9947,7 +10497,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D2.0mm"
-			(at 284.48 469.9 0)
+			(at 182.88 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9956,7 +10506,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 284.48 469.9 0)
+			(at 182.88 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9965,7 +10515,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 279.4 469.9 0)
+			(at 177.8 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9987,7 +10537,7 @@
 	)
 	(global_label "5V"
 		(shape passive)
-		(at 279.4 469.9 270)
+		(at 177.8 533.4 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9999,7 +10549,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 330.2 469.9 0)
+		(at 228.6 533.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -10007,7 +10557,7 @@
 		(dnp no)
 		(uuid "3227c6e3-cf33-5972-b7e8-f5484e07d319")
 		(property "Reference" "TP4"
-			(at 330.2 463.042 0)
+			(at 228.6 526.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10015,7 +10565,7 @@
 			)
 		)
 		(property "Value" "3V3"
-			(at 330.2 464.82 0)
+			(at 228.6 528.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10023,7 +10573,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D2.0mm"
-			(at 335.28 469.9 0)
+			(at 233.68 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10032,7 +10582,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 335.28 469.9 0)
+			(at 233.68 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10041,7 +10591,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 330.2 469.9 0)
+			(at 228.6 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10063,7 +10613,7 @@
 	)
 	(global_label "3V3"
 		(shape passive)
-		(at 330.2 469.9 270)
+		(at 228.6 533.4 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10075,7 +10625,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 381 469.9 0)
+		(at 279.4 533.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -10083,7 +10633,7 @@
 		(dnp no)
 		(uuid "1703793b-1c9c-518b-be95-2c9fe09f58fa")
 		(property "Reference" "TP5"
-			(at 381 463.042 0)
+			(at 279.4 526.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10091,7 +10641,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 381 464.82 0)
+			(at 279.4 528.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10099,7 +10649,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D2.0mm"
-			(at 386.08 469.9 0)
+			(at 284.48 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10108,7 +10658,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 386.08 469.9 0)
+			(at 284.48 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10117,7 +10667,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 381 469.9 0)
+			(at 279.4 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10139,7 +10689,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 381 469.9 270)
+		(at 279.4 533.4 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10151,7 +10701,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x20")
-		(at 25.4 533.4 0)
+		(at 330.2 533.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10159,7 +10709,7 @@
 		(dnp no)
 		(uuid "4b505a22-c97c-538f-98af-a0646175599c")
 		(property "Reference" "U1A"
-			(at 25.4 508 0)
+			(at 330.2 508 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10167,7 +10717,7 @@
 			)
 		)
 		(property "Value" "Pico left row"
-			(at 25.4 561.34 0)
+			(at 330.2 561.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10175,7 +10725,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x20_P2.54mm_Vertical"
-			(at 25.4 533.4 0)
+			(at 330.2 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10184,7 +10734,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 25.4 533.4 0)
+			(at 330.2 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10193,7 +10743,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x20, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 25.4 533.4 0)
+			(at 330.2 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10272,7 +10822,7 @@
 	)
 	(global_label "XSHUT1"
 		(shape passive)
-		(at 20.32 510.54 180)
+		(at 325.12 510.54 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10284,7 +10834,7 @@
 	)
 	(global_label "ENC_LA_3V3"
 		(shape passive)
-		(at 20.32 513.08 180)
+		(at 325.12 513.08 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10296,7 +10846,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 20.32 515.62 180)
+		(at 325.12 515.62 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10308,7 +10858,7 @@
 	)
 	(global_label "SDA"
 		(shape passive)
-		(at 20.32 518.16 180)
+		(at 325.12 518.16 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10320,7 +10870,7 @@
 	)
 	(global_label "SCL"
 		(shape passive)
-		(at 20.32 520.7 180)
+		(at 325.12 520.7 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10332,7 +10882,7 @@
 	)
 	(global_label "ENC_LB_3V3"
 		(shape passive)
-		(at 20.32 523.24 180)
+		(at 325.12 523.24 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10344,7 +10894,7 @@
 	)
 	(global_label "XSHUT3"
 		(shape passive)
-		(at 20.32 525.78 180)
+		(at 325.12 525.78 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10356,7 +10906,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 20.32 528.32 180)
+		(at 325.12 528.32 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10368,7 +10918,7 @@
 	)
 	(global_label "BUMP_L"
 		(shape passive)
-		(at 20.32 530.86 180)
+		(at 325.12 530.86 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10380,7 +10930,7 @@
 	)
 	(global_label "DRV_SLEEP"
 		(shape passive)
-		(at 20.32 533.4 180)
+		(at 325.12 533.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10392,7 +10942,7 @@
 	)
 	(global_label "DRV_FAULT"
 		(shape passive)
-		(at 20.32 535.94 180)
+		(at 325.12 535.94 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10404,7 +10954,7 @@
 	)
 	(global_label "MOTOR_ON_N"
 		(shape passive)
-		(at 20.32 538.48 180)
+		(at 325.12 538.48 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10416,7 +10966,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 20.32 541.02 180)
+		(at 325.12 541.02 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10428,7 +10978,7 @@
 	)
 	(global_label "XSHUT2"
 		(shape passive)
-		(at 20.32 543.56 180)
+		(at 325.12 543.56 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10440,7 +10990,7 @@
 	)
 	(global_label "ENC_RA_3V3"
 		(shape passive)
-		(at 20.32 546.1 180)
+		(at 325.12 546.1 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10452,7 +11002,7 @@
 	)
 	(global_label "ENC_RB_3V3"
 		(shape passive)
-		(at 20.32 548.64 180)
+		(at 325.12 548.64 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10464,7 +11014,7 @@
 	)
 	(global_label "XSHUT4"
 		(shape passive)
-		(at 20.32 551.18 180)
+		(at 325.12 551.18 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10476,7 +11026,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 20.32 553.72 180)
+		(at 325.12 553.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10488,7 +11038,7 @@
 	)
 	(global_label "ARM"
 		(shape passive)
-		(at 20.32 556.26 180)
+		(at 325.12 556.26 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10500,7 +11050,7 @@
 	)
 	(global_label "BUMP_R"
 		(shape passive)
-		(at 20.32 558.8 180)
+		(at 325.12 558.8 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10512,7 +11062,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x20")
-		(at 76.2 533.4 0)
+		(at 381 533.4 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10520,7 +11070,7 @@
 		(dnp no)
 		(uuid "ab06347a-6624-5dd8-b3af-b536c8b98a66")
 		(property "Reference" "U1B"
-			(at 76.2 508 0)
+			(at 381 508 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10528,7 +11078,7 @@
 			)
 		)
 		(property "Value" "Pico right row"
-			(at 76.2 561.34 0)
+			(at 381 561.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10536,7 +11086,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x20_P2.54mm_Vertical"
-			(at 76.2 533.4 0)
+			(at 381 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10545,7 +11095,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 76.2 533.4 0)
+			(at 381 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10554,7 +11104,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x20, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 76.2 533.4 0)
+			(at 381 533.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10632,16 +11182,24 @@
 		)
 	)
 	(no_connect
-		(at 71.12 510.54)
+		(at 375.92 510.54)
 		(uuid "f6c3e660-5eff-5998-bc65-cb8113137aee")
 	)
-	(no_connect
-		(at 71.12 513.08)
-		(uuid "d726d83d-f5dc-5f3f-9e44-897496181bb6")
+	(global_label "VSYS"
+		(shape passive)
+		(at 375.92 513.08 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "48fc852c-93fd-59f9-888e-8cb4560ad880")
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 71.12 515.62 180)
+		(at 375.92 515.62 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10652,12 +11210,12 @@
 		(uuid "5b871a54-90ab-54e5-8b5d-3ee0bf5330a9")
 	)
 	(no_connect
-		(at 71.12 518.16)
+		(at 375.92 518.16)
 		(uuid "aa269177-57c1-5bd8-9a8b-b8c8e1ead586")
 	)
 	(global_label "3V3"
 		(shape passive)
-		(at 71.12 520.7 180)
+		(at 375.92 520.7 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10668,12 +11226,12 @@
 		(uuid "ad855cea-35e6-57c5-b846-1011f7a5175e")
 	)
 	(no_connect
-		(at 71.12 523.24)
+		(at 375.92 523.24)
 		(uuid "48e600ce-cb3a-535c-be7b-0b5f4ab2f3d0")
 	)
-	(global_label "R_CS"
+	(global_label "R_CS_ADC"
 		(shape passive)
-		(at 71.12 525.78 180)
+		(at 375.92 525.78 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10685,7 +11243,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 71.12 528.32 180)
+		(at 375.92 528.32 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10695,9 +11253,9 @@
 		)
 		(uuid "354e6156-1b70-5163-9565-a6ef026d0d0f")
 	)
-	(global_label "L_CS"
+	(global_label "L_CS_ADC"
 		(shape passive)
-		(at 71.12 530.86 180)
+		(at 375.92 530.86 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10709,7 +11267,7 @@
 	)
 	(global_label "VSENSE"
 		(shape passive)
-		(at 71.12 533.4 180)
+		(at 375.92 533.4 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10720,12 +11278,12 @@
 		(uuid "18148bed-583f-5f8d-ac30-fc1795a65508")
 	)
 	(no_connect
-		(at 71.12 535.94)
+		(at 375.92 535.94)
 		(uuid "779fbf0f-2b3f-58f1-8f2c-64b2b84d49ca")
 	)
 	(global_label "SPARE1"
 		(shape passive)
-		(at 71.12 538.48 180)
+		(at 375.92 538.48 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10737,7 +11295,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 71.12 541.02 180)
+		(at 375.92 541.02 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10749,7 +11307,7 @@
 	)
 	(global_label "SPARE2"
 		(shape passive)
-		(at 71.12 543.56 180)
+		(at 375.92 543.56 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10761,7 +11319,7 @@
 	)
 	(global_label "SPARE3"
 		(shape passive)
-		(at 71.12 546.1 180)
+		(at 375.92 546.1 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10773,7 +11331,7 @@
 	)
 	(global_label "R_IN2"
 		(shape passive)
-		(at 71.12 548.64 180)
+		(at 375.92 548.64 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10785,7 +11343,7 @@
 	)
 	(global_label "R_IN1"
 		(shape passive)
-		(at 71.12 551.18 180)
+		(at 375.92 551.18 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10797,7 +11355,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 71.12 553.72 180)
+		(at 375.92 553.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10809,7 +11367,7 @@
 	)
 	(global_label "L_IN2"
 		(shape passive)
-		(at 71.12 556.26 180)
+		(at 375.92 556.26 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10821,7 +11379,7 @@
 	)
 	(global_label "L_IN1"
 		(shape passive)
-		(at 71.12 558.8 180)
+		(at 375.92 558.8 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10833,7 +11391,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x08")
-		(at 127 533.4 0)
+		(at 25.4 596.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10841,7 +11399,7 @@
 		(dnp no)
 		(uuid "dd5587ce-361c-5c64-b9f2-8d05aafef981")
 		(property "Reference" "U2"
-			(at 127 523.24 0)
+			(at 25.4 586.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10849,7 +11407,7 @@
 			)
 		)
 		(property "Value" "GY-521 MPU-6050"
-			(at 127 546.1 0)
+			(at 25.4 609.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10857,7 +11415,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x08_P2.54mm_Vertical"
-			(at 127 533.4 0)
+			(at 25.4 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10866,7 +11424,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 127 533.4 0)
+			(at 25.4 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10875,7 +11433,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 127 533.4 0)
+			(at 25.4 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10918,7 +11476,7 @@
 	)
 	(global_label "3V3"
 		(shape passive)
-		(at 121.92 525.78 180)
+		(at 20.32 589.28 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10930,7 +11488,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 121.92 528.32 180)
+		(at 20.32 591.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10942,7 +11500,7 @@
 	)
 	(global_label "SCL"
 		(shape passive)
-		(at 121.92 530.86 180)
+		(at 20.32 594.36 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10954,7 +11512,7 @@
 	)
 	(global_label "SDA"
 		(shape passive)
-		(at 121.92 533.4 180)
+		(at 20.32 596.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10965,16 +11523,16 @@
 		(uuid "2b5e7383-7e22-59f3-8dd2-f36142793e08")
 	)
 	(no_connect
-		(at 121.92 535.94)
+		(at 20.32 599.44)
 		(uuid "616c3dad-bd2e-5f4d-ac34-0de9ac594a9d")
 	)
 	(no_connect
-		(at 121.92 538.48)
+		(at 20.32 601.98)
 		(uuid "b66305c7-5677-5b64-8099-39434c088831")
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 121.92 541.02 180)
+		(at 20.32 604.52 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -10985,12 +11543,12 @@
 		(uuid "1b3080f5-49ad-5012-b318-138bd7f28680")
 	)
 	(no_connect
-		(at 121.92 543.56)
+		(at 20.32 607.06)
 		(uuid "6e507b6d-def7-52f4-92da-dd5dec7ea9b8")
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x07")
-		(at 177.8 533.4 0)
+		(at 76.2 596.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10998,7 +11556,7 @@
 		(dnp no)
 		(uuid "6fc67219-cc24-5fb8-ad60-69a2ea4a6b6d")
 		(property "Reference" "U3L"
-			(at 177.8 523.24 0)
+			(at 76.2 586.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11006,7 +11564,7 @@
 			)
 		)
 		(property "Value" "DRV8874 left, VM/EN/PH row"
-			(at 177.8 543.56 0)
+			(at 76.2 607.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11014,7 +11572,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical"
-			(at 177.8 533.4 0)
+			(at 76.2 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11023,7 +11581,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 177.8 533.4 0)
+			(at 76.2 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11032,7 +11590,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x07, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 177.8 533.4 0)
+			(at 76.2 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11071,12 +11629,12 @@
 		)
 	)
 	(no_connect
-		(at 172.72 525.78)
+		(at 71.12 589.28)
 		(uuid "9c14553b-3031-5acb-8cb8-61091f3082e3")
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 172.72 528.32 180)
+		(at 71.12 591.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11088,7 +11646,7 @@
 	)
 	(global_label "L_IN1"
 		(shape passive)
-		(at 172.72 530.86 180)
+		(at 71.12 594.36 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11100,7 +11658,7 @@
 	)
 	(global_label "L_IN2"
 		(shape passive)
-		(at 172.72 533.4 180)
+		(at 71.12 596.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11112,7 +11670,7 @@
 	)
 	(global_label "3V3"
 		(shape passive)
-		(at 172.72 535.94 180)
+		(at 71.12 599.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11124,7 +11682,7 @@
 	)
 	(global_label "DRV_SLEEP"
 		(shape passive)
-		(at 172.72 538.48 180)
+		(at 71.12 601.98 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11135,12 +11693,12 @@
 		(uuid "7925def6-f309-5d49-bfda-097f26b0143e")
 	)
 	(no_connect
-		(at 172.72 541.02)
+		(at 71.12 604.52)
 		(uuid "6ed171d5-f377-5c3d-bcec-97b6017ee015")
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x07")
-		(at 228.6 533.4 0)
+		(at 127 596.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11148,7 +11706,7 @@
 		(dnp no)
 		(uuid "4e7781de-23bc-5775-88a2-f46f3a322b71")
 		(property "Reference" "U3P"
-			(at 228.6 523.24 0)
+			(at 127 586.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11156,7 +11714,7 @@
 			)
 		)
 		(property "Value" "DRV8874 left, VIN/OUT row"
-			(at 228.6 543.56 0)
+			(at 127 607.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11164,7 +11722,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical"
-			(at 228.6 533.4 0)
+			(at 127 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11173,7 +11731,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 228.6 533.4 0)
+			(at 127 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11182,7 +11740,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x07, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 228.6 533.4 0)
+			(at 127 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11222,7 +11780,7 @@
 	)
 	(global_label "VMOT"
 		(shape passive)
-		(at 223.52 525.78 180)
+		(at 121.92 589.28 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11234,7 +11792,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 223.52 528.32 180)
+		(at 121.92 591.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11246,7 +11804,7 @@
 	)
 	(global_label "L_M1"
 		(shape passive)
-		(at 223.52 530.86 180)
+		(at 121.92 594.36 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11258,7 +11816,7 @@
 	)
 	(global_label "L_M2"
 		(shape passive)
-		(at 223.52 533.4 180)
+		(at 121.92 596.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11269,12 +11827,12 @@
 		(uuid "51739e85-41a0-5c8b-98b3-ecffb89becd8")
 	)
 	(no_connect
-		(at 223.52 535.94)
+		(at 121.92 599.44)
 		(uuid "afa83688-a93c-5b5f-abac-4526bc501029")
 	)
 	(global_label "DRV_FAULT"
 		(shape passive)
-		(at 223.52 538.48 180)
+		(at 121.92 601.98 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11286,7 +11844,7 @@
 	)
 	(global_label "L_CS"
 		(shape passive)
-		(at 223.52 541.02 180)
+		(at 121.92 604.52 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11298,7 +11856,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x07")
-		(at 279.4 533.4 0)
+		(at 177.8 596.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11306,7 +11864,7 @@
 		(dnp no)
 		(uuid "93583953-19af-5860-b2eb-539a4e041b30")
 		(property "Reference" "U4L"
-			(at 279.4 523.24 0)
+			(at 177.8 586.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11314,7 +11872,7 @@
 			)
 		)
 		(property "Value" "DRV8874 right, VM/EN/PH row"
-			(at 279.4 543.56 0)
+			(at 177.8 607.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11322,7 +11880,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical"
-			(at 279.4 533.4 0)
+			(at 177.8 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11331,7 +11889,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 279.4 533.4 0)
+			(at 177.8 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11340,7 +11898,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x07, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 279.4 533.4 0)
+			(at 177.8 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11379,12 +11937,12 @@
 		)
 	)
 	(no_connect
-		(at 274.32 525.78)
+		(at 172.72 589.28)
 		(uuid "469b5473-c1e4-5bfc-9536-90dcc381cdd7")
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 274.32 528.32 180)
+		(at 172.72 591.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11396,7 +11954,7 @@
 	)
 	(global_label "R_IN1"
 		(shape passive)
-		(at 274.32 530.86 180)
+		(at 172.72 594.36 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11408,7 +11966,7 @@
 	)
 	(global_label "R_IN2"
 		(shape passive)
-		(at 274.32 533.4 180)
+		(at 172.72 596.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11420,7 +11978,7 @@
 	)
 	(global_label "3V3"
 		(shape passive)
-		(at 274.32 535.94 180)
+		(at 172.72 599.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11432,7 +11990,7 @@
 	)
 	(global_label "DRV_SLEEP"
 		(shape passive)
-		(at 274.32 538.48 180)
+		(at 172.72 601.98 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11443,12 +12001,12 @@
 		(uuid "2f290761-3125-5448-b727-619b70ac6a8b")
 	)
 	(no_connect
-		(at 274.32 541.02)
+		(at 172.72 604.52)
 		(uuid "a5bd143e-4d68-5c6c-b663-c5046eb1be81")
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x07")
-		(at 330.2 533.4 0)
+		(at 228.6 596.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11456,7 +12014,7 @@
 		(dnp no)
 		(uuid "59294593-df76-5432-9a29-c21be9a35ec5")
 		(property "Reference" "U4P"
-			(at 330.2 523.24 0)
+			(at 228.6 586.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11464,7 +12022,7 @@
 			)
 		)
 		(property "Value" "DRV8874 right, VIN/OUT row"
-			(at 330.2 543.56 0)
+			(at 228.6 607.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11472,7 +12030,7 @@
 			)
 		)
 		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x07_P2.54mm_Vertical"
-			(at 330.2 533.4 0)
+			(at 228.6 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11481,7 +12039,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 330.2 533.4 0)
+			(at 228.6 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11490,7 +12048,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x07, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 330.2 533.4 0)
+			(at 228.6 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11530,7 +12088,7 @@
 	)
 	(global_label "VMOT"
 		(shape passive)
-		(at 325.12 525.78 180)
+		(at 223.52 589.28 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11542,7 +12100,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 325.12 528.32 180)
+		(at 223.52 591.82 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11554,7 +12112,7 @@
 	)
 	(global_label "R_M1"
 		(shape passive)
-		(at 325.12 530.86 180)
+		(at 223.52 594.36 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11566,7 +12124,7 @@
 	)
 	(global_label "R_M2"
 		(shape passive)
-		(at 325.12 533.4 180)
+		(at 223.52 596.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11577,12 +12135,12 @@
 		(uuid "49cc95ed-4c96-5c92-9d16-71f3788712cc")
 	)
 	(no_connect
-		(at 325.12 535.94)
+		(at 223.52 599.44)
 		(uuid "b6bfa286-f11b-54ea-958e-0c20f0233f06")
 	)
 	(global_label "DRV_FAULT"
 		(shape passive)
-		(at 325.12 538.48 180)
+		(at 223.52 601.98 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11594,7 +12152,7 @@
 	)
 	(global_label "R_CS"
 		(shape passive)
-		(at 325.12 541.02 180)
+		(at 223.52 604.52 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11606,7 +12164,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 381 533.4 0)
+		(at 279.4 596.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11614,7 +12172,7 @@
 		(dnp no)
 		(uuid "7cc3a906-46a2-53e4-bd43-94e165e700ba")
 		(property "Reference" "U5A"
-			(at 381 530.86 0)
+			(at 279.4 594.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11622,7 +12180,7 @@
 			)
 		)
 		(property "Value" "Regulator in (P03 module)"
-			(at 381 538.48 0)
+			(at 279.4 601.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11630,7 +12188,7 @@
 			)
 		)
 		(property "Footprint" "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal"
-			(at 381 533.4 0)
+			(at 279.4 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11639,7 +12197,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 381 533.4 0)
+			(at 279.4 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11648,7 +12206,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 381 533.4 0)
+			(at 279.4 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11673,7 +12231,7 @@
 	)
 	(global_label "VBAT_SW"
 		(shape passive)
-		(at 375.92 533.4 180)
+		(at 274.32 596.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11685,7 +12243,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 375.92 535.94 180)
+		(at 274.32 599.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11697,7 +12255,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
-		(at 25.4 596.9 0)
+		(at 330.2 596.9 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -11705,7 +12263,7 @@
 		(dnp no)
 		(uuid "d9b2d24e-8c73-515f-b72f-67e67dbeebd4")
 		(property "Reference" "U5B"
-			(at 25.4 594.36 0)
+			(at 330.2 594.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11713,7 +12271,7 @@
 			)
 		)
 		(property "Value" "Regulator out (P03 module)"
-			(at 25.4 601.98 0)
+			(at 330.2 601.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11721,7 +12279,7 @@
 			)
 		)
 		(property "Footprint" "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal"
-			(at 25.4 596.9 0)
+			(at 330.2 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11730,7 +12288,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 25.4 596.9 0)
+			(at 330.2 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11739,7 +12297,7 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 25.4 596.9 0)
+			(at 330.2 596.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11764,7 +12322,7 @@
 	)
 	(global_label "5V"
 		(shape passive)
-		(at 20.32 596.9 180)
+		(at 325.12 596.9 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -11776,7 +12334,7 @@
 	)
 	(global_label "GND"
 		(shape passive)
-		(at 20.32 599.44 180)
+		(at 325.12 599.44 180)
 		(fields_autoplaced yes)
 		(effects
 			(font

@@ -47,18 +47,19 @@ class SpecTests(unittest.TestCase):
         pico_pins = {(ref, pin) for ref in ('U1A', 'U1B') for pin in map(str, range(1, 21))}
         for net, pins in B.NETS.items():          # every Pico GP pin on a net is in the table
             for p in pins:
-                if p in pico_pins and net not in ('GND', '3V3'): self.assertIn(net, g, (net, p))
+                if p in pico_pins and net not in ('GND', '3V3', 'VSYS'): self.assertIn(net, g, (net, p))   # power pins aside
         i2c = {0: ({0, 4, 8, 12, 16, 20}, {1, 5, 9, 13, 17, 21}), 1: ({2, 6, 10, 14, 18, 26}, {3, 7, 11, 15, 19, 27})}
         sda, scl = int(g['SDA'][2:]), int(g['SCL'][2:])
         self.assertTrue(any(sda in a and scl in b_ and (sda // 4 == scl // 4 or {sda, scl} == {26, 27}) for a, b_ in i2c.values()),
                         (g['SDA'], g['SCL']))
-        for net in ('VSENSE', 'L_CS', 'R_CS'): self.assertIn(g[net], ('GP26', 'GP27', 'GP28'), net)
+        for net in ('VSENSE', 'L_CS_ADC', 'R_CS_ADC'): self.assertIn(g[net], ('GP26', 'GP27', 'GP28'), net)   # LIO-226: CS after its RC
         for side in ('L', 'R'):
             a, b_ = int(g[f'{side}_IN1'][2:]), int(g[f'{side}_IN2'][2:])
             self.assertEqual((a % 2, b_, a // 2), (0, a + 1, b_ // 2), f'{side}_IN1 / {side}_IN2 not on one PWM slice A / B')
         self.assertIn(B.pico('3V3_OUT'), B.NETS['3V3'])
         for name in ('GND1', 'GND2', 'GND3', 'GND4', 'GND5', 'GND6', 'GND7', 'AGND'): self.assertIn(B.pico(name), B.NETS['GND'])
-        for name in ('RUN', 'ADC_VREF', '3V3_EN', 'VSYS', 'VBUS'): self.assertIn(B.pico(name), B.NC)
+        for name in ('RUN', 'ADC_VREF', '3V3_EN', 'VBUS'): self.assertIn(B.pico(name), B.NC)
+        self.assertEqual(B.NETS['VSYS'], [B.dio('D2', 'K'), B.pico('VSYS')])     # LIO-226: VSYS only through the DNP D2
     def test_every_net_has_two_pins_and_no_pin_is_shared(self):
         seen = Counter(p for pins in B.NETS.values() for p in pins)
         self.assertEqual([p for p, n in seen.items() if n > 1], [])
@@ -141,6 +142,7 @@ class SpecTests(unittest.TestCase):
     def test_polarity_and_pin_roles(self):
         self.assertEqual(symbol_pins(B.PARTS['D1']['sym'])['1'], 'K'); self.assertIn(('D1', '1'), B.NETS['COIL_P'])
         self.assertIn(('D1', '2'), B.NETS['GND'])
+        self.assertEqual(symbol_pins(B.PARTS['D2']['sym'])['1'], 'K'); self.assertIn(('D2', '1'), B.NETS['VSYS']); self.assertIn(('D2', '2'), B.NETS['5V'])
         for i in range(1, 4):
             self.assertEqual(symbol_pins(B.PARTS[f'LED{i}']['sym'])['1'], 'K'); self.assertIn((f'LED{i}', '1'), B.NETS['GND'])
         for i in range(1, 6):   # 2N7002 SOT-23 (KiCad Transistor_FET:2N7002): 1 = G, 2 = S, 3 = D
@@ -198,11 +200,12 @@ class SpecTests(unittest.TestCase):
             self.assertNotIn(kept, B.REMOVED_CAD_IDS)
 
     # --- Task L3b: small parts are SMD, reflowed (spec 2026-10-06-r1-low-profile section 3) ---
-    SMD_REFS = ([f'R{i}' for i in range(1, 24)] + ['C2', 'C3', 'D1'] + [f'LED{i}' for i in range(1, 4)] + [f'Q{i}' for i in range(1, 6)]
+    SMD_REFS = ([f'R{i}' for i in range(1, 27)] + ['C2', 'C3', 'C4', 'C5', 'D1', 'D2'] + [f'LED{i}' for i in range(1, 4)] + [f'Q{i}' for i in range(1, 6)]
                 + [f'TP{i}' for i in range(1, 6)])
     @needs_kicad()
     def test_small_parts_use_standard_smd_footprints(self):
-        want = {**{f'R{i}': 'Resistor_SMD:R_0805_2012Metric' for i in range(1, 24)}, 'C2': 'Capacitor_SMD:C_0805_2012Metric',
+        want = {**{f'R{i}': 'Resistor_SMD:R_0805_2012Metric' for i in range(1, 27)},
+                **{c: 'Capacitor_SMD:C_0805_2012Metric' for c in ('C2', 'C4', 'C5')}, 'D2': 'Diode_SMD:D_SMA',
                 'C3': 'Capacitor_SMD:CP_Elec_6.3x5.8',     # PB16: DRV_L's bulk capacitor, a V-chip (PB20: the 5.8 mm can)
                 **{f'LED{i}': 'LED_SMD:LED_0805_2012Metric' for i in range(1, 4)}, 'D1': 'Diode_SMD:D_SMA',
                 **{f'Q{i}': 'Package_TO_SOT_SMD:SOT-23' for i in range(1, 6)}, **{f'TP{i}': 'TestPoint:TestPoint_Pad_D2.0mm' for i in range(1, 6)}}
@@ -220,10 +223,12 @@ class SpecTests(unittest.TestCase):
         self.assertEqual({r for r in tht if r[0] in 'JUFH'} | {'K1', 'C1'}, tht)    # connectors, sockets, regulator terminals, fuse holders, holes, relay, C1
         for r in ('K1', 'C1', 'F1', 'F2', 'U5A', 'U5B'): self.assertEqual(B.PARTS[r]['mount'], 'tht', r)
     def test_smd_parts_values_and_heights(self):
-        for i in range(1, 24):
+        for i in range(1, 27):
             self.assertIn('0805', B.PARTS[f'R{i}']['mpn']); self.assertIn('1 %', B.PARTS[f'R{i}']['mpn'])
         for i in range(1, 6): self.assertEqual((B.PARTS[f'Q{i}']['value'], B.PARTS[f'Q{i}']['sym']), ('2N7002', 'Transistor_FET:2N7002'))
-        self.assertEqual((B.PARTS['D1']['value'], B.PARTS['D1']['sym']), ('SS14', 'Diode:SS14'))
+        for d in ('D1', 'D2'): self.assertEqual((B.PARTS[d]['value'], B.PARTS[d]['sym']), ('SS14', 'Diode:SS14'))
+        self.assertEqual({r: B.PARTS[r]['value'] for r in ('R19', 'R20', 'R24', 'R25', 'R26', 'C4', 'C5')},     # LIO-226
+                         {'R19': '10k', 'R20': '10k', 'R24': '4.7k', 'R25': '4.7k', 'R26': '10k', 'C4': '100nF', 'C5': '100nF'})
         for r in self.SMD_REFS:      # PB16 / PB20: C3 (DRV_L's 100 uF V-chip, 5.8 mm) is the one tall SMD part, below MODULE_CLEARANCE
             self.assertLessEqual(B.PARTS[r]['h'], 5.8 if r == 'C3' else 3.0, f'{r}: tallest SMD bodies - C3 5.8 mm (PB20), else the SMA diode 2.7 mm')
     @needs_kicad()
@@ -244,6 +249,7 @@ class SpecTests(unittest.TestCase):
         self.assertEqual(B.Q_PINS, {'G': '1', 'S': '2', 'D': '3'})
         self.assertEqual(symbol_pins(B.PARTS['D1']['sym']), {'1': 'K', '2': 'A'})
         self.assertEqual((net_of('D1', 'K'), net_of('D1', 'A')), ('COIL_P', 'GND'))      # flyback: cathode on the coil +, anode on GND
+        self.assertEqual((net_of('D2', 'K'), net_of('D2', 'A')), ('VSYS', '5V'))         # LIO-226: 5V feeds VSYS, never back
         self.assertEqual(footprint_pads('Diode_SMD:D_SMA'), {'1', '2'})                  # D_SMA pad 1 = cathode (the band side)
         for i in range(1, 4): self.assertEqual((net_of(f'LED{i}', 'K'), net_of(f'LED{i}', 'A')), ('GND', f'LED{i}_A'))
 
@@ -321,7 +327,7 @@ class SpecTests(unittest.TestCase):
         motor notches; J3 (Jetson 5 V, ruling PB5) out of the right edge toward the W04 corridor. MATED_H / CABLE_BEND_MM / MATED_REACH
         and connector_family describe every one of them."""
         dnp = {r for r, p in B.PARTS.items() if p.get('dnp')}
-        self.assertEqual(dnp, {'J14', 'J15'})                                 # PB8: the only DNP parts are the two spare rows
+        self.assertEqual(dnp, {'J14', 'J15', 'D2'})                           # PB8: the two spare rows; LIO-226: the VSYS diode
         conns = {r for r in {f'J{i}' for i in range(1, 16)} | {'U5A', 'U5B'} if r not in dnp}   # DNP spare rows: no edge, no cable
         self.assertEqual(set(B.EDGE_CONNECTORS), conns)
         for ref, d in B.EDGE_CONNECTORS.items(): self.assertIn(d, ('+u', '-u', '+v', '-v'), ref)
@@ -363,7 +369,8 @@ class SpecTests(unittest.TestCase):
             u0, v0, u1, v1 = B.courtyard_box(ref)
             self.assertLess(u0, u1, ref); self.assertLess(v0, v1, ref)
         want = {'U1B', 'U2', 'U3L', 'U3P', 'U4L', 'U4P', 'U5A', 'U5B', 'C3', 'J4', 'J5', 'J8', 'J9', 'J10', 'J11', 'J14', 'J15',
-                'Q1', 'Q2', 'R1', 'R3', 'R21', 'R23', *[f'LED{i}' for i in range(1, 4)], *[f'TP{i}' for i in range(1, 6)], *[f'H{i}' for i in range(1, 7)]}
+                'Q1', 'Q2', 'R1', 'R3', 'R21', 'R23', *[f'LED{i}' for i in range(1, 4)], *[f'TP{i}' for i in range(1, 6)], *[f'H{i}' for i in range(1, 7)],
+                'R24', 'R25', 'C4', 'C5', 'D2'}                                   # LIO-226: the CS filters by the drivers, D2 in DRV_R
         self.assertEqual({r for r in B.PARTS if B.UNDER_CARRIER(r)}, want)
     def test_motor_cable_exit_matches_the_motor_geometry(self):
         """B3 fix 1: MOTOR_CABLE_EXIT (board u, v and height over the board top) is where each factory cable leaves its motor: on the
@@ -519,9 +526,11 @@ class SpecTests(unittest.TestCase):
         total = lambda net: sum(a for p, a in B.TAP_LOAD_A.items() if p in B.NETS[net])
         self.assertLessEqual(total('3V3'), 0.300)
         self.assertLessEqual(total('5V'), 0.5)
-        # LIO-227: the 5V trunk and the P03 output carry the Jetson's 4.5 A (J3) and every 5V tap (0.207 A, rounded up to 0.21)
-        self.assertGreaterEqual(B.CURRENT_A['5V'], B.pad_current('J3', '1') + total('5V'))
-        self.assertLess(B.CURRENT_A['5V'], B.pad_current('J3', '1') + total('5V') + 0.01)
+        # LIO-227: the 5V trunk and the P03 output carry the Jetson's 4.5 A (J3) and every 5V tap (0.207 A, rounded up to 0.21) but the
+        # DNP D2's (LIO-226: fitted, it moves the Pico's draw off the Jetson's USB port, inside the Jetson's 4.5 A)
+        taps = total('5V') - B.TAP_LOAD_A[B.dio('D2', 'A')]
+        self.assertGreaterEqual(B.CURRENT_A['5V'], B.pad_current('J3', '1') + taps)
+        self.assertLess(B.CURRENT_A['5V'], B.pad_current('J3', '1') + taps + 0.01)
 
     def test_c3_ripple_and_height_data(self):
         """B6 carry item 6 / ruling PB20 (d): C3's datasheet ripple rating, its ESR and C1's, the DRV8874 PWM frequency assumed, and C3's
@@ -587,10 +596,12 @@ class SpecTests(unittest.TestCase):
         are (net, (u, v)) pre-route vias inside the board box, on power or GND nets, of their class's size (net_via), never two closer than
         their radii + 0.25 mm."""
         self.assertTrue(B.STITCH_VIAS)
-        allv = [(B.net_via(n)[0], uv) for n, uv in B.STITCH_VIAS] + [(B.net_via('GND')[0], uv) for uv in B.SMD_GND_VIAS.values()]
+        allv = [(B.net_via(n)[0], uv) for n, uv in B.STITCH_VIAS] + [(B.net_via('GND', uv)[0], uv) for uv in B.SMD_GND_VIAS.values()]
         for net, (u, v) in B.STITCH_VIAS:
             self.assertIn(net, ('GND', 'BAT+', 'F1_OUT')); self.assertTrue(0 < u < B.BOARD_W and 0 < v < B.BOARD_H, (net, u, v))
         self.assertEqual((B.net_via('GND'), B.net_via('BAT+'), B.net_via('F1_OUT')), ((0.8, 0.4), (1.2, 0.6), (1.2, 0.6)))
+        self.assertEqual({B.net_via('GND', uv) for uv in B.SMD_GND_VIAS.values()}, {B.SMD_PAD_VIA})     # LIO-226: the LP12 vias drill 0.3
+        self.assertEqual(B.SMD_PAD_VIA, (0.8, 0.3))
         for i, (da, a) in enumerate(allv):
             for dc, c in allv[i + 1:]: self.assertGreaterEqual(((a[0] - c[0]) ** 2 + (a[1] - c[1]) ** 2) ** 0.5, (da + dc) / 2 + 0.25, (a, c))
 

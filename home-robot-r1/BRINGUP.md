@@ -62,12 +62,12 @@ updated in bay B12a.
 
 Order: **reflow SMD → inspect → iron THT, trimming leads to ≤ 1.4 mm → modules.** `pcb/fab/ORDERING.md` "Assembly" gives the full text.
 
-1. **Reflow the SMD parts, top side only.** Tape the board down and print paste through the stencil. Place C2, C3, D1, Q1–Q5,
-   LED1–LED3 and R1–R23, following the polarity marks on the silk: the LED and D1 cathode marks, SOT-23 pin 1 and C3 "+". Reflow on a
-   hot plate or in an oven. TP1–TP5 stay bare copper.
+1. **Reflow the SMD parts, top side only.** Tape the board down and print paste through the stencil. Place C2–C5, D1, Q1–Q5,
+   LED1–LED3 and R1–R26, following the polarity marks on the silk: the LED and D1 cathode marks, SOT-23 pin 1 and C3 "+". Reflow on a
+   hot plate or in an oven. TP1–TP5 stay bare copper, and D2 stays empty (DNP: section 4 item 2).
 2. **Inspect.**
    - Look for bridges on the SOT-23 and 0805 parts, and re-check the polarity marks.
-   - Check the GND joints for solder wicking into the tented vias beside them. The mask web there is only about 0.1 mm.
+   - Check the GND joints for solder wicking into the tented vias beside them. The mask web there is only about 0.15 mm.
 3. **Iron the THT parts, lowest first:**
    - the sockets U1A / U1B, U2, U3L / U3P, U4L / U4P;
    - the connectors: the XH headers, the VH (J2), the XT30 (J1) and the Micro-Fit (J3; push its plastic peg through its hole);
@@ -100,16 +100,22 @@ Do the fail-safe check in section 0 now, on the bench. It is ASSY step 0.
 ## 4. Pico on USB only (battery unplugged, Jetson off)
 
 1. Plug the Pico into its sockets, with the USB end toward the board's left edge. Connect it to a computer by USB.
-2. The Pico's VSYS and VBUS are not connected to the board, so USB powers only the Pico and, through its 3V3 pin, the board's 3V3 rail:
-   the GY-521, the cliff ToF sensors (when plugged in) and the pull-ups.
+2. The Pico's VBUS is not connected to the board, and its VSYS only through D2, which is not fitted (DNP). So USB powers only the Pico
+   and, through its 3V3 pin, the board's 3V3 rail: the GY-521, the cliff ToF sensors (when plugged in) and the pull-ups. With the
+   robot built, that USB is the Jetson's: with the Jetson off, the Pico and its sensors are off. If the robot must run its sensors
+   without the Jetson's USB, fit D2 (an SS14, its band on the silk mark; it sits inside DRV_R's socket rows, so fit it with the DRV_R
+   carrier out): the board's 5V then feeds VSYS, and the Pico's own VBUS diode keeps that 5V out of the USB host.
 3. **Expect:**
    - TP4 (3V3) at about 3.3 V.
    - TP3 (5V), TP1 (VBAT_SW) and TP2 (VMOT) dead.
    - LED1–LED3 off.
-4. With a test sketch:
+4. **I2C pull-ups.** USB unplugged, the GY-521 and all four ToF sensors plugged in: measure SDA and SCL to 3V3 (J14 pads 3 and 4 to
+   J14 pad 1). Expect about 1.05 kΩ each: R19 / R20 (10 kΩ), the GY-521's 2.2 kΩ and the four ToF carriers' 10 kΩ in parallel
+   (2.8 mA at 0.4 V, inside I2C's 3 mA). Below 1 kΩ (a module with stronger pull-ups), remove R19 / R20 (design spec 2026-10-04).
+5. With a test sketch:
    - The I2C bus (GP2 SDA, GP3 SCL) finds the GY-521 at 0x68 (AD0 is tied to GND).
    - Each ToF sensor answers once its XSHUT line (GP0, GP10, GP5, GP13) is released.
-5. The Pico's 3V3 regulator has about 300 mA for external loads (verify item in `ORDERING.md`).
+6. The Pico's 3V3 regulator has about 300 mA for external loads (verify item in `ORDERING.md`).
 
 ## 5. Set the P03 5 V converter (before the Jetson)
 
@@ -277,7 +283,8 @@ Steps:
    - Wake the drivers: DRV_SLEEP (GP7) high. R17 holds SLEEP low by default.
    - Spin each motor both ways at 20 kHz PWM.
    - Check that the encoder counts follow (GP1 / GP4 left, GP11 / GP12 right).
-   - Check that L_CS (GP27) and R_CS (GP28) read about 1.1 V/A.
+   - Check that L_CS_ADC (GP27) and R_CS_ADC (GP28) read about 1.1 V/A (through the R24 / C4 and R25 / C5 filters: settled in about
+     2 ms).
 7. **After a stall test,** touch U3P.2 (DRV_L GND, ruling PB21): its joint must not be hot.
 
 ## 8. Firmware limits (from BRINGUP-NOTES.md)
@@ -285,7 +292,9 @@ Steps:
 - **DRV8874 continuous current: 1.8 A per channel.**
   - At 2.1 A continuous, the junction reaches 88–136 °C. This assumes 40 °C air under the carrier, R_θJA 40 °C/W (JEDEC), and 70 °C/W
     for the 2-layer carrier. 1.8 A keeps it at or below about 110 °C.
-  - Firmware enforces the limit from CS: about 1.1 V/A on the carrier's 2.49 kΩ, read on GP27 (L_CS) and GP28 (R_CS).
+  - Firmware enforces the limit from CS: about 1.1 V/A on the carrier's 2.49 kΩ, read on GP27 (L_CS_ADC) and GP28 (R_CS_ADC). Each
+    CS reaches its pin through an RC filter by its driver (R24 / C4, R25 / C5: 4.7 kΩ and 100 nF, about 0.47 ms), so the reading is
+    the 20 kHz chopping averaged; a stall shows within about 2 ms.
   - Short peaks are fine: starts, and a stall up to the 2.1 A design current. A stall must be cut within seconds.
   - These datasheet figures are quoted from memory; see "Verify before ordering" in `ORDERING.md`.
 - **Motor PWM about 20 kHz** (`board_spec.DRV_PWM_HZ`), **with slow decay.**
@@ -303,10 +312,11 @@ Steps:
   - SLEEP (GP7) wakes both drivers; R17 pulls it low.
   - FAULT (GP8) is open drain and shared, with an R18 pull-up.
   - Each motor's IN1 / IN2 pair is on one PWM slice: GP16 / 17 left, GP18 / 19 right.
-- **Switch inputs need the internal pull-ups.** BUMP_L (GP6), BUMP_R (GP15) and ARM (GP14) have no pull-up resistors on the board; the
-  switches pull them to GND. Enable the RP2040's internal pull-ups on these three pins in firmware.
-- **I2C:** I2C1 on GP2 (SDA) / GP3 (SCL) at **100 kHz**. The board has 4.7 kΩ pull-ups (R19 / R20); the bus runs over cables to the
-  four ToF boards and the IMU.
+- **Switch inputs.** The switches pull their pins to GND. ARM (GP14, a normally-open button on a 200 mm lead) has a 10 kΩ pull-up on
+  the board (R26). BUMP_L (GP6) and BUMP_R (GP15) have none: they are normally closed (an open lead reads as a bump), so enable the
+  RP2040's internal pull-ups on those two pins in firmware.
+- **I2C:** I2C1 on GP2 (SDA) / GP3 (SCL) at **100 kHz**. The board has 10 kΩ pull-ups (R19 / R20); the bus runs over cables to the
+  four ToF boards and the IMU. With their pull-ups the bus totals about 1.05 kΩ (section 4 item 4).
 - **ToF addresses.** The four VL53L0X sensors all start at address 0x29.
   1. At boot, hold all four in reset: XSHUT1–XSHUT4 (GP0, GP10, GP5, GP13) low.
   2. Release one at a time, and give each a new address: **0x30, 0x31, 0x32, 0x33** for cliff 1–4 (J6, J7, J8, J9).

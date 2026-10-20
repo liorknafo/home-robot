@@ -789,7 +789,7 @@ class PcbTests(unittest.TestCase):
 
     def test_smd_gnd_vias_follow_lp12(self):
         """Ruling LP12 (regenerated for the bay placement): one tented GND via per top-side SMD GND pad (board_spec.SMD_GND_VIAS), at the
-        Default via size (0.8 / 0.4 mm), 0.3 mm past one end of its pad so its copper overlaps that pad by about 0.1 mm while its drill stays
+        SMD-pad via size (board_spec.SMD_PAD_VIA, 0.8 / 0.3 mm since LIO-226), 0.3 mm past one end of its pad so its copper overlaps that pad by about 0.1 mm while its drill stays
         off the pad (outside the paste opening); R17a: >= 0.5 mm of copper gap to every other net's pad; it keeps off the power-trunk
         polygons on every layer (>= 0.4 mm, so the corridors stay whole; a through via pierces all four layers; helper pours with
         trunk=False may hold vias) and stays >= 0.5 mm inside the board edge."""
@@ -803,7 +803,7 @@ class PcbTests(unittest.TestCase):
             ps = pcbnew.SHAPE_POLY_SET(); p.TransformShapeToPolygon(ps, pcbnew.F_Cu, MM(grow), MM(0.005), pcbnew.ERROR_OUTSIDE); return ps
         others = [(fp.GetReference(), p) for fp in self.b.GetFootprints() for p in fp.Pads() if p.GetNetname() != 'GND']
         for ref, (u, v) in B.SMD_GND_VIAS.items():
-            via, drill = disc((u, v), 0.4), disc((u, v), 0.2)
+            via, drill = disc((u, v), B.SMD_PAD_VIA[0] / 2), disc((u, v), B.SMD_PAD_VIA[1] / 2)
             overlap = max(area_mm2(both(via, pad_poly(p))) for p in smd_gnd[ref])
             self.assertGreater(overlap, 0.005, f'{ref}: via does not touch its GND pad')
             for p in smd_gnd[ref]: self.assertLess(area_mm2(both(drill, pad_poly(p))), 1e-4, f'{ref}: via drill in the pad')
@@ -857,7 +857,7 @@ class PcbTests(unittest.TestCase):
     def test_polarity_marks_on_silk(self):
         """Polarised parts carry their polarity on the silk (stock footprint marks, asserted here): LEDs and D1 a cathode bar beyond pad 1
         and nothing beyond pad 2; the SOT-23s a filled pin-1 mark nearest pad 1; C1 a "+" (two short crossing strokes) nearer pad 1."""
-        self.assertEqual(set(B.POLARISED), {'LED1', 'LED2', 'LED3', 'D1', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'C1', 'C3'})   # C3: PB16
+        self.assertEqual(set(B.POLARISED), {'LED1', 'LED2', 'LED3', 'D1', 'D2', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'C1', 'C3'})   # C3: PB16, D2: LIO-226
         def pt(p): return (TOMM(p.x), TOMM(p.y))
         for ref in B.POLARISED:
             fp = self.fps[ref]

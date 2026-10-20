@@ -8,7 +8,7 @@ The power & I/O "bay" board: 4 layers, 1.6 mm, 74 × 100 mm, routed and power-ch
 | File | What it is |
 |---|---|
 | `r1_power_io-gerbers.zip` | Upload this one zip, for the board and for the stencil. It holds the Gerbers of F.Cu, In1.Cu, In2.Cu, B.Cu, F/B.Mask, F/B.Silkscreen, F.Paste (the stencil), Edge.Cuts (X2 attributes on), the Excellon drill in two files (plated `-PTH.drl`, non-plated `-NPTH.drl`): 12 files. There is no `.gbrjob` job file on purpose: it declares the size as 74.0 × 100.1 mm (the outline's line width added), and JLCPCB does not need it. |
-| `r1_power_io-bom.csv` | One row per part to buy, with its MPN (board_spec.PARTS). Quantities are per board. `Fit`: `yes`, `DNP` (J14 / J15), `no part` (bare test pads, holes), `plug-in` (the modules and fuses that plug into the board's parts). |
+| `r1_power_io-bom.csv` | One row per part to buy, with its MPN (board_spec.PARTS). Quantities are per board. `Fit`: `yes`, `DNP` (J14 / J15, D2), `no part` (bare test pads, holes), `plug-in` (the modules and fuses that plug into the board's parts). |
 | `r1_power_io-pos.csv` | Placement of every fitted part (mm; x = u, y = −v; DNP rows and bare pads left out). A guide for placing the SMD parts on the paste. |
 | `r1_power_io-1to1.pdf` | Four A4 pages at 1:1 (F.Fab with the pads sketched, F.Silkscreen, F.Cu, B.Cu, all seen from the top). Print at 100 % ("actual size") and check the 50 mm bar before laying parts on the paper. |
 | `r1_power_io.step` | The board with every fitted part, for the robot CAD (B8). The parts KiCad has no model for (the J1–J3 power headers: the XT30 J1, the JST VH J2 and the Micro-Fit J3; the F1 / F2 FLR fuse holders with their fuses) are box envelopes, and so is C1 (its stock model is half the real height). Frame: STEP x = u, y = −v, z 0 = the board bottom, parts seated at z 1.6. Robot (x, y, z) = STEP (x − 66.5, y + 50, z + 35.4). The stock models show untrimmed leads (down to about 1.9 mm under the board). Heights: see "STEP heights" below. |
@@ -45,7 +45,7 @@ PARTS h change moves a part in or out of it.
 | Via covering | **Tented** (the vias are tented in the Gerbers; via-in-pad is not used) |
 | Min via hole / diameter | The default 0.3 mm option: the smallest via is 0.6 / 0.3 mm |
 | Surface finish | HASL (lead-free if offered at no extra cost) |
-| Mask / silk colour | **Green** mask, white silk. Green has JLCPCB's smallest solder-mask dam (verify). On F.Mask the 23 GND vias (0.8 / 0.4 mm) beside the 0805 / SOT-23 pads have their rings inside the next pad's mask opening, so the mask over the drill is only 0.095 mm wide at the thinnest (measured in the Gerbers; tented, not opened) |
+| Mask / silk colour | **Green** mask, white silk. Green has JLCPCB's smallest solder-mask dam (verify). On F.Mask the 25 GND vias beside the 0805 / SOT-23 pads have their rings inside the next pad's mask opening, so the mask over the drill is only 0.145 mm wide at the thinnest (measured in the Gerbers; tented, not opened). LIO-226 drilled those vias 0.3 mm (0.8 / 0.3 mm; at 0.4 mm the web was 0.095 mm) |
 | Order number mark | Leave JLCPCB's default (a small order number on the board); removing it costs extra (verify) |
 | Inner-layer order | Only if the order page asks: L2 = In1.Cu (`-In1_Cu.g1`, the solid GND plane), L3 = In2.Cu (`-In2_Cu.g2`, the power pours and signals) |
 | Price | About $8 for 5 pcs at the time of the spec, plus shipping: check on the order page |
@@ -60,8 +60,12 @@ Add a **stencil** for the top side only (SMT stencil, "top", made from F.Paste i
 Check its price on the order page.
 
 Design rules in the files: minimum track / space 0.15 / 0.15 mm (6 / 6 mil, the Default signal class, ruling PB17). Vias (diameter /
-drill): signal 0.6 / 0.3 mm, GND, PowerTap and Motor 0.8 / 0.4 mm, Power 1.2 / 0.6 mm. All are inside JLCPCB's standard multilayer
-capability (0.09 / 0.09 mm track / space; 0.3 mm via drill is the default size), so no surcharge option is needed. The smallest drill is
+drill): signal 0.6 / 0.3 mm, the SMD pads' GND vias 0.8 / 0.3 mm, GND stitching, PowerTap and Motor 0.8 / 0.4 mm, Power 1.2 / 0.6 mm.
+All are inside JLCPCB's standard multilayer capability (0.09 / 0.09 mm track / space; 0.3 mm via drill is the default size), so
+no surcharge option is needed. The board's DRC rules carry JLCPCB's 4-layer minimums (LIO-226, `board_spec.DRC_RULES`): annular
+ring ≥ 0.13 mm, plated hole ≥ 0.3 mm, non-plated ≥ 0.5 mm, hole to hole ≥ 0.5 mm, silk lines and text strokes ≥ 0.12 mm, silk
+≥ 0.1 mm off the mask openings, and copper to the edge ≥ 0.5 mm (KiCad's default, kept: JLCPCB needs 0.3); the board is DRC-clean
+against them. The smallest drill is
 0.3 mm; the NPTH holes are three Ø3.0 mm (the clamp holes H5 / H6 and J3's Micro-Fit peg) and the two Ø2.4 mm FLR locating holes.
 
 ## Parts and mechanical items
@@ -93,6 +97,11 @@ Buy from the BOM (`r1_power_io-bom.csv`; MPNs marked "verify before ordering" we
   (≤ 8.5 mm tall).
   J15 is now used by the camera LED (task N, LIO-134): the LED lead's three wires are soldered into its holes 3, 5 and 6 as an
   assembly step, no header (BRINGUP.md section 10 item 6). The board files do not change.
+- **D2 is DNP** (LIO-226): an SS14 from the board's 5V to the Pico's VSYS, placed and netted, not fitted (its BOM row says DNP; it is
+  left out of the pos file). Fit it only if the robot must run the Pico and its sensors without the Jetson's USB (BRINGUP.md
+  section 4 item 2). It sits inside DRV_R's socket rows.
+- **Resistor values (LIO-226):** R19 / R20 (I2C pull-ups) are 10 kΩ; R24 / R25 (4.7 kΩ) with C4 / C5 (100 nF) are the CS filters by
+  the drivers; R26 (10 kΩ) is the ARM pull-up.
 - **C3** is Panasonic EEE-FK1C101P (100 µF 16 V, 6.3 × 5.8 mm SMD can) at DRV_L's VIN, under the IMU module. It is reflowed with the
   other SMD parts.
 - **Mechanical:** M2.5 × 20 mm nylon F-F standoffs ×2 (the rear Jetson standoffs that clamp the board), M2.5 × 12 countersunk screws ×2
@@ -110,11 +119,11 @@ The XT30 housing mates only one way round, but a lead with its two wires soldere
 
 Order: **reflow SMD → inspect → iron THT → modules.**
 
-1. **Reflow SMD, top side only.** Tape the board down, print paste through the stencil, place C2, C3, D1, Q1–Q5, LED1–LED3 and R1–R23
+1. **Reflow SMD, top side only.** Tape the board down, print paste through the stencil, place C2–C5, D1, Q1–Q5, LED1–LED3 and R1–R26
    (positions in the pos file, polarity on the silk: the LED and D1 cathode marks, the SOT-23 pin 1, C3 "+"), and reflow on a hot plate
-   or in an oven. The test pads TP1–TP5 stay bare copper.
+   or in an oven. The test pads TP1–TP5 stay bare copper, and D2 stays empty (DNP).
 2. **Inspect.** Look for bridges on the SOT-23 and 0805 parts and check the polarity marks. Check the GND 0805 / SOT-23 joints for solder
-   wicking into the tented vias beside them (the mask web there is about 0.1 mm). With a meter: no short from GND to BAT+,
+   wicking into the tented vias beside them (the mask web there is about 0.15 mm). With a meter: no short from GND to BAT+,
    VBAT_SW, VMOT, 5V or 3V3.
 3. **Iron THT**, lowest first: the sockets (U1A / U1B, U2, U3L / U3P, U4L / U4P), the connectors (the XH headers, the VH J2, the XT30
    J1 and the Micro-Fit J3, its plastic peg through its hole), J4 / J5, U5A / U5B, the FLR holders, K1, C1 ("+" on silk). The power pads keep thermal-relief spokes (ruling R13), so a large tip solders them. **Trim every lead
@@ -136,12 +145,12 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **JLCPCB copper:** the 4-layer default is still 1 oz outer / 0.5 oz inner.
 - [ ] **JLCPCB hole-wall copper** (via barrel plating): about 18 µm minimum, 20 µm average (IPC-6012 class 2). The B6 via model uses
       20 µm (`copper.VIA_PLATING_MM`). Recomputed at 18 µm (B7), only one pad is via-limited: U3P.2 (DRV_L GND) carries 3.11 A against
-      2.1 A (+48 %; 3.25 A at 20 µm). The worst tap via carries 87 mA against 0.87 A, and C3's GND via 0.10 A against 0.87 A. Every margin
-      holds; no copper change.
+      2.1 A (+48 %; 3.25 A at 20 µm). The worst tap via carries 87 mA against 0.87 A, and C3's GND via (0.3 mm drill since LIO-226) 0.10 A
+      against 0.71 A (0.20 A with fast decay). Every margin holds; no copper change.
 - [ ] **Price and options:** about $8 for 5 pcs (4 layers, ≤ 100 × 100 mm), the stencil price, stack-up JLC04161H-7628 available,
       the 0.3 mm via drill at no extra cost, the order-number mark free at its default.
 - [ ] **Size and mask:** JLCPCB routes on the Edge.Cuts line centre (routing tolerance ±0.2 mm), so the order page reads 74 × 100 mm (the
-      size check above); green has the smallest solder-mask dam (the 0.095 mm web over the GND vias).
+      size check above); green has the smallest solder-mask dam (the 0.145 mm web over the GND vias).
 - [ ] **Silk text:** the silk labels are 0.8 mm high with a 0.15 mm stroke. JLCPCB recommends ≥ 1.0 mm characters with ≥ 0.153 mm lines. They
       print, perhaps less crisply; 1.0 mm labels do not fit round the parts (B7). The stock footprint outlines are 0.12 mm wide (also
       under the 0.153 mm), and those of J6, J7, J10–J13 and K1 sit 0.09–0.10 mm from the board edge: they may be clipped there.
@@ -174,6 +183,10 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **Motor encoder** (Pololu 4867, 25D 48 CPR): Hall sensors at most 10 mA each, from 5 V.
 - [ ] **ToF sensors** (Pololu 2490, VL53L0X): about 40 mA peak each while ranging (ST: 19 mA average), from 3V3.
 - [ ] **Pico 3V3 regulator:** 300 mA for external loads (the 3V3 rail: IMU, ToF sensors, pull-ups).
+- [ ] **I2C pull-ups on the modules:** the GY-521's 2.2 kΩ and the Pololu 2490 carriers' 10 kΩ (from memory); with R19 / R20 at 10 kΩ
+      the bus is about 1.05 kΩ. Measure it at bring-up (BRINGUP.md section 4 item 4).
+- [ ] **JLCPCB 4-layer minimums** as the DRC rules carry them (annular ring 0.13 mm, plated hole 0.3 mm, non-plated 0.5 mm, hole to hole
+      0.5 mm, copper to edge 0.3 mm, silk line 0.12 mm, silk to mask 0.1 mm): check them against JLCPCB's capability page.
 - [ ] **LED forward voltage:** at least 1.8 V (the lamp currents assume it).
 - [ ] **Power connectors J1 / J3 and their mates:** AMASS XT30UPB-M (J1, vertical PCB male, 15 A continuous; pin 1 = its "−" pad) and
       the XT30U-F on W01; Molex 43650-0200 (J3, Micro-Fit 3.0 right-angle header with peg), the 43645-0200 receptacle and the exact
@@ -182,7 +195,7 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **Envelope heights** (STEP for B8): JST B2P-VH header (J2) about 10 mm; AMASS XT30UPB-M (J1) about 11 mm; Molex 43650-0200 (J3)
       about 10 mm; FLR housing 17.5 mm with the ATO fuse body (19.1 × 5.1 mm) up to 30 mm; C1 20 mm.
 - [ ] **The BOM MPNs marked "verify before ordering":** the AMASS J1 header, the Molex J3 header, the Sullins sockets (U1A / U1B, U2, U3L / U3P, U4L / U4P), the Amphenol J4 / J5 headers, the
-      Phoenix U5A / U5B terminals, the Vishay D1, the Samsung C2, the Panasonic C3, the Lite-On LEDs, the Yageo R1–R23 and the Littelfuse
+      Phoenix U5A / U5B terminals, the Vishay D1 / D2, the Samsung C2 / C4 / C5, the Panasonic C3, the Lite-On LEDs, the Yageo R1–R26 and the Littelfuse
       ATO fuses.
 
 agents never order: the user places the order.

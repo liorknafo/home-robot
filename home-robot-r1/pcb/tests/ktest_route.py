@@ -108,6 +108,9 @@ class RouteTests(unittest.TestCase):
         smd = {(fp.GetReference(), p.GetNumber()) for fp in self.b.GetFootprints() for p in fp.Pads()
                if p.GetNetname() == 'GND' and not p.IsOnLayer(pcbnew.B_Cu)}
         self.assertEqual({ref for ref, _ in smd}, set(B.SMD_GND_VIAS))
+        lp12 = {(round(u, 3), round(v, 3)) for u, v in B.SMD_GND_VIAS.values()}       # LIO-226: the LP12 vias are 0.8 / 0.3 on the board
+        self.assertEqual({(round(TOMM(v.GetWidth(pcbnew.F_Cu)), 3), round(TOMM(v.GetDrillValue()), 3)) for v in self.vias if v.GetNetname() == 'GND'
+                          and (round(TOMM(v.GetPosition().x), 3), round(TOMM(v.GetPosition().y), 3)) in lp12}, {B.SMD_PAD_VIA})
 
     _baseline = None
     @classmethod
@@ -145,7 +148,8 @@ class RouteTests(unittest.TestCase):
             if TOMM(t.GetWidth()) < need - 1e-6 and key not in ok: bad.append((t.GetNetname(), cls, TOMM(t.GetWidth())))
         for v in self.vias:
             cls = v.GetNet().GetNetClassName()
-            dia, drill = B.net_via(v.GetNetname())           # PB17: the class's via, GND's pinned at GND_VIA (0.8 / 0.4)
+            at = (TOMM(v.GetPosition().x), TOMM(v.GetPosition().y))
+            dia, drill = B.net_via(v.GetNetname(), at)       # PB17: the class's via, GND's pinned (LIO-226: LP12 0.8 / 0.3, stitching 0.8 / 0.4)
             if TOMM(v.GetWidth(pcbnew.F_Cu)) < dia - 1e-6 or TOMM(v.GetDrillValue()) < drill - 1e-6:
                 bad.append(('via', v.GetNetname(), cls, TOMM(v.GetWidth(pcbnew.F_Cu)), TOMM(v.GetDrillValue())))
         self.assertEqual(bad, [])

@@ -17,7 +17,7 @@ BOARD = FAB.parent / 'r1_power_io.kicad_pcb'        # the routed board the packa
 LAYER_FUNCTION = {'F.Cu': 'Copper,L1,Top', 'In1.Cu': 'Copper,L2,Inr', 'In2.Cu': 'Copper,L3,Inr', 'B.Cu': 'Copper,L4,Bot',
                   'F.Mask': 'Soldermask,Top', 'B.Mask': 'Soldermask,Bot', 'F.Silkscreen': 'Legend,Top', 'B.Silkscreen': 'Legend,Bot',
                   'F.Paste': 'Paste,Top', 'Edge.Cuts': 'Profile,NP'}
-VIA_DRILLS = sorted({d for _, d in B.CLASS_VIA.values()} | {B.GND_VIA[1]})     # 0.3 (signal, PB17), 0.4 (GND / PowerTap / Motor), 0.6
+VIA_DRILLS = sorted({d for _, d in B.CLASS_VIA.values()} | {B.GND_VIA[1], B.SMD_PAD_VIA[1]})   # 0.3 (signal PB17, LP12 LIO-226), 0.4 (GND stitching / PowerTap / Motor), 0.6
 SCALE_BAR_MM = 50.0              # make_fab draws a bar this long on every PDF page: it must print at this length
 
 
@@ -158,7 +158,8 @@ class FabPackageTests(unittest.TestCase):
         self.assertAlmostEqual(w, B.BOARD_W, delta=0.5); self.assertAlmostEqual(h, B.BOARD_H, delta=0.5)
 
     def test_paste_layer_opens_every_smd_pad(self):
-        """F.Paste (the stencil) has exactly one aperture for each pad of each fitted top-side SMD part (73: no more, no fewer)."""
+        """F.Paste (the stencil) has exactly one aperture for each pad of each fitted top-side SMD part (83: no more, no fewer; none for the
+        DNP D2, LIO-226)."""
         smd_pads = sum({'R': 2, 'C': 2, 'Q': 3, 'D': 2, 'L': 2}[r[0]] for r, p in B.PARTS.items() if p['mount'] == 'smd_top' and fitted(r))
         flashes = [p for p in gerber_points(self.files[self.layer_file['F.Paste']]) if p[2] == 3]
         self.assertEqual(len(flashes), smd_pads)
@@ -188,7 +189,7 @@ class FabPackageTests(unittest.TestCase):
         web = min(w[0] for L in webs for w in webs[L])
         print(f'\ntented vias: minimum mask web over a drill {web:.3f} mm; F.Mask {webs["F.Mask"][0][0]:.3f} mm, B.Mask {webs["B.Mask"][0][0]:.3f} mm; '
               f'{sum(1 for w in webs["F.Mask"] if w[0] < 0.15)} F.Mask vias under 0.15 mm')
-        self.assertGreaterEqual(web, 0.09)                      # the LP12 GND vias keep 0.095 mm: a thinner web is a regression
+        self.assertGreaterEqual(web, 0.14)                      # LIO-226: the 0.3 mm LP12 drills keep 0.145 mm (0.095 at 0.4): a thinner web is a regression
         self.assertIn(f'{web:.3f} mm', ' '.join(ORDERING.read_text(encoding='utf-8').split()), 'ORDERING.md quotes the minimum web')
 
     # --- brief step 1: the BOM ---
@@ -206,7 +207,7 @@ class FabPackageTests(unittest.TestCase):
             self.assertEqual(int(row['Qty']), len(row['Refs'].split()), ref)
             self.assertEqual(row['Fit'], 'DNP' if part.get('dnp') else 'yes' if B.in_bom(ref) else 'no part', ref)
             if fitted(ref): self.assertTrue(part['mpn'].strip(), ref)
-        self.assertEqual({r for r, row in seen.items() if row['Fit'] == 'DNP'}, {'J14', 'J15'})
+        self.assertEqual({r for r, row in seen.items() if row['Fit'] == 'DNP'}, {'J14', 'J15', 'D2'})     # LIO-226: D2, the VSYS diode
         self.assertIn('EEE-FK1C101P', seen['C3']['MPN'])                  # PB16 / PB20: C3's part
 
     def test_bom_lists_the_plug_in_items(self):
@@ -239,8 +240,8 @@ class FabPackageTests(unittest.TestCase):
         if 'SC0915' in text: self.assertIn('solder', text); self.assertIn('no headers', text)
 
     # the MPNs quoted from memory (every one is "verify before ordering") and the manufacturer the checklist names for each
-    MEMORY_MPN_REFS = ['U1A', 'U1B', 'U2', 'U3L', 'U3P', 'U4L', 'U4P', 'J4', 'J5', 'U5A', 'U5B', 'D1', 'C2', 'C3', 'LED1', 'LED2', 'LED3',
-                       *(f'R{i}' for i in range(1, 24))]
+    MEMORY_MPN_REFS = ['U1A', 'U1B', 'U2', 'U3L', 'U3P', 'U4L', 'U4P', 'J4', 'J5', 'U5A', 'U5B', 'D1', 'D2', 'C2', 'C3', 'C4', 'C5', 'LED1',
+                       'LED2', 'LED3', *(f'R{i}' for i in range(1, 27))]
 
     def test_memory_mpns_are_marked_and_on_the_checklist(self):
         """B7 fix 1: every MPN quoted from memory says 'verify before ordering' in the BOM (the Samsung C2 and the Yageo resistors too), and the
@@ -315,7 +316,7 @@ class FabPackageTests(unittest.TestCase):
         text = ORDERING.read_text(encoding='utf-8')
         w, c = B.DEFAULT_CLASS['width'], B.DEFAULT_CLASS['clearance']
         for s in (f'{w:g} / {c:g} mm', '6 / 6 mil', 'no surcharge',
-                  *(f'{d:g} / {h:g} mm' for d, h in {*B.CLASS_VIA.values(), B.GND_VIA})):
+                  *(f'{d:g} / {h:g} mm' for d, h in {*B.CLASS_VIA.values(), B.GND_VIA, B.SMD_PAD_VIA})):
             self.assertIn(s, text, s)
 
     def test_ordering_puts_the_j1_pinout_in_bold(self):
@@ -334,7 +335,7 @@ class FabPackageTests(unittest.TestCase):
 
     def test_ordering_names_c3_and_the_dnp_rows(self):
         text = ORDERING.read_text(encoding='utf-8')
-        for s in ('EEE-FK1C101P', 'J14', 'J15', 'DNP'): self.assertIn(s, text, s)
+        for s in ('EEE-FK1C101P', 'J14', 'J15', 'D2', 'DNP'): self.assertIn(s, text, s)
 
     # --- carry item 5: bring-up notes for B10 ---
     @needs_kicad()
