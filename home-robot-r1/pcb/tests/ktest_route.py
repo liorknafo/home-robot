@@ -163,6 +163,19 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(bad, [])
         self.assertEqual([r for r in B.PREROUTES if r['net'] in outer and r['layer'] in ('In1.Cu', 'In2.Cu')], [])
 
+    def test_no_in2_copper_under_the_b_cu_motor_tracks(self):
+        """LIO-232: no In2 track of another net within route.MOTOR_SHADOW (0.5 mm) of a B.Cu Motor track, laterally - In2 lies one 0.21 mm
+        prepreg under B.Cu, and R_CS_ADC had run 11.9 mm under L_M2's PWM edges (route.py keeps the shadow out of the router's reach, on
+        In2 and in stage F). Prints R_CS_ADC's distance."""
+        motor = [t for t in self.tracks if t.GetNetname() in B.NETCLASSES['Motor']['nets'] and t.GetLayer() == pcbnew.B_Cu]
+        self.assertEqual(len(motor), sum(len(r['pts']) - 1 for r in B.PREROUTES if r['net'] in B.NETCLASSES['Motor']['nets'] and r['layer'] == 'B.Cu'))
+        def gap(a, b):
+            return TOMM(pcbnew.SEG(a.GetStart(), a.GetEnd()).Distance(pcbnew.SEG(b.GetStart(), b.GetEnd()))) - TOMM(a.GetWidth() + b.GetWidth()) / 2
+        cs = min((gap(t, m) for t in self.tracks if t.GetNetname() == 'R_CS_ADC' and t.GetLayer() == pcbnew.In2_Cu for m in motor), default=math.inf)
+        print(f'\nR_CS_ADC on In2: {cs:.2f} mm laterally from the nearest B.Cu Motor track')
+        self.assertGreaterEqual(cs, route.MOTOR_SHADOW)
+        self.assertEqual(route.motor_shadow_intrusions(self.b), [])
+
     def test_routed_copper_layers(self):
         """No track on In1.Cu (the GND plane is not routed). No router track on a Power-class net (BAT+, F1_OUT, F2_OUT): the R4 comment's
         3 mm stubs carry 10.6 A only as a pair on both outer layers, so they go on both or not at all - the bay board needs none, every

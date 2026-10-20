@@ -514,10 +514,11 @@ class SpecTests(unittest.TestCase):
     def test_tap_loads_cover_every_tap_pad(self):
         """B6 carry item 4: every pad of a tap net (TAP_NETS: the supplies with tracks to small loads) that is not a trunk pin and not
         the net's source pin has its own load in TAP_LOAD_A (A, >= 0; probe pads 0), so ktest_power can sum the load behind each
-        track. The 3V3 source is the Pico's 3V3 pin; the zone nets are fed by their trunk zones. The 3V3 loads stay within the Pico's
-        300 mA, the 5V taps within the spec's ~0.3 A beside the Jetson."""
-        self.assertEqual(B.TAP_NETS, ('VBAT_SW', 'VMOT', '5V', '3V3'))
-        self.assertEqual(B.TAP_SOURCE, {'3V3': B.pico('3V3_OUT')})
+        track. The 3V3 source is the Pico's 3V3 pin, VSYS's the DNP D2's cathode (LIO-232); the zone nets are fed by their trunk zones.
+        The 3V3 loads stay within the Pico's 300 mA, the 5V taps within the spec's ~0.3 A beside the Jetson."""
+        self.assertEqual(B.TAP_NETS, ('VBAT_SW', 'VMOT', '5V', '3V3', 'VSYS'))
+        self.assertEqual(B.TAP_SOURCE, {'3V3': B.pico('3V3_OUT'), 'VSYS': B.dio('D2', 'K')})
+        self.assertEqual(B.TAP_LOAD_A[B.pico('VSYS')], B.TAP_LOAD_A[B.dio('D2', 'A')])     # the Pico's VSYS draw, on both sides of D2
         trunk = {p for pins in B.POWER_TRUNK.values() for p in pins}
         want = {p for n in B.TAP_NETS for p in B.NETS[n] if p not in trunk and p != B.TAP_SOURCE.get(n)}
         self.assertEqual(set(B.TAP_LOAD_A), want)

@@ -14,16 +14,20 @@
   (condition "!A.isPlated()")
   (constraint hole_size (min 0.5mm)))
 (rule "JLCPCB hole to hole"
+  (severity error)
   (constraint hole_to_hole (min 0.5mm)))
 (rule "JLCPCB copper to edge"
   (constraint edge_clearance (min 0.5mm)))
 (rule "JLCPCB silk to mask"
+  (severity error)
   (layer "?.Mask")
   (condition "!A.existsOnLayer('Edge.Cuts') && !B.existsOnLayer('Edge.Cuts')")
   (constraint silk_clearance (min 0.1mm)))
 (rule "JLCPCB silk text stroke"
+  (severity error)
   (condition "A.Type == 'Text' && (A.Layer == 'F.Silkscreen' || A.Layer == 'B.Silkscreen')")
   (constraint text_thickness (min 0.12mm)))
 (rule "JLCPCB silk line width"
+  (severity error)
   (condition "A.Type == 'Graphic' && (A.Layer == 'F.Silkscreen' || A.Layer == 'B.Silkscreen')")
   (constraint assertion "A.Line_Width >= 0.12mm"))

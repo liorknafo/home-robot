@@ -37,6 +37,8 @@ Router keepouts (candidate_dsn). Freerouting reads KiCad's zones as planes (cond
  - the M3 washers / clamp keep-outs (R17b) on all four layers;
  - via keepouts round every In1 void of the placement that is VOID_GUARD_MIN or longer (a via antipad merged into a socket row's void
    would stretch it past R15's 10 mm);
+ - LIO-232: In2 keepouts under the B.Cu Motor tracks, MOTOR_SHADOW past their edges (motor_shadow_keepouts; stage F's grid keeps the
+   same), so no signal runs under their PWM edges one prepreg away;
  - B.Cu guards round the GND pads (gnd_guards): the B.Cu GND fill is extra copper (In1 carries the returns), but the GND trunk pads'
    B.Cu spokes count for their current (PB12) and a pad left with one spoke is a starved thermal."""
 import argparse, hashlib, json, math, re, shutil, subprocess, sys, tempfile, time
@@ -400,14 +402,53 @@ def gnd_guards(board, trunk_guard=TRUNK_GUARD, spoke_keep=SPOKE_KEEP, gnd_guard=
     return circles, bands
 
 
+MOTOR_SHADOW = 0.5        # mm (LIO-232): no In2 copper of another net within this of a B.Cu Motor track, laterally: In2 lies one 0.21 mm
+                          # prepreg under B.Cu, and R_CS_ADC had run 11.9 mm right under L_M2's PWM edges. Nothing needs to cross them there.
+
+
+def motor_copper(board, layer='B.Cu'):
+    """The Motor-class tracks on `layer` (the B5 pre-routes) as one polygon set."""
+    nets, ps = set(B.NETCLASSES['Motor']['nets']), pcbnew.SHAPE_POLY_SET()
+    for t in board.GetTracks():
+        if t.GetClass() != 'PCB_VIA' and t.GetNetname() in nets and t.GetLayer() == LAYER[layer]:
+            t.TransformShapeToPolygon(ps, LAYER[layer], 0, MM(0.005), pcbnew.ERROR_OUTSIDE)
+    ps.Simplify()
+    return ps
+
+
+def motor_shadow_keepouts(board):
+    """DSN keepouts on In2.Cu under the B.Cu Motor tracks, MOTOR_SHADOW past their edges (the router adds its clearance), less every
+    pad on In2 grown 0.3 mm (a keepout over a pad keeps Freerouting off that pad, gnd_guards)."""
+    ko = motor_copper(board)
+    ko.Inflate(MM(MOTOR_SHADOW - B.DEFAULT_CLASS['clearance']), pcbnew.CORNER_STRATEGY_ROUND_ALL_CORNERS, MM(0.01))
+    pads = pcbnew.SHAPE_POLY_SET()
+    for p in (p for fp in board.GetFootprints() for p in fp.Pads() if p.IsOnLayer(LAYER['In2.Cu'])):
+        p.TransformShapeToPolygon(pads, LAYER['In2.Cu'], MM(0.3), MM(0.01), pcbnew.ERROR_OUTSIDE)
+    ko.BooleanSubtract(pads)
+    return [dsn_area('keepout', f'motor_shadow{j}', 'In2.Cu', o, hs) for j, (o, hs) in enumerate(rings(ko))]
+
+
+def motor_shadow_intrusions(board):
+    """[(net, mm2)] - In2 tracks of other nets with copper within MOTOR_SHADOW of a B.Cu Motor track (ktest_route checks the same)."""
+    shadow = motor_copper(board)
+    shadow.Inflate(MM(MOTOR_SHADOW - 0.001), pcbnew.CORNER_STRATEGY_ROUND_ALL_CORNERS, MM(0.005))
+    bad = []
+    for t in board.GetTracks():
+        if t.GetClass() == 'PCB_VIA' or t.GetLayer() != LAYER['In2.Cu'] or t.GetNetname() in B.NETCLASSES['Motor']['nets']: continue
+        x = pcbnew.SHAPE_POLY_SET(); t.TransformShapeToPolygon(x, LAYER['In2.Cu'], 0, MM(0.005), pcbnew.ERROR_OUTSIDE)
+        x.BooleanIntersection(shadow)
+        if x.OutlineCount(): bad.append((t.GetNetname(), round(zone_check.area_mm2(x), 3)))
+    return bad
+
+
 def candidate_dsn(raw, board, lifted=(), trunk_only=False, light=False, own=None):
-    """The router's DSN: the zone, hole, cutout and In1-void keepouts and the B.Cu GND guards of the worker's SETUP. lifted: windows
+    """The router's DSN: the zone, hole, cutout, In1-void and motor-shadow keepouts and the B.Cu GND guards of the worker's SETUP. lifted: windows
     (u0, v0, u1, v1) where the ordinary GND pads' guards are left out (stage C); trunk_only: guard circles only round the GND trunk pads
     (stage D); light: also the spoke bands only SPOKE_KEEP_LIGHT long (stage E: every GND pad still keeps its relief spokes); own: the
     net routed alone in a stage-A step, whose own zones get no keepout (zone_keepouts)."""
     circles, bands = gnd_guards(board, TRUNK_GUARD, SPOKE_KEEP_LIGHT if light else SETUP['spoke_keep'],
                                 0.0 if (trunk_only or light) else SETUP['gnd_guard'], lifted)
-    areas = zone_keepouts(board, own) + fixed_keepouts(board) + VOID_KEEP
+    areas = zone_keepouts(board, own) + fixed_keepouts(board) + VOID_KEEP + motor_shadow_keepouts(board)
     areas += [dsn_area('keepout', f'gnd_spoke{i}', 'B.Cu', B.rect_pts(r)) for i, r in enumerate(bands)]
     areas += [f'    (keepout "gnd_guard{i}" (circle B.Cu {round(d * 1000)} {um(u, v)}))\n' for i, (d, u, v) in enumerate(circles)]
     return router_dsn(raw, areas)
@@ -599,13 +640,14 @@ def quality(board, base):
     for net in (n for n in B.POWER_TRUNK if n != 'GND'):
         a = zone_check.trunk_capacity(board, net)['capacity_a']
         if a < B.CURRENT_A[net]: capacity.append((net, a))
+    shadow = motor_shadow_intrusions(board)
     n = (len(over) + len(voids) + len(close) + len(holes) + gnd_tracks + len(foreign) + len(bad_tracks) + len(narrow) + len(spokes)
-         + len(capacity))
+         + len(capacity) + len(shadow))
     return n, dict(returns_over=over, worst_return=max((round(r, 3) for *_, r, _ in paths), default=0), in1_voids_over=voids,
                    longest_in1_void=all_voids[0][:2], min_via_pad=gaps[0][0] if gaps else None, vias_near_pads=close,
                    hole_intrusions=holes, gnd_tracks=gnd_tracks, foreign_zone_copper=foreign, bad_tracks=bad_tracks, narrow_tracks=narrow,
                    spokes_short=spokes, spokes_pending=pending,
-                   capacity_short=capacity)
+                   capacity_short=capacity, motor_shadow=shadow)
 
 
 def evaluate(board, workdir, base):
@@ -802,6 +844,9 @@ def grid_obstacles(board, net, half, pad_extra, w, h, guards):
         for zn, zl, pts, _ in zone_polys():
             if zl != L or zn == net: continue
             ps = polyset(pts); ps.Inflate(MM(GRID_ZONE + half + GRID_MARGIN), pcbnew.CORNER_STRATEGY_ROUND_ALL_CORNERS, MM(0.02))
+            raster(ps, g, w, h)
+        if L == 'In2.Cu' and net not in B.NETCLASSES['Motor']['nets']:     # LIO-232: the motor shadow (motor_shadow_keepouts)
+            ps = motor_copper(board); ps.Inflate(MM(MOTOR_SHADOW + half + GRID_MARGIN), pcbnew.CORNER_STRATEGY_ROUND_ALL_CORNERS, MM(0.02))
             raster(ps, g, w, h)
         if net != 'GND':
             for pos, keep in holes:

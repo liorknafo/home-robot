@@ -115,14 +115,15 @@ def zones():
         # pins).
         (dict(net='VBAT_SW', layers=('In2.Cu',), trunk=False), [(2.6, 52.9, 8.0, 59.36)], VBAT_CUTS),
         # VMOT, F.Cu trunk: the spine west of the driver rows, the bar over U3P.1, the bar by U4L.7 (DRV_R's VIN until PB15; it still feeds
-        # R23), the bar west through C1.1 to K1's NO pin, and (PB15, DRV_R turned) a 4 mm lane across the gap to U4P.1.
-        (dict(net='VMOT', layers=('F.Cu',)),
+        # R23), the bar west through C1.1 to K1's NO pin, and (PB15, DRV_R turned) a 4 mm lane across the gap to U4P.1. LIO-232: 1.5 mm
+        # spokes here and in the In2 helper (K1.3, the relay's NO pin, has two of each: 5.1 -> 6.0 A against its 5 A).
+        (dict(net='VMOT', layers=('F.Cu',), spoke=SPOKE_POWER),
          [(28.0, 59.0, 32.75, 86.3), (31.5, 56.4, 37.7, 63.0), (32.75, 81.5, 36.0, 86.3), (12.6, 80.75, 28.0, 88.9),     # B12a: bar 0.4 mm off J3's pads
           (37.7, 59.0, 48.0, 63.0), (44.9, 63.0, 48.5, 67.9),       # PB15: F.Cu lane across the gap to U4P.1 (DRV_R turned)
           (36.0, 41.4, 42.3, 59.0), (39.3, 38.6, 46.5, 43.0), (46.5, 39.4, 48.3, 43.0), (39.0, 35.0, 42.5, 38.6)], []),     # PB16: up DRV_L's interior and along its north end to U3P.1 and C3.1
         # VMOT, In2 helper (PB15): the spine and the bars, less the bar over U3P.1 - In2 stays free from the strip west of DRV_L down into
         # the gap, the Pico links' way to DRV_R's logic row (U4L, now on the west).
-        (dict(net='VMOT', layers=('In2.Cu',), trunk=False),
+        (dict(net='VMOT', layers=('In2.Cu',), trunk=False, spoke=SPOKE_POWER),
          [(28.0, 59.0, 32.75, 86.3), (32.75, 81.5, 36.0, 86.3), (12.6, 80.75, 28.0, 88.9)], []),
         # 5V, B.Cu trunk: U5B.1, north between J4.6 and U5B.2 (the box keeps off U5B.2's south-east spoke), west north of J4's pins, south
         # through DRV_L, through the gap between the drivers, through DRV_R, out between U4P.1 and U4L.1, west to J3.1, with room for
@@ -161,9 +162,10 @@ def zones():
          [(0.6, 59.86, 5.6, 65.86), (0.6, 62.6, 6.1, 65.86), (6.1, 62.6, 11.98, 75.0), (6.1, 71.6, 21.69, 75.0), (17.48, 62.6, 21.69, 75.0),
           (17.48, 62.6, 22.99, 65.0), (20.5, 60.6, 22.99, 62.6)], []),
         # F2_OUT, F.Cu trunk: F2.2 (copper west of F2 and in the F2 / F1 gap), south between J1 and K1 to K1's COM pin; kept east of u 7.6
-        # beside J1 and of u 6.3 south of it for the battery GND patch (PB20: J1.1's).
+        # beside J1 and of u 6.3 south of it for the battery GND patch (PB20: J1.1's). LIO-232: east of u 7.6 to v 79 and of u 7.3 to v 86.5
+        # (4.5 / 4.8 mm: the trunk's narrowest is now 4.5 mm, 7.1 A against 5 A), so the patch is 1 mm wider past J1.1's south side and K1.4.
         (dict(net='F2_OUT', layers=('F.Cu',)),
-         [(7.6, 64.6, 21.6, 76.0), (6.3, 74.5, 12.1, 98.2)], []),
+         [(7.6, 64.6, 21.6, 76.0), (7.6, 74.5, 12.1, 79.0), (7.3, 79.0, 12.1, 86.5), (6.3, 86.5, 12.1, 98.2)], []),
         # 3V3, In2 pour (bay B5: a strip, not the whole Pico pocket): under the pull-up column (u 14.91 pads, via down) and a link over to
         # the Pico's 3V3 pin (U1B.5); the rest of In2 under the Pico is left to the signals that cross from U1A to U1B's pin gaps.
         (dict(net='3V3', layers=('In2.Cu',), trunk=False),
@@ -190,8 +192,10 @@ def gnd_patches():
     to K1.5 (GND), with the stitching vias south of K1.4 (STITCH). U3P.2's patch (PB16, DRV_L turned) lies between the VMOT bar (0.65 mm
     north) and U3P.3's Motor clearance (south); ruling PB21 (B6 fix 2) draws it to the pad's centre - it used to end at u 46.5, 0.05 mm
     short of the pad, so KiCad drew it no spoke - and U3P.2 takes 90 degree spokes (board_spec.PAD_SPOKE_ANGLE): the west one lands in
-    the patch, the only free side (one spoke per outer layer: board_spec.DRC_RULES)."""
-    return [build([(0.6, 69.4, 7.1, 74.0), (0.6, 74.0, 5.8, 98.0)]),
+    the patch, the only free side (one spoke per outer layer: board_spec.DRC_RULES). LIO-232: J1.1's patch reaches u 7.1 down to v 78.5
+    and u 6.8 down to v 86 (F2_OUT east of u 7.6 / 7.3 there): K1.4's clearance circle had left it 1.6 mm of copper and the step at
+    v 74 0.6 mm beside J1.1's south spoke, the F.Cu necks of the battery pin's ring cut."""
+    return [build([(0.6, 69.4, 7.1, 78.5), (0.6, 78.5, 6.8, 86.0), (0.6, 86.0, 5.8, 98.0)]),
             build([(42.7, 43.65, pad('U3P', '2')[0], 45.2)])]
     # bay B5: U4P.2's patch is gone - R_M1 leaves U4P.3 across that corner; U4P.2 keeps 2 In1 + 2 B.Cu spokes (5.87 A >= 2.1)
 

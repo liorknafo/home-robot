@@ -65,7 +65,8 @@ All are inside JLCPCB's standard multilayer capability (0.09 / 0.09 mm track / s
 no surcharge option is needed. The board's DRC rules carry JLCPCB's 4-layer minimums (LIO-226, `board_spec.DRC_RULES`): annular
 ring ≥ 0.13 mm, plated hole ≥ 0.3 mm, non-plated ≥ 0.5 mm, hole to hole ≥ 0.5 mm, silk lines and text strokes ≥ 0.12 mm, silk
 ≥ 0.1 mm off the mask openings, and copper to the edge ≥ 0.5 mm (KiCad's default, kept: JLCPCB needs 0.3); the board is DRC-clean
-against them. The smallest drill is
+against them at every severity (LIO-232: the hole-to-hole, silk-line, silk-text and silk-to-mask rules say `(severity error)`, which
+kicad-cli would otherwise report as warnings only, and the router scores warnings too). The smallest drill is
 0.3 mm; the NPTH holes are three Ø3.0 mm (the clamp holes H5 / H6 and J3's Micro-Fit peg) and the two Ø2.4 mm FLR locating holes.
 
 ## Parts and mechanical items
@@ -177,7 +178,9 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **The power model's remaining optimism:** the DRV8874 continuous limit (`power_check.drv8874_current_for_tj`, 1.8 A) uses the
       typical R_DS(on), not the datasheet maximum, and an assumed 40 °C under the carrier (measured in the lid-on test, BRINGUP.md); the
       via barrels use 20 µm average plating against an 18 µm minimum (above). Copper on stacked layers is rated on its combined
-      cross-section (`copper.capacity_a`), but the battery GND pin's ring cut (`power_check.pin_ring_cut`) still sums its layers.
+      cross-section (`copper.capacity_a`), the battery GND pin's ring cut (`power_check.pin_ring_cut`) too since LIO-232: 7.8 A
+      against the 7.5 A fuse once J1.1's F.Cu GND patch was widened past K1.4 and J1.1's south spoke (summing the layers had shown 9.0 A
+      for copper that carried 6.7 A as a stack). It is a lower bound that ignores every via.
 - [ ] **C1 Panasonic EEU-FR1E471** (FR, 470 µF 25 V): ESR about 0.04 Ω; 10 mm diameter, 5 mm lead pitch, ≤ 20 mm tall (the STEP envelope
       is 20 mm; the real can is about 16–20 mm).
 - [ ] **Omron G5LE-1 DC5** relay: coil 63 Ω, 79.4 mA at 5 V; contacts rated for the 5 A DC motor branch; pinout as the KiCad footprint.
@@ -196,8 +199,8 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **I2C pull-ups on the modules:** the GY-521's 2.2 kΩ and the Pololu 2490 carriers' 10 kΩ (from memory); with R19 / R20 at 10 kΩ
       the bus is about 1.05 kΩ. Measure it at bring-up (BRINGUP.md section 4 item 4).
 - [ ] **JLCPCB 4-layer minimums** as the DRC rules carry them (annular ring 0.13 mm, plated hole 0.3 mm, non-plated 0.5 mm, hole to hole
-      0.5 mm, copper to edge 0.5 mm against JLCPCB's 0.3 mm, silk line 0.12 mm, silk to mask 0.1 mm): check them against JLCPCB's
-      capability page.
+      0.5 mm, copper to edge 0.5 mm against JLCPCB's 0.3 mm, silk line 0.12 mm, silk to mask 0.1 mm; each fails DRC as an error):
+      check them against JLCPCB's capability page.
 - [ ] **LED forward voltage:** at least 1.8 V (the lamp currents assume it).
 - [ ] **Power connectors J1 / J3 and their mates:** AMASS XT30UPB-M (J1, vertical PCB male, 15 A continuous; pin 1 = its "−" pad) and
       the XT30U-F on W01; Molex 43650-0200 (J3, Micro-Fit 3.0 right-angle header with peg), the 43645-0200 receptacle and the exact
