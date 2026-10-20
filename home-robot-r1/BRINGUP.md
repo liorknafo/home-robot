@@ -380,8 +380,9 @@ Steps:
    **Handle these leads with ESD care, and inspect each cable before it is plugged** (LIO-234). ARM, BUMP_L / BUMP_R, XSHUT1–4,
    SDA / SCL and GP20 run straight to RP2040 pins and the encoder lines to bare 2N7002 gates, with no ESD protection: touch an M3 hole
    ring (GND) before handling a plug. The 5 V taps J4.4 / J5.4 (encoders), J13.1 (toggle loop) and J15.5 (camera LED) have no fuse
-   or PTC, so a pinched motor cable or a shorted toggle or LED lead crowbars the Jetson's 5 V, and can fuse an inner trace (J5.4
-   and J13.1 run on 0.8 mm half-ounce In2). Look for nicked insulation and check that no lead is pinched under the carrier, the P03 or
+   or PTC, so a pinched motor cable or a shorted toggle or LED lead crowbars the Jetson's 5 V, and can fuse an inner trace (J5.4,
+   J13.1 and J15.5 run on 0.8 mm half-ounce In2). The 3V3 taps J6.1 / J7.1 (cliff leads) leave on 0.15 mm In2 (about 0.76 A for
+   1 s), limited only by the Pico's 3V3 regulator, and COIL_P leaves on J13.2 to Q5's gate (D1 clamps it negative). Look for nicked insulation and check that no lead is pinched under the carrier, the P03 or
    a tie (`ORDERING.md` risk list; LIO-235 decides on PTCs).
 
    **J3 (Jetson 5 V)** is not under the carrier. It is in the rear band, behind the carrier (robot about (−43.9, −44.5)), with its
@@ -506,7 +507,7 @@ Then fit the Jetson (ASSY step 7).
      of its sockets: the LED must stay dark. Then fit the Pico, plug its USB cable and watch it boot, then reset it: the LED must stay
      dark throughout, and come on only when the firmware sets GP20 high.
    - **Glare check** (Jetson on, camera streaming, lid on; in a dark room, so the LED is the only strong light).
-     - Switch the LED on from the controller: a task sets it on while it drives (wheels lifted, as in section 7 item 6). If the task
+     - Switch the LED on from the controller: a task sets it on while it drives (wheels lifted, as in section 7 step 6). If the task
        stops too soon, set GP20 high from a test sketch instead. Do not use the 100 Ω trick now: the firmware holds GP20 low, and the
        joints are in heat-shrink.
      - Hold a white card about 0.5 m in front of the robot. The camera image must show **no bright spot, ring or haze** from the LED, and no

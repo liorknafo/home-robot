@@ -1109,15 +1109,15 @@
       "status": "from memory: verify"
     },
     {
-      "item": "Vishay SS14-E3/61T (D1)",
+      "item": "Vishay SS14-E3/61T (D1; D2 DNP)",
       "figure": "SMA 40 V 1 A Schottky, body <= 2.7 mm",
-      "source": "board_spec PARTS D1",
+      "source": "board_spec PARTS D1 / D2",
       "status": "from memory: verify"
     },
     {
-      "item": "Samsung CL21B104KBCNNNC (C2)",
+      "item": "Samsung CL21B104KBCNNNC (C2 / C4 / C5)",
       "figure": "0805 100 nF 50 V X7R",
-      "source": "board_spec PARTS C2",
+      "source": "board_spec PARTS C2 / C4 / C5",
       "status": "from memory: verify"
     },
     {

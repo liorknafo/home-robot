@@ -190,8 +190,10 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
       a hand-pushed blade arcs several times on the clip that then carries the motor current.
 - [ ] **Unprotected off-board lines** (LIO-234; no board change, LIO-235 decides on PTCs): ARM, BUMP_L / BUMP_R, XSHUT1–4,
       SDA / SCL and GP20 go straight to RP2040 pins, and the encoder lines to bare 2N7002 gates, with no ESD protection. The 5 V taps
-      J4.4 / J5.4 / J13.1 / J15.5 have no fuse or PTC; J5.4 and J13.1 run on 0.8 mm half-ounce In2 (`board_spec.PREROUTES`), so a
-      pinched motor cable or a shorted toggle or LED lead crowbars the Jetson's 5 V and can fuse an inner trace (about 4 A for 1 s).
+      J4.4 / J5.4 / J13.1 / J15.5 have no fuse or PTC; J5.4, J13.1 and J15.5 run on 0.8 mm half-ounce In2 (`board_spec.PREROUTES`
+      and the router's tracks), so a pinched motor cable or a shorted toggle or LED lead crowbars the Jetson's 5 V and can fuse an
+      inner trace (about 4 A for 1 s). The 3V3 taps J6.1 / J7.1 (cliff leads) leave on 0.15 mm In2 (about 0.76 A for 1 s), limited
+      only by the Pico's 3V3 regulator; COIL_P leaves on J13.2 to Q5's gate (D1 clamps it negative).
       BRINGUP.md section 9 asks for ESD care and a cable inspection.
 - [ ] **Motor encoder** (Pololu 4867, 25D 48 CPR): Hall sensors at most 10 mA each, from 5 V.
 - [ ] **ToF sensors** (Pololu 2490, VL53L0X): about 40 mA peak each while ranging (ST: 19 mA average), from 3V3.
