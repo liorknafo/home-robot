@@ -41,17 +41,15 @@ class RouteTests(unittest.TestCase):
         cls.vias = [t for t in cls.b.GetTracks() if t.GetClass() == 'PCB_VIA']
         with tempfile.TemporaryDirectory() as t:
             out = Path(t) / 'drc.json'
-            subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--format', 'json', '--units', 'mm', '-o', str(out), str(PCB)],
+            subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--severity-all', '--format', 'json', '--units', 'mm', '-o', str(out), str(PCB)],
                            check=True, capture_output=True)
             cls.drc = json.loads(out.read_text(encoding='utf-8'))
 
-    # --- acceptance 1: DRC (errors and unconnected items; warnings are listed, not failed) ---
+    # --- acceptance 1: DRC (no violation of any severity, as route.evaluate requires since LIO-233; no unconnected item) ---
     def test_drc_no_errors(self):
-        errors = [(v['type'], v['description'], [i['description'] for i in v['items']]) for v in self.drc['violations']
-                  if v['severity'] == 'error']
-        warn = Counter(v['type'] for v in self.drc['violations'] if v['severity'] != 'error')
-        print('\nDRC warnings by category:', dict(warn))
-        self.assertEqual(errors[:20], [], f'{len(errors)} DRC errors')
+        found = [(v['severity'], v['type'], v['description'], [i['description'] for i in v['items']]) for v in self.drc['violations']]
+        print('\nDRC violations by severity and category:', dict(Counter((v['severity'], v['type']) for v in self.drc['violations'])))
+        self.assertEqual(found[:20], [], f'{len(found)} DRC violations')
 
     def test_drc_fully_connected(self):
         unc = [[i['description'] for i in u['items']] for u in self.drc['unconnected_items']]
@@ -184,17 +182,15 @@ class RouteTests(unittest.TestCase):
         """B5 fix 1 / B6 fix 1 (review minor 6): route.py with no arguments reproduces the committed board, so the board's ROUTED_WITH
         record must name route.py's defaults exactly - DEFAULT_GRID (and its SETUPS name), DEFAULT_ORDER, DEFAULT_PASSES and
         CRITICAL_NETS (the Motor class + DRIVER_BUNDLE). A default changed without a re-route, or a board routed with other arguments,
-        fails here. LIO-228: route.py also records the tools (KiCad version, Freerouting jar sha256, Java version); a board routed before
-        that carries none, the next route.py run adds them. When recorded they must be KiCad 9.0.x, the pinned jar
-        (tools.FREEROUTING_SHA256) and Java 25."""
+        fails here. LIO-228: route.py also records the tools (KiCad version, Freerouting jar sha256, Java version): KiCad 9.0.x, the
+        pinned jar (tools.FREEROUTING_SHA256) and Java 25, required (LIO-233: the committed board carries them)."""
         from pcb import route
         rec = {str(k): v for k, v in dict(self.b.GetProperties()).items()}.get('ROUTED_WITH', '')
         m = re.fullmatch(r'route\.py set-up (\d+) (\S+) wiring (\S+) stage ([A-F]) passes (\d+) critical (\S+)'
-                         r'(?: kicad (\S+) freerouting-sha256 ([0-9a-f]{64}) java (\S+))?', rec)
+                         r' kicad (\S+) freerouting-sha256 ([0-9a-f]{64}) java (\S+)', rec)
         self.assertIsNotNone(m, rec)
         g, name, order, _stage, passes, critical, kicad, jar, java = m.groups()
-        if kicad:
-            self.assertEqual((kicad[:4], jar, java.split('.')[0]), ('9.0.', tools.FREEROUTING_SHA256, '25'), rec)
+        self.assertEqual((kicad[:4], jar, java.split('.')[0]), ('9.0.', tools.FREEROUTING_SHA256, '25'), rec)
         self.assertEqual((int(g), name, order, int(passes), critical.split(',')),
                          (route.DEFAULT_GRID, route.SETUPS[route.DEFAULT_GRID]['name'], route.DEFAULT_ORDER, route.DEFAULT_PASSES,
                           route.CRITICAL_NETS), rec)
