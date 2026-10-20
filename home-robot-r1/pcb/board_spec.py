@@ -308,6 +308,11 @@ POWER_TRUNK = {   # pads the high-current path must join with >= 3 mm zone coppe
 }
 # Each trunk pin's own load (ruling PB12, B4 fix 1): what its thermal spokes must carry, summed over the layers (zone_check.pin_spoke_capacity).
 # A fuse contact (4 pads) is one pin. Any trunk pin not listed carries CURRENT_A[net] (pad_current).
+# P03_OUT_V is the design nominal; the bench trim is 5.1 V (BRINGUP.md section 5, BOM_EXTRAS), raised up to V5_MAX if the Jetson's barrel
+# plug reads under 5.0 V under load (BRINGUP.md section 7 step 3; about 65 mOhm, 0.3 V at 4.5 A, from the P03 to the plug).
+# P03_VIN_MIN is the firmware's low-battery stop. BRINGUP.md section 5 tests the P03 at 6.0 V in, 4.5 A out (the XL4015 needs about
+# 0.6-0.8 V of headroom; motor starts sag the pack 0.3-0.5 V more). If it fails, the stop (BRINGUP.md section 8, BRINGUP-NOTES.md) rises
+# to the lowest passing input + 0.5 V and P03_VIN_MIN is set to match (LIO-229).
 P03_OUT_V, P03_OUT_A = 5.0, 4.5     # the P03 regulator's output: the Jetson's 5 V at 4.5 A (CURRENT_A['5V'])
 P03_VIN_MIN, P03_EFF = 6.0, 0.9      # its lowest input (the 6-cell NiMH pack near its 1.0 V/cell cut-off; full charge VBAT_MAX 8.7 V) and its efficiency there
 P03_IN_A = P03_OUT_V * P03_OUT_A / (P03_VIN_MIN * P03_EFF)      # 4.17 A drawn through U5A
