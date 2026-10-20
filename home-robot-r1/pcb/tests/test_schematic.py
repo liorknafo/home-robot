@@ -64,6 +64,10 @@ class KiCadSchematicTests(unittest.TestCase):
         self.assertEqual(pinless, {'H5', 'H6'})
         self.assertEqual({r for pins in self.nets.values() for r, p in pins}, set(B.PARTS) - pinless)
 
+    def test_committed_netlist_is_current(self):
+        """r1_power_io.net (build_pcb reads its no-connect nets) has the fresh export's nets; its text differs (absolute path, date)."""
+        self.assertEqual(read_netlist(D / 'r1_power_io.net'), self.nets, 'r1_power_io.net is stale: run pcb/make_schematic.py')
+
     def test_schematic_is_current(self):
         """The schematic embeds KiCad's library symbols (SchematicTests checks the other generated files)."""
         with tempfile.TemporaryDirectory() as t:

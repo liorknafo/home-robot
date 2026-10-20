@@ -15,4 +15,4 @@ Maximum-switching-capacity graph (p.3): DC resistive load about 7 A up to about 
 Ratings tables on pages 1-2 of the datasheet were not read.
 
 board_spec.RELAY_PINS = COIL_P '2', COIL_N '5', COM '1', NO '3', NC '4'. The coil is not polarised: COIL_P/COIL_N only fix which
-end the 1N5819 flyback diode cathode (D1 pin 1 = K) sits on; the diode is on the coil+ end.
+end the SS14 flyback diode cathode (D1 pin 1 = K) sits on; the diode is on the coil+ end.

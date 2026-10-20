@@ -327,8 +327,8 @@ BAY_OUTLINE=[tuple(p) for p in BC['outline_xy']]   # robot x, y: the board's Edg
 BAY_MOUNTS=[tuple(h['xy']) for h in BC['holes']]   # M3 holes H1..H4 over the P_base inserts (H3/H4 beside the tongue centre: ruling PB4)
 BAY_CLAMPS=[tuple(h['xy']) for h in BC['clamp_holes']]   # rear Jetson standoff stacks (JHOLES 3 and 1) clamp the board: Ø3.0 NPTH (ruling PB3)
 assert all(math.dist(a,b)<1e-6 for a,b in zip(BAY_MOUNTS+BAY_CLAMPS,[(-19.5,38),(-19.5,-38),(-11.5,8.5),(-11.5,-8.5),(-33,40),(-33,-46)])),'holes moved: the P_base inserts and the Jetson holes are fixed'
-CARRIER_X=-38.5          # height-zone boundary: the Jetson carrier's rear edge (x -37) less the 1.5 mm margin
-UNDER_CARRIER_Z=54.77    # carrier underside z 57 less the 2.23 mm allowed for its through-hole leads: under-carrier part tops <= UNDER_CARRIER_Z - 1.5
+CARRIER_X=BS.CARRIER_X   # height-zone boundary: the Jetson carrier's rear edge (x -37) less the 1.5 mm margin
+UNDER_CARRIER_Z=BS.UNDER_CARRIER_Z   # carrier underside z 57 less the 2.23 mm allowed for its through-hole leads: under-carrier part tops <= UNDER_CARRIER_Z - 1.5
 BCONN=BC['connectors'];BMOD=BC['modules']
 def _bctr(b):return ((b[0]+b[2])/2,(b[1]+b[3])/2)
 BAY_CONN={r:tuple(round(v,2) for v in _bctr(c['body_xy'])) for r,c in BCONN.items()}   # connector body centres: the harness ends (B9 sets the cut lengths)
@@ -2989,7 +2989,7 @@ BP['H14']['notes']=(f'The two rear Jetson standoffs stand on the bay board (z {Z
 BP['P03']['notes']=(f'March 2021 purchase. Measured envelope {P03S[1]} × {P03S[0]} × {P03S[2]} mm (CAD p03_regulator): on 1 mm double-sided foam tape on P_base in the front bay, turned 90 deg (long side along y, x {P03C[0]-P03S[0]/2:g}..{P03C[0]+P03S[0]/2:g}, |y| <= {P03S[1]/2:g}), '
     f'under the front of the Jetson carrier and ahead of the bay board\'s tongue, held by a cable tie through the P_base slots at ({P03_TIES[1][0]:g}, ±{P03_TIES[1][1]:g}). Board: HW-316E V4.0 (XL4015, 3-digit LED voltmeter); IN terminal on the left short end (+y), OUT on the right (−y): '
     f'leads of about {P03_LEADS["W_p03_in"]["route_mm"]:.0f} mm (IN) and {P03_LEADS["W_p03_out"]["route_mm"]:.0f} mm (OUT) over its top to U5A/U5B on the tongue\'s front edge. '
-    'Adjust and verify regulated 5 V on the bench before it is fitted: its trimpot and tie are not reachable once the Jetson is on. Test at 6.6 V input with the intended load and motor starts; rating alone is not acceptance. '+ASSY_ORDER)
+    'Adjust and verify regulated 5 V on the bench before it is fitted: its trimpot and tie are not reachable once the Jetson is on. Test at 6.0 V input with a 4.5 A load (the firmware low-battery stop, at the full Jetson current; BRINGUP.md section 5); rating alone is not acceptance. If it fails, the low-battery stop rises to the lowest passing input + 0.5 V. '+ASSY_ORDER)
 # B9: the motor pigtails (C18), the board's connector table, the harness connection rows, the cut list in the BOM file and the spike check.
 _jt=f'{MJ["x"]-MJ["t"]/2:g}..{MJ["x"]+MJ["t"]/2:g}';_jy=f'{MJ["y0"]:g}..{MJ["y0"]+MJ["male_l"]+MJ["female_l"]:g}'
 _ex_motor=min(PIGTAIL[s_]['exit_to_motor_mm'] for s_ in PIGTAIL)

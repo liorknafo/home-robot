@@ -311,6 +311,11 @@ POWER_TRUNK = {   # pads the high-current path must join with >= 3 mm zone coppe
 }
 # Each trunk pin's own load (ruling PB12, B4 fix 1): what its thermal spokes must carry, over its layers (zone_check.pin_spoke_capacity).
 # A fuse contact (4 pads) is one pin. Any trunk pin not listed carries CURRENT_A[net] (pad_current).
+# P03_OUT_V is the design nominal; the bench trim is 5.1 V (BRINGUP.md section 5, BOM_EXTRAS), raised up to V5_MAX if the Jetson's barrel
+# plug reads under 5.0 V under load (BRINGUP.md section 7 step 3; about 65 mOhm, 0.3 V at 4.5 A, from the P03 to the plug).
+# P03_VIN_MIN is the firmware's low-battery stop. BRINGUP.md section 5 tests the P03 at 6.0 V in, 4.5 A out (the XL4015 needs about
+# 0.6-0.8 V of headroom; motor starts sag the pack 0.3-0.5 V more). If it fails, the stop (BRINGUP.md section 8, BRINGUP-NOTES.md) rises
+# to the lowest passing input + 0.5 V and P03_VIN_MIN is set to match (LIO-229).
 P03_OUT_V, P03_OUT_A = 5.0, CURRENT_A['5V']     # the P03 regulator's output: the Jetson's 4.5 A + the 5V taps, 4.71 A (LIO-227)
 P03_VIN_MIN, P03_EFF = 6.0, 0.85     # its lowest input (the 6-cell NiMH pack near its 1.0 V/cell cut-off; full charge VBAT_MAX 8.7 V) and its
                                      # efficiency there: an XL4015 buck near dropout at 4.7 A, 0.85 assumed (LIO-227; was 0.9) - verify on the bench
@@ -575,11 +580,25 @@ def _footprint_geometry(fp_id):
             pts = [p for key in ('start', 'end', 'mid') for p in find(item, key)]
             for pl in find(item, 'pts'): pts += find(pl, 'xy')
             xs += [float(p[1]) for p in pts]; ys += [float(p[2]) for p in pts]
+            if kind == 'fp_arc':   # the bulge: the arc's points at 0 / 90 / 180 / 270 deg about its centre
+                for ex, ey in arc_extremes(*((float(find(item, k)[0][1]), float(find(item, k)[0][2])) for k in ('start', 'mid', 'end'))):
+                    xs.append(ex); ys.append(ey)
     pads = {}
     for pad in find(root, 'pad'):
         at = find(pad, 'at')[0]
         pads.setdefault(str(pad[1]), (float(at[1]), float(at[2])))
     return (min(xs), min(ys), max(xs), max(ys)), pads
+def arc_extremes(s, m, e):
+    """The axis-extreme points (centre +- r along x or y) that lie on the arc from s through m to e."""
+    (ax, ay), (bx, by), (cx, cy) = s, m, e
+    d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by))
+    if abs(d) < 1e-12: return []   # collinear: a straight segment, no bulge
+    ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d
+    uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d
+    r, ang = math.hypot(ax - ux, ay - uy), lambda p: math.atan2(p[1] - uy, p[0] - ux)
+    a0, sweep = ang(s), (ang(e) - ang(s)) % math.tau
+    if (ang(m) - a0) % math.tau > sweep: a0, sweep = ang(e), math.tau - sweep   # m is on the other way round: e -> s counter-clockwise
+    return [(ux + r * math.cos(t), uy + r * math.sin(t)) for t in (0, math.pi / 2, math.pi, 3 * math.pi / 2) if (t - a0) % math.tau <= sweep]
 def courtyard_box(ref):
     """(u0, v0, u1, v1): the board-frame bounding box of the part's courtyard as placed by PLACEMENT."""
     x0, y0, x1, y1 = _footprint_geometry(PARTS[ref]['fp'])[0]

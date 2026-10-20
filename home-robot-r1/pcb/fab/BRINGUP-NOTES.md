@@ -42,15 +42,26 @@ Collected in B7 from the B3–B6 rulings. B10 folds these into `BRINGUP.md`.
 
 - **Internal pull-ups:** BUMP_L (GP6), BUMP_R (GP15) and ARM (GP14) have no pull-up resistors on the board (the switches pull to GND).
   Enable the RP2040's internal pull-ups on them.
+- **Encoders:** the right encoder's A / B are adjacent pins (GP11 / GP12), so a standard two-pin PIO quadrature program reads it. The
+  left one's are not (GP1 / GP4, `PICO_GPIO`): read it with GPIO edge interrupts on both pins, or a PIO program that takes one pin as
+  its `jmp pin` condition and the other through `in` / `wait`. No board change.
 - **I2C:** I2C1 on GP2 (SDA) / GP3 (SCL) at 100 kHz. R19 / R20 are 4.7 kΩ pull-ups; the bus runs over cables to four ToF boards and
   the IMU.
 - **ToF addresses:** the four VL53L0X all start at 0x29. At boot, hold all four in reset with XSHUT1–XSHUT4 (GP0, GP10, GP5, GP13),
   then release one at a time and give each a new address: 0x30, 0x31, 0x32, 0x33 (cliff 1–4 = J6, J7, J8, J9). The IMU stays at 0x68.
+- **MOTOR_ON_N (GP9) reports the toggle, not VMOT:** Q5's gate is on COIL_P, so it reads low ("on") whenever the J13 loop energises
+  K1's coil, even with F2 blown or the relay contacts failing to close. Only LED3 (VMOT) shows motor power, and it sits under the
+  carrier: firmware cannot tell a dead motor supply from MOTOR_ON_N (a motor that does not move with the drivers awake and CS near 0 is
+  the sign).
 - **Battery low-voltage stop** (6-cell NiMH: 7.2 V nominal, 8.7 V full):
   - VSENSE (GP26, ADC0) = VBAT_SW × 33 kΩ / (100 kΩ + 33 kΩ) = 0.248 × VBAT_SW (R11 100 k top, R12 33 k bottom, C2 100 nF). 8.7 V
-    reads 2.16 V, inside the 3.3 V ADC range.
+    reads 2.16 V, inside the 3.3 V ADC range. With USB absent and the rocker on, the Pico is unpowered and about 67 µA (at 8.7 V) flows
+    from R11 / R12 into GP26's clamp diode: acceptable, no fix.
   - Warn at 6.6 V (1.1 V per cell: VSENSE 1.64 V). Stop at 6.0 V (1.0 V per cell: VSENSE 1.49 V, ADC count about 1847 of 4095 at the
     3.3 V reference).
+  - The 6.0 V stop assumes the P03 holds 5 V at 4.5 A from 6.0 V (`board_spec.P03_VIN_MIN`). BRINGUP.md section 5 tests it at
+    6.0 V in, 4.5 A out. If it fails there, raise the stop to the lowest passing input + 0.5 V (motor starts sag the pack 0.3–0.5 V),
+    and `P03_VIN_MIN` with it.
   - Average over about 2 s so motor starts do not trip it. At the stop: stop the motors, tell the Jetson to shut down; the user then
     switches the rocker off and charges. Do not run NiMH below 1.0 V per cell.
 - **Camera LED:** GP20 (SPARE3, J15 pin 3) = CAMERA_LED, an output, default low. The controller sets it high (LED fully on, about 59 mA from
@@ -81,6 +92,6 @@ or at C1's "+" lead, which is behind the carrier.
 
 ## Other checks
 
-- U3P.2 (DRV_L GND) joins its copper with one relief spoke per outer layer (ruling PB22). Its copper carries 3.25 A against 2.1 A; after a
+- U3P.2 (DRV_L GND) joins its copper with one relief spoke per outer layer (ruling PB21). Its copper carries 3.25 A against 2.1 A; after a
   stall test, check that the joint is not hot.
 - The air under the carrier is assumed to be 40 °C in the driver figures: measure it in the lid-on test.

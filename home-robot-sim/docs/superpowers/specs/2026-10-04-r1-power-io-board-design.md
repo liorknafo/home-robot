@@ -39,6 +39,10 @@ currents do not cross the logic area.
 
 ## 4. Pico pin map
 
+> **Superseded by `board_spec.PICO_GPIO`** (`home-robot-r1/pcb/board_spec.py`, L5b; LIO-229). The table below is the 2026-10-04 plan
+> and is kept as a record only: the board uses 2N7002 (SOT-23), not 2N7000, I2C1 on GP2 / GP3, SLEEP on GP7, and the encoders, drivers
+> and switches moved too. Read the pins from `PICO_GPIO` (or `home-robot-r1/pcb/fab/BRINGUP-NOTES.md`), not from here.
+
 Existing assignments are unchanged (firmware compatible). New lines use former spares.
 
 | Pins | Function | Board circuit |

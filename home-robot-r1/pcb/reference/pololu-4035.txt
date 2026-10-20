@@ -32,7 +32,7 @@ PIN FUNCTIONS AND CARRIER DEFAULTS                                              
  EN/IN1, PH/IN2   control inputs; default LOW (carrier pull-downs). IN/IN mode: IN1/IN2 drive the two half bridges.
  PMODE  mode select, state latched when the driver is enabled via SLEEP. LOW = PHASE/ENABLE, HIGH = PWM (IN/IN),
         floating = independent half-bridge. We use IN/IN (same as the MDD3A scheme) so PMODE is tied HIGH = 3V3.
- SLEEP  low = sleep; default LOW. Driven by Pico GP18 (both carriers, 100 k pull-down on our board).
+ SLEEP  low = sleep; default LOW. Driven by Pico GP7 (board_spec.PICO_GPIO['DRV_SLEEP'], both carriers, R17 100 k pull-down on our board).
  VREF   current-limit reference. The carrier pulls VREF up to SLEEP through 10 k (R2) [S], R5 to GND not populated.
         So VREF follows the voltage on SLEEP. Left unconnected on our board.
  IMODE  4-state input for current regulation / over-current mode. The carrier pulls IMODE to GND through 20 k (R4) [S]:
@@ -52,7 +52,7 @@ CURRENT-SENSE SCALE AND THE 3.3 V ADC LIMIT
  [P] "approximately 1.1 V/A" (DRV8874; 2.5 V/A is the DRV8876 variant), with the 2.49 k carrier resistor R3 on CS [S].
  [P] default current limit "approximately 4.4 A ... a lower logic voltage on SLEEP decreases the current limit
      proportionally" => limit = 4.4 A x V(SLEEP)/5 V.
- With GP18 high (3.3 V), VREF = 3.3 V:  limit = 4.4 x 3.3/5 = about 2.9 A  (3.3 V / 1.1 V/A = 3.0 A).
+ With GP7 (SLEEP) high (3.3 V), VREF = 3.3 V:  limit = 4.4 x 3.3/5 = about 2.9 A  (3.3 V / 1.1 V/A = 3.0 A).
  CS voltage at that limit = 2.9 A x 1.1 V/A = about 3.2 V, i.e. CS at the limit equals VREF = V(SLEEP) = 3.3 V:
  it stays within the Pico ADC range (0-3.3 V) but with essentially no margin, and CS is not limited to VREF during
  over-current transients before the chopper reacts. Stall current of the motors is expected below 2.1 A (spec section 10).

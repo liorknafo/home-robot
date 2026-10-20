@@ -50,9 +50,10 @@ PARTS h change moves a part in or out of it.
 | Inner-layer order | Only if the order page asks: L2 = In1.Cu (`-In1_Cu.g1`, the solid GND plane), L3 = In2.Cu (`-In2_Cu.g2`, the power pours and signals) |
 | Price | About $8 for 5 pcs at the time of the spec, plus shipping: check on the order page |
 
-**Size check, after uploading and before paying:** check the detected size reads 74 × 100 mm and the price is the ≤ 100 × 100 tier. The
-outline is 74.0 × 100.0 mm on the centre of its 0.1 mm Edge.Cuts line (the Gerber image with the line is 74.1 × 100.1 mm), and JLCPCB
-routes on that centre (routing tolerance ±0.2 mm; verify). The zip has no job file, which would state 100.1 mm. If the page shows 74.1 × 100.1
+**Size check, after uploading and before paying:** check the detected size reads 74 × 100 mm (or 73.9 × 100) and the price is the ≤ 100 × 100
+tier. The outline is 73.9 × 100.0 mm on the centre of its 0.1 mm Edge.Cuts line (u 0.1–74.0; the Gerber image with the line is
+74.0 × 100.1 mm), and JLCPCB routes on that centre (routing tolerance ±0.2 mm; verify). The zip has no job file, which would state
+100.1 mm. If the page shows 74.0 × 100.1
 (the outline's line width), set the size to 74 × 100 or ask JLCPCB support; don't pay for a larger tier.
 
 Add a **stencil** for the top side only (SMT stencil, "top", made from F.Paste in the same zip; no frame is fine for a hand-held print).
@@ -61,7 +62,7 @@ Check its price on the order page.
 Design rules in the files: minimum track / space 0.15 / 0.15 mm (6 / 6 mil, the Default signal class, ruling PB17). Vias (diameter /
 drill): signal 0.6 / 0.3 mm, GND, PowerTap and Motor 0.8 / 0.4 mm, Power 1.2 / 0.6 mm. All are inside JLCPCB's standard multilayer
 capability (0.09 / 0.09 mm track / space; 0.3 mm via drill is the default size), so no surcharge option is needed. The smallest drill is
-0.3 mm; the NPTH holes are the two Ø3.0 mm clamp holes and the two Ø2.4 mm FLR locating holes.
+0.3 mm; the NPTH holes are three Ø3.0 mm (the clamp holes H5 / H6 and J3's Micro-Fit peg) and the two Ø2.4 mm FLR locating holes.
 
 ## Parts and mechanical items
 
@@ -86,7 +87,8 @@ Buy from the BOM (`r1_power_io-bom.csv`; MPNs marked "verify before ordering" we
 - **Pico cable:** an up-angled micro-USB (micro-B, 90° up) plug. The Pico's receptacle faces the board's left edge; the plug goes in from
   above with the lid off, so the cable must rise straight up.
 - **P03:** the user's module, on 1 mm double-sided foam tape in the front bay plus a cable tie: measure it first (the CAD assumes a
-  62 × 38 × 14 mm envelope), then set 5.1 V on the bench under load before it is wired to U5A / U5B.
+  62 × 38 × 14 mm envelope), then set 5.1 V on the bench under load (6.0 V in, 4.5 A out: BRINGUP.md section 5) before it is wired
+  to U5A / U5B.
 - **J14 / J15 are DNP:** spare pad rows, placed and netted, not fitted (ruling PB8). A bare 2.54 mm header may be fitted later
   (≤ 8.5 mm tall).
   J15 is now used by the camera LED (task N, LIO-134): the LED lead's three wires are soldered into its holes 3, 5 and 6 as an
@@ -141,7 +143,15 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **Size and mask:** JLCPCB routes on the Edge.Cuts line centre (routing tolerance ±0.2 mm), so the order page reads 74 × 100 mm (the
       size check above); green has the smallest solder-mask dam (the 0.095 mm web over the GND vias).
 - [ ] **Silk text:** the silk labels are 0.8 mm high with a 0.15 mm stroke. JLCPCB recommends ≥ 1.0 mm characters with ≥ 0.153 mm lines. They
-      print, perhaps less crisply; 1.0 mm labels do not fit round the parts (B7).
+      print, perhaps less crisply; 1.0 mm labels do not fit round the parts (B7). The stock footprint outlines are 0.12 mm wide (also
+      under the 0.153 mm), and those of J6, J7, J10–J13 and K1 sit 0.09–0.10 mm from the board edge: they may be clipped there.
+- [ ] **P03 at the low-battery stop** (also on LIO-105's list): the HW-316E's XL4015 datasheet gives 8–36 V input (the seller says
+      4–38 V). `board_spec` assumes 4.71 A out (the Jetson's 4.5 A + the 5V taps) from 6.0 V at 85 % (P03_VIN_MIN, P03_EFF; see "P03 efficiency" below); as a non-synchronous buck with a sense shunt
+      it needs about 0.6–0.8 V of headroom at 4.5 A, and motor starts sag the pack 0.3–0.5 V more. Bench test: 6.0 V in, 4.5 A out
+      (BRINGUP.md section 5). If it fails, the firmware stop rises to the lowest passing input + 0.5 V, and P03_VIN_MIN with it.
+- [ ] **5 V at the Jetson** (also on LIO-105's list): about 65 mΩ from the P03 to the barrel plug (board copper, W04 18 AWG, Micro-Fit,
+      barrel jack), about 0.3 V at 4.5 A (an estimate). The plug must read ≥ 5.0 V under the Jetson's load with U5B ≤ 5.25 V
+      (`board_spec.V5_MAX`; BRINGUP.md section 7 step 3).
 - [ ] **DRV8874** (TI SLVSF66; Pololu 4035 carrier): R_DS(on) high + low side 200 mΩ typical at 25 °C, about ×1.5 at 150 °C; thermal
       shutdown about 165 °C; R_θJA about 40 °C/W on a JEDEC 4-layer board, and 60–80 °C/W assumed for the 2-layer carrier. With these,
       T_J reaches 88–136 °C at 2.1 A continuous, so firmware limits each channel to 1.8 A continuous (BRINGUP-NOTES.md). CS 1.1 V/A.

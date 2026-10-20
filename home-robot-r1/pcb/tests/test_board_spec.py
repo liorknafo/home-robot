@@ -613,5 +613,14 @@ def module_misalignments(placement):
                 bad.append((name, ref, (round(eu, 3), round(ev, 3), r0), (u, v, r)))
     return bad
 
+class ArcExtremeTests(unittest.TestCase):
+    def test_arc_bulge_is_in_the_courtyard_bbox(self):
+        """A courtyard arc's bbox includes its bulge, not just start / mid / end: the half circle from (0.6, 0.8) to (-0.6, -0.8) round
+        (0, 0) reaches y 1 and x -1 one way round (mid (-0.6, 0.8)) and x 1, y -1 the other (mid (0.8, -0.6)); a straight 'arc' has none."""
+        r = lambda pts: sorted((round(x, 9), round(y, 9)) for x, y in pts)
+        self.assertEqual(r(B.arc_extremes((0.6, 0.8), (-0.6, 0.8), (-0.6, -0.8))), [(-1.0, 0.0), (0.0, 1.0)])
+        self.assertEqual(r(B.arc_extremes((0.6, 0.8), (0.8, -0.6), (-0.6, -0.8))), [(0.0, -1.0), (1.0, 0.0)])
+        self.assertEqual(B.arc_extremes((0, 0), (1, 1), (2, 2)), [])
+
 if __name__ == '__main__':
     unittest.main()

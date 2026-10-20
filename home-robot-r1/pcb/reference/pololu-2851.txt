@@ -1,5 +1,7 @@
 Pololu item 2851 - D24V50F5, 5 V 5 A step-down voltage regulator (dev code reg15d)
 Condensed notes for pcb/board_spec.py. Retrieved 2026-10-04. Each fact names its source.
+VENDOR RECORD OF A REMOVED PART: U5C (the D24V50F5 socket) is not fitted on the board (board_spec.py, REG_B_PINS note); the
+user's P03 on U5A / U5B is the regulator. "HOW IT IS USED ON THE BOARD" below describes the pre-strip design and is not current.
 
 SOURCES
  [P]  Product page text: https://www.pololu.com/product/2851
@@ -21,7 +23,7 @@ CONNECTION POINTS - one row of 5 plated holes, 0.1 in (2.54 mm) pitch           
 ELECTRICAL                                                                                    [P]
  VIN up to 38 V, reverse-voltage protected [P]; input range 6-38 V and 5 A typical continuous (product page spec summary); fixed 5 V output (4 %).
  EN is enabled by default: a 100 k pull-up on the board ties EN to the reverse-protected VIN; driving EN below 0.6 V
- puts the board in a low-power state. => EN is left unconnected on our board (board_spec.NC).
+ puts the board in a low-power state. => EN was to be left unconnected (U5C is not fitted: no board_spec.NC entry).
  Two GND pins: both tied to GND (U5C pins 3 and 4).
 
 HOW IT IS USED ON THE BOARD
