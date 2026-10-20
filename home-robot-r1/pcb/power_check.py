@@ -4,7 +4,7 @@ Run with KiCad's Python:  $KPY pcb/power_check.py [--board PCB] [--out FILE]   (
 
 The measurements are the B4 / B5 ones (zone_check), wrapped here under the B6 interfaces; nothing is measured twice:
  - trunk_capacity      = zone_check.trunk_capacity: per layer the true narrowest copper joining the net's POWER_TRUNK pins (PB11, contact
-                         level: a pad of every pin, a fuse contact being one pin), the layers summed with copper.capacity_a;
+                         level: a pad of every pin, a fuse contact being one pin), the layers combined with copper.capacity_a;
  - pad_spoke_capacity  = zone_check.pin_spoke_capacity: what the pin's thermal spokes deliver into its net's trunk copper, as a max-flow
                          in which copper reached only through vias counts up to the via barrels (carry item 1, copper.via_current_a);
  - physical_check      the < 3 % rule of the carry list (items 2 / 3): where a trunk's conservative margin is thin, which pin the neck
@@ -210,17 +210,20 @@ def track_loads(board, net):
 def _farads(ref): return float(B.PARTS[ref]['value'].split('uF')[0]) * 1e-6
 
 
-def c3_ripple(i_motor=None, f=None):
-    """DRV_L's PWM input ripple and C3's share. A PWM bridge draws the motor current I for the on-time and nothing for the off-time, so
-    its supply sees an AC current of I x sqrt(D (1 - D)) rms, worst at D = 0.5 (I / 2). C3 (at U3P.1) and C1 (through C3_C1_PATH of VMOT
-    copper) split it by their impedances at the PWM frequency: I3 = I_ac x |Z1| / |Z1 + Z3|. The DC of the motor comes down the trunk."""
+def c3_ripple(i_motor=None, f=None, slow_decay=True):
+    """DRV_L's PWM input ripple and C3's share. Slow decay (the firmware's PWM, BRINGUP-NOTES: IN1 = 1, IN2 = inverted PWM, so the off-time
+    brakes on the low sides): the bridge draws the motor current I for the on-time and nothing for the off-time, so its supply sees an AC
+    current of I x sqrt(D (1 - D)) rms, worst at D = 0.5 (I / 2). Fast decay (IN2 low, PWM on IN1: the off-time coasts, LIO-227): the
+    motor current flows back into the supply for the off-time, +I then -I, so 2 I x sqrt(D (1 - D)), I at D = 0.5. C3 (at U3P.1) and C1
+    (through C3_C1_PATH of VMOT copper) split it by their impedances at the PWM frequency: I3 = I_ac x |Z1| / |Z1 + Z3|. The DC of the
+    motor comes down the trunk."""
     i_motor = B.CURRENT_A['L_M1'] if i_motor is None else i_motor
     f = B.DRV_PWM_HZ if f is None else f
     w = 2 * math.pi * f
-    i_ac = i_motor * 0.5
+    i_ac = i_motor * (0.5 if slow_decay else 1.0)
     z3 = complex(B.C3_ESR_OHM, -1 / (w * _farads('C3')))
     z1 = complex(B.C1_ESR_OHM + B.C3_C1_PATH['r_ohm'], w * B.C3_C1_PATH['l_h'] - 1 / (w * _farads('C1')))
-    return dict(f_hz=f, i_motor_a=i_motor, i_ac_a=i_ac, c3_a=i_ac * abs(z1) / abs(z1 + z3), c1_a=i_ac * abs(z3) / abs(z1 + z3),
+    return dict(f_hz=f, slow_decay=slow_decay, i_motor_a=i_motor, i_ac_a=i_ac, c3_a=i_ac * abs(z1) / abs(z1 + z3), c1_a=i_ac * abs(z3) / abs(z1 + z3),
                 c3_alone_a=i_ac, rating_a=B.C3_RIPPLE_RATING_A, via_a=C.via_current_a(B.GND_VIA[1]))
 
 
@@ -237,7 +240,7 @@ T_AMBIENT_C = 40.0         # air under the Jetson carrier, assumed (BRINGUP meas
 
 def _drv_tj(i, theta, v=B.VBAT_MAX, f=None, t_amb=T_AMBIENT_C):
     """(W, T_J degC) of one driver at motor current i and R_thetaJA theta: conduction I^2 R_DS(on) (HS + LS, both on during the on-time and
-    the brake recirculation of IN/IN mode) with R_DS(on) rising linearly to x DRV_RDSON_150C_FACTOR at 150 degC, switching
+    the slow-decay brake recirculation the firmware must use, c3_ripple) with R_DS(on) rising linearly to x DRV_RDSON_150C_FACTOR at 150 degC, switching
     1/2 V I (t_r + t_f) f, quiescent V I_q; T_J solved by fixed-point iteration."""
     f = B.DRV_PWM_HZ if f is None else f
     alpha = (DRV_RDSON_150C_FACTOR - 1) / 125.0
@@ -379,6 +382,8 @@ def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers
         cut_a = C.ipc2221_current_a(mm, C.COPPER_OZ[L], internal=C.is_internal(L)) if 0 < mm < math.inf else 0.0
         n, w, spoke_a = spokes.get(L, (0, 0.0, 0.0))
         per[L] = dict(cut_mm=mm, cut_a=cut_a, spokes=(n, w), spoke_a=spoke_a, a=min(cut_a, spoke_a))
+    # ponytail: the layers' currents are summed, as copper.capacity_a did before LIO-227; rated on their combined cross-section the
+    # battery pin's cut is below CURRENT_A['GND'] (6.7 A), so the stacked rating waits for a GND copper follow-up (reported in LIO-227).
     return dict(pin=(ref, pin), centre=c, r0=round(r0, 3), r1=round(outer, 3), per=per, total_a=sum(x['a'] for x in per.values()))
 
 
@@ -505,10 +510,11 @@ def report(board):
             + ('  (vias ignored: a lower bound; the pad metric, section 3, counts them)' if tot < amps else ''))     # B12a (carry 10)
     row('')
     row('## 7. C3 ripple (carry item 6)')
-    for f in (B.DRV_PWM_HZ, 1e3, 100e3):
-        r = c3_ripple(f=f)
-        row(f'  PWM {f / 1e3:g} kHz: DRV_L input ripple {r["i_ac_a"]:.3f} A rms (D = 0.5, {r["i_motor_a"]} A); C3 {r["c3_a"]:.3f} A, C1 '
-            f'{r["c1_a"]:.3f} A; C3 rating {r["rating_a"]} A; C3 GND via {r["via_a"]:.2f} A; C3 alone (C1 open) {r["c3_alone_a"]:.3f} A')
+    for f, slow in ((B.DRV_PWM_HZ, True), (B.DRV_PWM_HZ, False), (1e3, True), (100e3, True)):
+        r = c3_ripple(f=f, slow_decay=slow)
+        row(f'  PWM {f / 1e3:g} kHz {"slow" if slow else "fast (not allowed)"} decay: DRV_L input ripple {r["i_ac_a"]:.3f} A rms (D = 0.5, '
+            f'{r["i_motor_a"]} A); C3 {r["c3_a"]:.3f} A, C1 '
+            f'{r["c1_a"]:.3f} A; C3 rating {r["rating_a"]} A (its 100 kHz figure); C3 GND via {r["via_a"]:.2f} A; C3 alone (C1 open) {r["c3_alone_a"]:.3f} A')
     row(f'  C3 height {B.PARTS["C3"]["h"]} +/- {B.PART_H_TOL["C3"]} mm vs MODULE_CLEARANCE {B.MODULE_CLEARANCE} mm (for B9)')
     row('')
     row('## 8. DRV8874 dissipation per driver (carry item 7, report only; datasheet figures from memory - verify)')

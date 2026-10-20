@@ -275,9 +275,15 @@ Steps:
   - Firmware enforces the limit from CS: about 1.1 V/A on the carrier's 2.49 kΩ, read on GP27 (L_CS) and GP28 (R_CS).
   - Short peaks are fine: starts, and a stall up to the 2.1 A design current. A stall must be cut within seconds.
   - These datasheet figures are quoted from memory; see "Verify before ordering" in `ORDERING.md`.
-- **Motor PWM about 20 kHz** (`board_spec.DRV_PWM_HZ`).
+- **Motor PWM about 20 kHz** (`board_spec.DRV_PWM_HZ`), **with slow decay.**
+  - Forward: IN1 = 1 and IN2 = inverted PWM; reverse: IN2 = 1 and IN1 = inverted PWM. The off-time brakes on the low sides; the duty
+    is the fraction with the PWM input low. On the RP2040, hold one channel of the slice high and invert the other's output.
   - With C1 fitted, C3 (100 µF FK at DRV_L's VIN) then carries 0.10 A of ripple, against its 0.16 A rating. At 1 kHz it would carry
     0.18 A, over its rating.
+  - **Fast decay is not allowed.** PWM on IN1 with IN2 low coasts in the off-time: the motor current flows back into VIN and C3
+    carries about 0.20 A, over its rating. The 0.16 A is the datasheet's 100 kHz figure, not derated to 20 kHz.
+  - The off-time brake lasts one PWM period. It is not the sustained short brake a disarm must avoid (see "Braking" below); the
+    firmware ramp still sets the deceleration.
   - **Never run the motors at low PWM frequencies, and never without C1.**
 - **Driver control lines:**
   - PMODE is tied high (PWM / IN-IN mode).

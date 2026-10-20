@@ -218,7 +218,9 @@ def pin_path_capacity(board, ref, pin):
     their copper.via_current_a(drill) in all (B6 fix 1: they were counted as soldered leads, with no limit between layers). Sink: the
     largest piece of each of the net's zones on its joining layers (joining_layers: GND -> the In1 plane). So a pocket or patch that
     reaches the trunk only through vias counts only up to their barrels, and a dead-end pour (no via, no other pad) counts nothing. Tracks
-    are left out (conservative). detail: {'direct': {layer: A}, 'via_pieces': [(layer, A of spokes, [(u, v, drill)])], 'holes': {ref:
+    are left out (conservative). The pin's own spokes are stacked at its pads, so the result is capped at their combined IPC capacity
+    (copper.capacity_a over the spokes the flow uses, LIO-227); every other edge is a conductor of its own (a piece's spokes into another
+    pad, a barrel) and adds in parallel. detail: {'direct': {layer: A}, 'via_pieces': [(layer, A of spokes, [(u, v, drill)])], 'holes': {ref:
     A of its barrels}}."""
     fp = board.FindFootprintByReference(ref)
     mine = [p for p in fp.Pads() if p.GetNumber() == pin]
@@ -235,7 +237,7 @@ def pin_path_capacity(board, ref, pin):
     def edge(u, v, a):                                    # undirected: the same capacity both ways
         for x, y in ((u, v), (v, u)): cap.setdefault(x, {}); cap[x][y] = cap[x].get(y, 0.0) + a
     detail = {'direct': {}, 'via_pieces': []}
-    k = 0
+    k, joint = 0, {}                                      # the pin's own spoke edges: piece node -> (layer, width mm, A)
     for name in C.STACKUP:
         lid = LAYER[name]
         for zone in [z for z in board.Zones() if not z.GetIsRuleArea() and z.GetNetname() == net and z.IsOnLayer(lid)]:
@@ -252,7 +254,7 @@ def pin_path_capacity(board, ref, pin):
                 n = sum(_spokes_into(p, lid, pc, gap, zw) for p in mine if p.IsOnLayer(lid) and bb.Contains(p.GetPosition()))
                 held = [v for v in vias if bb.Contains(v.GetPosition()) and pc.Contains(v.GetPosition())]
                 if n:
-                    edge(S, node, amps(n))
+                    edge(S, node, amps(n)); joint[node] = (name, n * zw, amps(n))
                     if sink: detail['direct'][name] = detail['direct'].get(name, 0.0) + amps(n)
                     else: detail['via_pieces'].append((name, round(amps(n), 3), [(round(TOMM(v.GetPosition().x), 3),
                                                        round(TOMM(v.GetPosition().y), 3), round(TOMM(v.GetDrillValue()), 3)) for v in held]))
@@ -275,7 +277,11 @@ def pin_path_capacity(board, ref, pin):
         if ('hole', h, 'out') not in cap: continue                   # no spoke of the hole reaches a piece of the net
         detail['holes'][h] = sum(C.via_current_a(TOMM(p.GetDrillSize().x)) for p in hp)
         cap.setdefault(('hole', h, 'in'), {})[('hole', h, 'out')] = detail['holes'][h]
-    return _max_flow(cap, S, T), detail
+    flow = _max_flow(cap, S, T)
+    used = {}                                             # LIO-227: the pin's spokes on its layers are stacked at one pad, so the
+    for node, (name, w, a) in joint.items():              # current they carry is rated on their combined cross-section
+        if cap[S][node] < a - 1e-9: used[name] = used.get(name, 0.0) + w      # (copper.capacity_a) over the spokes the flow uses
+    return min(flow, C.capacity_a(used)), detail
 
 
 def via_copper_layers(board, net, uv):
@@ -337,7 +343,8 @@ def narrowest_width(board, zone, layer, pins, tol=REACH_TOL):
 def trunk_capacity(board, net, tol=REACH_TOL, pins=None):
     """{'width_mm': {layer: w}, 'capacity_a': A} - the net's copper between its POWER_TRUNK pins (or `pins`, [(ref, pin)], a subset: B6's
     neck legs): on every layer where a zone of the net (trunk or helper pour) alone joins the pins, its true narrowest width
-    (narrowest_width); A = copper.capacity_a of those widths, i.e. the layers in parallel (ruling PB11)."""
+    (narrowest_width); A = copper.capacity_a of those widths: the layers in parallel (ruling PB11), rated on their combined
+    cross-section (LIO-227: the layers lie on top of each other, so their per-layer currents do not add)."""
     fps = {fp.GetReference(): fp for fp in board.GetFootprints()}
     pins = [[p for p in fps[r].Pads() if p.GetNumber() == n] for r, n in (B.POWER_TRUNK[net] if pins is None else pins)]
     widths = {}

@@ -29,9 +29,13 @@ Collected in B7 from the B3–B6 rulings. B10 folds these into `BRINGUP.md`.
   The figures are quoted from memory (see ORDERING.md, "Verify before ordering").
 - Firmware enforces the limit from CS (about 1.1 V/A on the carrier's 2.49 kΩ, read on GP27 L_CS / GP28 R_CS). Short peaks (starts,
   stall up to the 2.1 A design current) are fine; a stall must be cut within seconds.
-- **Motor PWM ≈ 20 kHz** (`board_spec.DRV_PWM_HZ`). C3 (100 µF FK at DRV_L's VIN) then carries 0.10 A of ripple against its 0.16 A
-  rating, with C1 fitted. At 1 kHz C3 would carry 0.18 A, over its rating, so do not run the motors at low PWM frequencies, and never
-  without C1.
+- **Motor PWM ≈ 20 kHz** (`board_spec.DRV_PWM_HZ`), **with slow decay** (LIO-227): forward IN1 = 1 and IN2 = inverted PWM (reverse:
+  IN2 = 1, IN1 = inverted PWM), so the off-time brakes on the low sides and the duty is the fraction with IN2 low. C3 (100 µF FK at
+  DRV_L's VIN) then carries 0.10 A of ripple against its 0.16 A rating, with C1 fitted. **Fast decay is not allowed:** PWM on IN1 with
+  IN2 low coasts in the off-time, the motor current flows back into VIN and C3 carries about 0.20 A, over its rating. The 0.16 A is the
+  datasheet's 100 kHz figure, not derated to 20 kHz. At 1 kHz C3 would carry 0.18 A even with slow decay, so do not run the motors at
+  low PWM frequencies, and never without C1. The off-time brake lasts one PWM period: it is not the sustained short brake a disarm must
+  avoid (BRINGUP.md section 8, braking), and the firmware ramp still sets the deceleration.
 - PMODE is tied high (PWM / IN-IN mode); SLEEP (GP7) wakes both drivers; FAULT (GP8, open drain) is shared.
 
 ## Firmware: inputs, buses, battery

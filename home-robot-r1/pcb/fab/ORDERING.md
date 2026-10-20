@@ -146,7 +146,18 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
       shutdown about 165 °C; R_θJA about 40 °C/W on a JEDEC 4-layer board, and 60–80 °C/W assumed for the 2-layer carrier. With these,
       T_J reaches 88–136 °C at 2.1 A continuous, so firmware limits each channel to 1.8 A continuous (BRINGUP-NOTES.md). CS 1.1 V/A.
 - [ ] **C3 Panasonic EEE-FK1C101P** (FK): ESR 0.44 Ω at 100 kHz, ripple rating 0.16 A at 105 °C, height 5.8 ± 0.3 mm (must stay
-      ≤ 7.5 mm under the IMU module). Its ripple share is 0.10 A at 20 kHz PWM with C1 fitted.
+      ≤ 7.5 mm under the IMU module). Its ripple share is 0.10 A at 20 kHz PWM with C1 fitted and slow decay (about 0.20 A with fast
+      decay, which the firmware must not use: BRINGUP-NOTES.md). The 0.16 A is the 100 kHz rating, not derated to 20 kHz: check the
+      datasheet's frequency multiplier.
+- [ ] **Fuse hold current:** an ATO fuse carries 110 % of its rating indefinitely (Littelfuse ATO: 110 % for 100 h minimum, verify).
+      The trunks are sized for 7.5 A (F1) and 5 A (F2) at 10 °C rise; at 110 % (8.25 A / 5.5 A) their rise is about 12 °C
+      (IPC-2221: ΔT ∝ I^(1 / 0.44)).
+- [ ] **P03 efficiency:** the power check assumes 85 % at 6.0 V in, 5 V × 4.71 A out (the Jetson's 4.5 A + 0.21 A of 5V taps): 4.62 A
+      through U5A. An XL4015 buck near dropout may do worse: measure its input current at the bench under load.
+- [ ] **The power model's remaining optimism:** the DRV8874 continuous limit (`power_check.drv8874_current_for_tj`, 1.8 A) uses the
+      typical R_DS(on), not the datasheet maximum, and an assumed 40 °C under the carrier (measured in the lid-on test, BRINGUP.md); the
+      via barrels use 20 µm average plating against an 18 µm minimum (above). Copper on stacked layers is rated on its combined
+      cross-section (`copper.capacity_a`), but the battery GND pin's ring cut (`power_check.pin_ring_cut`) still sums its layers.
 - [ ] **C1 Panasonic EEU-FR1E471** (FR, 470 µF 25 V): ESR about 0.04 Ω; 10 mm diameter, 5 mm lead pitch, ≤ 20 mm tall (the STEP envelope
       is 20 mm; the real can is about 16–20 mm).
 - [ ] **Omron G5LE-1 DC5** relay: coil 63 Ω, 79.4 mA at 5 V; contacts rated for the 5 A DC motor branch; pinout as the KiCad footprint.

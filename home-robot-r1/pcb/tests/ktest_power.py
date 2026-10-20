@@ -45,7 +45,7 @@ class PowerTests(unittest.TestCase):
         LOW_MARGIN is accepted only when its neck carries a known part of that current with >= PHYSICAL_MARGIN to spare. The neck's
         current is derived, not assumed: dropping one trunk pin from the net raises the narrowest width, so the neck lies on that pin's
         own access and carries only that pin's load (board_spec.pad_current) plus every tap load of the net (TAP_LOAD_A, all of them,
-        to be safe). VBAT_SW: the U1B.20 - F1.2 neck isolates U5A.1 (the P03 input, 4.17 A); VMOT: the reach into U3P.1 isolates DRV_L's
+        to be safe). VBAT_SW: the U1B.20 - F1.2 neck isolates U5A.1 (the P03 input, 4.62 A); VMOT: the reach into U3P.1 isolates DRV_L's
         VIN (2.1 A). Every other leg (the spanning legs without the isolated pin) still carries the full conservative current."""
         neck_pin = {'VBAT_SW': ('U5A', '1'), 'VMOT': B.drv('L', 'VIN')}       # B6's derivation (task-B6-report.md, power.txt section 2)
         for net in (n for n in B.POWER_TRUNK if n != 'GND'):
@@ -78,6 +78,16 @@ class PowerTests(unittest.TestCase):
             self.assertTrue(P.pad_uses_spokes(self.board, ref, pad), f'{ref}.{pad} must be relieved (iron-solderable)')
             if (ref, pad) in B.PAD_PENDING: continue
             self.assertGreaterEqual(P.pad_spoke_capacity(self.board, ref, pad), B.pad_current(ref, pad), f'{ref}.{pad}')
+
+    def test_pad_metric_rates_the_pins_stacked_spokes_combined(self):
+        """LIO-227: a pin's spokes on its layers sit on top of each other at its pads, so the pad metric caps the flow at their combined
+        IPC capacity (copper.capacity_a), not the per-layer sum. K1.3 (VMOT, relay NO): two F.Cu and two In2.Cu spokes into the trunk."""
+        spokes = P.pad_spokes(self.board, 'K1', B.RELAY_PINS['NO'])
+        got = P.pad_spoke_capacity(self.board, 'K1', B.RELAY_PINS['NO'])
+        self.assertEqual({L: n for L, (n, _, _) in spokes.items() if n}, {'F.Cu': 2, 'In2.Cu': 2})
+        self.assertAlmostEqual(got, C.capacity_a({L: n * w for L, (n, w, _) in spokes.items() if n}), 6)
+        self.assertLess(got, sum(a for _, _, a in spokes.values()))
+        self.assertGreaterEqual(got, B.pad_current('K1', B.RELAY_PINS['NO']))
 
     def test_pad_metric_counts_via_barrels(self):
         """Carry item 1: copper that reaches the plane only through vias counts only up to the barrels. U3P.2 (ruling PB21, B6 fix 2):
@@ -223,11 +233,19 @@ class PowerTests(unittest.TestCase):
     # --- carry item 6: C3's ripple and its GND via ---
     def test_c3_ripple_within_its_rating_and_its_via(self):
         """C3 (DRV_L's local bulk cap, PB16): its share of DRV_L's PWM input ripple (power_check.c3_ripple: I x sqrt(D (1 - D)) at the
-        worst duty, split with C1 by impedance at the PWM frequency) stays within its ripple rating and within its single LP12 GND
-        via's barrel."""
+        worst duty with slow decay, split with C1 by impedance at the PWM frequency) stays within its ripple rating (the 100 kHz figure)
+        and within its single LP12 GND via's barrel. LIO-227: fast decay (the off-time coasts) puts 2 I x sqrt(D (1 - D)) on the supply,
+        twice the share and over the rating, so BRINGUP-NOTES.md requires slow-decay PWM."""
         r = P.c3_ripple()
+        self.assertTrue(r['slow_decay'])
         self.assertLessEqual(r['c3_a'], B.C3_RIPPLE_RATING_A)
         self.assertLessEqual(r['c3_a'], C.via_current_a(B.GND_VIA[1]))
+        fast = P.c3_ripple(slow_decay=False)
+        self.assertAlmostEqual(fast['c3_a'], 2 * r['c3_a'], 9)
+        self.assertGreater(fast['c3_a'], B.C3_RIPPLE_RATING_A, 'fast decay is within the rating: BRINGUP-NOTES may allow it')
+        self.assertLessEqual(fast['c3_a'], C.via_current_a(B.GND_VIA[1]))
+        notes = (D / 'fab' / 'BRINGUP-NOTES.md').read_text(encoding='utf-8')
+        self.assertIn('slow decay', notes); self.assertIn('IN2 = inverted PWM', notes)
 
 
 if __name__ == '__main__':
