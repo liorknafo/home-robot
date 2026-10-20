@@ -180,12 +180,17 @@ class RouteTests(unittest.TestCase):
         """B5 fix 1 / B6 fix 1 (review minor 6): route.py with no arguments reproduces the committed board, so the board's ROUTED_WITH
         record must name route.py's defaults exactly - DEFAULT_GRID (and its SETUPS name), DEFAULT_ORDER, DEFAULT_PASSES and
         CRITICAL_NETS (the Motor class + DRIVER_BUNDLE). A default changed without a re-route, or a board routed with other arguments,
-        fails here."""
+        fails here. LIO-228: route.py also records the tools (KiCad version, Freerouting jar sha256, Java version); a board routed before
+        that carries none, the next route.py run adds them. When recorded they must be KiCad 9.0.x, the pinned jar
+        (tools.FREEROUTING_SHA256) and Java 25."""
         from pcb import route
         rec = {str(k): v for k, v in dict(self.b.GetProperties()).items()}.get('ROUTED_WITH', '')
-        m = re.fullmatch(r'route\.py set-up (\d+) (\S+) wiring (\S+) stage ([A-F]) passes (\d+) critical (\S+)', rec)
+        m = re.fullmatch(r'route\.py set-up (\d+) (\S+) wiring (\S+) stage ([A-F]) passes (\d+) critical (\S+)'
+                         r'(?: kicad (\S+) freerouting-sha256 ([0-9a-f]{64}) java (\S+))?', rec)
         self.assertIsNotNone(m, rec)
-        g, name, order, _stage, passes, critical = m.groups()
+        g, name, order, _stage, passes, critical, kicad, jar, java = m.groups()
+        if kicad:
+            self.assertEqual((kicad[:4], jar, java.split('.')[0]), ('9.0.', tools.FREEROUTING_SHA256, '25'), rec)
         self.assertEqual((int(g), name, order, int(passes), critical.split(',')),
                          (route.DEFAULT_GRID, route.SETUPS[route.DEFAULT_GRID]['name'], route.DEFAULT_ORDER, route.DEFAULT_PASSES,
                           route.CRITICAL_NETS), rec)

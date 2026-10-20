@@ -39,7 +39,7 @@ Router keepouts (candidate_dsn). Freerouting reads KiCad's zones as planes (cond
    would stretch it past R15's 10 mm);
  - B.Cu guards round the GND pads (gnd_guards): the B.Cu GND fill is extra copper (In1 carries the returns), but the GND trunk pads'
    B.Cu spokes count for their current (PB12) and a pad left with one spoke is a starved thermal."""
-import argparse, json, math, re, shutil, subprocess, sys, tempfile, time
+import argparse, hashlib, json, math, re, shutil, subprocess, sys, tempfile, time
 from pathlib import Path
 import pcbnew
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -1028,8 +1028,12 @@ def main():
         print(f'not clean: {args.out} left as it was (--force writes it anyway)')
         return 1
     props = pcbnew.MAP_STRING_STRING(best.GetProperties())
+    # the effective configuration and the tools it ran on (ktest_route prints and checks it): the DSN order follows KiCad's footprint
+    # library, the routing the exact Freerouting jar and JVM (LIO-228)
+    jar = hashlib.sha256(Path(tools.FREEROUTING).read_bytes()).hexdigest()
+    java = re.search(r'version "([^"]+)"', subprocess.run([tools.JAVA, '-version'], capture_output=True, text=True).stderr)[1]
     props['ROUTED_WITH'] = (f'route.py set-up {g} {SETUPS[g]["name"]} wiring {o} stage {rep["stage"]} passes {args.passes} '
-                            f'critical {",".join(CRITICAL_NETS) or "none"}')                     # the effective configuration (ktest_route prints it)
+                            f'critical {",".join(CRITICAL_NETS) or "none"} kicad {pcbnew.Version()} freerouting-sha256 {jar} java {java}')
     best.SetProperties(props)
     assert pcbnew.SaveBoard(args.out, best, True), 'SaveBoard failed'   # aSkipSettings: keep the project's net classes
     print('wrote', args.out, 'clean' if clean else '(NOT CLEAN, --force)')
