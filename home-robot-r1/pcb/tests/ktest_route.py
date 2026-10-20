@@ -6,14 +6,14 @@ import json, math, re, shutil, subprocess, tempfile, unittest
 from collections import Counter
 from pathlib import Path
 import pcbnew
-from pcb import board_spec as B, copper as C, tools, zone_check
+from pcb import board_spec as B, copper as C, route, tools, zone_check
 from pcb.gridroute import OUTER_CLASSES
 D = Path(B.__file__).parent
 PCB, PRO = D / 'r1_power_io.kicad_pcb', D / 'r1_power_io.kicad_pro'
 MM, TOMM = pcbnew.FromMM, pcbnew.ToMM
 # Ruling R15 / R17 limits (the pad pairs and ratio limits for the return paths are zone_check.POWER_LOOPS / SIGNAL_RETURNS, measured on
 # the In1 GND plane, copper.GND_PLANE_LAYER; the In1 slot limit is IN1_SLOT_MAX). Via sizes per net class: board_spec.CLASS_VIA.
-VIA_PAD_MIN = 0.5             # mm: via copper to any other net's pad copper (R17a: solder side, no bridges)
+VIA_PAD_MIN = route.VIA_PAD_KEEP   # mm: via copper to any other net's pad copper (R17a: solder side, no bridges)
 IN1_SLOT_MAX = 10.0           # mm: R15, no void of the In1 GND plane longer than this (zone_check.in1_voids, measured along its bends)
 
 
