@@ -91,7 +91,7 @@ Buy from the BOM (`r1_power_io-bom.csv`; MPNs marked "verify before ordering" we
 - **Pico cable:** an up-angled micro-USB (micro-B, 90° up) plug. The Pico's receptacle faces the board's left edge; the plug goes in from
   above with the lid off, so the cable must rise straight up.
 - **P03:** the user's module, on 1 mm double-sided foam tape in the front bay plus a cable tie: measure it first (the CAD assumes a
-  62 × 38 × 14 mm envelope), then set 5.1 V on the bench under load (6.0 V in, 4.5 A out: BRINGUP.md section 5) before it is wired
+  62 × 38 × 14 mm envelope), then set 5.1 V on the bench under load (6.0 V in, 4.71 A out: BRINGUP.md section 5) before it is wired
   to U5A / U5B.
 - **J14 / J15 are DNP:** spare pad rows, placed and netted, not fitted (ruling PB8). A bare 2.54 mm header may be fitted later
   (≤ 8.5 mm tall).
@@ -156,14 +156,15 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
       under the 0.153 mm), and those of J6, J7, J10–J13 and K1 sit 0.09–0.10 mm from the board edge: they may be clipped there.
 - [ ] **P03 at the low-battery stop** (also on LIO-105's list): the HW-316E's XL4015 datasheet gives 8–36 V input (the seller says
       4–38 V). `board_spec` assumes 4.71 A out (the Jetson's 4.5 A + the 5V taps) from 6.0 V at 85 % (P03_VIN_MIN, P03_EFF; see "P03 efficiency" below); as a non-synchronous buck with a sense shunt
-      it needs about 0.6–0.8 V of headroom at 4.5 A, and motor starts sag the pack 0.3–0.5 V more. Bench test: 6.0 V in, 4.5 A out
-      (BRINGUP.md section 5). If it fails, the firmware stop rises to the lowest passing input + 0.5 V, and P03_VIN_MIN with it.
+      it needs about 0.6–0.8 V of headroom at that current, and motor starts sag the pack 0.3–0.5 V more. Bench test: 6.0 V in, 4.71 A
+      out, with the input current read (BRINGUP.md section 5). If it fails, the firmware stop rises to the lowest passing input + 0.5 V, and P03_VIN_MIN with it.
 - [ ] **5 V at the Jetson** (also on LIO-105's list): about 65 mΩ from the P03 to the barrel plug (board copper, W04 18 AWG, Micro-Fit,
       barrel jack), about 0.3 V at 4.5 A (an estimate). The plug must read ≥ 5.0 V under the Jetson's load with U5B ≤ 5.25 V
       (`board_spec.V5_MAX`; BRINGUP.md section 7 step 3).
 - [ ] **DRV8874** (TI SLVSF66; Pololu 4035 carrier): R_DS(on) high + low side 200 mΩ typical at 25 °C, about ×1.5 at 150 °C; thermal
       shutdown about 165 °C; R_θJA about 40 °C/W on a JEDEC 4-layer board, and 60–80 °C/W assumed for the 2-layer carrier. With these,
-      T_J reaches 88–136 °C at 2.1 A continuous, so firmware limits each channel to 1.8 A continuous (BRINGUP-NOTES.md). CS 1.1 V/A.
+      T_J reaches 88–136 °C at 2.1 A continuous, so firmware limits each channel to 1.8 A continuous (BRINGUP-NOTES.md). CS 1.1 V/A
+      of the high-side current only: under slow decay it reads I × duty.
 - [ ] **C3 Panasonic EEE-FK1C101P** (FK): ESR 0.44 Ω at 100 kHz, ripple rating 0.16 A at 105 °C, height 5.8 ± 0.3 mm (must stay
       ≤ 7.5 mm under the IMU module). Its ripple share is 0.10 A at 20 kHz PWM with C1 fitted and slow decay (about 0.20 A with fast
       decay, which the firmware must not use: BRINGUP-NOTES.md). The 0.16 A is the 100 kHz rating, not derated to 20 kHz: check the
@@ -180,13 +181,23 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **C1 Panasonic EEU-FR1E471** (FR, 470 µF 25 V): ESR about 0.04 Ω; 10 mm diameter, 5 mm lead pitch, ≤ 20 mm tall (the STEP envelope
       is 20 mm; the real can is about 16–20 mm).
 - [ ] **Omron G5LE-1 DC5** relay: coil 63 Ω, 79.4 mA at 5 V; contacts rated for the 5 A DC motor branch; pinout as the KiCad footprint.
+- [ ] **K1 capacitive inrush** (LIO-234): K1 closes onto C1 + C3 (570 µF) on every motor-toggle-on, about 40–80 A peak for tens of
+      µs. Check the G5LE-1's contact material and its inrush / capacitive-load rating (or contact life at that peak). A relay is
+      accepted here where a fuse fitted live is not (BRINGUP.md section 7 step 5): it makes once, on contacts made for switching, while
+      a hand-pushed blade arcs several times on the clip that then carries the motor current.
+- [ ] **Unprotected off-board lines** (LIO-234; no board change, LIO-235 decides on PTCs): ARM, BUMP_L / BUMP_R, XSHUT1–4,
+      SDA / SCL and GP20 go straight to RP2040 pins, and the encoder lines to bare 2N7002 gates, with no ESD protection. The 5 V taps
+      J4.4 / J5.4 / J13.1 / J15.5 have no fuse or PTC; J5.4 and J13.1 run on 0.8 mm half-ounce In2 (`board_spec.PREROUTES`), so a
+      pinched motor cable or a shorted toggle or LED lead crowbars the Jetson's 5 V and can fuse an inner trace (about 4 A for 1 s).
+      BRINGUP.md section 9 asks for ESD care and a cable inspection.
 - [ ] **Motor encoder** (Pololu 4867, 25D 48 CPR): Hall sensors at most 10 mA each, from 5 V.
 - [ ] **ToF sensors** (Pololu 2490, VL53L0X): about 40 mA peak each while ranging (ST: 19 mA average), from 3V3.
 - [ ] **Pico 3V3 regulator:** 300 mA for external loads (the 3V3 rail: IMU, ToF sensors, pull-ups).
 - [ ] **I2C pull-ups on the modules:** the GY-521's 2.2 kΩ and the Pololu 2490 carriers' 10 kΩ (from memory); with R19 / R20 at 10 kΩ
       the bus is about 1.05 kΩ. Measure it at bring-up (BRINGUP.md section 4 item 4).
 - [ ] **JLCPCB 4-layer minimums** as the DRC rules carry them (annular ring 0.13 mm, plated hole 0.3 mm, non-plated 0.5 mm, hole to hole
-      0.5 mm, copper to edge 0.3 mm, silk line 0.12 mm, silk to mask 0.1 mm): check them against JLCPCB's capability page.
+      0.5 mm, copper to edge 0.5 mm against JLCPCB's 0.3 mm, silk line 0.12 mm, silk to mask 0.1 mm): check them against JLCPCB's
+      capability page.
 - [ ] **LED forward voltage:** at least 1.8 V (the lamp currents assume it).
 - [ ] **Power connectors J1 / J3 and their mates:** AMASS XT30UPB-M (J1, vertical PCB male, 15 A continuous; pin 1 = its "−" pad) and
       the XT30U-F on W01; Molex 43650-0200 (J3, Micro-Fit 3.0 right-angle header with peg), the 43645-0200 receptacle and the exact

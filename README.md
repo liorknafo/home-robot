@@ -49,7 +49,7 @@ Status: work in progress. Nothing has been ordered or printed yet.
 
 1. **Fetch the reference models:** `tools/fetch_reference_models.sh`. The NVIDIA Jetson model needs a manual download; the script prints the steps.
 2. **Robot CAD:**
-   - Python 3.14 with CadQuery 2.8 (`home-robot-r1/cad/requirements.txt`; 2.8.0 + cadquery-ocp 7.9.3.1.1 verified).
+   - Python 3.13 with CadQuery 2.6.1 (`home-robot-r1/cad/requirements.txt`; CadQuery 2.8.0 + cadquery-ocp 7.9.3.1.1 on Python 3.14 also verified).
    - Run `python home-robot-r1/cad/build_robot.py`. It takes about 25 min, and writes the meshes, STEP, print STLs and validation report.
 3. **Board (optional):**
    - KiCad 9.0.x (its bundled Python, `$KPY` in the script headers, runs the `pcb/` scripts and `ktest_*` tests): on macOS
@@ -92,8 +92,8 @@ Status: work in progress. Nothing has been ordered or printed yet.
      from the ONNX export on the PC to the FP16 engine and the live camera view on the Nano.
 5. **Tests:**
    - Simulator: `cd home-robot-sim && python -m unittest discover -s tests`, plus `tests/scenarios_round.py`.
-   - Robot pure tests: `cd home-robot-r1 && python -m unittest discover -s pcb/tests -t .` (or `python -m pytest pcb/tests`), and
-     `python -m unittest discover` in `cad/`. The tests that need KiCad skip when it isn't found; `R1_REQUIRE_KICAD=1` makes them run (and fail).
+   - Robot pure tests: `cd home-robot-r1 && python -m unittest discover -s pcb/tests -t .` (or `python -m pytest pcb/tests`;
+     they include the CAD review-page checks). The tests that need KiCad skip when it isn't found; `R1_REQUIRE_KICAD=1` makes them run (and fail).
    - Board tests in KiCad's Python: `cd home-robot-r1 && $KPY -m unittest pcb.tests.ktest_pcb pcb.tests.ktest_power pcb.tests.ktest_route`.
 
 ## Licence

@@ -80,6 +80,18 @@ class HarnessTests(unittest.TestCase):
             self.assertEqual(self.rows[ref]['pins'], pin_nets(ref), ref)
             self.assertTrue(self.rows[ref]['mates_with'], ref)
 
+    def test_connector_ids_and_lead_ids_are_told_apart(self):
+        """LIO-234: the connectors table's W-J<board ref> ids and the leads' W<nn> ids (cut list, bay_board_connectors, CAD) are two
+        families; the note maps every XH connector to its lead, and the review template cites the lead ids, as the CAD does."""
+        note = self.d['connectors_ids']
+        self.assertEqual([self.rows[f'J{i}']['lead'] for i in range(6, 10)], ['W10', 'W11', 'W12', 'W13'])
+        self.assertIn('J6–J9 → W10–W13', note)
+        for ref in ('J10', 'J11', 'J12', 'J13'):
+            self.assertIn(self.rows[ref]['lead'], self.cutd, ref); self.assertIn(self.rows[ref]['lead'], note, ref)
+        page = (ROOT / 'cad' / 'review-template.html').read_text(encoding='utf-8')
+        self.assertNotIn('W-J', page)
+        for i in range(4): self.assertIn(f'{self.rows[f"J{6 + i}"]["lead"]} ', page)
+
     def test_pico_pin_table_is_pico_gpio(self):
         """The pico_pins table, read as net -> GP pin, is exactly PICO_GPIO."""
         got = {}

@@ -104,14 +104,18 @@ Do the fail-safe check in section 0 now, on the bench. It is ASSY step 0.
    and, through its 3V3 pin, the board's 3V3 rail: the GY-521, the cliff ToF sensors (when plugged in) and the pull-ups. With the
    robot built, that USB is the Jetson's: with the Jetson off, the Pico and its sensors are off. If the robot must run its sensors
    without the Jetson's USB, fit D2 (an SS14, its band on the silk mark; it sits inside DRV_R's socket rows, so fit it with the DRV_R
-   carrier out): the board's 5V then feeds VSYS, and the Pico's own VBUS diode keeps that 5V out of the USB host.
+   carrier out): the board's 5V then feeds VSYS, and the Pico's own VBUS diode keeps that 5V out of the USB host. With D2 fitted the
+   firmware must enable USB only while VBUS is present (section 8, "D2 fitted").
 3. **Expect:**
    - TP4 (3V3) at about 3.3 V.
    - TP3 (5V), TP1 (VBAT_SW) and TP2 (VMOT) dead.
    - LED1–LED3 off.
-4. **I2C pull-ups.** USB unplugged, the GY-521 and all four ToF sensors plugged in: measure SDA and SCL to 3V3 (J14 pads 3 and 4 to
-   J14 pad 1). Expect about 1.05 kΩ each: R19 / R20 (10 kΩ), the GY-521's 2.2 kΩ and the four ToF carriers' 10 kΩ in parallel
-   (2.8 mA at 0.4 V, inside I2C's 3 mA). Below 1 kΩ (a module with stronger pull-ups), remove R19 / R20 (design spec 2026-10-04).
+4. **I2C pull-ups, powered.** The GY-521 and all four ToF sensors plugged in, the Pico on USB in BOOTSEL (hold BOOTSEL while plugging
+   it in, so no firmware drives the bus). Put the meter on its mA range from SDA to GND (J14 pad 3 to an M3 hole ring), then from SCL
+   (J14 pad 4). R = 3.3 V / I: expect about **3.1 mA, 1.05 kΩ** each: R19 / R20 (10 kΩ), the GY-521's 2.2 kΩ and the four ToF
+   carriers' 10 kΩ in parallel (2.8 mA at 0.4 V, inside I2C's 3 mA). If R < 1 kΩ (a module with stronger pull-ups), leave R19 / R20 off
+   (design spec 2026-10-04). Do not use an ohmmeter to 3V3 with the Pico unpowered: it reads the RP2040's pad diodes and misses the
+   GY-521's pull-ups, which hang on its LDO's output.
 5. With a test sketch:
    - The I2C bus (GP2 SDA, GP3 SCL) finds the GY-521 at 0x68 (AD0 is tied to GND).
    - Each ToF sensor answers once its XSHUT line (GP0, GP10, GP5, GP13) is released.
@@ -120,12 +124,15 @@ Do the fail-safe check in section 0 now, on the bench. It is ASSY step 0.
 ## 5. Set the P03 5 V converter (before the Jetson)
 
 1. Set the P03 on the bench, with a bench supply on its input: **trimpot to 5.1 V**.
-2. Then verify it at **6.0 V input with a 4.5 A load**: the firmware's low-battery stop, at the Jetson's full current (`board_spec`
-   P03_VIN_MIN, P03_OUT_A). Use an electronic load at 4.5 A, or about 1.1 Ω rated 25 W or more, and set 6.0 V at the P03's IN terminal
-   (the bench leads drop too). Pass: the output holds the set 5.1 V within 0.1 V for a minute. Its rating alone is not acceptance: the
-   HW-316E's XL4015 (datasheet input 8–36 V; the seller says 4–38 V) is a non-synchronous buck with a sense shunt and needs about
-   0.6–0.8 V of headroom at 4.5 A, and motor starts sag the pack 0.3–0.5 V more, so the Jetson could brown out (SD-card corruption)
-   before the clean shutdown.
+2. Then verify it at **6.0 V input with a 4.71 A load**: the firmware's low-battery stop, at the P03's full output, the Jetson's 4.5 A
+   + the 5V taps (`board_spec` P03_VIN_MIN, P03_OUT_A). Use an electronic load at 4.71 A, or a 1.08 Ω resistor (4.71 A at 5.1 V; a
+   1.1 Ω part draws 4.64 A). The load dissipates about 24 W: use a 50 W part, or a smaller one on a heatsink. The bench supply must
+   give at least 5 A at 6 V. Set 6.0 V at the P03's IN terminal (the bench leads drop too). Pass: the output holds the set 5.1 V
+   within 0.1 V for a minute. **Read the input current too:** efficiency = 5.1 V × 4.71 A / (6.0 V × I_in) must be ≥ 85 %
+   (`board_spec.P03_EFF`), i.e. I_in ≤ 4.7 A (about 4.6 A at the 5.0 V nominal, `P03_IN_A` 4.62 A). Its rating alone is not
+   acceptance: the HW-316E's XL4015 (datasheet input 8–36 V; the seller says 4–38 V) is a non-synchronous buck with a sense shunt and
+   needs about 0.6–0.8 V of headroom at this current, and motor starts sag the pack 0.3–0.5 V more, so the Jetson could brown out
+   (SD-card corruption) before the clean shutdown.
    **If it fails,** raise the input in 0.1 V steps to the lowest input at which it passes. The firmware stop (section 8) becomes that
    input + 0.5 V (the motor-start sag), and `board_spec.P03_VIN_MIN` is set to match (a comment there; no board change).
 3. Only then connect it to U5A (input) / U5B (output) and fit it (ASSY step 5).
@@ -239,7 +246,8 @@ Before step 7, do sections 7–9: the LEDs, the test pads and the under-carrier 
 ## 7. First power with the Jetson off
 
 All three status LEDs and all five test pads sit **under the Jetson carrier** (robot x ≥ −38.5). They can be seen and reached only
-before the Jetson is fitted, so do this whole section with it off.
+before the Jetson is fitted, so do this whole section with it off. **Keep the Pico on the bench computer's USB (section 4)**
+throughout: with D2 DNP and the Jetson off, nothing else powers the Pico and the 3V3 rail.
 
 | Ref | Shows / net | Robot (x, y) mm | Note |
 |---|---|---|---|
@@ -276,15 +284,19 @@ Steps:
    stop and report it (a shorter or heavier W04). A trim above 5.1 V is the new set-point for the 5.1 V readings in sections 0 and 6.
 4. **Motor toggle on** (the J13 loop). K1 clicks, and MOTOR_ON_N (GP9) reads low. With F2 still out, VMOT stays dead.
 5. **Rocker off, fit F2, rocker on.** F2 goes in only with the rocker off: fitted live, it would charge C1 + C3 (570 µF) through the
-   fuse contacts. Expect:
+   fuse contacts. K1 makes the same charge on every motor-toggle-on (40–80 A peak for tens of µs), and that is accepted: the relay
+   closes once, on contacts made for switching (their capacitive-inrush rating is on the `ORDERING.md` verify list), while a blade
+   pushed in by hand makes and breaks several times as it scrapes into the clip, each time arcing on the clip that then carries the
+   motor current. Expect:
    - TP2 (or C1 "+") at about the pack voltage;
    - LED3 on.
 6. **Motors, wheels lifted.** Use the firmware limits in section 8.
    - Wake the drivers: DRV_SLEEP (GP7) high. R17 holds SLEEP low by default.
    - Spin each motor both ways at 20 kHz PWM.
    - Check that the encoder counts follow (GP1 / GP4 left, GP11 / GP12 right).
-   - Check that L_CS_ADC (GP27) and R_CS_ADC (GP28) read about 1.1 V/A (through the R24 / C4 and R25 / C5 filters: settled in about
-     2 ms).
+   - Check the current sense at about 50 % duty, with an ammeter in series with the motor: L_CS_ADC (GP27) and R_CS_ADC (GP28) read
+     about D × I × 1.1 V/A (slow decay: CS is 0 in the off-time; through the R24 / C4 and R25 / C5 filters, settled in about
+     3.6 ms), so I = V_ADC / (1.1 V/A × D) must match the ammeter (section 8).
 7. **After a stall test,** touch U3P.2 (DRV_L GND, ruling PB21): its joint must not be hot.
 
 ## 8. Firmware limits (from BRINGUP-NOTES.md)
@@ -292,9 +304,14 @@ Steps:
 - **DRV8874 continuous current: 1.8 A per channel.**
   - At 2.1 A continuous, the junction reaches 88–136 °C. This assumes 40 °C air under the carrier, R_θJA 40 °C/W (JEDEC), and 70 °C/W
     for the 2-layer carrier. 1.8 A keeps it at or below about 110 °C.
-  - Firmware enforces the limit from CS: about 1.1 V/A on the carrier's 2.49 kΩ, read on GP27 (L_CS_ADC) and GP28 (R_CS_ADC). Each
-    CS reaches its pin through an RC filter by its driver (R24 / C4, R25 / C5: 4.7 kΩ and 100 nF, about 0.47 ms), so the reading is
-    the 20 kHz chopping averaged; a stall shows within about 2 ms.
+  - Firmware enforces the limit from CS: 1.1 V/A on the carrier's 2.49 kΩ, read on GP27 (L_CS_ADC) and GP28 (R_CS_ADC). Each
+    CS reaches its pin through an RC filter by its driver (R24 / C4, R25 / C5: 4.7 kΩ and 100 nF; with the carrier's 2.49 kΩ,
+    τ = 7.19 kΩ × 100 nF ≈ 0.72 ms, about 220 Hz), so the reading is the 20 kHz chopping averaged; a stall shows within about 3.6 ms.
+  - **CS reads I × duty** (LIO-234): the DRV8874 senses only its high-side FETs, and in the slow-decay off-time (the low-side brake)
+    CS is 0, so V_ADC ≈ D × I × 1.1 V/A while the driver and the motor carry the full I. Use **I = V_ADC / (1.1 V/A × D)** and apply
+    the 1.8 A limit to that I. It holds for D ≳ 0.1; at lower duty rely on the stall timer.
+  - The filter cap also raises the driver's own cycle-by-cycle current limit from about 2.9 A to about 3.5 A at D = 0.5 (up to about
+    4.4 A at low duty and in the first ms), still under its overcurrent protection.
   - Short peaks are fine: starts, and a stall up to the 2.1 A design current. A stall must be cut within seconds.
   - These datasheet figures are quoted from memory; see "Verify before ordering" in `ORDERING.md`.
 - **Motor PWM about 20 kHz** (`board_spec.DRV_PWM_HZ`), **with slow decay.**
@@ -326,7 +343,7 @@ Steps:
     Full charge (8.7 V) reads 2.16 V, inside the 3.3 V ADC range.
   - **Warn at 6.6 V** (1.1 V per cell; VSENSE 1.64 V).
   - **Stop at 6.0 V** (1.0 V per cell; VSENSE 1.49 V, an ADC count of about 1847 of 4095 at the 3.3 V reference). This assumes the
-    P03 passed the 6.0 V / 4.5 A test in section 5; if it failed, the stop is the lowest passing input + 0.5 V.
+    P03 passed the 6.0 V / 4.71 A test in section 5; if it failed, the stop is the lowest passing input + 0.5 V.
   - Average over about 2 s, so motor starts do not trip it.
   - At the stop: stop the motors and tell the Jetson to shut down. Then switch the rocker off and charge the pack.
   - Do not run NiMH below 1.0 V per cell.
@@ -335,6 +352,10 @@ Steps:
   - **No PWM dimming:** a rolling-shutter camera would show bands. GP20 is on PWM slice 2 A if dimming is ever wanted.
   - A 100 kΩ resistor from the MOSFET gate to GND keeps the LED off while the Pico boots or resets (section 10 item 6).
 - **Jetson power:** barrel-jack power needs the Jetson Nano's **J48 jumper** fitted.
+- **D2 fitted** (DNP as delivered; section 4 item 2): the Pico then runs from the board's 5V with the Jetson off. Once firmware
+  enables USB, the RP2040's 1.5 kΩ D+ pull-up feeds 1–2 mA into the unpowered Jetson's hub, so enable USB only while the Pico's VBUS
+  sense (GPIO24) is high; without VBUS, hold XSHUT1–XSHUT4 low and idle. The Pico and its sensors (about 0.2 A) keep running after
+  the low-battery shutdown until the rocker goes off.
 - **IMU:** the MPU-6050 runs DLPF_CFG = 4 (about 20 Hz), with samples forwarded at 20 Hz (ruling PB27; see section 14).
 - **Braking: keep the ramp, never short-brake** (task F; numbers updated in tasks I and L). With the LD14 turned round at x 54, the lid
   closed over the front bay and the LD14 20 mm lower (task L), the robot's balance point is 16.2 mm behind the axle (13.7 mm in
@@ -355,6 +376,13 @@ Steps:
    - the camera LED lead W21, soldered into J15 (section 1): check it lies flat on the board top and leaves the front edge without
      crossing a connector's mating face;
    - the spare J14, if fitted (DNP as delivered).
+
+   **Handle these leads with ESD care, and inspect each cable before it is plugged** (LIO-234). ARM, BUMP_L / BUMP_R, XSHUT1–4,
+   SDA / SCL and GP20 run straight to RP2040 pins and the encoder lines to bare 2N7002 gates, with no ESD protection: touch an M3 hole
+   ring (GND) before handling a plug. The 5 V taps J4.4 / J5.4 (encoders), J13.1 (toggle loop) and J15.5 (camera LED) have no fuse
+   or PTC, so a pinched motor cable or a shorted toggle or LED lead crowbars the Jetson's 5 V, and can fuse an inner trace (J5.4
+   and J13.1 run on 0.8 mm half-ounce In2). Look for nicked insulation and check that no lead is pinched under the carrier, the P03 or
+   a tie (`ORDERING.md` risk list; LIO-235 decides on PTCs).
 
    **J3 (Jetson 5 V)** is not under the carrier. It is in the rear band, behind the carrier (robot about (−43.9, −44.5)), with its
    mating face at the board's right edge, reachable with the lid off. Plug the Jetson lead W04 into it after the section 7 checks.

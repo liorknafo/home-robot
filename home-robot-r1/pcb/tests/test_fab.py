@@ -347,6 +347,23 @@ class FabPackageTests(unittest.TestCase):
         for ref in [r for r in B.PARTS if r.startswith(('LED', 'TP')) and B.UNDER_CARRIER(r)] + ['TP2']:
             self.assertIn(ref, text, ref)
 
+    def test_round2_doc_figures_follow_board_spec(self):
+        """LIO-234: CS reads I x duty under slow decay; the CS filter's tau includes the carrier's 2.49 k (CS is a current source); the
+        P03 bench test is at P03_OUT_A with its input current read; the VSENSE back-feed is board_spec's figure; the copper-to-edge rule
+        is the DRC's 0.5 mm."""
+        tau_ms = (2.49e3 + 4.7e3) * 100e-9 * 1e3        # carrier R3 + R24 / R25, C4 / C5
+        guide = (FAB.parents[1] / 'BRINGUP.md').read_text(encoding='utf-8')
+        for name, text in (('BRINGUP-NOTES.md', BRINGUP.read_text(encoding='utf-8')), ('BRINGUP.md', guide)):
+            flat = ' '.join(text.split())
+            for s in (f'{tau_ms:.2f} ms', f'{5 * tau_ms:.1f} ms', 'I = V_ADC / (1.1 V/A × D)', f'{B.P03_OUT_A:g} A'):
+                self.assertIn(s, flat, (name, s))
+            for s in ('0.47 ms', '340 Hz', '2.4 ms', '4.5 A out', '4.5 A load', '67 µA'): self.assertNotIn(s, flat, (name, s))
+        self.assertIn(f'{B.TAP_LOAD_A[("R11", "1")] * 1e6:.0f} µA', BRINGUP.read_text(encoding='utf-8'))
+        self.assertIn('Keep the Pico on the bench computer\'s USB', guide)
+        flat = ' '.join(ORDERING.read_text(encoding='utf-8').split())
+        self.assertIn('copper to edge 0.5 mm', flat); self.assertNotIn('4.5 A out', flat)
+        for s in ('K1 capacitive inrush', 'Unprotected off-board lines', 'LIO-235'): self.assertIn(s, flat, s)
+
     # --- the 1:1 PDF ---
     def test_pdf_prints_one_to_one(self):
         """Every page carries make_fab's SCALE_BAR_MM bar at that length in PDF units (KiCad's 0.0001 in user unit): the plot is 1:1."""
