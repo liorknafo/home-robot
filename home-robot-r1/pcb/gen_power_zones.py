@@ -149,8 +149,10 @@ def zones():
         # speck under R4's 3 mm erosion).
         # LIO-236: down to v 70.6 under J1.2 (its S spoke had a 0.2 mm strip; the mouth east of its relief 4.4 mm), north edge left
         # at v 63.5 / 64.0 for that mouth (F1_OUT takes no strip south of J2.1); stepped to v 64.4 east of u 7.5 for J2.1's stitching vias.
+        # LIO-238: v 63.5 out to u 7.5 and down to v 71.1 (J1.1's pad clearance; its B.Cu spokes are W and S): J1.2's band south of its
+        # relief was 0.6 mm - ring cut out to +4.5 mm 7.62 -> 8.2 A, pin-to-pin max-flow 7.90 -> 8.7 A (J1.1's ring cut unchanged).
         (dict(net='BAT+', layers=('B.Cu',), spoke=SPOKE_POWER),
-         [(6.1, 64.0, 7.5, 80.0), (7.5, 64.4, 11.98, 80.0), (2.0, 63.5, 6.1, 70.6), (0.6, 65.0, 2.0, 70.6), (11.98, 71.6, 21.15, 80.0), (17.5, 66.2, 27.3, 77.9),
+         [(6.1, 63.5, 7.5, 80.0), (7.5, 64.4, 11.98, 80.0), (2.0, 63.5, 6.1, 71.1), (0.6, 65.0, 2.0, 71.1), (11.98, 71.6, 21.15, 80.0), (17.5, 66.2, 27.3, 77.9),
           (24.0, 77.9, 32.75, 80.0), (27.3, 64.1, 32.75, 80.0)], []),
         # BAT+, In2 copy (fix 1, ruling PB11): dropped by PB20 - with J1's pins swapped BAT+'s B.Cu trunk alone carries 8.6 A at its true
         # narrowest and J1.2's four B.Cu spokes 8.8 A, while the copy could reach J1.2 with one relief spoke only (KiCad: starved thermal):

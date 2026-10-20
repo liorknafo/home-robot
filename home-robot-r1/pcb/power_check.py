@@ -442,15 +442,22 @@ def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers
 
 
 # LIO-236: every power trunk pin's copper by pin_ring_cut (the pad metric, section 3, counts a spoke into a thin strip or a dead-end pocket
-# at its full width): out to PIN_RINGS mm past the relief gap, on a PIN_RING_GRID raster (half B6's: a 1.5 mm spoke reads 1.43, not 1.36)
-PIN_RINGS = (1.0, 2.5)
+# at its full width): out to PIN_RINGS mm past the relief gap, on a PIN_RING_GRID raster (half B6's: a 1.5 mm spoke reads 1.43, not 1.36).
+# LIO-238: (2.5, 4.5), was (1.0, 2.5) - the cut sees nothing past its ring, and J2.1's F.Cu helper necks down (1.15 mm) beyond +2.5 mm on
+# its way to its stitching vias (10.3 A at +2.5, 8.4 A at +4.5, 8.6 - 8.8 A by a pin-to-pin max-flow); +1.0 never bound. +4.5 reaches past
+# every helper a trunk pin feeds; a much larger ring is no better (at +6 mm all four rays of raster_cut_mm cross free copper).
+PIN_RINGS = (2.5, 4.5)
 PIN_RING_GRID = 0.05
 
 
 def trunk_pin_ring(board, ref, pin, grid=PIN_RING_GRID):
     """LIO-236: the copper leaving the POWER_TRUNK pin ref.pin through its real spokes - pin_ring_cut on its net's zone layers out to the pad's
     half size + relief gap + each of PIN_RINGS (a fuse contact: from its westmost pad, + the span of its pads), the smaller of the two: a
-    pocket that ends inside the outer ring, or a strip that narrows past the inner one, counts what it passes on. Only the layers where
+    pocket that ends inside the outer ring, or a strip that narrows past the inner one, counts what it passes on.
+    LIO-238: what it bounds is the pin's escape out to its outer ring, not the path on to the trunk: a neck past the ring is not seen
+    (the trunk's own necks are trunk_capacity's, section 1). Cross-checked on every non-GND trunk pin against a raster max-flow of the
+    joined layers (vias capped at their barrels; review scratch, not committed) from the pin to its other trunk pins and the net's copper
+    8 mm out: at or below it on every pin (J2.1 8.40 against 8.57 A, the least over raster turns). Only the layers where
     the pin's spokes reach copper that leads on to the trunk count (zone_check.pin_path_capacity's 'live': through a via, another pad's
     lead or the trunk itself): the VBAT_SW In2 helper round J2.2 does not. Returns the binding pin_ring_cut dict plus rings={extra: A}."""
     pads = sorted((q for q in board.FindFootprintByReference(ref).Pads() if q.GetNumber() == pin), key=lambda q: _uv(q))
@@ -546,9 +553,10 @@ def report(board):
         row(f'{ref + "." + pin:7} {net:8} {need:6.2f}  {sp:58} {vp or "-":34} {cap:6.2f} {pct(cap / need - 1):>8} '
             f'{"yes" if pad_uses_spokes(board, ref, pin) else "NO"}')
     row('')
-    row(f'## 3b. Power trunk pins by the ring cut (LIO-236): the copper leaving each pin through its real spokes, out to the relief gap + '
+    row(f'## 3b. Non-GND power trunk pins by the ring cut (LIO-236, LIO-238): the copper leaving each pin through its real spokes, out to the relief gap + '
         f'{" / ".join(f"{e:g}" for e in PIN_RINGS)} mm, per layer the min cut on a {PIN_RING_GRID:g} mm whole-cell raster, capped at the '
-        f'spokes, rated together - a lower bound (trunk_pin_ring); pass >= {1 + LOW_MARGIN:.2f} x need')
+        f'spokes, rated together (trunk_pin_ring): the escape of each pin out to that ring, a lower bound there - not of the path on to the trunk '
+        f'past it (section 1 rates the trunk necks); pass >= {1 + LOW_MARGIN:.2f} x need')
     row(f'{"pin":7} {"net":8} {"need A":>6}  {"per layer: cut mm / spokes":44} {"rings A":24} {"A":>6} {"margin":>8}')
     for net in (n for n in B.POWER_TRUNK if n != 'GND'):
         for ref, pin in B.POWER_TRUNK[net]:

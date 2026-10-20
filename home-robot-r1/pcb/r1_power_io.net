@@ -1,7 +1,7 @@
 (export (version "E")
   (design
-    (source "C:\\Users\\liork\\.t3\\worktrees\\home-robot\\lio-236-board-r3\\home-robot-r1\\pcb\\r1_power_io.kicad_sch")
-    (date "2026-10-20T22:58:41+0300")
+    (source "C:\\Users\\liork\\.t3\\worktrees\\home-robot\\lio-238-board-r4\\home-robot-r1\\pcb\\r1_power_io.kicad_sch")
+    (date "2026-10-21T02:05:38+0300")
     (tool "Eeschema 9.0.8")
     (sheet (number "1") (name "/") (tstamps "/")
       (title_block

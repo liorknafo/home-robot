@@ -668,7 +668,7 @@ def evaluate(board, workdir, base):
     total = sum(per.values())
     out = workdir / 'eval.kicad_pcb'
     pcbnew.SaveBoard(str(out), board, True)
-    shutil.copy(PRO, workdir / 'eval.kicad_pro'); shutil.copy(DRU, workdir / 'eval.kicad_dru')
+    shutil.copy(PRO, workdir / 'eval.kicad_pro'); shutil.copy(DRU, workdir / 'eval.kicad_dru'); shutil.copy(D / 'fp-lib-table', workdir)   # LIO-238
     subprocess.run([tools.KICAD_CLI, 'pcb', 'drc', '--format', 'json', '--severity-all', '-o', str(workdir / 'drc.json'), str(out)],
                    check=True, capture_output=True)
     drc = json.loads((workdir / 'drc.json').read_text(encoding='utf-8'))

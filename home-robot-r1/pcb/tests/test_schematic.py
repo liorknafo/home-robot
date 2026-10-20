@@ -1,7 +1,7 @@
 import json, subprocess, tempfile, unittest
 from pathlib import Path
 from pcb import board_spec as B, tools
-from pcb.make_schematic import read_netlist, export_netlist, project, sym_lib_table, main as make_schematic_main
+from pcb.make_schematic import read_netlist, export_netlist, project, sym_lib_table, fp_lib_table, main as make_schematic_main
 from pcb.tests import left_out
 D = Path(B.__file__).parent
 SCH, PRO = D / 'r1_power_io.kicad_sch', D / 'r1_power_io.kicad_pro'
@@ -28,8 +28,8 @@ class SchematicTests(unittest.TestCase):
             self.assertEqual(got, sorted(spec['nets']), name)
         self.assertEqual(len(ns['netclass_patterns']), sum(len(s['nets']) for s in B.NETCLASSES.values()))
 
-    def test_project_rules_and_sym_lib_table_are_current(self):
-        for f, text in ((PRO.name, json.dumps(project(), indent=2) + '\n'), ('sym-lib-table', sym_lib_table()), ('r1_power_io.kicad_dru', B.DRC_RULES)):
+    def test_project_rules_and_lib_tables_are_current(self):
+        for f, text in ((PRO.name, json.dumps(project(), indent=2) + '\n'), ('sym-lib-table', sym_lib_table()), ('fp-lib-table', fp_lib_table()), ('r1_power_io.kicad_dru', B.DRC_RULES)):
             self.assertEqual((D / f).read_text(encoding='utf-8'), text, f'{f} is stale: run pcb/make_schematic.py')
 
 
