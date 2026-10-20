@@ -569,11 +569,25 @@ def _footprint_geometry(fp_id):
             pts = [p for key in ('start', 'end', 'mid') for p in find(item, key)]
             for pl in find(item, 'pts'): pts += find(pl, 'xy')
             xs += [float(p[1]) for p in pts]; ys += [float(p[2]) for p in pts]
+            if kind == 'fp_arc':   # the bulge: the arc's points at 0 / 90 / 180 / 270 deg about its centre
+                for ex, ey in arc_extremes(*((float(find(item, k)[0][1]), float(find(item, k)[0][2])) for k in ('start', 'mid', 'end'))):
+                    xs.append(ex); ys.append(ey)
     pads = {}
     for pad in find(root, 'pad'):
         at = find(pad, 'at')[0]
         pads.setdefault(str(pad[1]), (float(at[1]), float(at[2])))
     return (min(xs), min(ys), max(xs), max(ys)), pads
+def arc_extremes(s, m, e):
+    """The axis-extreme points (centre +- r along x or y) that lie on the arc from s through m to e."""
+    (ax, ay), (bx, by), (cx, cy) = s, m, e
+    d = 2 * (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by))
+    if abs(d) < 1e-12: return []   # collinear: a straight segment, no bulge
+    ux = ((ax * ax + ay * ay) * (by - cy) + (bx * bx + by * by) * (cy - ay) + (cx * cx + cy * cy) * (ay - by)) / d
+    uy = ((ax * ax + ay * ay) * (cx - bx) + (bx * bx + by * by) * (ax - cx) + (cx * cx + cy * cy) * (bx - ax)) / d
+    r, ang = math.hypot(ax - ux, ay - uy), lambda p: math.atan2(p[1] - uy, p[0] - ux)
+    a0, sweep = ang(s), (ang(e) - ang(s)) % math.tau
+    if (ang(m) - a0) % math.tau > sweep: a0, sweep = ang(e), math.tau - sweep   # m is on the other way round: e -> s counter-clockwise
+    return [(ux + r * math.cos(t), uy + r * math.sin(t)) for t in (0, math.pi / 2, math.pi, 3 * math.pi / 2) if (t - a0) % math.tau <= sweep]
 def courtyard_box(ref):
     """(u0, v0, u1, v1): the board-frame bounding box of the part's courtyard as placed by PLACEMENT."""
     x0, y0, x1, y1 = _footprint_geometry(PARTS[ref]['fp'])[0]

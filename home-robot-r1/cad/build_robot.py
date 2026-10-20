@@ -327,8 +327,8 @@ BAY_OUTLINE=[tuple(p) for p in BC['outline_xy']]   # robot x, y: the board's Edg
 BAY_MOUNTS=[tuple(h['xy']) for h in BC['holes']]   # M3 holes H1..H4 over the P_base inserts (H3/H4 beside the tongue centre: ruling PB4)
 BAY_CLAMPS=[tuple(h['xy']) for h in BC['clamp_holes']]   # rear Jetson standoff stacks (JHOLES 3 and 1) clamp the board: Ø3.0 NPTH (ruling PB3)
 assert all(math.dist(a,b)<1e-6 for a,b in zip(BAY_MOUNTS+BAY_CLAMPS,[(-19.5,38),(-19.5,-38),(-11.5,8.5),(-11.5,-8.5),(-33,40),(-33,-46)])),'holes moved: the P_base inserts and the Jetson holes are fixed'
-CARRIER_X=-38.5          # height-zone boundary: the Jetson carrier's rear edge (x -37) less the 1.5 mm margin
-UNDER_CARRIER_Z=54.77    # carrier underside z 57 less the 2.23 mm allowed for its through-hole leads: under-carrier part tops <= UNDER_CARRIER_Z - 1.5
+CARRIER_X=BS.CARRIER_X   # height-zone boundary: the Jetson carrier's rear edge (x -37) less the 1.5 mm margin
+UNDER_CARRIER_Z=BS.UNDER_CARRIER_Z   # carrier underside z 57 less the 2.23 mm allowed for its through-hole leads: under-carrier part tops <= UNDER_CARRIER_Z - 1.5
 BCONN=BC['connectors'];BMOD=BC['modules']
 def _bctr(b):return ((b[0]+b[2])/2,(b[1]+b[3])/2)
 BAY_CONN={r:tuple(round(v,2) for v in _bctr(c['body_xy'])) for r,c in BCONN.items()}   # connector body centres: the harness ends (B9 sets the cut lengths)

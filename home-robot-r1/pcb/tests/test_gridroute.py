@@ -77,6 +77,15 @@ class GridRouteTests(unittest.TestCase):
         self.assertEqual(runs[0][0], 'F.Cu'); self.assertEqual(runs[0][1][0], (0.01, 0.0)); self.assertEqual(len(runs[0][1]), 3)
         self.assertEqual(runs[1][0], 'B.Cu'); self.assertEqual(runs[1][1][-1], (0.3, 0.2))
 
+    def test_several_goals_find_the_nearest(self):
+        """The heuristic is the distance to the nearest goal (admissible with several goals): a goal 2 cells away wins over one 15
+        cells away, whichever of them the goal set yields first (the mirrored case covers the other order)."""
+        w, h = 20, 3
+        g, ok = grids(w, h, {}), bytes(w * h)
+        goals = [('F.Cu', 0, 1), ('F.Cu', 17, 1)]
+        self.assertEqual(G.search(g, w, h, ok, [('F.Cu', 2, 1)], goals, ('F.Cu',)), [('F.Cu', 2, 1), ('F.Cu', 1, 1), ('F.Cu', 0, 1)])
+        self.assertEqual(G.search(g, w, h, ok, [('F.Cu', 15, 1)], goals, ('F.Cu',)), [('F.Cu', 15, 1), ('F.Cu', 16, 1), ('F.Cu', 17, 1)])
+
 
 if __name__ == '__main__':
     unittest.main()

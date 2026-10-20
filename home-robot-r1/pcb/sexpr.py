@@ -3,6 +3,7 @@ import re
 class Q(str):
     pass
 _TOKEN = re.compile(r'\(|\)|"(?:\\.|[^"\\])*"|[^\s()]+')
+_ESC, _UNESC = re.compile(r'\\(.)'), {'n': '\n', '"': '"', '\\': '\\'}   # KiCad's string escapes; any other \x is kept as is
 def parse(text):
     stack = [[]]
     for t in _TOKEN.findall(text):
@@ -11,7 +12,7 @@ def parse(text):
         elif t == ')':
             node = stack.pop(); stack[-1].append(node)
         elif t.startswith('"'):
-            stack[-1].append(Q(t[1:-1].replace('\\"', '"').replace('\\\\', '\\')))
+            stack[-1].append(Q(_ESC.sub(lambda m: _UNESC.get(m[1], m[0]), t[1:-1])))
         else:
             stack[-1].append(t)
     return stack[0]
@@ -19,7 +20,7 @@ def dump(x):
     if isinstance(x, list):
         return '(' + ' '.join(dump(i) for i in x) + ')'
     if isinstance(x, Q):
-        return '"' + str(x).replace('\\', '\\\\').replace('"', '\\"') + '"'
+        return '"' + str(x).replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n') + '"'
     return str(x)
 def find(node, key):
     return [c for c in node if isinstance(c, list) and c and c[0] == key]

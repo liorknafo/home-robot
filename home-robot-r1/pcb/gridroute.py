@@ -44,14 +44,13 @@ def search(grids, w, h, via_ok, starts, goals, layers, vias=True):
     goals = {(idx[L], x, y) for L, x, y in goals if L in idx}
     if not starts or not goals: return None
     ends = set(starts) | goals
-    tx, ty = next(iter(goals))[1:]
+    targets = {(x, y) for _, x, y in goals}
 
     def free(l, x, y):
         return 0 <= x < w and 0 <= y < h and ((l, x, y) in ends or not g[l][y * w + x])
 
-    def heur(x, y):
-        dx, dy = abs(x - tx), abs(y - ty)
-        return max(dx, dy) + 0.4142 * min(dx, dy)
+    def heur(x, y):   # octile distance to the nearest goal: admissible with several goals (ponytail: O(goals) per push)
+        return min(max(abs(x - tx), abs(y - ty)) + 0.4142 * min(abs(x - tx), abs(y - ty)) for tx, ty in targets)
     dist, prev, pq = {}, {}, []
     for s in starts:
         dist[s] = 0.0
