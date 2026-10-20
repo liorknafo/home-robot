@@ -27,9 +27,10 @@ def _java():
     (macOS: Homebrew's openjdk@25, Apple silicon or Intel; Windows: Temurin under ~/tools or Program Files; Linux: /usr/lib/jvm), then
     PATH's java. Path.is_file, not shutil.which: under KiCad's Python 3.11 on Windows which() rejects a full path without .exe."""
     exe = 'java.exe' if SYSTEM == 'Windows' else 'java'
-    def newest(*pats):   # version order, not string order: jdk-25.0.10 before jdk-25.0.4
-        key = lambda j: [int(n) for n in re.findall(r'\d+', Path(j).parent.parent.name)]
-        return sorted((j for pat in pats for j in glob.glob(pat)), key=key, reverse=True)
+    def newest(*pats):   # version order, not string order: jdk-25.0.10 before jdk-25.0.4; JDK 25 only (LIO-236: /usr/lib/jvm/*25* also
+        # matches java-21-openjdk-21.0.25), the +build suffix left out (jdk-25.0.4.1+1)
+        key = lambda j: [int(n) for n in re.findall(r'\d+', Path(j).parent.parent.name.split('+')[0])]
+        return sorted((j for pat in pats for j in glob.glob(pat) if key(j)[:1] == [25]), key=key, reverse=True)
     found = [str(Path(env('JAVA_HOME')) / 'bin' / exe)] if env('JAVA_HOME') else []
     if SYSTEM == 'Darwin': found += newest('/opt/homebrew/opt/openjdk@25/bin/java', '/usr/local/opt/openjdk@25/bin/java')
     elif SYSTEM == 'Windows':

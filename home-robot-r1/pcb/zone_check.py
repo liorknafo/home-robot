@@ -221,7 +221,8 @@ def pin_path_capacity(board, ref, pin):
     are left out (conservative). The pin's own spokes are stacked at its pads, so the result is capped at their combined IPC capacity
     (copper.capacity_a over the spokes the flow uses, LIO-227); every other edge is a conductor of its own (a piece's spokes into another
     pad, a barrel) and adds in parallel. detail: {'direct': {layer: A}, 'via_pieces': [(layer, A of spokes, [(u, v, drill)])], 'holes': {ref:
-    A of its barrels}}."""
+    A of its barrels}}, 'live': [layers where a piece the pin's own spokes reach leads on to the trunk]} (LIO-236: a pour holding no via
+    and no other pad of the net is a dead end)."""
     fp = board.FindFootprintByReference(ref)
     mine = [p for p in fp.Pads() if p.GetNumber() == pin]
     net = mine[0].GetNetname()
@@ -277,6 +278,15 @@ def pin_path_capacity(board, ref, pin):
         if ('hole', h, 'out') not in cap: continue                   # no spoke of the hole reaches a piece of the net
         detail['holes'][h] = sum(C.via_current_a(TOMM(p.GetDrillSize().x)) for p in hp)
         cap.setdefault(('hole', h, 'in'), {})[('hole', h, 'out')] = detail['holes'][h]
+    def onward(node):                                     # reaches the trunk without coming back through the pin
+        seen, todo = {node, S}, [node]
+        while todo:
+            for v, c in cap.get(todo.pop(), {}).items():
+                if c > 0 and v not in seen:
+                    if v == T: return True
+                    seen.add(v); todo.append(v)
+        return False
+    detail['live'] = [L for L in C.STACKUP if any(name == L and onward(node) for node, (name, _, _) in joint.items())]
     flow = _max_flow(cap, S, T)
     used = {}                                             # LIO-227: the pin's spokes on its layers are stacked at one pad, so the
     for node, (name, w, a) in joint.items():              # current they carry is rated on their combined cross-section

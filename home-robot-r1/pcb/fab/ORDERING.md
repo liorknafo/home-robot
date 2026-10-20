@@ -13,6 +13,7 @@ The power & I/O "bay" board: 4 layers, 1.6 mm, 74 × 100 mm, routed and power-ch
 | `r1_power_io-1to1.pdf` | Four A4 pages at 1:1 (F.Fab with the pads sketched, F.Silkscreen, F.Cu, B.Cu, all seen from the top). Print at 100 % ("actual size") and check the 50 mm bar before laying parts on the paper. |
 | `r1_power_io.step` | The board with every fitted part, for the robot CAD (B8). The parts KiCad has no model for (the J1–J3 power headers: the XT30 J1, the JST VH J2 and the Micro-Fit J3; the F1 / F2 FLR fuse holders with their fuses) are box envelopes, and so is C1 (its stock model is half the real height). Frame: STEP x = u, y = −v, z 0 = the board bottom, parts seated at z 1.6. Robot (x, y, z) = STEP (x − 66.5, y + 50, z + 35.4). The stock models show untrimmed leads (down to about 1.9 mm under the board). Heights: see "STEP heights" below. |
 | `BRINGUP-NOTES.md` | Firmware and bring-up notes for B10 (BRINGUP.md). |
+| `SOURCE.sha256` | The sha256 of the board, its DRC rules and its project this package was made from (`pcb/make_fab.py`); `pcb/tests/test_fab.py` fails when the board changed after the package was made. Not for the fab. |
 
 ### STEP heights (for B8)
 
@@ -65,8 +66,9 @@ All are inside JLCPCB's standard multilayer capability (0.09 / 0.09 mm track / s
 no surcharge option is needed. The board's DRC rules carry JLCPCB's 4-layer minimums (LIO-226, `board_spec.DRC_RULES`): annular
 ring ≥ 0.13 mm, plated hole ≥ 0.3 mm, non-plated ≥ 0.5 mm, hole to hole ≥ 0.5 mm, silk lines and text strokes ≥ 0.12 mm, silk
 ≥ 0.1 mm off the mask openings, and copper to the edge ≥ 0.5 mm (KiCad's default, kept: JLCPCB needs 0.3); the board is DRC-clean
-against them at every severity (LIO-232: the hole-to-hole, silk-line, silk-text and silk-to-mask rules say `(severity error)`, which
-kicad-cli would otherwise report as warnings only, and the router scores warnings too). The smallest drill is
+against them at every severity (LIO-232: the hole-to-hole, silk-text and silk-to-mask rules say `(severity error)`, which kicad-cli
+would otherwise report as warnings only, and the router scores warnings too; the silk-to-mask rule makes a silk-to-silk overlap an error
+as well, and the silk-line rule is an assertion, which fails as an error anyway). The smallest drill is
 0.3 mm; the NPTH holes are three Ø3.0 mm (the clamp holes H5 / H6 and J3's Micro-Fit peg) and the two Ø2.4 mm FLR locating holes.
 
 ## Parts and mechanical items
@@ -146,8 +148,9 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **JLCPCB copper:** the 4-layer default is still 1 oz outer / 0.5 oz inner.
 - [ ] **JLCPCB hole-wall copper** (via barrel plating): about 18 µm minimum, 20 µm average (IPC-6012 class 2). The B6 via model uses
       20 µm (`copper.VIA_PLATING_MM`). Recomputed at 18 µm (B7), only one pad is via-limited: U3P.2 (DRV_L GND) carries 3.11 A against
-      2.1 A (+48 %; 3.25 A at 20 µm). The worst tap via carries 87 mA against 0.87 A, and C3's GND via (0.3 mm drill since LIO-226) 0.10 A
-      against 0.71 A (0.20 A with fast decay). Every margin holds; no copper change.
+      2.1 A (+48 %; 3.25 A at 20 µm). The busiest tap vias carry D2's 200 mA (LIO-236: since the scripted VSYS feed and the D2 tap): the
+      two 0.6 / 0.3 mm VSYS vias 0.76 A at 20 µm, 0.71 A at 18 µm, and D2's PowerTap via 0.94 / 0.87 A; C3's GND via (0.3 mm drill since
+      LIO-226) 0.10 A against 0.71 A (0.20 A with fast decay). Every margin holds; no copper change.
 - [ ] **Price and options:** about $8 for 5 pcs (4 layers, ≤ 100 × 100 mm), the stencil price, stack-up JLC04161H-7628 available,
       the 0.3 mm via drill at no extra cost, the order-number mark free at its default.
 - [ ] **Size and mask:** JLCPCB routes on the Edge.Cuts line centre (routing tolerance ±0.2 mm), so the order page reads 74 × 100 mm (the
@@ -178,9 +181,13 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **The power model's remaining optimism:** the DRV8874 continuous limit (`power_check.drv8874_current_for_tj`, 1.8 A) uses the
       typical R_DS(on), not the datasheet maximum, and an assumed 40 °C under the carrier (measured in the lid-on test, BRINGUP.md); the
       via barrels use 20 µm average plating against an 18 µm minimum (above). Copper on stacked layers is rated on its combined
-      cross-section (`copper.capacity_a`), the battery GND pin's ring cut (`power_check.pin_ring_cut`) too since LIO-232: 7.8 A
-      against the 7.5 A fuse once J1.1's F.Cu GND patch was widened past K1.4 and J1.1's south spoke (summing the layers had shown 9.0 A
-      for copper that carried 6.7 A as a stack). It is a lower bound that ignores every via.
+      cross-section (`copper.capacity_a`), the battery GND pin's ring cut (`power_check.pin_ring_cut`) too since LIO-232: 8.4 A
+      against the 7.5 A fuse (summing the layers had shown 9.0 A for copper that carried 6.7 A as a stack; LIO-236 took the best of
+      four ray directions, where the cut had passed free along its one ray through the pin's west spoke: 7.8 A before). It is a lower
+      bound that ignores every via. LIO-236: every power trunk pin is rated by the same ring cut (`power_check.trunk_pin_ring`, the
+      copper leaving it through its real spokes, so a spoke into a thin strip or a dead-end pocket counts what the copper behind it
+      passes); the thinnest is J1.2 (BAT+) at 7.9 A against 7.5 A, J2.1 (F1_OUT) 10.3 A, J2.2 (VBAT_SW) 8.3 A, K1.1 (F2_OUT) 5.8 A
+      against 5 A and U5B.1 (5V) 6.1 A against 4.71 A.
 - [ ] **C1 Panasonic EEU-FR1E471** (FR, 470 µF 25 V): ESR about 0.04 Ω; 10 mm diameter, 5 mm lead pitch, ≤ 20 mm tall (the STEP envelope
       is 20 mm; the real can is about 16–20 mm).
 - [ ] **Omron G5LE-1 DC5** relay: coil 63 Ω, 79.4 mA at 5 V; contacts rated for the 5 A DC motor branch; pinout as the KiCad footprint.
@@ -201,7 +208,8 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
 - [ ] **I2C pull-ups on the modules:** the GY-521's 2.2 kΩ and the Pololu 2490 carriers' 10 kΩ (from memory); with R19 / R20 at 10 kΩ
       the bus is about 1.05 kΩ. Measure it at bring-up (BRINGUP.md section 4 item 4).
 - [ ] **JLCPCB 4-layer minimums** as the DRC rules carry them (annular ring 0.13 mm, plated hole 0.3 mm, non-plated 0.5 mm, hole to hole
-      0.5 mm, copper to edge 0.5 mm against JLCPCB's 0.3 mm, silk line 0.12 mm, silk to mask 0.1 mm; each fails DRC as an error):
+      0.5 mm, copper to edge 0.5 mm against JLCPCB's 0.3 mm, silk line and silk text stroke 0.12 mm, silk to mask 0.1 mm; each fails DRC
+      as an error):
       check them against JLCPCB's capability page.
 - [ ] **LED forward voltage:** at least 1.8 V (the lamp currents assume it).
 - [ ] **Power connectors J1 / J3 and their mates:** AMASS XT30UPB-M (J1, vertical PCB male, 15 A continuous; pin 1 = its "−" pad) and

@@ -79,7 +79,8 @@ def pad(ref, pin): return B.pad_uv(ref, pin)
 def gv(ref): return B.SMD_GND_VIAS[ref]
 
 
-VBAT_LANES = [(2.6, 52.9, 6.1, 59.36), (4.5, 50.6, 27.85, 57.15), (10.2, 49.2, 19.5, 50.6), (6.1, 57.15, 21.69, 62.1), (27.6, 55.9, 31.0, 58.5),
+VBAT_LANES = [(2.6, 52.9, 6.1, 59.36), (0.6, 53.4, 2.6, 59.36),    # LIO-236: west of J2.2 too (its W spoke; from v 53.4, no R4 speck)
+               (4.5, 50.6, 27.85, 57.15), (10.2, 49.2, 19.5, 50.6), (6.1, 57.15, 21.69, 62.1), (27.6, 55.9, 31.0, 58.5),
               (27.85, 36.0, 33.45, 55.9), (27.85, 36.0, 38.6, 41.0), (32.45, 24.0, 38.6, 41.0), (32.45, 24.0, 66.6, 31.2),
               (41.4, 24.0, 66.6, 33.3), (52.6, 24.0, 66.6, 33.9), (66.6, 26.1, 71.2, 33.9),
               (21.69, 57.15, 27.6, 58.3)]      # bay B5: down to F1.2's north pads' clearance circles (the U1B.20 - F1.2 neck, 4.94 mm)
@@ -101,11 +102,11 @@ def zones():
     for p in (pad_all('F2', '1')): f21.BooleanAdd(octa(p, 1.55))
     us, vs = sorted({p[0] for p in pad_all('F2', '1')}), sorted({p[1] for p in pad_all('F2', '1')})
     f21.BooleanAdd(rect(us[0], vs[0], us[-1], vs[-1])); f21.BooleanAdd(rect(us[0] - 1.55, vs[0], us[-1] + 1.55, 64.5))
-    j22 = rect(2.55, 55.35, 6.15, 58.95); j22.BooleanAdd(rect(0.0, 50.0, 6.15, 58.95))         # J2.2 (VBAT_SW) and the J12 side above it
     return [
         # VBAT_SW, F.Cu trunk (and In2.Cu below): J2.2, round F2.1, the strip over F2 / F1 (to v 49.2 under the Pico, clear of TP2 and R13), the channel
         # between U1B and U3P, past U3P.7 and U2.8, the column beside the IMU, east under J4's pins to U5A.1.
         # Bay B6: 1.5 mm spokes (SPOKE_POWER), so J2.2's four F.Cu spokes carry its 7.5 A alone (8.8 A; with 1.2 mm 7.46 A).
+        # LIO-236: also west of J2.2 (from v 53.4), so its W spoke leads on north (its ring cut: 6.41 -> 8.3 A against 7.5 A).
         (dict(net='VBAT_SW', layers=('F.Cu',), spoke=SPOKE_POWER), VBAT_LANES, VBAT_CUTS),
         # VBAT_SW, In2.Cu helper (bay B5): round J2.2 only. B6: it holds no via and no other VBAT_SW pin, so it is a dead end - its In2
         # spokes carry nothing (zone_check.pin_path_capacity); it stays as heat spreading and as the router keep-out it has always been
@@ -129,11 +130,13 @@ def zones():
         # through DRV_L, through the gap between the drivers, through DRV_R, out between U4P.1 and U4L.1, west to J3.1, with room for
         # U4P.2's GND stitching via. The column north of DRV_L starts at u 42.0; the exit lane south of DRV_R is 3.3 mm tall east of u 33.25
         # (PB13: LED3's GND via below it).
+        # LIO-236: U5B.1's box and the strip west of it reach v 44.5 (its S spoke had a 0.5 mm strip), and a block north-west of J3.1
+        # (u 22.3 - 24.0 from v 86.0, under C1.1's clearance) takes its N and W spokes: both ring cuts +28 % or more.
         (dict(net='5V', layers=('B.Cu',)),
-         [(62.2, 37.4, 66.8, 43.0), (66.8, 38.2, 71.0, 43.0), (62.2, 25.5, 66.8, 37.4), (41.5, 25.5, 66.8, 31.5), (42.0, 31.5, 45.4, 41.0), (39.0, 33.0, 42.0, 41.0),
+         [(62.2, 37.4, 66.8, 44.5), (66.8, 38.2, 71.0, 44.5), (62.2, 25.5, 66.8, 37.4), (41.5, 25.5, 66.8, 31.5), (42.0, 31.5, 45.4, 41.0), (39.0, 33.0, 42.0, 41.0),
           (37.5, 41.0, 46.1, 58.5), (35.25, 68.3, 38.6, 70.8),    # PB17: an ear over U4L.2's east side (no one-spoke B.Cu thermal)
           (38.6, 56.7, 46.1, 61.1), (38.6, 61.1, 42.35, 83.6), (37.9, 78.0, 42.35, 83.6),
-          (33.25, 83.6, 41.1, 86.9), (24.0, 83.6, 33.25, 88.6), (22.3, 88.6, 28.9, 92.8)],
+          (33.25, 83.6, 41.1, 86.9), (24.0, 83.6, 33.25, 88.6), (22.3, 88.6, 28.9, 92.8), (22.3, 86.0, 24.0, 88.6)],
          # PB14 / PB16: DRV_L's strip u 37.5-46.1 (DRV_L turned; U3P.2's patch stitching via in a notch with its slot toward U3P.2, so
          # the B.Cu GND fill gives U3P.2 no one-spoke thermal; 2 mm left west of it for U3L.2's B.Cu spokes), a bar across the gap's
          # north end, then one 3.75 mm strip (u 38.6-42.35) through the gap and DRV_R; the B.Cu west of it is left to the Pico links.
@@ -144,27 +147,37 @@ def zones():
         # between J1 and F2, south of F2, the F2 / F1 gap, south of F1.1 (round C1.2) and east of F1 in the channel. PB20: nothing west of u 6.1 south of
         # J1.2 - that strip is the GND pin's (J1.1) way into the main B.Cu GND fill; the block's north-west corner is cut back (no eroded
         # speck under R4's 3 mm erosion).
+        # LIO-236: down to v 70.6 under J1.2 (its S spoke had a 0.2 mm strip; the mouth east of its relief 4.4 mm), north edge left
+        # at v 63.5 / 64.0 for that mouth (F1_OUT takes no strip south of J2.1); stepped to v 64.4 east of u 7.5 for J2.1's stitching vias.
         (dict(net='BAT+', layers=('B.Cu',), spoke=SPOKE_POWER),
-         [(6.1, 64.0, 11.98, 80.0), (2.0, 63.5, 6.1, 69.8), (0.6, 65.0, 2.0, 69.8), (11.98, 71.6, 21.15, 80.0), (17.5, 66.2, 27.3, 77.9),
+         [(6.1, 64.0, 7.5, 80.0), (7.5, 64.4, 11.98, 80.0), (2.0, 63.5, 6.1, 70.6), (0.6, 65.0, 2.0, 70.6), (11.98, 71.6, 21.15, 80.0), (17.5, 66.2, 27.3, 77.9),
           (24.0, 77.9, 32.75, 80.0), (27.3, 64.1, 32.75, 80.0)], []),
         # BAT+, In2 copy (fix 1, ruling PB11): dropped by PB20 - with J1's pins swapped BAT+'s B.Cu trunk alone carries 8.6 A at its true
         # narrowest and J1.2's four B.Cu spokes 8.8 A, while the copy could reach J1.2 with one relief spoke only (KiCad: starved thermal):
         # its north side is the F1_OUT copy's, its south J1.1's antipad. In2 in the band is left to the router.
         # F1_OUT, B.Cu trunk: J2.1, north between J2.2 and F2.1, over F2 (to v 48.9 under the Pico), F1.2 and east of F1 in the channel.
+        # LIO-236: also round J2.2 (west and north), which makes J2.1's west pocket live, and to v 63.9 east of u 8.0 under the F.Cu
+        # helper's stitching vias.
         (dict(net='F1_OUT', layers=('B.Cu',), spoke=SPOKE_POWER),
-         [(0.6, 58.95, 6.15, 63.0), (6.15, 50.5, 11.95, 63.0), (10.1, 48.9, 25.3, 56.5), (25.3, 53.9, 32.75, 56.5), (17.5, 55.0, 32.75, 63.6),
+         [(0.6, 58.95, 6.15, 63.0), (6.15, 50.5, 11.95, 63.0), (8.0, 63.0, 11.95, 63.9), (10.1, 48.9, 25.3, 56.5), (25.3, 53.9, 32.75, 56.5), (17.5, 55.0, 32.75, 63.6),
+          (0.6, 53.4, 6.15, 58.95),     # LIO-236: round J2.2 (the fill keeps its clearance; a notch would leave a hole), so J2.1's west pocket is
+                                        # live; from v 53.4, so no corner past J2.2 survives R4's erosion as a second piece
           (32.75, 53.9, 33.45, 58.0)],      # bay B5: up to U3P's pins (0.7 mm further +u), so no B.Cu GND sliver gives U3P.2 one spoke;
                                             # top at v 53.9 in the channel: L_M1 leaves U3P.3 westward on B.Cu
-         [notch(pad('U1A', '20'), 'N', 47.0, PAD), notch(pad('U1B', '20'), 'N', 47.0, PAD), j22, f21]),
+         [notch(pad('U1A', '20'), 'N', 47.0, PAD), notch(pad('U1B', '20'), 'N', 47.0, PAD), f21]),
+        # F1_OUT, F.Cu helper (LIO-236): west and south of J2.1, where F.Cu is free (VBAT_SW holds its north and east sides), and a
+        # strip east between VBAT_SW and F2_OUT to three stitching vias into the B.Cu trunk (STITCH): J2.1's W and S F.Cu spokes.
+        (dict(net='F1_OUT', layers=('F.Cu',), trunk=False, spoke=SPOKE_POWER), [(0.6, 59.86, 5.6, 65.6), (5.6, 62.6, 11.9, 64.1)], []),
         # F1_OUT, In2 copy (fix 1, ruling PB11): J2.1, down between J1 and F2, under F2, up the F2 / F1 gap to F1.2's south-west pad;
         # stitched to the B.Cu trunk beside J2.1 and at F1.2.
         (dict(net='F1_OUT', layers=('In2.Cu',), trunk=False, spoke=SPOKE_POWER),
-         [(0.6, 59.86, 5.6, 65.86), (0.6, 62.6, 6.1, 65.86), (6.1, 62.6, 11.98, 75.0), (6.1, 71.6, 21.69, 75.0), (17.48, 62.6, 21.69, 75.0),
+         [(0.6, 59.86, 5.6, 65.86), (0.6, 62.6, 6.1, 65.86), (5.6, 59.86, 11.98, 62.6), (6.1, 62.6, 11.98, 75.0), (6.1, 71.6, 21.69, 75.0), (17.48, 62.6, 21.69, 75.0),
           (17.48, 62.6, 22.99, 65.0), (20.5, 60.6, 22.99, 62.6)], []),
         # F2_OUT, F.Cu trunk: F2.2 (copper west of F2 and in the F2 / F1 gap), south between J1 and K1 to K1's COM pin; kept east of u 7.6
         # beside J1 and of u 6.3 south of it for the battery GND patch (PB20: J1.1's). LIO-232: east of u 7.6 to v 79 and of u 7.3 to v 86.5
         # (4.5 / 4.8 mm: the trunk's narrowest is now 4.5 mm, 7.1 A against 5 A), so the patch is 1 mm wider past J1.1's south side and K1.4.
-        (dict(net='F2_OUT', layers=('F.Cu',)),
+        # LIO-236: 1.5 mm spokes (K1.1 has N, E and a W spoke into a 0.6 mm strip: 3.0 mm of copper at 1.2 mm, 5.30 A).
+        (dict(net='F2_OUT', layers=('F.Cu',), spoke=SPOKE_POWER),
          [(7.6, 64.6, 21.6, 76.0), (7.6, 74.5, 12.1, 79.0), (7.3, 79.0, 12.1, 86.5), (6.3, 86.5, 12.1, 98.2)], []),
         # 3V3, In2 pour (bay B5: a strip, not the whole Pico pocket): under the pull-up column (u 14.91 pads, via down) and a link over to
         # the Pico's 3V3 pin (U1B.5); the rest of In2 under the Pico is left to the signals that cross from U1A to U1B's pin gaps.
@@ -208,7 +221,9 @@ def gnd_patches():
 # and F1.1) and J1.2's old GND pocket vias (1.4, 67.0 / 68.6), now under the BAT+ block. Bay B6: U4P.2's old pocket via
 # (37.0, 82.7) is gone - DRV_R's turn (PB15) moved U4P.2 to u 46.7 and left the via alone in a 34 mm2 B.Cu island that joined nothing
 # (ktest_pcb test_stitch_vias, carry item 8: a stitching via must tie live copper on >= 2 layers).
+# LIO-236: F1_OUT's F.Cu helper round J2.1 to its B.Cu trunk, three vias in the strip between VBAT_SW and F2_OUT (u 8.5 - 11.5).
 STITCH = [('F1_OUT', (1.6, 60.4)), ('F1_OUT', (19.0, 63.2)), ('F1_OUT', (20.6, 63.2)),
+          ('F1_OUT', (8.5, 63.25)), ('F1_OUT', (10.0, 63.25)), ('F1_OUT', (11.5, 63.25)),       # LIO-236: J2.1's F.Cu helper to the B.Cu trunk
           ('GND', (1.2, 84.7)), ('GND', (4.6, 84.7)), ('GND', (1.2, 86.9)), ('GND', (4.6, 86.9)), ('GND', (1.2, 89.1)), ('GND', (4.6, 89.1)),
           ('GND', (43.4, 44.25)), ('GND', (45.6, 44.25)), ('GND', (18.6, 94.0)), ('GND', (18.8, 96.6))]
 

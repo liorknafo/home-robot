@@ -218,6 +218,7 @@ class FabPackageTests(unittest.TestCase):
         with mock.patch.dict(sys.modules, {'pcbnew': sys.modules.get('pcbnew') or mock.MagicMock()}):
             from pcb import make_fab
             want = [{k: str(v) for k, v in row.items()} for row in make_fab.bom_rows()]
+        vars(sys.modules['pcb']).pop('make_fab', None)     # LIO-236: patch.dict drops pcb.make_fab from sys.modules, not the package attribute
         self.assertEqual(self.bom, want, 'the BOM is stale: run $KPY pcb/make_fab.py')
 
     def test_bom_lists_the_plug_in_items(self):
@@ -349,7 +350,8 @@ class FabPackageTests(unittest.TestCase):
             self.assertIn(s, sec, s)
         flat = ' '.join(sec.split())        # LIO-231 / LIO-232: the ring cut is rated as a stack now, its outcome stated
         self.assertNotIn('still sums', flat)
-        self.assertIn("the battery GND pin's ring cut (`power_check.pin_ring_cut`) too since LIO-232: 7.8 A against the 7.5 A fuse", flat)
+        self.assertRegex(flat, r"the battery GND pin's ring cut \(`power_check\.pin_ring_cut`\) too since LIO-232: \d+\.\d A against the 7\.5 A "
+                               r"fuse")     # LIO-236: the figure itself is ktest_power's (computed from the board)
 
     def test_ordering_names_c3_and_the_dnp_rows(self):
         text = ORDERING.read_text(encoding='utf-8')
@@ -369,7 +371,8 @@ class FabPackageTests(unittest.TestCase):
         """LIO-234: CS reads I x duty under slow decay; the CS filter's tau includes the carrier's 2.49 k (CS is a current source); the
         P03 bench test is at P03_OUT_A with its input current read; the VSENSE back-feed is board_spec's figure; the copper-to-edge rule
         is the DRC's 0.5 mm."""
-        tau_ms = (2.49e3 + 4.7e3) * 100e-9 * 1e3        # carrier R3 + R24 / R25, C4 / C5
+        r24, c4 = B.RES['R24'][0], B.PARTS['C4']['value']        # LIO-236: from board_spec, not literals
+        tau_ms = (2.49e3 + float(r24.rstrip('k')) * 1e3) * float(c4.rstrip('nF')) * 1e-9 * 1e3     # the carrier's 2.49 k R3 + R24 / R25, C4 / C5
         guide = (FAB.parents[1] / 'BRINGUP.md').read_text(encoding='utf-8')
         for name, text in (('BRINGUP-NOTES.md', BRINGUP.read_text(encoding='utf-8')), ('BRINGUP.md', guide)):
             flat = ' '.join(text.split())
@@ -379,7 +382,8 @@ class FabPackageTests(unittest.TestCase):
         self.assertIn(f'{B.TAP_LOAD_A[("R11", "1")] * 1e6:.0f} µA', BRINGUP.read_text(encoding='utf-8'))
         self.assertIn('Keep the Pico on the bench computer\'s USB', guide)
         flat = ' '.join(ORDERING.read_text(encoding='utf-8').split())
-        self.assertIn('copper to edge 0.5 mm', flat); self.assertNotIn('4.5 A out', flat)
+        edge = re.search(r'edge_clearance \(min ([\d.]+)mm\)', B.DRC_RULES)[1]
+        self.assertIn(f'copper to edge {edge} mm', flat); self.assertNotIn('4.5 A out', flat)
         for s in ('K1 capacitive inrush', 'Unprotected off-board lines', 'LIO-235'): self.assertIn(s, flat, s)
 
     # --- the 1:1 PDF ---

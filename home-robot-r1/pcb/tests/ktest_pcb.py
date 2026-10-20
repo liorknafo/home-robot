@@ -977,7 +977,8 @@ class PcbTests(unittest.TestCase):
         ignored. A footprint that drifts from its library (or a new deliberate change) is a new mismatch and fails here."""
         import subprocess
         from pcb import tools
-        self.assertEqual(json.loads(PRO.read_text(encoding='utf-8'))['board']['design_settings']['rule_severities'], {'lib_footprint_mismatch': 'ignore'})
+        self.assertEqual(json.loads(PRO.read_text(encoding='utf-8'))['board']['design_settings']['rule_severities'],      # LIO-236: and
+                         {'lib_footprint_mismatch': 'ignore', 'lib_footprint_issues': 'ignore'})     # lib_footprint_issues (no global fp-lib-table)
         with tempfile.TemporaryDirectory() as t:
             for f in (PCB, DRU, D / 'r1_power_io.kicad_sch', D / 'sym-lib-table'): shutil.copy(f, Path(t) / f.name)
             pro = json.loads(PRO.read_text(encoding='utf-8'))
