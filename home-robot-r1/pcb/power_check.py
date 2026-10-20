@@ -7,6 +7,8 @@ The measurements are the B4 / B5 ones (zone_check), wrapped here under the B6 in
                          level: a pad of every pin, a fuse contact being one pin), the layers combined with copper.capacity_a;
  - pad_spoke_capacity  = zone_check.pin_spoke_capacity: what the pin's thermal spokes deliver into its net's trunk copper, as a max-flow
                          in which copper reached only through vias counts up to the via barrels (carry item 1, copper.via_current_a);
+ - trunk_pin_ring      LIO-236: per POWER_TRUNK pin, the copper leaving it through its real spokes (pin_ring_cut out to the relief gap +
+                         PIN_RINGS, the smaller ring): the pad metric counts a spoke into a thin strip or a dead-end pocket at its full width;
  - physical_check      the < 3 % rule of the carry list (items 2 / 3): where a trunk's conservative margin is thin, which pin the neck
                          isolates, so what current really passes it;
  - track_loads         per tap track / via: the summed TAP_LOAD_A of the pads it alone feeds, against its IPC-2221 capacity (item 4);
@@ -181,6 +183,7 @@ def track_loads(board, net):
                 x = nodes[i][2][lid].CloneDropTriangulation(); x.BooleanIntersection(nodes[j][2][lid])
                 if x.OutlineCount(): adj[i].add(j); adj[j].add(i); break
     loads = {i: B.TAP_LOAD_A.get(n[1], 0.0) for i, n in enumerate(nodes) if n[0] == 'pad'}
+    assert sources, net                                           # LIO-236: a TAP_SOURCE pad gone missing must not pass every item vacuously
     def reach(start, banned):
         seen, todo = set(start), list(start)
         while todo:
@@ -280,14 +283,19 @@ def net_copper(board, net, layer):
 RING_GRID = 0.1            # mm: raster pitch of the ring cuts (B6 fix 1: 0.2 -> 0.1 with whole-cell sampling, copper_raster)
 
 
-def copper_raster(board, layer, grid=RING_GRID, net='GND', west=2.0, whole=True):
+def copper_raster(board, layer, grid=RING_GRID, net='GND', west=2.0, whole=True, clip=None):
     """(cells, W, H, X0, Y0, grid) - the net's copper on `layer` (net_copper) rastered on a grid (zone_check.raster) with a free border
     round it, so a cut can leave the board: 2 mm, and `west` mm on the -u side (where raster_cut_mm's ray runs: it must reach past any disc
     that pokes over the board edge); None if the net has no copper there. One raster serves every cut on that layer.
     whole (B6 fix 1): a cell is copper only when it lies wholly in copper - the copper is shrunk by half a cell diagonal before the
     cell-centre test - so a cut straight across a neck w wide crosses at most w / grid copper cells and the raster never rounds a neck up
-    (plain cell-centre sampling can add a cell per crossing)."""
+    (plain cell-centre sampling can add a cell per crossing). clip = (u0, v0, u1, v1): only the copper in that box (LIO-236: a ring cut
+    blocks every cell past its outer radius, so the copper there changes nothing and need not be rastered)."""
     fill = net_copper(board, net, layer)
+    if clip:
+        box = pcbnew.SHAPE_POLY_SET(); box.NewOutline()
+        for u, v in ((clip[0], clip[1]), (clip[2], clip[1]), (clip[2], clip[3]), (clip[0], clip[3])): box.Append(MM(u), MM(v))
+        fill.BooleanIntersection(box)
     if whole and fill.OutlineCount(): fill.Deflate(MM(grid / math.sqrt(2)), pcbnew.CORNER_STRATEGY_ROUND_ALL_CORNERS, MM(0.005))
     if not fill.OutlineCount(): return None
     cells, nx, ny, x0, y0 = Z.raster(fill, grid)
@@ -298,24 +306,41 @@ def copper_raster(board, layer, grid=RING_GRID, net='GND', west=2.0, whole=True)
     return cu, W, H, x0 - pw * grid, y0 - pad * grid, grid
 
 
-def raster_cut_mm(r, centre, radius, away, outer=None):
+def raster_cut_mm(r, centre, radius, away, outer=None, others=()):
     """mm of copper on the cheapest closed cut round the disc (centre, radius) mm that leaves the point `away` outside, on a copper_raster
     r: the min cut. A shortest path (crossing copper costs its length, voids and the off-board area are free) from the upper to the lower
     bank of a ray drawn from the disc to the raster's -u edge; a second ray from `away` to the +u edge keeps the cut from enclosing it.
     outer (mm): the cut must also stay within that radius of the centre - a ring cut, which cannot go round a far pad instead (a load pin
-    that hangs on its own spokes is cheaper to cut off than the source). 0.0 when no copper leaves the disc (a pocket)."""
+    that hangs on its own spokes is cheaper to cut off than the source). 0.0 when no copper leaves the disc (a pocket). others: the centres
+    of the pin's other pads (a fuse contact's four, LIO-236), discs of the same radius joined to the first by blocked straight bridges, so
+    the cut closes round the whole group (a curve between two pads of one pin parts no source from its sink)."""
     if r is None: return 0.0
     cu, W, H, X0, Y0, grid = r
     cx, cy = centre
     blocked = bytearray(W * H)
-    for j in range(H):
-        y = Y0 + (j + 0.5) * grid
-        dy2, sink_row = (y - cy) ** 2, abs(y - away[1]) < grid
-        if dy2 > radius ** 2 and not sink_row and (outer is None or dy2 <= outer ** 2): continue
-        for i in range(W):
-            x = X0 + (i + 0.5) * grid
-            d2 = (x - cx) ** 2 + dy2
-            if d2 <= radius ** 2 or (sink_row and x >= away[0]) or (outer is not None and d2 > outer ** 2): blocked[j * W + i] = 1
+    def cols(r2):                                             # the columns whose cell centres lie within sqrt(r2) of cx (lo > hi: none)
+        s = math.sqrt(r2) if r2 >= 0 else -1.0
+        return max(0, math.ceil((cx - s - X0) / grid - 0.5)), min(W - 1, math.floor((cx + s - X0) / grid - 0.5))
+    for j in range(H):                                        # the disc, the far side of `away`'s row, and (LIO-236: every row, not
+        y = Y0 + (j + 0.5) * grid                             # only those through the disc) everything past `outer`
+        dy2, row = (y - cy) ** 2, j * W
+        lo, hi = cols(radius ** 2 - dy2)
+        if lo <= hi: blocked[row + lo:row + hi + 1] = b'\x01' * (hi - lo + 1)
+        if abs(y - away[1]) < grid:
+            a = max(0, math.ceil((away[0] - X0) / grid - 0.5))
+            blocked[row + a:row + W] = b'\x01' * (W - a)
+        if outer is not None:
+            lo, hi = cols(outer ** 2 - dy2)
+            if lo > hi: blocked[row:row + W] = b'\x01' * W
+            else: blocked[row:row + lo] = b'\x01' * lo; blocked[row + hi + 1:row + W] = b'\x01' * (W - hi - 1)
+    for ox, oy in others:                                     # each other pad's disc and the bridge to it
+        n = int(math.dist((cx, cy), (ox, oy)) / (grid / 2)) + 1
+        for t in range(n + 1):
+            bx, by = cx + (ox - cx) * t / n, cy + (oy - cy) * t / n
+            rr = radius if t == n else grid
+            for j in range(max(0, int((by - rr - Y0) / grid)), min(H, int((by + rr - Y0) / grid) + 2)):
+                for i in range(max(0, int((bx - rr - X0) / grid)), min(W, int((bx + rr - X0) / grid) + 2)):
+                    if (X0 + (i + 0.5) * grid - bx) ** 2 + (Y0 + (j + 0.5) * grid - by) ** 2 <= rr * rr: blocked[j * W + i] = 1
     jr, ir = int((cy - Y0) / grid), int((cx - X0) / grid)     # the ray runs between rows jr - 1 and jr, columns 0 .. ir
     dist, heap = {}, []
     for i in range(ir + 1):
@@ -340,6 +365,29 @@ def raster_cut_mm(r, centre, radius, away, outer=None):
     return math.inf
 
 
+def _turned(r, pts, k):
+    """copper_raster r and points turned so that raster_cut_mm's ray, drawn to the raster's -u edge, runs to board -u, +u, -v or +v
+    (k = 0 .. 3)."""
+    cu, W, H, X0, Y0, g = r
+    if k >= 2:                                                # transpose: (u, v) -> (v, u)
+        cu, W, H, X0, Y0, pts = bytes(cu[j * W + i] for i in range(W) for j in range(H)), H, W, Y0, X0, [(v, u) for u, v in pts]
+    if k % 2:                                                 # mirror: u -> -u
+        cu, X0, pts = b''.join(cu[j * W:(j + 1) * W][::-1] for j in range(H)), -(X0 + W * g), [(-u, v) for u, v in pts]
+    return (cu, W, H, X0, Y0, g), pts
+
+
+def ring_cut_mm(r, centre, radius, away, outer, others=()):
+    """raster_cut_mm round the disc out to `outer`, the largest over the ray drawn to -u, +u, -v and +v (LIO-236). The cut closes along the
+    ray, so where the path's two ends meet the ray apart, the copper on the ray between them is cut free: each direction is a lower bound
+    that misses what lies on its own ray (J1.2's west spoke: 4.61 mm against 5.21 mm with one crossing), and the largest of the four
+    matched the one-crossing figure on the pins tried (J1.2, J2.1, J2.2). `away` serves the -u ray; the turned rays get a point just past
+    `outer`."""
+    def one(k):
+        rr, pts = _turned(r, [centre] + list(others), k)
+        return raster_cut_mm(rr, pts[0], radius, away if not k else (pts[0][0] + outer + 1, pts[0][1]), outer, pts[1:])
+    return 0.0 if r is None else max(one(k) for k in range(4))
+
+
 # GND source pins for the plane report: (pin, the current it brings in or out)
 GND_SOURCES = [(B.J1_GND_PIN, B.CURRENT_A['GND']), (('J3', '2'), B.P03_OUT_A), (('U5B', '2'), B.P03_OUT_A), (('U5A', '2'), B.P03_IN_A),
                (('U3P', '2'), 2.1), (('U4P', '2'), 2.1), (('C1', '2'), 2.1)]
@@ -354,7 +402,7 @@ def _half(p): return TOMM(max(p.GetSize().x, p.GetSize().y)) / 2
 
 def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers=GND_CUT_LAYERS):
     """The copper leaving the pin ref.pin out to `outer` mm from its centre, as a lower bound (B6 fix 1). Per layer: the min cut
-    (raster_cut_mm, on copper_raster's whole cells) of the net's copper round a disc that holds the pad alone - radius r0 = the pad's
+    (ring_cut_mm, on copper_raster's whole cells) of the net's copper round a disc that holds the pad alone - radius r0 = the pad's
     half size + PAD_EDGE, inside the relief gap, so the cut may run through the pin's relief spokes - confined to the ring out to `outer`
     (so it cannot go round the far pin `away` instead), at IPC-2221 for the layer's copper; capped at the layer's own spokes
     (zone_check.pin_spokes: n x spoke width at their drawn width, so raster rounding can never credit more than the spokes); the layers'
@@ -372,21 +420,46 @@ def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers
     One cut covers every ring: with `outer` fixed, a larger disc only removes closed curves, so the min cut never falls as the disc grows
     (the cut profile is monotone in r and r0 binds); the pad-edge disc gives the least copper across any closed curve between the pad and
     `outer` - every radius at once, so there is no sweep over radii.
+    A pin of several pads (a fuse contact, LIO-236): the disc holds its westmost pad, the others join it (raster_cut_mm's others) and
+    `outer` is measured from that pad.
     Returns dict(pin, centre, r0, r1, per={layer: dict(cut_mm, cut_a, spokes=(n, w), spoke_a, a, w)}, total_a): a is the layer alone, w
     its counted width (the cut, capped at n x w), total_a the stack's rating."""
-    p = _pad(board, ref, pin)
+    pads = sorted((q for q in board.FindFootprintByReference(ref).Pads() if q.GetNumber() == pin), key=lambda q: _uv(q))
+    p = pads[0]
     c, r0 = _uv(p), _half(p) + PAD_EDGE
     gap = min(TOMM(z.GetThermalReliefGap()) for z in board.Zones() if not z.GetIsRuleArea() and z.GetNetname() == net)
     assert r0 < TOMM(min(p.GetSize().x, p.GetSize().y)) / 2 + gap, f'{ref}.{pin}: a disc of {r0:.2f} mm reaches past the relief gap'
     spokes = Z.pin_spokes(board, ref, pin)
     per = {}
     for L in layers:
-        mm = raster_cut_mm(copper_raster(board, L, grid, net, west=outer - c[0] + 3.0), c, r0, away, outer)
+        clip = (c[0] - outer - 1, c[1] - outer - 1, c[0] + outer + 1, c[1] + outer + 1)
+        mm = ring_cut_mm(copper_raster(board, L, grid, net, west=outer - c[0] + 3.0, clip=clip), c, r0, away, outer, [_uv(q) for q in pads[1:]])
         cut_a = C.ipc2221_current_a(mm, C.COPPER_OZ[L], internal=C.is_internal(L)) if 0 < mm < math.inf else 0.0
         n, w, spoke_a = spokes.get(L, (0, 0.0, 0.0))
         per[L] = dict(cut_mm=mm, cut_a=cut_a, spokes=(n, w), spoke_a=spoke_a, a=min(cut_a, spoke_a),
                       w=min(mm if 0 < mm < math.inf else 0.0, n * w))
     return dict(pin=(ref, pin), centre=c, r0=round(r0, 3), r1=round(outer, 3), per=per, total_a=C.capacity_a({L: x['w'] for L, x in per.items()}))
+
+
+# LIO-236: every power trunk pin's copper by pin_ring_cut (the pad metric, section 3, counts a spoke into a thin strip or a dead-end pocket
+# at its full width): out to PIN_RINGS mm past the relief gap, on a PIN_RING_GRID raster (half B6's: a 1.5 mm spoke reads 1.43, not 1.36)
+PIN_RINGS = (1.0, 2.5)
+PIN_RING_GRID = 0.05
+
+
+def trunk_pin_ring(board, ref, pin, grid=PIN_RING_GRID):
+    """LIO-236: the copper leaving the POWER_TRUNK pin ref.pin through its real spokes - pin_ring_cut on its net's zone layers out to the pad's
+    half size + relief gap + each of PIN_RINGS (a fuse contact: from its westmost pad, + the span of its pads), the smaller of the two: a
+    pocket that ends inside the outer ring, or a strip that narrows past the inner one, counts what it passes on. Only the layers where
+    the pin's spokes reach copper that leads on to the trunk count (zone_check.pin_path_capacity's 'live': through a via, another pad's
+    lead or the trunk itself): the VBAT_SW In2 helper round J2.2 does not. Returns the binding pin_ring_cut dict plus rings={extra: A}."""
+    pads = sorted((q for q in board.FindFootprintByReference(ref).Pads() if q.GetNumber() == pin), key=lambda q: _uv(q))
+    net, c, h = pads[0].GetNetname(), _uv(pads[0]), _half(pads[0])
+    gap = min(TOMM(z.GetThermalReliefGap()) for z in board.Zones() if not z.GetIsRuleArea() and z.GetNetname() == net)
+    span = max(math.dist(c, _uv(q)) for q in pads)
+    live = Z.pin_path_capacity(board, ref, pin)[1]['live']
+    rs = {e: pin_ring_cut(board, ref, pin, span + h + gap + e, (c[0] + span + h + gap + e + 1, c[1]), grid, net, live) for e in PIN_RINGS}
+    return dict(min(rs.values(), key=lambda x: x['total_a']), rings={e: x['total_a'] for e, x in rs.items()})
 
 
 def nearest_gnd_load(board, ref, pin):
@@ -472,6 +545,17 @@ def report(board):
         vp = '; '.join(f'{Lr.split(".")[0]} {a:.2f} A / {len(h)}x{(C.via_current_a(h[0][2]) if h else 0):.2f}' for Lr, a, h in det['via_pieces'])
         row(f'{ref + "." + pin:7} {net:8} {need:6.2f}  {sp:58} {vp or "-":34} {cap:6.2f} {pct(cap / need - 1):>8} '
             f'{"yes" if pad_uses_spokes(board, ref, pin) else "NO"}')
+    row('')
+    row(f'## 3b. Power trunk pins by the ring cut (LIO-236): the copper leaving each pin through its real spokes, out to the relief gap + '
+        f'{" / ".join(f"{e:g}" for e in PIN_RINGS)} mm, per layer the min cut on a {PIN_RING_GRID:g} mm whole-cell raster, capped at the '
+        f'spokes, rated together - a lower bound (trunk_pin_ring); pass >= {1 + LOW_MARGIN:.2f} x need')
+    row(f'{"pin":7} {"net":8} {"need A":>6}  {"per layer: cut mm / spokes":44} {"rings A":24} {"A":>6} {"margin":>8}')
+    for net in (n for n in B.POWER_TRUNK if n != 'GND'):
+        for ref, pin in B.POWER_TRUNK[net]:
+            r, need = trunk_pin_ring(board, ref, pin), B.pad_current(ref, pin)
+            per = ', '.join(f'{L.split(".")[0]} {x["cut_mm"]:.2f}/{x["spokes"][0]}x{x["spokes"][1]:g}' for L, x in r['per'].items())
+            rings = ', '.join(f'+{e:g}: {a:.2f}' for e, a in r['rings'].items())
+            row(f'{ref + "." + pin:7} {net:8} {need:6.2f}  {per:44} {rings:24} {r["total_a"]:6.2f} {pct(r["total_a"] / need - 1):>8}')
     row('')
     row('## 4. Motor tracks (carry item 5)')
     need_w = C.ipc2221_width_mm(B.CURRENT_A['L_M1'], C.COPPER_OZ['F.Cu'])

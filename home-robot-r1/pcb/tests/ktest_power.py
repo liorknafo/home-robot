@@ -88,10 +88,52 @@ class PowerTests(unittest.TestCase):
         self.assertAlmostEqual(got, C.capacity_a({L: n * w for L, (n, w, _) in spokes.items() if n}), 6)
         self.assertLess(got, sum(a for _, _, a in spokes.values()))
         self.assertGreaterEqual(got, B.pad_current('K1', B.RELAY_PINS['NO']))
-        # LIO-232: K1.3 was the thinnest pad metric (+2.5 %); the VMOT zones' 1.5 mm spokes lift it. (J2.1, +3.6 %, stays: wider F1_OUT
-        # B.Cu spokes, even 1.7 mm, leave each F1.2 pad one B.Cu spoke.)
+        # LIO-232: K1.3 was the thinnest pad metric (+2.5 %); the VMOT zones' 1.5 mm spokes lift it. (J2.1, +3.6 % then, has two F.Cu
+        # spokes into F1_OUT's F.Cu helper since LIO-236.)
         self.assertEqual({L: w for L, (n, w, _) in spokes.items() if n}, {'F.Cu': 1.5, 'In2.Cu': 1.5})
         self.assertGreaterEqual(got, 1.2 * B.pad_current('K1', B.RELAY_PINS['NO']))
+        # LIO-236: K1.1 (F2_OUT, relay COM) likewise - the F2_OUT zone's 1.5 mm spokes (its F.Cu strip west of the pad is 0.6 mm wide, so
+        # its ring cut needed them: 3.0 mm of copper at 1.2 mm, 5.30 A by the round-3 max-flow)
+        com = P.pad_spokes(self.board, 'K1', B.RELAY_PINS['COM'])
+        self.assertEqual({L: w for L, (n, w, _) in com.items() if n}, {'F.Cu': 1.5})
+        self.assertGreaterEqual(P.pad_spoke_capacity(self.board, 'K1', B.RELAY_PINS['COM']), 1.2 * B.pad_current('K1', B.RELAY_PINS['COM']))
+
+    def test_trunk_pins_carry_their_current_by_the_ring_cut(self):
+        """LIO-236 (round-3 review): the pad metric counts a spoke into a 0.3 mm strip or a dead-end pocket at its full width (J2.1 passed
+        it at +3.6 % while a pin-to-pin max-flow through its real spokes gave 4.45 A against 7.5 A). Every POWER_TRUNK pin but GND's (a
+        plane, PB20: the pad metric and test_battery_gnd_ring_cut) is rated by power_check.trunk_pin_ring - the copper leaving it through
+        its real spokes, pin_ring_cut's per-layer lower bound out to the relief gap + 1.0 and + 2.5 mm, the smaller, on a 0.05 mm whole-cell
+        raster, capped at the spokes, rated together; only layers whose copper leads on to the trunk count - and must carry its
+        pad_current with LOW_MARGIN to spare."""
+        for net in (n for n in B.POWER_TRUNK if n != 'GND'):
+            for ref, pin in B.POWER_TRUNK[net]:
+                r = P.trunk_pin_ring(self.board, ref, pin)
+                self.assertGreaterEqual(r['total_a'], (1 + P.LOW_MARGIN) * B.pad_current(ref, pin), (ref, pin, r['rings'], r['per']))
+                self.assertEqual(r['total_a'], min(r['rings'].values()))
+        # cross-check: where every spoke is backed (K1.3, two F.Cu and two In2 spokes), the ring cut is the spokes, less what the whole-cell
+        # raster loses on each (a half cell diagonal each side and a cell of rounding), and the pad metric's figure within that
+        r = P.trunk_pin_ring(self.board, 'K1', B.RELAY_PINS['NO'])
+        for L, x in r['per'].items():
+            n, w = x['spokes']
+            self.assertLessEqual(x['cut_mm'], n * w + 1e-9, L)
+            self.assertGreaterEqual(x['cut_mm'], n * (w - 2 * P.PIN_RING_GRID / math.sqrt(2) - P.PIN_RING_GRID) - 1e-9, L)
+        self.assertAlmostEqual(r['total_a'], P.pad_spoke_capacity(self.board, 'K1', B.RELAY_PINS['NO']), delta=0.05 * r['total_a'])
+
+    def test_trunk_pin_ring_sees_a_dead_end(self):
+        """LIO-236: the ring cut can fail. On a scratch copy without the F1_OUT F.Cu helper round J2.1 (its zone deleted, the board
+        refilled) J2.1 has its B.Cu and In2 copper only and falls short of its 7.5 A with the margin; and the VBAT_SW In2 helper round J2.2,
+        which holds no via and no other VBAT_SW pin, counts for nothing."""
+        r = P.trunk_pin_ring(self.board, 'J2', '2')
+        self.assertNotIn('In2.Cu', r['per'])
+        self.assertIn('In2.Cu', P.pad_spokes(self.board, 'J2', '2'))
+        with tempfile.TemporaryDirectory() as t:
+            b = scratch_copy(t)
+            for z in list(b.Zones()):
+                if z.GetZoneName() == 'F1_OUT_POUR_F': b.Delete(z)        # Delete, not Remove (route.strip: KiCad 9 SWIG)
+            pcbnew.ZONE_FILLER(b).Fill(b.Zones())
+            r = P.trunk_pin_ring(b, 'J2', '1')
+            self.assertNotIn('F.Cu', r['per'])
+            self.assertLess(r['total_a'], (1 + P.LOW_MARGIN) * B.pad_current('J2', '1'), r)
 
     def test_pad_metric_counts_via_barrels(self):
         """Carry item 1: copper that reaches the plane only through vias counts only up to the barrels. U3P.2 (ruling PB21, B6 fix 2):
@@ -192,7 +234,10 @@ class PowerTests(unittest.TestCase):
         c, away = r['centre'], P._uv(P._pad(self.board, *r['away'].split('.')))
         for L in P.GND_CUT_LAYERS:
             ras = P.copper_raster(self.board, L, west=r['r1'] - c[0] + 3.0)
-            self.assertGreaterEqual(P.raster_cut_mm(ras, c, r['r0'] + 0.7, away, r['r1']), r['per'][L]['cut_mm'], L)
+            self.assertGreaterEqual(P.ring_cut_mm(ras, c, r['r0'] + 0.7, away, r['r1']), r['per'][L]['cut_mm'], L)
+        # LIO-236: ORDERING.md quotes this figure
+        flat = ' '.join((D / 'fab' / 'ORDERING.md').read_text(encoding='utf-8').split())
+        self.assertIn(f"{r['total_a']:.1f} A against", flat)
 
     def test_battery_gnd_ring_cut_fails_on_a_starved_copy(self):
         """B6 fix 1: the ring cut can fail. A scratch copy whose In1 GND plane and B.Cu GND fill meet J1.1 with no spokes at all (their pad

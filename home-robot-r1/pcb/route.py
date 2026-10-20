@@ -278,14 +278,17 @@ def freeroute(dsn, ses, passes, log):
 
 
 def router_tools():
-    """(jar sha256, Java version) of the Freerouting jar and JVM freeroute runs, for ROUTED_WITH: read before routing, so a missing jar
-    or a JVM that does not say its version stops route.py at once, not after the whole route."""
+    """(jar sha256, Java version) of the Freerouting jar and JVM freeroute runs, for ROUTED_WITH: read before routing, so a missing jar,
+    a JVM that does not say its version, a jar other than tools.FREEROUTING_SHA256's or a JVM other than 25 (ruling R14) stops route.py
+    at once, not after the whole route (LIO-236: they were recorded, not checked)."""
     try:
         jar = hashlib.sha256(Path(tools.FREEROUTING).read_bytes()).hexdigest()
         out = subprocess.run([tools.JAVA, '-version'], capture_output=True, text=True)
     except OSError as e: sys.exit(f'route.py: cannot read the Freerouting jar or run Java ({e}); see pcb/tools.py')
     m = re.search(r'version "([^"]+)"', out.stderr + out.stdout)
     if not m: sys.exit(f'route.py: {tools.JAVA} -version gave no version "...": {(out.stderr + out.stdout)[-300:]!r}')
+    if jar != tools.FREEROUTING_SHA256: sys.exit(f'route.py: {tools.FREEROUTING} is not Freerouting 2.4.1 (sha256 {jar}); see pcb/tools.py')
+    if not m[1].startswith('25') or m[1][2:3].isdigit(): sys.exit(f'route.py: {tools.JAVA} is Java {m[1]}, Freerouting 2.4.1 needs 25 (R14)')
     return jar, m[1]
 
 
@@ -418,7 +421,9 @@ def motor_copper(board, layer='B.Cu'):
 
 def motor_shadow_keepouts(board):
     """DSN keepouts on In2.Cu under the B.Cu Motor tracks, MOTOR_SHADOW past their edges (the router adds its clearance), less every
-    pad on In2 grown 0.3 mm (a keepout over a pad keeps Freerouting off that pad, gnd_guards)."""
+    pad on In2 grown 0.3 mm (a keepout over a pad keeps Freerouting off that pad, gnd_guards). LIO-236: the stage-F grid and the quality
+    check (motor_shadow_intrusions) keep the whole shadow, on purpose: the hole only lets Freerouting reach a pad that sits in the shadow,
+    and any track it then lays inside the shadow is still an intrusion that marks the candidate."""
     ko = motor_copper(board)
     ko.Inflate(MM(MOTOR_SHADOW - B.DEFAULT_CLASS['clearance']), pcbnew.CORNER_STRATEGY_ROUND_ALL_CORNERS, MM(0.01))
     pads = pcbnew.SHAPE_POLY_SET()
