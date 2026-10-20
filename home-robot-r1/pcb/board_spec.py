@@ -372,6 +372,7 @@ P03_OUT_V, P03_OUT_A = 5.0, CURRENT_A['5V']     # the P03 regulator's output: th
 P03_VIN_MIN, P03_EFF = 6.0, 0.85     # its lowest input (the 6-cell NiMH pack near its 1.0 V/cell cut-off; full charge VBAT_MAX 8.7 V) and its
                                      # efficiency there: an XL4015 buck near dropout at 4.7 A, 0.85 assumed (LIO-227; was 0.9) - verify on the bench
 P03_IN_A = P03_OUT_V * P03_OUT_A / (P03_VIN_MIN * P03_EFF)      # 4.62 A drawn through U5A
+# (at the 5.1 V bench trim U5A carries about 4.71 A, at V5_MAX 4.85 A: its margins stay at +28 % or more)
 PAD_CURRENT_A = {
     ('J1', '1'): 7.5, ('J1', '2'): 7.5,       # battery connector: the whole pack current, F1's 7.5 A rating
     ('J2', '1'): 7.5, ('J2', '2'): 7.5,       # master rocker: the same current through the switch

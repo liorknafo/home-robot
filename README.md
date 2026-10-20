@@ -1,6 +1,6 @@
 # R1 home robot
 
-A round (Ø 318 mm, 155 mm tall) differential-drive home robot built around an NVIDIA Jetson Nano, together with the Unreal
+A round (Ø 318 mm, 135.15 mm tall) differential-drive home robot built around an NVIDIA Jetson Nano, together with the Unreal
 simulator and the Python autonomy stack it is developed against.
 
 | Folder | What's in it |
@@ -19,8 +19,8 @@ Status: work in progress. Nothing has been ordered or printed yet.
   - a GY-521 (MPU-6050) IMU;
   - fuses, a relay and connectors.
 - **Sensors:**
-  - an LDROBOT LD14 (D200) 2D LiDAR at 147.5 mm;
-  - one camera at 107.5 mm;
+  - an LDROBOT LD14 (D200) 2D LiDAR at 127.5 mm;
+  - one camera at 80 mm;
   - four downward ToF cliff sensors;
   - a front bumper.
 - **Drive:** Pololu 25D 99:1 encoder gearmotors.

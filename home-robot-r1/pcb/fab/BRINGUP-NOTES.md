@@ -81,8 +81,8 @@ Collected in B7 from the B3–B6 rulings. B10 folds these into `BRINGUP.md`.
   the sign).
 - **Battery low-voltage stop** (6-cell NiMH: 7.2 V nominal, 8.7 V full):
   - VSENSE (GP26, ADC0) = VBAT_SW × 33 kΩ / (100 kΩ + 33 kΩ) = 0.248 × VBAT_SW (R11 100 k top, R12 33 k bottom, C2 100 nF). 8.7 V
-    reads 2.16 V, inside the 3.3 V ADC range. With USB absent and the rocker on, the Pico is unpowered and about 65 µA (at 8.7 V) flows
-    from R11 / R12 into GP26's clamp diode: acceptable, no fix.
+    reads 2.16 V, inside the 3.3 V ADC range. With USB absent and the rocker on, the Pico is unpowered and about 65 µA (at 8.7 V; the divider's
+    own current, rising toward 90 µA as the clamp pulls GP26 toward 0 V) flows from R11 into GP26's clamp diode: acceptable, no fix.
   - Warn at 6.6 V (1.1 V per cell: VSENSE 1.64 V). Stop at 6.0 V (1.0 V per cell: VSENSE 1.49 V, ADC count about 1847 of 4095 at the
     3.3 V reference).
   - The 6.0 V stop assumes the P03 holds 5 V at 4.71 A (`board_spec.P03_OUT_A`: the Jetson's 4.5 A + the 5V taps) from 6.0 V
