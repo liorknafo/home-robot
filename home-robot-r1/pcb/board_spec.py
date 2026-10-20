@@ -295,8 +295,9 @@ CURRENT_A = {'BAT+': 7.5, 'F1_OUT': 7.5, 'VBAT_SW': 7.5, 'F2_OUT': 5.0, 'VMOT': 
 # gave 10.6 A); one layer alone carries 5.3 A. PowerTap 0.8 mm (1.0 A on 1 oz) feeds the small
 # loads off the trunks; Motor 1.0 mm carries 2.1 A on 1 oz (IPC width 0.84 mm).
 # Default (every other net, the signals; ruling PB17): 0.15 mm track, 0.15 mm clearance, so two tracks pass between 2.54 mm header pins
-# (1.7 mm pads, 0.84 mm gap: 2 x 0.15 + 3 x 0.15 = 0.75). 0.15 mm carries about 0.6 A on 1 oz outer, 0.25 A on 0.5 oz inner, against signal
-# currents of a few mA. B7: min track / space 6 / 6 mil, signal via 0.6 / 0.3 mm - JLC's standard multilayer capability (0.09 / 0.09).
+# (1.7 mm pads, 0.84 mm gap: 2 x 0.15 + 3 x 0.15 = 0.75). 0.15 mm carries about 0.6 A on 1 oz outer, 0.18 A on 0.5 oz inner (10 degC;
+# LIO-232: was "0.25 A", the 20 degC figure), against signal currents of a few mA. B7: min track / space 6 / 6 mil, signal via 0.6 /
+# 0.3 mm - JLC's standard multilayer capability (0.09 / 0.09).
 DEFAULT_CLASS = dict(width=0.15, clearance=0.15)
 NETCLASSES = {
     'Power':    dict(width=3.0, clearance=0.4, nets=['BAT+', 'F1_OUT', 'F2_OUT']),
@@ -315,6 +316,8 @@ NETCLASSES = {
 # strokes >= 0.12 (the stock footprints draw 0.12), silk >= 0.1 off the mask openings (not off the board edge: the stock silk of the
 # edge headers sits 0.09-0.10 mm inside it, which the fab may clip: ORDERING.md). Copper to edge: JLCPCB needs 0.3, but a custom rule replaces KiCad's 0.5
 # default (the zones would fill 0.2 mm nearer the edge), so the rule keeps the board's 0.5, which the router keeps too.
+# LIO-232: kicad-cli reports a hole_to_hole, text_thickness, silk_clearance or assertion violation as a warning by default; those four rules
+# say (severity error), so a breach fails DRC like the others.
 DRC_RULES = '''(version 1)
 (rule "motor pins within one footprint"
   (constraint clearance (min 0.3mm))
@@ -331,17 +334,21 @@ DRC_RULES = '''(version 1)
   (condition "!A.isPlated()")
   (constraint hole_size (min 0.5mm)))
 (rule "JLCPCB hole to hole"
+  (severity error)
   (constraint hole_to_hole (min 0.5mm)))
 (rule "JLCPCB copper to edge"
   (constraint edge_clearance (min 0.5mm)))
 (rule "JLCPCB silk to mask"
+  (severity error)
   (layer "?.Mask")
   (condition "!A.existsOnLayer('Edge.Cuts') && !B.existsOnLayer('Edge.Cuts')")
   (constraint silk_clearance (min 0.1mm)))
 (rule "JLCPCB silk text stroke"
+  (severity error)
   (condition "A.Type == 'Text' && (A.Layer == 'F.Silkscreen' || A.Layer == 'B.Silkscreen')")
   (constraint text_thickness (min 0.12mm)))
 (rule "JLCPCB silk line width"
+  (severity error)
   (condition "A.Type == 'Graphic' && (A.Layer == 'F.Silkscreen' || A.Layer == 'B.Silkscreen')")
   (constraint assertion "A.Line_Width >= 0.12mm"))
 '''
@@ -398,8 +405,9 @@ GND_PATCH_PINS = [J1_GND_PIN, drv('L', 'GND')]
 # Bay B6 (carry item 4): the small loads the supplies feed through tracks - each tap pad's own current (A), so ktest_power can sum the
 # load behind every tap track and via (power_check.track_loads). TAP_NETS: the supplies with such taps; TAP_SOURCE: where a tap net
 # with no trunk zone is fed. Sources marked "verify" are manufacturer figures not in the repo (quoted from memory, check before B9).
-TAP_NETS = ('VBAT_SW', 'VMOT', '5V', '3V3')
-TAP_SOURCE = {'3V3': pico('3V3_OUT')}       # the Pico's 3.3 V regulator: 300 mA for external loads (Pico datasheet, verify)
+TAP_NETS = ('VBAT_SW', 'VMOT', '5V', '3V3', 'VSYS')
+TAP_SOURCE = {'3V3': pico('3V3_OUT'),       # the Pico's 3.3 V regulator: 300 mA for external loads (Pico datasheet, verify)
+              'VSYS': dio('D2', 'K')}       # LIO-232: VSYS is fed through the DNP D2 (if fitted); its load is the Pico's VSYS pin
 VBAT_MAX, V5_MAX, LED_VF_MIN = 8.7, 5.25, 1.8   # spec 2026-10-04 s.6: VBAT_SW 6.0-8.7 V; the P03 5 V set +5 %; 0805 LED V_F, low end
 ENC_SUPPLY_A = 0.010    # Pololu 4867 (25D, 48 CPR encoder): its Hall sensors draw at most 10 mA (Pololu product page, verify)
 RELAY_COIL_A = V5_MAX / 63.0   # Omron G5LE-1 DC5 coil: 63 ohm, 79.4 mA rated at 5 V (Omron datasheet, verify) -> 83 mA at 5.25 V
@@ -409,7 +417,8 @@ TOF_A = 0.040           # Pololu 2490 VL53L0X carrier: ranging peaks near 40 mA 
 SPARE_5V_A, SPARE_3V3_A = 0.10, 0.02   # budgets of the DNP spare rows' supply pins (J15.5 5V, J14.1 / J15.4 3V3): a fitted load above
                                        # them needs this check re-run
 PICO_VSYS_A = 0.20      # LIO-226, D2 fitted (DNP as delivered): the Pico (~25 mA) and its 3V3 loads here (~0.21 A, TAP_LOAD_A) at 3.3 V
-                        # through its buck-boost (~90 %) from ~4.5 V (5 V less the SS14's drop); the VSYS track's 0.15 mm carries 0.25 A inner
+                        # through its buck-boost (~90 %) from ~4.5 V (5 V less the SS14's drop). LIO-232: a 0.15 mm In2 track carries 0.18 A
+                        # at 10 degC (not the 0.25 A once quoted, the 20 degC figure), so VSYS's scripted route is 0.25 mm on In2 (0.27 A)
 def _lamp_a(v, ohm): return (v - LED_VF_MIN) / ohm
 TAP_LOAD_A = {
     **{(f'TP{i}', '1'): 0.0 for i in range(1, 5)},                 # probe pads: no load (TP5 is GND)
@@ -422,6 +431,7 @@ TAP_LOAD_A = {
     ('J13', '1'): RELAY_COIL_A,      # the motor toggle loop feeds K1's coil (J13.2 -> COIL_P)
     ('J15', '5'): SPARE_5V_A, ('J14', '1'): SPARE_3V3_A, ('J15', '4'): SPARE_3V3_A,
     dio('D2', 'A'): PICO_VSYS_A,                                   # LIO-226: the DNP VSYS diode, if fitted
+    pico('VSYS'): PICO_VSYS_A,                                     # LIO-232: ... and the Pico's VSYS pin behind it (VSYS's tap tracks)
     imu('VCC'): IMU_A, **{(f'J{6 + i}', '1'): TOF_A for i in range(4)},
     drv('L', 'PMODE'): 0.0001, drv('R', 'PMODE'): 0.0001,          # DRV8874 PMODE: a logic input (uA)
     **{(r, '2'): 3.3 / 10e3 for r in ('R2', 'R4', 'R6', 'R8', 'R10', 'R18', 'R19', 'R20', 'R26')},   # 10 k pull-ups to 3V3 (I2C, ARM: LIO-226)
@@ -537,7 +547,9 @@ PIN_MARK_LEN = 0.7      # B12a: 0.8 -> 0.7 mm, so U5A.1's '+' (0.85 mm over the 
 # them) and placed before the search. U5B's only free side is the strip past its +v end (u 62.6 - 73.5, between its body and J8 / J15),
 # which its '+' mark now shares: the search's offsets put the 7.1 mm label over the mark, so it sits at the strip's -u end by hand
 # (0.22 mm from TP3's label, 0.27 mm from the mark).
-SILK_LABEL_AT = {'U5B': (66.205, 44.355, 0)}
+# LIO-232: the search stacked C4's label (south of C4) 0.28 mm over R24's (east of R24, upright), their text cells overlapping. C4's
+# moves 0.1 mm north - its own pads' SILK_PAD_GAP allows no more - and R24's 0.4 mm south: 0.78 mm between the glyph boxes.
+SILK_LABEL_AT = {'U5B': (66.205, 44.355, 0), 'C4': (53.0, 48.769, 0), 'R24': (53.089, 52.365, 90)}
 
 # ---------------------------------------------------------------------------------------------------------------------------------
 # Bay B3: connectors on the bay board's edges. EDGE_CONNECTORS: ref -> entry direction, the way its cable leaves the board ('+u' front,
@@ -806,12 +818,12 @@ POWER_ZONES = [
                (31.6, 36.27), (31.76, 36.21), (31.9, 36.13), (32.03, 36.03), (32.05, 36), (32.45, 36), (32.45, 24), (66.6, 24)]),
     dict(net='VBAT_SW', layers=('In2.Cu',), trunk=False,
          poly=[(8, 59.36), (2.6, 59.36), (2.6, 52.9), (8, 52.9)]),
-    dict(net='VMOT', layers=('F.Cu',),
+    dict(net='VMOT', layers=('F.Cu',), spoke=1.5,
          poly=[(42.5, 38.6), (46.5, 38.6), (46.5, 39.4), (48.3, 39.4), (48.3, 43), (42.3, 43), (42.3, 59), (48, 59), (48, 63),
                (48.5, 63), (48.5, 67.9), (44.9, 67.9), (44.9, 63), (32.75, 63), (32.75, 81.5), (36, 81.5), (36, 86.3), (28, 86.3),
                (28, 88.9), (12.6, 88.9), (12.6, 80.75), (28, 80.75), (28, 59), (31.5, 59), (31.5, 56.4), (36, 56.4), (36, 41.4),
                (39.3, 41.4), (39.3, 38.6), (39, 38.6), (39, 35), (42.5, 35)]),
-    dict(net='VMOT', layers=('In2.Cu',), trunk=False,
+    dict(net='VMOT', layers=('In2.Cu',), trunk=False, spoke=1.5,
          poly=[(32.75, 81.5), (36, 81.5), (36, 86.3), (28, 86.3), (28, 88.9), (12.6, 88.9), (12.6, 80.75), (28, 80.75), (28, 59),
                (32.75, 59)]),
     dict(net='5V', layers=('B.Cu',),
@@ -836,12 +848,13 @@ POWER_ZONES = [
          poly=[(5.6, 62.6), (11.98, 62.6), (11.98, 71.6), (17.48, 71.6), (17.48, 62.6), (20.5, 62.6), (20.5, 60.6), (22.99, 60.6),
                (22.99, 65), (21.69, 65), (21.69, 75), (6.1, 75), (6.1, 65.86), (0.6, 65.86), (0.6, 59.86), (5.6, 59.86)]),
     dict(net='F2_OUT', layers=('F.Cu',),
-         poly=[(21.6, 76), (12.1, 76), (12.1, 98.2), (6.3, 98.2), (6.3, 74.5), (7.6, 74.5), (7.6, 64.6), (21.6, 64.6)]),
+         poly=[(21.6, 76), (12.1, 76), (12.1, 98.2), (6.3, 98.2), (6.3, 86.5), (7.3, 86.5), (7.3, 79), (7.6, 79), (7.6, 64.6),
+               (21.6, 64.6)]),
     dict(net='3V3', layers=('In2.Cu',), trunk=False,
          poly=[(16.6, 11.62), (27.3, 11.62), (27.3, 14.2), (16.6, 14.2), (16.6, 34), (13.4, 34), (13.4, 1), (16.6, 1)]),
 ]
 GND_PATCHES = [
-    [(7.1, 74), (5.8, 74), (5.8, 98), (0.6, 98), (0.6, 69.4), (7.1, 69.4)],
+    [(7.1, 78.5), (6.8, 78.5), (6.8, 86), (5.8, 86), (5.8, 98), (0.6, 98), (0.6, 69.4), (7.1, 69.4)],
     [(47.4, 45.2), (42.7, 45.2), (42.7, 43.65), (47.4, 43.65)],
 ]
 STITCH_VIAS = [('F1_OUT', (1.6, 60.4)), ('F1_OUT', (19, 63.2)), ('F1_OUT', (20.6, 63.2)), ('GND', (1.2, 84.7)), ('GND', (4.6, 84.7)),
@@ -889,6 +902,18 @@ PREROUTES = [
     # the 5V B.Cu box.
     dict(net='5V', layer='F.Cu', width=0.8, pts=[(61.0, 39.5), (62.9, 39.5)]),
     dict(net='5V', layer='B.Cu', width=0.8, pts=[(62.9, 39.5), (63.4, 39.5)]),
+    # LIO-232: D2.2's 5V tap (the DNP VSYS diode's anode, 0.15 mm off the 5V B.Cu strip through DRV_R) the same way: one PowerTap via
+    # into the strip. Left to the router it came from J3 by a 32 mm F.Cu chain whose 18 mm leg walled off the R23 - LED3 gap.
+    dict(net='5V', layer='F.Cu', width=0.8, pts=[(42.5, 66.0), (41.6, 64.6)]),
+    dict(net='5V', layer='B.Cu', width=0.8, pts=[(41.6, 64.6), (41.1, 64.6)]),
+    # LIO-232: VSYS (D2.K -> the Pico's VSYS pin U1B.2; PICO_VSYS_A with D2 fitted), 0.25 mm (0.27 A on 0.5 oz In2 at 10 degC, where
+    # 0.15 mm carries 0.18 A), two vias: F.Cu from D2.1 north of D2.2 and its 5V tap to a via east of the 5V B.Cu strip (south of the
+    # VMOT bar); In2 up DRV_L's interior east of COIL_P, past U3L.1 and under the VBAT_SW F.Cu column to a via north of that zone's
+    # band, south-west of the 3V3 In2 diagonal; B.Cu past U2's east side, round H5's keep-out and down the strip between U1B and U2 to
+    # U1B.2. Left to the router it took stage F's 92 mm with four vias (Freerouting could not leave D2's pocket: its grown vias, VIA_GROW).
+    dict(net='VSYS', layer='F.Cu', width=0.25, pts=[(38.5, 66.0), (40.8, 63.7), (43.6, 63.7)]),
+    dict(net='VSYS', layer='In2.Cu', width=0.25, pts=[(43.6, 63.7), (39.6, 59.7), (39.6, 45.4), (36.0, 41.8), (34.0, 23.0)]),
+    dict(net='VSYS', layer='B.Cu', width=0.25, pts=[(34.0, 23.0), (34.0, 16.6), (29.4, 12.0), (29.4, 8.11), (26.58, 5.29)]),
     # PB14: the Pico-side 5V taps (R22.1, J13.1) round the Pico's north end to the 5V B.Cu arm (run 9's DRC-clean route, its east end
     # cut short into the arm). Left to Freerouting they cut across the strip between U1B and U3P - the driver signals' only way in.
     dict(net='5V', layer='F.Cu', width=0.8, pts=[(20.488, 33.5), (19.25, 32.26), (19.25, 24.33)]),
@@ -1032,6 +1057,7 @@ SMD_GND_VIAS = {
 # inter-driver links (PB17; signal vias 0.6 / 0.3).
 HOP_VIAS = [
     ('5V', (62.9, 39.5)), ('5V', (19.25, 24.33)), ('5V', (11.92, 3.17)), ('5V', (17.87, 8.99)), ('5V', (40.3, 23.3)),   # PB14 / PB16: 5V taps
+    ('5V', (41.6, 64.6)), ('VSYS', (43.6, 63.7)), ('VSYS', (34.0, 23.0)),       # LIO-232: D2.2's 5V tap, VSYS
     ('DRV_SLEEP', (35.95, 63.9)), ('3V3', (37.3, 63.9)),                       # PB17: the inter-driver links
     ('3V3', (15.12, 44.68)), ('3V3', (25.5, 44.66)), ('3V3', (14.91, 39.2)),   # PB17: the 3V3 pair's own link, R8.2 / R6.2 into the strip
     ('DRV_SLEEP', (13.09, 26.3)), ('DRV_SLEEP', (24.4, 47.0)),                 # PB17: DRV_SLEEP's west link

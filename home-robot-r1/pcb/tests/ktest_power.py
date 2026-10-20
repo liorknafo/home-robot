@@ -88,6 +88,10 @@ class PowerTests(unittest.TestCase):
         self.assertAlmostEqual(got, C.capacity_a({L: n * w for L, (n, w, _) in spokes.items() if n}), 6)
         self.assertLess(got, sum(a for _, _, a in spokes.values()))
         self.assertGreaterEqual(got, B.pad_current('K1', B.RELAY_PINS['NO']))
+        # LIO-232: K1.3 was the thinnest pad metric (+2.5 %); the VMOT zones' 1.5 mm spokes lift it. (J2.1, +3.6 %, stays: wider F1_OUT
+        # B.Cu spokes, even 1.7 mm, leave each F1.2 pad one B.Cu spoke.)
+        self.assertEqual({L: w for L, (n, w, _) in spokes.items() if n}, {'F.Cu': 1.5, 'In2.Cu': 1.5})
+        self.assertGreaterEqual(got, 1.2 * B.pad_current('K1', B.RELAY_PINS['NO']))
 
     def test_pad_metric_counts_via_barrels(self):
         """Carry item 1: copper that reaches the plane only through vias counts only up to the barrels. U3P.2 (ruling PB21, B6 fix 2):
@@ -163,12 +167,17 @@ class PowerTests(unittest.TestCase):
         the pin across every ring out to just short of the nearest GND load pin carries the battery current, 7.5 A - as a LOWER BOUND
         (power_check.pin_ring_cut). Per layer the min cut of the GND copper round a disc that holds the pad alone (its edge + 0.05 mm,
         inside the relief gap), so the cut may run through the relief spokes, confined to the ring out to the load, on a whole-cell
-        raster (it never rounds a neck up), at IPC-2221 for that layer, capped at the layer's own spokes; the layers summed. Any cut of
-        the joined layers restricted to one layer still cuts that layer alone, and the vias only add paths, so the sum is at most what the
-        joined copper carries. B6 fix 1: B6 started the disc outside the relief (pad + gap + 0.25 mm), which took the spokes' copper as
-        the pin's own (In1 3.46 A credited against 2.26 A of spokes) - not a lower bound. With the outer radius fixed, a larger disc only
-        removes closed curves, so the pad-edge cut is the least over every radius (one cut, no sweep)."""
+        raster (it never rounds a neck up), capped at the layer's own spokes; the layers' counted widths rated together on their
+        combined cross-section (copper.capacity_a; LIO-231 / LIO-232 - summing each layer's own IPC current gave 8.99 A for copper that
+        carried 6.71 A as a stack, so J1.1's GND patch and its F2_OUT neighbour were redrawn). Any cut of the joined layers restricted to one
+        layer still cuts that layer alone, and the vias only add paths, so the stack is at most what the joined copper carries. B6 fix 1:
+        B6 started the disc outside the relief (pad + gap + 0.25 mm), which took the spokes' copper as the pin's own (In1 3.46 A credited
+        against 2.26 A of spokes) - not a lower bound. With the outer radius fixed, a larger disc only removes closed curves, so the
+        pad-edge cut is the least over every radius (one cut, no sweep)."""
         r = P.battery_gnd_ring_cut(self.board)
+        self.assertAlmostEqual(r['total_a'], C.capacity_a({L: x['w'] for L, x in r['per'].items()}), 9)
+        self.assertLess(r['total_a'], sum(x['a'] for x in r['per'].values()))     # the stack is rated, not the layers' sum
+        for L, x in r['per'].items(): self.assertLessEqual(x['w'], min(x['cut_mm'], x['spokes'][0] * x['spokes'][1]) + 1e-9, L)
         self.assertEqual(r['pin'], B.J1_GND_PIN)
         self.assertEqual(set(r['direct']), {'F.Cu', 'In1.Cu', 'B.Cu'})
         pad = P._pad(self.board, *B.J1_GND_PIN)
@@ -188,7 +197,8 @@ class PowerTests(unittest.TestCase):
     def test_battery_gnd_ring_cut_fails_on_a_starved_copy(self):
         """B6 fix 1: the ring cut can fail. A scratch copy whose In1 GND plane and B.Cu GND fill meet J1.1 with no spokes at all (their pad
         connection set to none, refilled) keeps the plane round the pin but leaves it only its F.Cu spokes: the ring cut falls below
-        7.5 A. B6's disc (out past the relief, cell-centre raster) still credits the plane's copper round the pin and passes the copy."""
+        7.5 A. B6's disc (out past the relief, cell-centre raster, the layers summed) still credits the plane's copper round the pin and
+        passes the copy."""
         with tempfile.TemporaryDirectory() as t:
             b = scratch_copy(t)
             for z in b.Zones():

@@ -318,6 +318,11 @@ class FabPackageTests(unittest.TestCase):
         for s in (f'{w:g} / {c:g} mm', '6 / 6 mil', 'no surcharge',
                   *(f'{d:g} / {h:g} mm' for d, h in {*B.CLASS_VIA.values(), B.GND_VIA, B.SMD_PAD_VIA})):
             self.assertIn(s, text, s)
+        # LIO-232: the four JLCPCB rules kicad-cli reports only as warnings by default say (severity error), and ORDERING.md says so
+        for rule in ('JLCPCB hole to hole', 'JLCPCB silk to mask', 'JLCPCB silk text stroke', 'JLCPCB silk line width'):
+            self.assertRegex(B.DRC_RULES, r'\(rule "' + rule + r'"\n  \(severity error\)', rule)
+        self.assertEqual((FAB.parent / 'r1_power_io.kicad_dru').read_text(encoding='utf-8'), B.DRC_RULES)
+        self.assertIn('`(severity error)`', text)
 
     def test_ordering_puts_the_j1_pinout_in_bold(self):
         """Carry (PB20): J1 pin 1 = GND, pin 2 = BAT+, the battery lead GND in cavity 1 - in bold."""
@@ -332,6 +337,9 @@ class FabPackageTests(unittest.TestCase):
                   'encoder', 'VL53L0X', '3V3', 'JLC04161H-7628', 'silk', 'slow decay', 'fast', '100 kHz rating', 'Fuse hold current',
                   '110 %', '12 °C', 'P03 efficiency', '85 %', 'typical R_DS(on)', '40 °C', '18 µm'):
             self.assertIn(s, sec, s)
+        flat = ' '.join(sec.split())        # LIO-231 / LIO-232: the ring cut is rated as a stack now, its outcome stated
+        self.assertNotIn('still sums', flat)
+        self.assertIn("the battery GND pin's ring cut (`power_check.pin_ring_cut`) too since LIO-232: 7.8 A against the 7.5 A fuse", flat)
 
     def test_ordering_names_c3_and_the_dnp_rows(self):
         text = ORDERING.read_text(encoding='utf-8')
