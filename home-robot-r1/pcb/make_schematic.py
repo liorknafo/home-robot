@@ -4,7 +4,7 @@ Schematic parity (bay B7): global labels, so the netlist's net names are board_s
 pads and holes are in_bom no, as their footprints (board_spec.in_bom); build_pcb gives every footprint its library nickname and every
 no-connect pin the netlist's 'unconnected-(...)' net. kicad-cli pcb drc --schematic-parity then reports nothing (ktest_pcb).
 
-Writes r1_power_io.kicad_sch (KiCad 9 format), r1_power_io.kicad_pro (net classes from board_spec.NETCLASSES + ERC severities),
+Writes r1_power_io.kicad_sch (KiCad 9 format), r1_power_io.kicad_pro (net classes from board_spec.NETCLASSES + ERC severities), sym-lib-table, fp-lib-table,
 r1_power_io.kicad_dru (board_spec.DRC_RULES) and
 r1_power_io.net (KiCad's own netlist export of the schematic). Deterministic: UUIDs are derived from the part/pin, so a rerun is byte-identical."""
 import copy, json, subprocess, sys, uuid
@@ -28,8 +28,9 @@ ERC_SEVERITY = {}
 # seeded) were tried and are not usable: kicad-cli 9.0.9 does not apply them (the same 10 warnings, and a track_width exclusion in a scratch copy was ignored too), and the CLI is what the tests and any
 # batch DRC run. So the check stays off project-wide, and ktest_pcb.test_lib_footprint_mismatch_is_exactly_the_modified_footprints runs
 # DRC with it on (a temp copy) and fails if the flagged set is not those 13 (LIB_MISMATCH_REFS), so a new mismatch cannot hide behind the ignore.
-DRC_SEVERITY = {'lib_footprint_mismatch': 'ignore',
-                'lib_footprint_issues': 'ignore'}    # LIO-236: a KiCad with no global fp-lib-table (a fresh install, CI) flags every footprint
+# LIO-238: lib_footprint_issues is not ignored: the project fp-lib-table (fp_lib_table) names every footprint library, so a KiCad with no
+# global table (a fresh install, CI) finds them.
+DRC_SEVERITY = {'lib_footprint_mismatch': 'ignore'}
 
 def lib_symbol(lib_id):
     """The library symbol as embedded in a schematic's lib_symbols (name = lib_id); a derived ('extends') symbol is flattened."""
@@ -130,11 +131,19 @@ def sym_lib_table():
     return '(sym_lib_table\n' + ''.join(
         f'  (lib (name "{l}")(type "KiCad")(uri "${{KICAD9_SYMBOL_DIR}}/{l}.kicad_sym")(options "")(descr ""))\n' for l in libs) + ')\n'
 
+def fp_lib_table():
+    """Project footprint-library table (LIO-238): the board's stock libraries, so DRC's lib_footprint_issues / _mismatch resolve them
+    with no global table."""
+    libs = sorted({p['fp'].split(':')[0] for p in B.PARTS.values()})
+    return '(fp_lib_table\n' + ''.join(
+        f'  (lib (name "{l}")(type "KiCad")(uri "${{KICAD9_FOOTPRINT_DIR}}/{l}.pretty")(options "")(descr ""))\n' for l in libs) + ')\n'
+
 def main(out_dir=D):
     out = Path(out_dir)
     (out / f'{PROJECT}.kicad_sch').write_bytes((pretty(schematic()) + '\n').encode())
     (out / f'{PROJECT}.kicad_pro').write_bytes((json.dumps(project(), indent=2) + '\n').encode())
     (out / 'sym-lib-table').write_bytes(sym_lib_table().encode())
+    (out / 'fp-lib-table').write_bytes(fp_lib_table().encode())
     (out / f'{PROJECT}.kicad_dru').write_bytes(B.DRC_RULES.encode())
     export_netlist(out / f'{PROJECT}.kicad_sch', out / f'{PROJECT}.net')
 if __name__ == '__main__':

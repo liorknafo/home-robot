@@ -184,10 +184,12 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
       cross-section (`copper.capacity_a`), the battery GND pin's ring cut (`power_check.pin_ring_cut`) too since LIO-232: 8.4 A
       against the 7.5 A fuse (summing the layers had shown 9.0 A for copper that carried 6.7 A as a stack; LIO-236 took the best of
       four ray directions, where the cut had passed free along its one ray through the pin's west spoke: 7.8 A before). It is a lower
-      bound that ignores every via. LIO-236: every power trunk pin is rated by the same ring cut (`power_check.trunk_pin_ring`, the
+      bound that ignores every via. LIO-236: every non-GND power trunk pin is rated by the same ring cut (`power_check.trunk_pin_ring`, the
       copper leaving it through its real spokes, so a spoke into a thin strip or a dead-end pocket counts what the copper behind it
-      passes); the thinnest is J1.2 (BAT+) at 7.9 A against 7.5 A, J2.1 (F1_OUT) 10.3 A, J2.2 (VBAT_SW) 8.3 A, K1.1 (F2_OUT) 5.8 A
-      against 5 A and U5B.1 (5V) 6.1 A against 4.71 A.
+      passes). LIO-238: it rates the pin's escape out to the relief gap + 4.5 mm, not the path on past that ring (the trunks' own necks
+      are the power report's section 1), and reads at or below a pin-to-trunk max-flow on every pin; the thinnest is J2.2 (VBAT_SW) at
+      8.0 A against 7.5 A, J1.2 (BAT+) 8.2 A, J2.1 (F1_OUT) 8.4 A, K1.1 (F2_OUT) 5.7 A against 5 A and U5B.1 (5V) 6.1 A against
+      4.71 A.
 - [ ] **C1 Panasonic EEU-FR1E471** (FR, 470 µF 25 V): ESR about 0.04 Ω; 10 mm diameter, 5 mm lead pitch, ≤ 20 mm tall (the STEP envelope
       is 20 mm; the real can is about 16–20 mm).
 - [ ] **Omron G5LE-1 DC5** relay: coil 63 Ω, 79.4 mA at 5 V; contacts rated for the 5 A DC motor branch; pinout as the KiCad footprint.
@@ -199,8 +201,9 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
       SDA / SCL and GP20 go straight to RP2040 pins, and the encoder lines to bare 2N7002 gates, with no ESD protection. The 5 V taps
       J4.4 / J5.4 / J13.1 / J15.5 have no fuse or PTC; J5.4, J13.1 and J15.5 run on 0.8 mm half-ounce In2 (`board_spec.PREROUTES`
       and the router's tracks), so a pinched motor cable or a shorted toggle or LED lead crowbars the Jetson's 5 V and can fuse an
-      inner trace (about 4 A for 1 s). The 3V3 taps J6.1 / J7.1 (cliff leads) leave on 0.15 mm In2 (about 0.76 A for 1 s), limited
-      only by the Pico's 3V3 regulator; COIL_P leaves on J13.2 to Q5's gate (D1 clamps it negative).
+      inner trace (about 4 A for 1 s). The 3V3 taps J6.1–J9.1 (the four cliff leads; J8.1 / J9.1 via the In2 run to J15.4, then
+      0.15 mm F.Cu) leave on 0.15 mm In2 (about 0.76 A for 1 s), limited only by the Pico's 3V3 regulator; COIL_P leaves on J13.2 to
+      Q5's gate (D1 clamps it negative).
       BRINGUP.md section 9 asks for ESD care and a cable inspection.
 - [ ] **Motor encoder** (Pololu 4867, 25D 48 CPR): Hall sensors at most 10 mA each, from 5 V.
 - [ ] **ToF sensors** (Pololu 2490, VL53L0X): about 40 mA peak each while ranging (ST: 19 mA average), from 3V3.

@@ -7,7 +7,7 @@ carries its own load, board_spec.pad_current), the B6 carry list (via barrels in
 tap loads, motor tracks with no via), PB20 (J1's pinout swapped; GND judged as a plane: pad metric + the battery pin's ring cut). The
 polygon floor of B4 (3.0 mm corridor, zone_check.ERODE) still holds in ktest_pcb / ktest_route; the per-net IPC capacity here supersedes it
 as the sizing rule."""
-import math, shutil, tempfile, unittest
+import math, re, shutil, tempfile, unittest
 from pathlib import Path
 from unittest import mock
 import pcbnew
@@ -102,14 +102,21 @@ class PowerTests(unittest.TestCase):
         """LIO-236 (round-3 review): the pad metric counts a spoke into a 0.3 mm strip or a dead-end pocket at its full width (J2.1 passed
         it at +3.6 % while a pin-to-pin max-flow through its real spokes gave 4.45 A against 7.5 A). Every POWER_TRUNK pin but GND's (a
         plane, PB20: the pad metric and test_battery_gnd_ring_cut) is rated by power_check.trunk_pin_ring - the copper leaving it through
-        its real spokes, pin_ring_cut's per-layer lower bound out to the relief gap + 1.0 and + 2.5 mm, the smaller, on a 0.05 mm whole-cell
-        raster, capped at the spokes, rated together; only layers whose copper leads on to the trunk count - and must carry its
-        pad_current with LOW_MARGIN to spare."""
+        its real spokes, pin_ring_cut's per-layer lower bound out to the relief gap + 2.5 and + 4.5 mm (LIO-238: was + 1.0 / + 2.5, short
+        of J2.1's F.Cu helper neck), the smaller, on a 0.05 mm whole-cell raster, capped at the spokes, rated together; only layers whose
+        copper leads on to the trunk count - and must carry its pad_current with LOW_MARGIN to spare. LIO-238: ORDERING.md's figures are
+        these, the thinnest by margin first."""
+        got = {}
         for net in (n for n in B.POWER_TRUNK if n != 'GND'):
             for ref, pin in B.POWER_TRUNK[net]:
                 r = P.trunk_pin_ring(self.board, ref, pin)
                 self.assertGreaterEqual(r['total_a'], (1 + P.LOW_MARGIN) * B.pad_current(ref, pin), (ref, pin, r['rings'], r['per']))
-                self.assertEqual(r['total_a'], min(r['rings'].values()))
+                got[ref, pin] = net, r['total_a']
+        flat = ' '.join((D / 'fab' / 'ORDERING.md').read_text(encoding='utf-8').split())
+        thinnest = min(got, key=lambda k: got[k][1] / B.pad_current(*k))
+        self.assertRegex(flat, re.escape(f'the thinnest is {thinnest[0]}.{thinnest[1]} ({got[thinnest][0]}) at {got[thinnest][1]:.1f} A'))
+        for k in (('J1', '2'), ('J2', '1'), ('K1', B.RELAY_PINS['COM']), ('U5B', '1')):
+            self.assertRegex(flat, re.escape(f'{k[0]}.{k[1]} ({got[k][0]})') + r'(?: at)? ' + re.escape(f'{got[k][1]:.1f} A'), k)
         # cross-check: where every spoke is backed (K1.3, two F.Cu and two In2 spokes), the ring cut is the spokes, less what the whole-cell
         # raster loses on each (a half cell diagonal each side and a cell of rounding), and the pad metric's figure within that
         r = P.trunk_pin_ring(self.board, 'K1', B.RELAY_PINS['NO'])
@@ -122,12 +129,22 @@ class PowerTests(unittest.TestCase):
     def test_trunk_pin_ring_sees_a_dead_end(self):
         """LIO-236: the ring cut can fail. On a scratch copy without the F1_OUT F.Cu helper round J2.1 (its zone deleted, the board
         refilled) J2.1 has its B.Cu and In2 copper only and falls short of its 7.5 A with the margin; and the VBAT_SW In2 helper round J2.2,
-        which holds no via and no other VBAT_SW pin, counts for nothing."""
+        which holds no via and no other VBAT_SW pin, counts for nothing. LIO-238: the helper's strip out to its stitching vias narrowed from
+        1.5 to 0.5 mm (beyond the old + 2.5 mm ring, which read the same 10.3 A) lowers J2.1's figure by its F.Cu share."""
         r = P.trunk_pin_ring(self.board, 'J2', '2')
         self.assertNotIn('In2.Cu', r['per'])
         self.assertIn('In2.Cu', P.pad_spokes(self.board, 'J2', '2'))
+        full = P.trunk_pin_ring(self.board, 'J2', '1')
         with tempfile.TemporaryDirectory() as t:
             b = scratch_copy(t)
+            z = next(z for z in b.Zones() if z.GetZoneName() == 'F1_OUT_POUR_F')
+            o = z.Outline(); o.RemoveAllContours(); o.NewOutline()
+            for u, v in ((0.6, 59.86), (5.6, 59.86), (5.6, 63.0), (11.9, 63.0), (11.9, 63.5), (5.6, 63.5), (5.6, 65.6), (0.6, 65.6)):
+                o.Append(MM(u), MM(v))
+            pcbnew.ZONE_FILLER(b).Fill([z])
+            thin = P.trunk_pin_ring(b, 'J2', '1')
+            self.assertLess(thin['per']['F.Cu']['cut_mm'], 0.6, thin)
+            self.assertLess(thin['total_a'], full['total_a'] - 0.3, (thin['total_a'], full['total_a']))
             for z in list(b.Zones()):
                 if z.GetZoneName() == 'F1_OUT_POUR_F': b.Delete(z)        # Delete, not Remove (route.strip: KiCad 9 SWIG)
             pcbnew.ZONE_FILLER(b).Fill(b.Zones())

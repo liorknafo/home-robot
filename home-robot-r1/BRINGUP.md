@@ -381,9 +381,10 @@ Steps:
    SDA / SCL and GP20 run straight to RP2040 pins and the encoder lines to bare 2N7002 gates, with no ESD protection: touch an M3 hole
    ring (GND) before handling a plug. The 5 V taps J4.4 / J5.4 (encoders), J13.1 (toggle loop) and J15.5 (camera LED) have no fuse
    or PTC, so a pinched motor cable or a shorted toggle or LED lead crowbars the Jetson's 5 V, and can fuse an inner trace (J5.4,
-   J13.1 and J15.5 run on 0.8 mm half-ounce In2). The 3V3 taps J6.1 / J7.1 (cliff leads) leave on 0.15 mm In2 (about 0.76 A for
-   1 s), limited only by the Pico's 3V3 regulator, and COIL_P leaves on J13.2 to Q5's gate (D1 clamps it negative). Look for nicked insulation and check that no lead is pinched under the carrier, the P03 or
-   a tie (`ORDERING.md` risk list; LIO-235 decides on PTCs).
+   J13.1 and J15.5 run on 0.8 mm half-ounce In2). The 3V3 taps J6.1–J9.1 (the four cliff leads; J8.1 / J9.1 via the In2 run to
+   J15.4, then 0.15 mm F.Cu) leave on 0.15 mm In2 (about 0.76 A for 1 s), limited only by the Pico's 3V3 regulator, and COIL_P
+   leaves on J13.2 to Q5's gate (D1 clamps it negative). Look for nicked insulation and check that no lead is pinched under the
+   carrier, the P03 or a tie (`ORDERING.md` risk list; LIO-235 decides on PTCs).
 
    **J3 (Jetson 5 V)** is not under the carrier. It is in the rear band, behind the carrier (robot about (−43.9, −44.5)), with its
    mating face at the board's right edge, reachable with the lid off. Plug the Jetson lead W04 into it after the section 7 checks.
