@@ -11,7 +11,7 @@ Silkscreen (L5 fix 1, spec 2026-10-06 section 3): one label per part, "<ref> <va
 sockets, board_spec.silk_label), 0.8 mm / 0.15 mm stroke, placed by place_silk_labels clear of pads, other silk, part bodies and the
 edges and nearer its own part than any other; the reference and value fields move to F.Fab. Polarity marks are the stock footprints', plus
 the "+" / "-" at J1's pins (board_spec.PIN_MARKS, ruling PB20: J1's pinout changed) and (B12a) the "+" at pin 1 of the P03 terminals
-and of J3.
+and of J3, and (LIO-242) a "VIN" text at the DRV8874 carriers' VIN pin (U3P.1, U4P.1).
 
 Schematic parity (bay B7): every footprint keeps its library nickname (load_footprint) and every no-connect pin carries the schematic
 netlist's single-pin 'unconnected-(...)' net (add_no_connect_nets), so kicad-cli DRC --schematic-parity reports nothing.
@@ -292,6 +292,7 @@ def build(out=OUT):
             for it in fp.GraphicalItems():                   # K1) go to F.Fab; PIN_MARKS are the silk polarity marks
                 if it.GetClass() == 'PCB_TEXT' and it.GetLayer() == pcbnew.F_SilkS and it.GetText() in ('+', '-'): it.SetLayer(pcbnew.F_Fab)
         for pin, sign in B.PIN_MARKS.get(ref, {}).items():    # ruling PB20 / B12a: '+' / '-' at the connectors' supply / GND pins
+            if sign not in ('+', '-'): continue              # LIO-242: the text marks go on last (end of build)
             at = next(p for p in fp.Pads() if p.GetNumber() == pin).GetPosition()
             cu, cv = pcbnew.ToMM(at.x) + B.PIN_MARK_AT[ref][pin][0], pcbnew.ToMM(at.y) + B.PIN_MARK_AT[ref][pin][1]   # outside the housing
             h = B.PIN_MARK_LEN / 2
@@ -347,6 +348,17 @@ def build(out=OUT):
         via.SetNet(nets[net]); via.SetLocked(True); board.Add(via)
 
     add_no_connect_nets(board)
+    # LIO-242: the text pin marks ('VIN' at the DRV8874 carriers' VIN pin), last for the same reason as add_no_connect_nets: added earlier
+    # they would shift every seeded UUID after them. place_silk_labels keeps clear of silk shapes only, so the labels do not move either.
+    for ref, marks in B.PIN_MARKS.items():
+        fp = board.FindFootprintByReference(ref)
+        for pin, mark in marks.items():
+            if mark in ('+', '-'): continue
+            at = next(p for p in fp.Pads() if p.GetNumber() == pin).GetPosition()
+            t = pcbnew.PCB_TEXT(fp); t.SetLayer(pcbnew.F_SilkS); t.SetText(mark)
+            t.SetTextSize(pcbnew.VECTOR2I(MM(B.SILK_TEXT_W), MM(B.SILK_TEXT_H))); t.SetTextThickness(MM(B.SILK_STROKE))
+            t.SetHorizJustify(pcbnew.GR_TEXT_H_ALIGN_CENTER); t.SetVertJustify(pcbnew.GR_TEXT_V_ALIGN_CENTER)
+            t.SetPosition(V(pcbnew.ToMM(at.x) + B.PIN_MARK_AT[ref][pin][0], pcbnew.ToMM(at.y) + B.PIN_MARK_AT[ref][pin][1])); fp.Add(t)
     ok = pcbnew.SaveBoard(str(out), board, True)      # aSkipSettings=True: keep r1_power_io.kicad_pro (net classes) as written
     assert ok, 'SaveBoard failed'
     return board

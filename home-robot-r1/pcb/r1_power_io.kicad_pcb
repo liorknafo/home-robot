@@ -4492,6 +4492,17 @@
 				)
 			)
 		)
+		(fp_text user "VIN"
+			(at 0 -2.1 0)
+			(layer "F.SilkS")
+			(uuid "9d5f0aca-efbc-4862-ab63-b45de98cd480")
+			(effects
+				(font
+					(size 0.8 0.7)
+					(thickness 0.15)
+				)
+			)
+		)
 		(fp_text user "${REFERENCE}"
 			(at 0 7.62 90)
 			(layer "F.Fab")
@@ -15703,6 +15714,17 @@
 			(at -2.3823 7.65 90)
 			(layer "F.SilkS")
 			(uuid "6214f9d6-d3f0-40fa-ba3f-2b0347d8e3ef")
+			(effects
+				(font
+					(size 0.8 0.7)
+					(thickness 0.15)
+				)
+			)
+		)
+		(fp_text user "VIN"
+			(at 0 -2.1 0)
+			(layer "F.SilkS")
+			(uuid "bc0b0ec9-e1da-4b9e-8f42-76be303870a7")
 			(effects
 				(font
 					(size 0.8 0.7)

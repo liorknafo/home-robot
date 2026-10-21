@@ -564,15 +564,24 @@ class SpecTests(unittest.TestCase):
         """PB20 / B12a (final review N2): '+' / '-' silk marks at J1's BAT+ / GND pins and a '+' at pin 1 of both P03 terminals (U5A.1
         VBAT_SW in, U5B.1 5V out: the screw nearer the robot centre line) and of the Jetson 5 V header (J3.1). A '+' pin is a supply pin whose
         connector's other pin is GND; a '-' pin is GND. Each mark is nearer its own pin than the connector's other pin (ktest_pcb checks
-        the whole board, the housings and the courtyards on the built board)."""
-        self.assertEqual(B.PIN_MARKS, {'J1': {'2': '+', '1': '-'}, 'U5A': {'1': '+'}, 'U5B': {'1': '+'}, 'J3': {'1': '+'}})
+        the whole board, the housings and the courtyards on the built board). LIO-242: a 'VIN' text at the DRV8874 carriers' VIN pin
+        (U3P.1, U4P.1, on VMOT), nearer that pin than any other pin of either carrier row."""
+        self.assertEqual(B.PIN_MARKS, {'J1': {'2': '+', '1': '-'}, 'U5A': {'1': '+'}, 'U5B': {'1': '+'}, 'J3': {'1': '+'},
+                                       'U3P': {'1': 'VIN'}, 'U4P': {'1': 'VIN'}})
         net = {p: n for n, pins in B.NETS.items() for p in pins}
-        self.assertEqual({r: net[(r, '1')] for r in ('U5A', 'U5B', 'J3')}, {'U5A': 'VBAT_SW', 'U5B': '5V', 'J3': '5V'})
+        self.assertEqual({r: net[(r, '1')] for r in ('U5A', 'U5B', 'J3', 'U3P', 'U4P')},
+                         {'U5A': 'VBAT_SW', 'U5B': '5V', 'J3': '5V', 'U3P': 'VMOT', 'U4P': 'VMOT'})
+        self.assertEqual(B.DRV_PINS['VIN'], ('P', 1))
         centre_v = B.robot_to_board(0.0, 0.0)[1]
         for ref in ('U5A', 'U5B'):                                         # pin 1: the screw nearer the robot centre line (y 0)
             self.assertLess(abs(B.pad_uv(ref, '1')[1] - centre_v), abs(B.pad_uv(ref, '2')[1] - centre_v), ref)
         for ref, marks in B.PIN_MARKS.items():
             self.assertEqual(set(B.PIN_MARK_AT[ref]), set(marks))         # B6 fix 1: one offset per marked pin
+            if marks == {'1': 'VIN'}:                                      # LIO-242
+                at = B.pad_uv(ref, '1'); m = (at[0] + B.PIN_MARK_AT[ref]['1'][0], at[1] + B.PIN_MARK_AT[ref]['1'][1])
+                rows = [B.pad_uv(r, str(k)) for r in (ref, ref[:2] + 'L') for k in range(1, 8)]
+                self.assertEqual(min(rows, key=lambda q: math.dist(m, q)), at, ref)
+                continue
             pins = {p for (r, p) in net if r == ref}
             self.assertEqual(len(pins), 2, ref)
             for pin, sign in marks.items():

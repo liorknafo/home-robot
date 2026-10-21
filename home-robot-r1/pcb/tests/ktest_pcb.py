@@ -820,7 +820,8 @@ class PcbTests(unittest.TestCase):
 
     # --- spec 2026-10-06 section 3: values and polarity marks on the silkscreen (L5 fix 1) ---
     def silk_texts(self, fp):
-        return [it for it in fp.GraphicalItems() if it.GetClass() == 'PCB_TEXT' and it.GetLayer() == pcbnew.F_SilkS and it.IsVisible()]
+        return [it for it in fp.GraphicalItems() if it.GetClass() == 'PCB_TEXT' and it.GetLayer() == pcbnew.F_SilkS and it.IsVisible()
+                and it.GetText() not in B.PIN_MARKS.get(fp.GetReference(), {}).values()]       # LIO-242: not the 'VIN' pin marks
 
     def test_every_part_has_its_value_label_on_silk(self):
         """Every part but the M3 holes carries exactly one F.SilkS label "<ref> <value or function>" (board_spec.silk_label), 0.8 mm high
@@ -891,9 +892,9 @@ class PcbTests(unittest.TestCase):
         # F.Fab housing (the bounding box of every F.Fab line of the footprint) and off every other part's body: each of its F.Fab
         # drawings, its pads and, for J4 / J5, the C18 pigtail's right-angle socket on the pins (the pin row +- 7.62 mm, out to the plug
         # zone's far end; B12a: U5A.1's mark sits in J4's courtyard margin, beside the end of J4's pin row) - and each must read as its
-        # pin's: no pad on the whole board nearer than that pin.
-        from pcb.build_pcb import boxes_hit
-        self.assertEqual(set(B.PIN_MARKS), {'J1', 'U5A', 'U5B', 'J3'})
+        # pin's: no pad on the whole board nearer than that pin. LIO-242: the 'VIN' texts at U3P.1 / U4P.1 (VMOT) keep the same rules.
+        from pcb.build_pcb import boxes_hit, box_mm
+        self.assertEqual(set(B.PIN_MARKS), {'J1', 'U5A', 'U5B', 'J3', 'U3P', 'U4P'})
         net = {p: n for n, pins in B.NETS.items() for p in pins}
         all_pads = [(fp.GetReference(), p.GetNumber(), pt(p.GetPosition())) for fp in self.fps.values() for p in fp.Pads()]
         def bbox(pts, grow=0.0): return (min(q[0] for q in pts) - grow, min(q[1] for q in pts) - grow, max(q[0] for q in pts) + grow, max(q[1] for q in pts) + grow)
@@ -923,12 +924,17 @@ class PcbTests(unittest.TestCase):
                 c = tuple(round(x, 2) for x in pt(s.GetCenter())); count[c] = count.get(c, 0) + 1
                 strokes.setdefault(c, []).append(bbox([pt(s.GetStart()), pt(s.GetEnd())], B.SILK_STROKE / 2))
             signs = {c: '+' if n == 2 else '-' for c, n in count.items()}
+            for t in fp.GraphicalItems():                                 # LIO-242: text marks, boxed by their glyphs
+                if t.GetClass() == 'PCB_TEXT' and t.GetLayer() == pcbnew.F_SilkS and t.GetText() in marks.values():
+                    c = tuple(round(x, 2) for x in pt(t.GetPosition())); signs[c] = t.GetText()
+                    strokes[c] = [box_mm(t.GetEffectiveTextShape().BBox())]
             self.assertEqual(sorted(signs.values()), sorted(marks.values()), ref)
             for c, sign in signs.items():
                 near = min(pads, key=lambda n: math.dist(c, pads[n]))
                 self.assertEqual(marks[near], sign, (ref, c, sign, near))
                 other = next(n for n in pads if n != near)
-                self.assertEqual((net[(ref, near)] == 'GND', net[(ref, other)] == 'GND'), (sign == '-', sign == '+'), (ref, near, sign))
+                if sign == 'VIN': self.assertEqual(net[(ref, near)], 'VMOT', ref)
+                else: self.assertEqual((net[(ref, near)] == 'GND', net[(ref, other)] == 'GND'), (sign == '-', sign == '+'), (ref, near))
                 self.assertEqual(min(all_pads, key=lambda a: math.dist(c, a[2]))[:2], (ref, near), (ref, c, 'nearer another pad'))
                 for sb in strokes[c]:
                     self.assertFalse(any(boxes_hit(sb, bb) for bb in body), (ref, c, sign, 'under the housing'))
@@ -966,7 +972,7 @@ class PcbTests(unittest.TestCase):
         self.assertEqual(drc['unconnected_items'][:5], [])
         self.assertTrue(all(str(fp.GetFPID().GetUniStringLibId()) == B.PARTS[fp.GetReference()]['fp'] for fp in self.b.GetFootprints()))
 
-    # build_pcb changes these 13 library footprints on purpose (module outlines on F.Fab, the PIN_MARKS on J1 / J3 / U5A / U5B and J1's
+    # build_pcb changes these 13 library footprints on purpose (module outlines on F.Fab, the PIN_MARKS on J1 / J3 / U5A / U5B / U3P / U4P, J1's
     # stock +/- texts moved to F.Fab, inherited zone connections, U3P.2's spoke angle): the footprints lib_footprint_mismatch flags. make_schematic.DRC_SEVERITY ignores the check project-wide
     # (kicad-cli 9.0.9 does not apply per-item DRC exclusions), so this test runs it on and pins the flagged set.
     LIB_MISMATCH_REFS = {'F1', 'F2', 'J1', 'J3', 'U1A', 'U1B', 'U2', 'U3L', 'U3P', 'U4L', 'U4P', 'U5A', 'U5B'}   # B12a: J3 / U5A / U5B '+' marks
