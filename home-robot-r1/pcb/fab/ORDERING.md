@@ -132,10 +132,12 @@ Order: **reflow SMD → inspect → iron THT → modules.**
    J1 and the Micro-Fit J3, its plastic peg through its hole), J4 / J5, U5A / U5B, the FLR holders, K1, C1 ("+" on silk). The power pads keep thermal-relief spokes (ruling R13), so a large tip solders them. **Trim every lead
    to ≤ 1.4 mm** under the board: it sits on 2.4 mm spacers and printed ribs.
 4. **Modules.** Plug in the Pico first (USB toward the left edge) and check it on USB. Set the P03 on the bench before it is wired to
-   U5A / U5B (pin 1 is "+" on both terminals: the screw nearer the robot's centre line). Then plug in the two DRV8874 carriers and the
+   U5A / U5B (pin 1 is "+" on both terminals: the screw nearer the robot's centre line). Solder each DRV8874 carrier's two loose
+   1 × 7 headers so the pins stand out of its silkscreen (labelled) side: its components then face up when it is plugged (Pololu's
+   "parts visible" option), and VIN is named on that underside, so find it before plugging. Then plug in the two DRV8874 carriers and the
    GY-521, each as the F.Fab outline in the PDF shows. **A DRV8874 carrier also fits turned 180°, which puts VMOT on its VREF pin:**
    component side up, its VIN / GND / OUT1 row in U3P / U4P (the row nearer the front edge) and its VM / GND / EN row in U3L / U4L,
-   VIN (named on the carrier; VIN and VM share an end, beside the square GND pads) in the hole at the silk "VIN". BRINGUP.md section 1
+   VIN (named on its underside; VIN and VM share an end, beside the square GND pads) in the hole at the silk "VIN". BRINGUP.md section 1
    item 4 and sections 4–5 give the details.
 5. **Under-carrier cables.** Plug them all before the Jetson is fitted: once it is on, none of them can be reached.
    - J4 / J5: the motors connect through short C18 pigtails (a right-angle female socket on J4 / J5, plugged on at the bench) and inline
