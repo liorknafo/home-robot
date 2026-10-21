@@ -94,7 +94,7 @@ FP = dict(VH2='Connector_JST:JST_VH_B2P-VH_1x02_P3.96mm_Vertical',
           XH2='Connector_JST:JST_XH_B2B-XH-A_1x02_P2.50mm_Vertical',
           XH4='Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical', XH5='Connector_JST:JST_XH_B5B-XH-A_1x05_P2.50mm_Vertical',
           HDR6='Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Vertical', HDR4='Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical',
-          HDR6R='Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal',      # B3: right-angle, the motor plug lies on the board
+          HDR6R='Connector_PinHeader_2.54mm:PinHeader_1x06_P2.54mm_Horizontal',      # B3: right-angle, the C18 pigtail socket lies on it (PB25)
           # Small parts are surface-mount, top side only, standard (not HandSolder) footprints, reflowed with paste and a stencil (spec
           # 2026-10-06-r1-low-profile section 3, ruling LP4). Everything else below stays through-hole.
           R='Resistor_SMD:R_0805_2012Metric', C='Capacitor_SMD:C_0805_2012Metric', Q='Package_TO_SOT_SMD:SOT-23',
@@ -146,7 +146,8 @@ PARTS = {
     # J1 h 11: the XT30UPB-M housing over the board (verify on the AMASS drawing); J3 h 10: the Micro-Fit right-angle housing (verify)
     'J1': P(conn(2), FP['XT30V'], 'Battery in', XT30_MPN, h=11.0), 'J2': P(conn(2), FP['VH2'], 'Master rocker', 'JST B2P-VH(LF)(SN)'),
     'J3': P(conn(2), FP['MF2R'], 'Jetson 5V', MF2R_MPN, h=10.0),
-    # J4 / J5 (B3): right-angle 0.1 in headers; the motors' factory 1x6 plugs (14 mm housings) lie on the board under the carrier
+    # J4 / J5 (B3): right-angle 0.1 in headers; the C18 pigtails' right-angle 1x6 sockets lie on the board under the carrier, the motors'
+    # factory cables mate at the inline joints off the board (PB25)
     'J4': P(conn(6), FP['HDR6R'], 'Left motor', HDR6R_MPN, h=2.54), 'J5': P(conn(6), FP['HDR6R'], 'Right motor', HDR6R_MPN, h=2.54),
     **{f'J{6 + i}': P(conn(5), FP['XH5'], f'Cliff {i + 1}', 'JST B5B-XH-A(LF)(SN)') for i in range(4)},
     'J10': P(conn(2), FP['XH2'], 'Bumper L', 'JST B2B-XH-A(LF)(SN)'), 'J11': P(conn(2), FP['XH2'], 'Bumper R', 'JST B2B-XH-A(LF)(SN)'),
@@ -292,7 +293,7 @@ CURRENT_A = {'BAT+': 7.5, 'F1_OUT': 7.5, 'VBAT_SW': 7.5, 'F2_OUT': 5.0, 'VMOT': 
 # every power trunk (BAT+, F1_OUT, VBAT_SW, F2_OUT, VMOT, 5V; GND on the In1 plane) is a copper zone, POWER_ZONES below. The Power class
 # keeps 3.0 mm for the short stubs B5 may add where every pad has >= 3.96 mm pitch: two 1-oz outer layers in parallel, 8.77 A > 7.5 A at
 # 10 degC (copper.capacity_a({'F.Cu': 3.0, 'B.Cu': 3.0}), rated on the combined cross-section, LIO-227: summing the layers' 5.3 A each
-# gave 10.6 A); one layer alone carries 5.3 A. PowerTap 0.8 mm (1.0 A on 1 oz) feeds the small
+# gave 10.6 A); one layer alone carries 5.3 A. PowerTap 0.8 mm (2.0 A on 1 oz outer, 0.62 A on 0.5 oz In2) feeds the small
 # loads off the trunks; Motor 1.0 mm carries 2.1 A on 1 oz (IPC width 0.84 mm).
 # Default (every other net, the signals; ruling PB17): 0.15 mm track, 0.15 mm clearance, so two tracks pass between 2.54 mm header pins
 # (1.7 mm pads, 0.84 mm gap: 2 x 0.15 + 3 x 0.15 = 0.75). 0.15 mm carries about 0.6 A on 1 oz outer, 0.18 A on 0.5 oz inner (10 degC;
@@ -561,7 +562,7 @@ EDGE_CONNECTORS = {
     'J1': '-u', 'J2': '-u', 'J13': '-u', 'J12': '-u', 'J6': '-u', 'J7': '-u',     # behind the carrier, rear edge (battery side), latches outward
     'J3': '+v',                    # Jetson 5 V (PB5 fallback): in the band, out of the right edge toward the W04 corridor (B12a: Micro-Fit
                                    # right-angle, its mating face at the edge)
-    'J4': '-v', 'J5': '+v',        # motors' factory cables, toward their motor notches (the plug lies on the board, MATED_REACH)
+    'J4': '-v', 'J5': '+v',        # motor pigtails (C18, PB25), toward their motor notches (the socket lies on the board, MATED_REACH)
     'J8': '+u', 'J9': '+u',        # front cliffs, tongue front edge; the leads rise over the P03 under the carrier
     'J10': '-v', 'J11': '+v',      # bumpers, side edges under the carrier
     'U5A': '+u', 'U5B': '+u',      # P03 terminals, wire entry facing the P03
@@ -585,9 +586,10 @@ CABLE_BEND_MM = {'XH': 5.0, 'PinHeader': 5.0, 'VH': 7.0, 'XT30': 7.0, 'MicroFit'
 #  - JST XH top entry: "mounting height 9.8 mm" (JST eXH catalog);
 #  - JST VH top entry 16.5 mm, side entry 10.5 mm (JST VH catalog: "the above-board heights of the mated VH connectors are 16.5 mm for
 #    the top entry and 10.5 mm for the side entry type");
-#  - 0.1 in pin header with the motors' factory 1x6 crimp housing (Pololu 37D encoder lead; 0.1 in DuPont-style housing 14.0 x 15.24 x
-#    2.6 mm): right-angle, the housing lies on the board centred on the pins (KiCad STEP: pins at z 1.27) -> 2.6 mm. (Vertical it
-#    would stand 2.54 + 14.0 = 16.54 mm, over UNDER_CARRIER_MAX_H before the wire bend: hence the right-angle part.)
+#  - 0.1 in pin header with the C18 pigtail's right-angle 1x6 socket (PB25; sized as the 0.1 in DuPont-style housing 14.0 x 15.24 x
+#    2.6 mm; the motors' factory cables mate at the inline joints off the board): right-angle, the socket lies on the board centred on
+#    the pins (KiCad STEP: pins at z 1.27) -> 2.6 mm. (Vertical it would stand 2.54 + 14.0 = 16.54 mm, over UNDER_CARRIER_MAX_H before
+#    the wire bend: hence the right-angle part.)
 #  - Phoenix MKDS 1,5/2-5,08 terminals: the body (PARTS h, 12 mm); the wires enter horizontally below its top.
 #  - B12a, AMASS XT30UPB-M + XT30U-F (J1): the PCB male about 11 mm over the board, the female's 15-16 mm housing over it with about 5 mm
 #    engaged, its solder cups and heat-shrink on top: 22 mm (from memory: verify on the AMASS drawings).

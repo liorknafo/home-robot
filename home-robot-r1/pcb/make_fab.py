@@ -109,7 +109,7 @@ def part_note(ref):
         fuses = ', '.join(f'{B.PARTS[r]["value"]} in {r}' for r in ('F1', 'F2'))
         return (f'fuse holder only (the fuses are the plug-in rows: {fuses}); the KiCad footprint gives PCB <= 1.5 mm for its snap lock, '
                 f'this board is {B.PCB_T:g} mm: hold it flat and solder all 8 pins')
-    if ref in ('J4', 'J5'): return 'right-angle: the motor plug lies on the board'
+    if ref in ('J4', 'J5'): return 'right-angle: the C18 pigtail socket lies on the board (PB25)'
     if ref in ('J14', 'J15'):
         n = len(B.symbol_pin_numbers(B.PARTS[ref]['sym']))
         return f'DNP spare pad row (PB8); a bare 1x{n} 2.54 mm header may be fitted later (<= {B.BARE_HEADER_H:g} mm tall)'

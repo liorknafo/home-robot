@@ -36,7 +36,7 @@ class GridRouteTests(unittest.TestCase):
         self.assertEqual({L for L, _, _ in mot}, {'F.Cu'})
 
     def test_motor_and_power_links_never_change_layer(self):
-        """Stage F draws Motor / Power links on one outer layer, no via (one 0.8 / 0.4 mm via carries ~1.1 A of the 2.1 A): F.Cu closed
+        """Stage F draws Motor / Power links on one outer layer, no via (one 0.8 / 0.4 mm via carries ~0.94 A of the 2.1 A): F.Cu closed
         by a wall, B.Cu open past it, the goal on B.Cu - a Motor / Power link whose only path needs the layer change gets none, a signal
         net changes layer there; with a single-layer path (B.Cu wall-free from end to end) the Motor link routes and needs no via."""
         w, h = 20, 12
