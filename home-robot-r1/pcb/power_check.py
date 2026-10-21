@@ -437,8 +437,9 @@ def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers
     Why it is a lower bound: any cut of the joined copper (the layers plus every via between them), restricted to one layer, still
     separates that layer's pad copper from the copper beyond `outer` on that layer alone, so it costs at least that layer's own min cut;
     the vias only add paths. The per-layer min cuts together are therefore at most what the joined layers carry. LIO-240: but
-    raster_cut_mm prices a cut on an 8-neighbour grid, which over-measures a cut that runs off the grid's axes and diagonals - up to ~5 %
-    on a neck at 22.5 deg (a 2.0 mm spoke there reads 2.095 mm; F1.2's +4.5 B.Cu cut 7.98 mm against a 7.40 mm exact min cut, 11.23
+    raster_cut_mm prices a cut on an 8-neighbour grid, which over-measures a cut that runs off the grid's axes and diagonals - up to ~8 %
+    in width (1/cos 22.5 deg), ~6 % in IPC amps (<= 5 % for the <= 8 mm cuts here), on a neck at 22.5 deg (a 2.0 mm spoke there reads
+    2.02 mm, whole-cell raster; F1.2's +4.5 B.Cu cut 7.98 mm against a 7.40 mm exact min cut, 11.23
     against 11.06 A) - so the figure is a lower bound to within that. This needs a disc that
     holds the pad alone: a disc that swallows the relief (B6's r0 = pad + gap + 0.25 mm) takes copper the pin reaches only through its
     spokes, or through vias from another layer, as the pin's own - an upper bound of that layer's share, not a lower one (In1 at J1.1:
@@ -477,7 +478,8 @@ def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers
 # free copper). LIO-239: J2.1's F.Cu helper necks down (1.15 mm) inside +2.5 mm; the old +2.5 ring read 10.3 A only because a dead-end
 # corner of that helper, 5.85 mm out, counted as the sink (8.41 A at +2.5 and 8.40 A at +4.5 with it trimmed, live_copper; 8.6 - 8.8 A by
 # a pin-to-pin max-flow).
-# ponytail: raster_cut_mm's 8-neighbour cut over-measures an off-axis neck, up to ~5 % at 22.5 deg (LIO-240: F1.2 11.23 against 11.06 A
+# ponytail: raster_cut_mm's 8-neighbour cut over-measures an off-axis neck, up to ~8 % in width (1/cos 22.5 deg), ~6 % in IPC amps
+# (<= 5 % for the <= 8 mm cuts here) at 22.5 deg (LIO-240: F1.2 11.23 against 11.06 A
 # by an exact min cut), so these are lower bounds to within that; upgrade path: a 16-neighbour stencil or the exact polygon cut.
 # ponytail: the cut rates each pin out to its ring and section 1 rates the trunk necks; the copper between the two is rated by nothing
 # (section 1 counts only layers that alone join every trunk pin). Today: J2.1's F.Cu strip out to its via at (11.5, 63.25), 7.46 mm out

@@ -29,7 +29,7 @@ ERC_SEVERITY = {}
 # batch DRC run. So the check stays off project-wide, and ktest_pcb.test_lib_footprint_mismatch_is_exactly_the_modified_footprints runs
 # DRC with it on (a temp copy) and fails if the flagged set is not those 13 (LIB_MISMATCH_REFS), so a new mismatch cannot hide behind the ignore.
 # LIO-238: lib_footprint_issues is not ignored: the project fp-lib-table (fp_lib_table) names every footprint library, so DRC on a KiCad
-# with no global table (a fresh install, CI) finds them. LIO-240: kicad-cli 9.0.8's first `sch` run in a fresh config dir
+# with no global table (a fresh install, CI) finds them. LIO-240: kicad-cli 9.0.8's first `sch erc` run in a fresh config dir
 # copies KiCad's template fp-lib-table there and then crashes; later runs pass (README, Build).
 DRC_SEVERITY = {'lib_footprint_mismatch': 'ignore'}
 
