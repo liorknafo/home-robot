@@ -283,15 +283,15 @@ def net_copper(board, net, layer):
 RING_GRID = 0.1            # mm: raster pitch of the ring cuts (B6 fix 1: 0.2 -> 0.1 with whole-cell sampling, copper_raster)
 
 
-def copper_raster(board, layer, grid=RING_GRID, net='GND', west=2.0, whole=True, clip=None):
-    """(cells, W, H, X0, Y0, grid) - the net's copper on `layer` (net_copper) rastered on a grid (zone_check.raster) with a free border
-    round it, so a cut can leave the board: 2 mm, and `west` mm on the -u side (where raster_cut_mm's ray runs: it must reach past any disc
-    that pokes over the board edge); None if the net has no copper there. One raster serves every cut on that layer.
+def copper_raster(board, layer, grid=RING_GRID, net='GND', west=2.0, whole=True, clip=None, fill=None):
+    """(cells, W, H, X0, Y0, grid) - the net's copper on `layer` (net_copper, or `fill` when given) rastered on a grid (zone_check.raster)
+    with a free border round it, so a cut can leave the board: 2 mm, and `west` mm on the -u side (where raster_cut_mm's ray runs: it must
+    reach past any disc that pokes over the board edge); None if the net has no copper there. One raster serves every cut on that layer.
     whole (B6 fix 1): a cell is copper only when it lies wholly in copper - the copper is shrunk by half a cell diagonal before the
     cell-centre test - so a cut straight across a neck w wide crosses at most w / grid copper cells and the raster never rounds a neck up
     (plain cell-centre sampling can add a cell per crossing). clip = (u0, v0, u1, v1): only the copper in that box (LIO-236: a ring cut
     blocks every cell past its outer radius, so the copper there changes nothing and need not be rastered)."""
-    fill = net_copper(board, net, layer)
+    fill = net_copper(board, net, layer) if fill is None else fill
     if clip:
         box = pcbnew.SHAPE_POLY_SET(); box.NewOutline()
         for u, v in ((clip[0], clip[1]), (clip[2], clip[1]), (clip[2], clip[3]), (clip[0], clip[3])): box.Append(MM(u), MM(v))
@@ -395,6 +395,28 @@ GND_CUT_LAYERS = ('F.Cu', 'In1.Cu', 'B.Cu')     # the layers with GND copper (In
 PAD_EDGE = 0.05            # mm past the pad's half size: the ring cuts' disc holds the pad alone, inside the relief gap, short of every spoke
 
 
+DEAD_TRIM = 0.15           # mm inside a ring cut's outer radius where live_copper cuts the copper into pieces
+
+
+def live_copper(board, net, layer, centre, outer, mine):
+    """LIO-239: net_copper on `layer` less its dead ends past the ring: every piece of (copper - disc(centre, outer - DEAD_TRIM)) that holds
+    no via and no pad of the net but the pin's own (`mine` = (ref, pin)). raster_cut_mm takes everything past `outer` as the sink, so a cut
+    had to sever copper that leads nowhere too and read more than the pin passes on (F2.2 12.36 A, 7.44 A trimmed; J2.1's F.Cu corner,
+    5.85 mm out: 10.33 A at +2.5, 8.41 A trimmed)."""
+    lid, ps = Z.LAYER[layer], net_copper(board, net, layer)
+    disc = pcbnew.SHAPE_POLY_SET(); disc.NewOutline()
+    for k in range(256):
+        t = 2 * math.pi * k / 256
+        disc.Append(MM(centre[0] + (outer - DEAD_TRIM) * math.cos(t)), MM(centre[1] + (outer - DEAD_TRIM) * math.sin(t)))
+    out = ps.CloneDropTriangulation(); out.BooleanSubtract(disc)
+    sinks = [v.GetPosition() for v in board.GetTracks() if v.GetClass() == 'PCB_VIA' and v.GetNetname() == net and v.IsOnLayer(lid)]
+    sinks += [q.GetPosition() for fp in board.GetFootprints() for q in fp.Pads()
+              if q.GetNetname() == net and q.IsOnLayer(lid) and (fp.GetReference(), q.GetNumber()) != mine]
+    for pc in Z.pieces(out, 0.0):
+        if not any(pc.Contains(s) for s in sinks): ps.BooleanSubtract(pc)
+    return ps
+
+
 def _pad(board, ref, pin): return [q for q in board.FindFootprintByReference(ref).Pads() if q.GetNumber() == pin][0]
 def _uv(p): return (TOMM(p.GetPosition().x), TOMM(p.GetPosition().y))
 def _half(p): return TOMM(max(p.GetSize().x, p.GetSize().y)) / 2
@@ -402,9 +424,9 @@ def _half(p): return TOMM(max(p.GetSize().x, p.GetSize().y)) / 2
 
 def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers=GND_CUT_LAYERS):
     """The copper leaving the pin ref.pin out to `outer` mm from its centre, as a lower bound (B6 fix 1). Per layer: the min cut
-    (ring_cut_mm, on copper_raster's whole cells) of the net's copper round a disc that holds the pad alone - radius r0 = the pad's
-    half size + PAD_EDGE, inside the relief gap, so the cut may run through the pin's relief spokes - confined to the ring out to `outer`
-    (so it cannot go round the far pin `away` instead), at IPC-2221 for the layer's copper; capped at the layer's own spokes
+    (ring_cut_mm, on copper_raster's whole cells) of the net's copper (less its dead ends past the ring, live_copper, LIO-239) round a
+    disc that holds the pad alone - radius r0 = the pad's half size + PAD_EDGE, inside the relief gap, so the cut may run through the
+    pin's relief spokes - confined to the ring out to `outer` (so it cannot go round the far pin `away` instead), at IPC-2221 for the layer's copper; capped at the layer's own spokes
     (zone_check.pin_spokes: n x spoke width at their drawn width, so raster rounding can never credit more than the spokes); the layers'
     counted widths rated together on their combined cross-section (copper.capacity_a, LIO-231 / LIO-232: summing each layer's own IPC
     current credited every layer the cooling of a lone track - 8.99 A for the 6.71 A J1.1's copper carried as a stack).
@@ -433,7 +455,9 @@ def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers
     per = {}
     for L in layers:
         clip = (c[0] - outer - 1, c[1] - outer - 1, c[0] + outer + 1, c[1] + outer + 1)
-        mm = ring_cut_mm(copper_raster(board, L, grid, net, west=outer - c[0] + 3.0, clip=clip), c, r0, away, outer, [_uv(q) for q in pads[1:]])
+        fill = live_copper(board, net, L, c, outer, (ref, pin))
+        mm = ring_cut_mm(copper_raster(board, L, grid, net, west=outer - c[0] + 3.0, clip=clip, fill=fill), c, r0, away, outer,
+                         [_uv(q) for q in pads[1:]])
         cut_a = C.ipc2221_current_a(mm, C.COPPER_OZ[L], internal=C.is_internal(L)) if 0 < mm < math.inf else 0.0
         n, w, spoke_a = spokes.get(L, (0, 0.0, 0.0))
         per[L] = dict(cut_mm=mm, cut_a=cut_a, spokes=(n, w), spoke_a=spoke_a, a=min(cut_a, spoke_a),
@@ -443,9 +467,14 @@ def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers
 
 # LIO-236: every power trunk pin's copper by pin_ring_cut (the pad metric, section 3, counts a spoke into a thin strip or a dead-end pocket
 # at its full width): out to PIN_RINGS mm past the relief gap, on a PIN_RING_GRID raster (half B6's: a 1.5 mm spoke reads 1.43, not 1.36).
-# LIO-238: (2.5, 4.5), was (1.0, 2.5) - the cut sees nothing past its ring, and J2.1's F.Cu helper necks down (1.15 mm) beyond +2.5 mm on
-# its way to its stitching vias (10.3 A at +2.5, 8.4 A at +4.5, 8.6 - 8.8 A by a pin-to-pin max-flow); +1.0 never bound. +4.5 reaches past
-# every helper a trunk pin feeds; a much larger ring is no better (at +6 mm all four rays of raster_cut_mm cross free copper).
+# LIO-238: (2.5, 4.5), was (1.0, 2.5); +1.0 never bound. A much larger ring is no better (at +6 mm all four rays of raster_cut_mm cross
+# free copper). LIO-239: J2.1's F.Cu helper necks down (1.15 mm) inside +2.5 mm; the old +2.5 ring read 10.3 A only because a dead-end
+# corner of that helper, 5.85 mm out, counted as the sink (8.41 A at +2.5 and 8.40 A at +4.5 with it trimmed, live_copper; 8.6 - 8.8 A by
+# a pin-to-pin max-flow).
+# ponytail: the cut rates each pin out to its ring and section 1 rates the trunk necks; the copper between the two is rated by nothing
+# (section 1 counts only layers that alone join every trunk pin). Today: J2.1's F.Cu strip out to its via at (11.5, 63.25), 7.46 mm out
+# against a 6.35 mm ring, and the VMOT In2 bar from K1.3 to C1.1 (8.2 mm against rings of 6.25 / 6.0 mm), both wide (the bar's narrowest
+# is 5.5 mm against the 2.85 mm counted). Upgrade path if a helper ever necks there: a pin-to-trunk max-flow over the joined layers.
 PIN_RINGS = (2.5, 4.5)
 PIN_RING_GRID = 0.05
 

@@ -28,8 +28,9 @@ ERC_SEVERITY = {}
 # seeded) were tried and are not usable: kicad-cli 9.0.9 does not apply them (the same 10 warnings, and a track_width exclusion in a scratch copy was ignored too), and the CLI is what the tests and any
 # batch DRC run. So the check stays off project-wide, and ktest_pcb.test_lib_footprint_mismatch_is_exactly_the_modified_footprints runs
 # DRC with it on (a temp copy) and fails if the flagged set is not those 13 (LIB_MISMATCH_REFS), so a new mismatch cannot hide behind the ignore.
-# LIO-238: lib_footprint_issues is not ignored: the project fp-lib-table (fp_lib_table) names every footprint library, so a KiCad with no
-# global table (a fresh install, CI) finds them.
+# LIO-238: lib_footprint_issues is not ignored: the project fp-lib-table (fp_lib_table) names every footprint library, so DRC on a KiCad
+# with no global table (a fresh install, CI) finds them. LIO-239: ERC there still needs a global table - kicad-cli 9.0.8 `sch erc` crashes
+# without one, even an empty (fp_lib_table) will do (README, Build).
 DRC_SEVERITY = {'lib_footprint_mismatch': 'ignore'}
 
 def lib_symbol(lib_id):

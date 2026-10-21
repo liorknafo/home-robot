@@ -61,6 +61,9 @@ Status: work in progress. Nothing has been ordered or printed yet.
    - `pcb/tools.py` finds these per OS. Override any of them with `KICAD_CLI`, `KICAD_PYTHON`, `KICAD9_SYMBOL_DIR`, `KICAD9_FOOTPRINT_DIR`,
      `KICAD9_3DMODEL_DIR`, `JAVA` (or `JAVA_HOME`) and `FREEROUTING_JAR`.
    - `pcb/route.py` with no arguments reproduces the committed routing with these versions; it records them in the board's `ROUTED_WITH`.
+   - KiCad 9.0.8's `kicad-cli sch erc` crashes when its config dir has no global `fp-lib-table` (only the GUI's first run writes one), so
+     `test_erc_has_no_errors` errors on a fresh install or CI: open KiCad once, or write an empty `(fp_lib_table)` to `fp-lib-table` in
+     its 9.0 config dir (`%APPDATA%\kicad\9.0`, `~/Library/Preferences/kicad/9.0`, `~/.config/kicad/9.0`), before running the tests.
 4. **Simulator:**
    - Unreal Engine 5.8 (macOS): build with `home-robot-sim/Scripts/build.command`.
    - Sync the robot data: `python home-robot-sim/Scripts/sync_robot_data.py`. It reads `../home-robot-r1/cad` and copies the robot meshes and parameters.
