@@ -1059,9 +1059,10 @@ def main():
     while waiting or running:
         while waiting and len(running) < args.parallel:
             g, o = waiting.pop(0)
-            log = open(work / f'worker{g}-{o}.log', 'w', encoding='utf-8')
-            running.append((g, o, subprocess.Popen([sys.executable, __file__, '--worker', str(g), '--order', o, '--work', str(work),
-                                                    '--passes', str(args.passes), '--critical', args.critical], stdout=log, stderr=subprocess.STDOUT)))
+            # LIO-239: the worker holds its own copy of the handle; an open one here kept TemporaryDirectory from removing work on Windows
+            with open(work / f'worker{g}-{o}.log', 'w', encoding='utf-8') as log:
+                running.append((g, o, subprocess.Popen([sys.executable, __file__, '--worker', str(g), '--order', o, '--work', str(work),
+                                                        '--passes', str(args.passes), '--critical', args.critical], stdout=log, stderr=subprocess.STDOUT)))
         time.sleep(2)
         for g, o, p in [r for r in running if r[2].poll() is not None]:
             running.remove((g, o, p))

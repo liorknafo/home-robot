@@ -102,8 +102,8 @@ class PowerTests(unittest.TestCase):
         """LIO-236 (round-3 review): the pad metric counts a spoke into a 0.3 mm strip or a dead-end pocket at its full width (J2.1 passed
         it at +3.6 % while a pin-to-pin max-flow through its real spokes gave 4.45 A against 7.5 A). Every POWER_TRUNK pin but GND's (a
         plane, PB20: the pad metric and test_battery_gnd_ring_cut) is rated by power_check.trunk_pin_ring - the copper leaving it through
-        its real spokes, pin_ring_cut's per-layer lower bound out to the relief gap + 2.5 and + 4.5 mm (LIO-238: was + 1.0 / + 2.5, short
-        of J2.1's F.Cu helper neck), the smaller, on a 0.05 mm whole-cell raster, capped at the spokes, rated together; only layers whose
+        its real spokes, pin_ring_cut's per-layer lower bound out to the relief gap + 2.5 and + 4.5 mm (LIO-238: was + 1.0 / + 2.5; LIO-239:
+        less the dead-end copper past the ring, power_check.live_copper), the smaller, on a 0.05 mm whole-cell raster, capped at the spokes, rated together; only layers whose
         copper leads on to the trunk count - and must carry its pad_current with LOW_MARGIN to spare. LIO-238: ORDERING.md's figures are
         these, the thinnest by margin first."""
         got = {}
@@ -130,11 +130,15 @@ class PowerTests(unittest.TestCase):
         """LIO-236: the ring cut can fail. On a scratch copy without the F1_OUT F.Cu helper round J2.1 (its zone deleted, the board
         refilled) J2.1 has its B.Cu and In2 copper only and falls short of its 7.5 A with the margin; and the VBAT_SW In2 helper round J2.2,
         which holds no via and no other VBAT_SW pin, counts for nothing. LIO-238: the helper's strip out to its stitching vias narrowed from
-        1.5 to 0.5 mm (beyond the old + 2.5 mm ring, which read the same 10.3 A) lowers J2.1's figure by its F.Cu share."""
+        1.5 to 0.5 mm (from u 5.6, 2.3 mm from J2.1) lowers J2.1's figure by its F.Cu share.
+        LIO-239: copper past the ring that leads nowhere is no sink (power_check.live_copper). J2.1's F.Cu helper necks inside + 2.5 mm, but
+        its dead-end south-west corner reaches 5.85 mm out, past that ring: counted as the sink it made the + 2.5 ring read 10.3 A against
+        8.4 A at + 4.5; trimmed, the two rings agree."""
         r = P.trunk_pin_ring(self.board, 'J2', '2')
         self.assertNotIn('In2.Cu', r['per'])
         self.assertIn('In2.Cu', P.pad_spokes(self.board, 'J2', '2'))
         full = P.trunk_pin_ring(self.board, 'J2', '1')
+        self.assertAlmostEqual(full['rings'][2.5], full['rings'][4.5], delta=0.1, msg=full['rings'])
         with tempfile.TemporaryDirectory() as t:
             b = scratch_copy(t)
             z = next(z for z in b.Zones() if z.GetZoneName() == 'F1_OUT_POUR_F')
