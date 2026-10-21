@@ -83,7 +83,9 @@ Order: **reflow SMD → inspect → iron THT, trimming leads to ≤ 1.4 mm → m
 
    **Trim every lead to ≤ 1.4 mm under the board.** The board sits on 2.4 mm spacers and printed ribs, which leaves 1.0 mm of air.
 4. **Modules come last** (section 4 onward): the Pico first, on USB (section 4), then the P03, set on the bench (section 5), then the
-   two DRV8874 carriers and the GY-521.
+   two DRV8874 carriers and the GY-521. **A DRV8874 carrier also fits turned 180°, which puts VMOT on its VREF pin:** component side
+   up, its VIN / GND / OUT1 row in U3P / U4P (the row nearer the front edge) and its VM / GND / EN row in U3L / U4L, VIN (named on the
+   carrier; VIN and VM share an end, beside the square GND pads) in the hole at the silk "VIN".
 
 ## 2. Unpowered checks
 

@@ -542,9 +542,13 @@ POLARISED = ['LED1', 'LED2', 'LED3', 'D1', 'D2', 'Q1', 'Q2', 'Q3', 'Q4', 'Q5', '
 #    nearer U5A.1 than J4.6 (a 0.7 mm J4 move for room put J4 under the IMU module and its plug corridor into U2 / R3). U5B.1's past the
 #    terminal's +v end (pin 1's end: TP3 and H3's vias leave its -u side no spot nearer U5B.1 than another pad), 2 mm toward the front
 #    edge so U5B's label fits beside it (SILK_LABEL_AT). J3.1's north of the Micro-Fit housing.
-PIN_MARKS = {'J1': {J1_BAT_PIN[1]: '+', J1_GND_PIN[1]: '-'}, 'U5A': {'1': '+'}, 'U5B': {'1': '+'}, 'J3': {'1': '+'}}
+#  - LIO-242: a 'VIN' text (any mark but '+' / '-' is drawn as a SILK_TEXT_H text) at the DRV8874 carriers' VIN pin (U3P.1, U4P.1). The
+#    Pololu 4035 is symmetric: turned 180 degrees it fits the same two sockets (carrier row L pin k in socket row P pin 8 - k), which puts
+#    its VREF on VMOT and its GNDs on DRV_SLEEP / DRV_FAULT. The mark sits 2.1 mm past the carrier's pin-1 end (-v), off its body.
+PIN_MARKS = {'J1': {J1_BAT_PIN[1]: '+', J1_GND_PIN[1]: '-'}, 'U5A': {'1': '+'}, 'U5B': {'1': '+'}, 'J3': {'1': '+'},
+             'U3P': {str(DRV_PINS['VIN'][1]): 'VIN'}, 'U4P': {str(DRV_PINS['VIN'][1]): 'VIN'}}
 PIN_MARK_AT = {'J1': {J1_BAT_PIN[1]: (3.5, 0.0), J1_GND_PIN[1]: (3.5, 0.0)}, 'U5A': {'1': (-5.85, -0.5)}, 'U5B': {'1': (2.0, 3.3)},
-               'J3': {'1': (0.0, -1.7)}}
+               'J3': {'1': (0.0, -1.7)}, 'U3P': {'1': (0.0, -2.1)}, 'U4P': {'1': (0.0, -2.1)}}
 PIN_MARK_LEN = 0.7      # B12a: 0.8 -> 0.7 mm, so U5A.1's '+' (0.85 mm over the stroke ends) fits its 0.95 mm slot with 0.05 mm a side
 # Labels placed by hand (B12a): ref -> (u, v, angle) of the label's glyph-box centre, held to place_silk_labels' rules (build_pcb asserts
 # them) and placed before the search. U5B's only free side is the strip past its +v end (u 62.6 - 73.5, between its body and J8 / J15),
