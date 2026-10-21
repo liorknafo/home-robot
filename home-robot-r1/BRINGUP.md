@@ -243,11 +243,12 @@ Fit the Jetson (four M2.5 top screws), then its six plugs. Its barrel-jack power
 
 Before step 7, do sections 7–9: the LEDs, the test pads and the under-carrier plugs can be reached only until the Jetson is on.
 
-## 7. First power with the Jetson off
+## 7. First power with the Jetson not fitted
 
 All three status LEDs and all five test pads sit **under the Jetson carrier** (robot x ≥ −38.5). They can be seen and reached only
-before the Jetson is fitted, so do this whole section with it off. **Keep the Pico on the bench computer's USB (section 4)**
-throughout: with D2 DNP and the Jetson off, nothing else powers the Pico and the 3V3 rail.
+before the Jetson is fitted, so do this whole section with it not fitted; the one point where it is powered is step 3, beside the
+robot. **Keep the Pico on the bench computer's USB (section 4)** throughout: with D2 DNP and the Jetson not fitted, nothing else
+powers the Pico and the 3V3 rail.
 
 | Ref | Shows / net | Robot (x, y) mm | Note |
 |---|---|---|---|
