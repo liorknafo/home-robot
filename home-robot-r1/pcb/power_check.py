@@ -13,7 +13,7 @@ The measurements are the B4 / B5 ones (zone_check), wrapped here under the B6 in
                          isolates, so what current really passes it;
  - track_loads         per tap track / via: the summed TAP_LOAD_A of the pads it alone feeds, against its IPC-2221 capacity (item 4);
  - battery_gnd_ring_cut  ruling PB20 (b): GND is a plane, not a trunk - every GND trunk pin's pad metric (above) and, round the
-                         battery GND pin, the copper leaving every ring out to the nearest GND load pin: pin_ring_cut, a lower bound
+                         battery GND pin, the copper leaving every ring out to the nearest GND load pin: pin_ring_cut, a lower bound to within ~5 %
                          (per-layer min cuts from the pad edge, through the spokes, capped at them, B6 fix 1; rated on their combined
                          cross-section, LIO-232);
  - min_track_width, motor_vias (item 5), c3_ripple (item 6), drv8874_dissipation / drv8874_current_for_tj (item 7, PB20 e).
@@ -400,9 +400,11 @@ DEAD_TRIM = 0.15           # mm inside a ring cut's outer radius where live_copp
 
 def live_copper(board, net, layer, centre, outer, mine):
     """LIO-239: net_copper on `layer` less its dead ends past the ring: every piece of (copper - disc(centre, outer - DEAD_TRIM)) that holds
-    no via and no pad of the net but the pin's own (`mine` = (ref, pin)). raster_cut_mm takes everything past `outer` as the sink, so a cut
+    no via of the net and no pad of it but the pin's own (`mine` = (ref, pin)) - on a non-GND net only its POWER_TRUNK pads (LIO-240). raster_cut_mm takes everything past `outer` as the sink, so a cut
     had to sever copper that leads nowhere too and read more than the pin passes on (F2.2 12.36 A, 7.44 A trimmed; J2.1's F.Cu corner,
-    5.85 mm out: 10.33 A at +2.5, 8.41 A trimmed)."""
+    5.85 mm out: 10.33 A at +2.5, 8.41 A trimmed). LIO-240: a signal pad is no sink - R11.1 (a divider, 0.07 mA) had kept a 24.5 sq mm
+    F.Cu piece on F2.1's +4.5 ring alive (9.29 A, 8.48 A without it). GND keeps every pad: its loads' GND pins are real returns (the
+    battery pin's F.Cu would read 0 with only its trunk pins)."""
     lid, ps = Z.LAYER[layer], net_copper(board, net, layer)
     disc = pcbnew.SHAPE_POLY_SET(); disc.NewOutline()
     for k in range(256):
@@ -410,8 +412,8 @@ def live_copper(board, net, layer, centre, outer, mine):
         disc.Append(MM(centre[0] + (outer - DEAD_TRIM) * math.cos(t)), MM(centre[1] + (outer - DEAD_TRIM) * math.sin(t)))
     out = ps.CloneDropTriangulation(); out.BooleanSubtract(disc)
     sinks = [v.GetPosition() for v in board.GetTracks() if v.GetClass() == 'PCB_VIA' and v.GetNetname() == net and v.IsOnLayer(lid)]
-    sinks += [q.GetPosition() for fp in board.GetFootprints() for q in fp.Pads()
-              if q.GetNetname() == net and q.IsOnLayer(lid) and (fp.GetReference(), q.GetNumber()) != mine]
+    sinks += [q.GetPosition() for fp in board.GetFootprints() for q in fp.Pads() if q.GetNetname() == net and q.IsOnLayer(lid)
+              and (fp.GetReference(), q.GetNumber()) != mine and (net == 'GND' or (fp.GetReference(), q.GetNumber()) in B.POWER_TRUNK[net])]
     for pc in Z.pieces(out, 0.0):
         if not any(pc.Contains(s) for s in sinks): ps.BooleanSubtract(pc)
     return ps
@@ -423,7 +425,8 @@ def _half(p): return TOMM(max(p.GetSize().x, p.GetSize().y)) / 2
 
 
 def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers=GND_CUT_LAYERS):
-    """The copper leaving the pin ref.pin out to `outer` mm from its centre, as a lower bound (B6 fix 1). Per layer: the min cut
+    """The copper leaving the pin ref.pin out to `outer` mm from its centre, as a lower bound to within ~5 % (B6 fix 1; LIO-240: see the
+    8-neighbour note below). Per layer: the min cut
     (ring_cut_mm, on copper_raster's whole cells) of the net's copper (less its dead ends past the ring, live_copper, LIO-239) round a
     disc that holds the pad alone - radius r0 = the pad's half size + PAD_EDGE, inside the relief gap, so the cut may run through the
     pin's relief spokes - confined to the ring out to `outer` (so it cannot go round the far pin `away` instead), at IPC-2221 for the layer's copper; capped at the layer's own spokes
@@ -433,7 +436,10 @@ def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers
 
     Why it is a lower bound: any cut of the joined copper (the layers plus every via between them), restricted to one layer, still
     separates that layer's pad copper from the copper beyond `outer` on that layer alone, so it costs at least that layer's own min cut;
-    the vias only add paths. The per-layer min cuts together are therefore at most what the joined layers carry. This needs a disc that
+    the vias only add paths. The per-layer min cuts together are therefore at most what the joined layers carry. LIO-240: but
+    raster_cut_mm prices a cut on an 8-neighbour grid, which over-measures a cut that runs off the grid's axes and diagonals - up to ~5 %
+    on a neck at 22.5 deg (a 2.0 mm spoke there reads 2.095 mm; F1.2's +4.5 B.Cu cut 7.98 mm against a 7.40 mm exact min cut, 11.23
+    against 11.06 A) - so the figure is a lower bound to within that. This needs a disc that
     holds the pad alone: a disc that swallows the relief (B6's r0 = pad + gap + 0.25 mm) takes copper the pin reaches only through its
     spokes, or through vias from another layer, as the pin's own - an upper bound of that layer's share, not a lower one (In1 at J1.1:
     3.46 A credited against 2.26 A of spokes). A layer the pin has no spoke on counts 0 here (its via-joined copper counts in the pad
@@ -471,6 +477,8 @@ def pin_ring_cut(board, ref, pin, outer, away, grid=RING_GRID, net='GND', layers
 # free copper). LIO-239: J2.1's F.Cu helper necks down (1.15 mm) inside +2.5 mm; the old +2.5 ring read 10.3 A only because a dead-end
 # corner of that helper, 5.85 mm out, counted as the sink (8.41 A at +2.5 and 8.40 A at +4.5 with it trimmed, live_copper; 8.6 - 8.8 A by
 # a pin-to-pin max-flow).
+# ponytail: raster_cut_mm's 8-neighbour cut over-measures an off-axis neck, up to ~5 % at 22.5 deg (LIO-240: F1.2 11.23 against 11.06 A
+# by an exact min cut), so these are lower bounds to within that; upgrade path: a 16-neighbour stencil or the exact polygon cut.
 # ponytail: the cut rates each pin out to its ring and section 1 rates the trunk necks; the copper between the two is rated by nothing
 # (section 1 counts only layers that alone join every trunk pin). Today: J2.1's F.Cu strip out to its via at (11.5, 63.25), 7.46 mm out
 # against a 6.35 mm ring, and the VMOT In2 bar from K1.3 to C1.1 (8.2 mm against rings of 6.25 / 6.0 mm), both wide (the bar's narrowest
@@ -510,7 +518,7 @@ def nearest_gnd_load(board, ref, pin):
 def gnd_cut_capacity(board, ref, pin):
     """({layer: (cut mm, A)}, the stack's A, nearest GND trunk pin) - the GND copper leaving the pin (report only), measured as the
     battery pin's: pin_ring_cut out to just short of its nearest GND trunk pin (nearest_gnd_load) - per layer the min cut from the pad
-    edge, capped at the layer's spokes, the layers rated together: a lower bound. B6 fix 1: the disc used to reach 2 mm past the relief
+    edge, capped at the layer's spokes, the layers rated together: a lower bound (to within ~5 %, LIO-240). B6 fix 1: the disc used to reach 2 mm past the relief
     to take in the pin's patch vias (copper the pin reaches only through those vias counted as its own, not a lower bound) and the ring
     ran out to 2 mm short of a far pin, where a neck behind dozens of vias set the figure; a patch reached only through vias counts in the
     pad metric (section 3)."""
@@ -584,7 +592,7 @@ def report(board):
     row('')
     row(f'## 3b. Non-GND power trunk pins by the ring cut (LIO-236, LIO-238): the copper leaving each pin through its real spokes, out to the relief gap + '
         f'{" / ".join(f"{e:g}" for e in PIN_RINGS)} mm, per layer the min cut on a {PIN_RING_GRID:g} mm whole-cell raster, capped at the '
-        f'spokes, rated together (trunk_pin_ring): the escape of each pin out to that ring, a lower bound there - not of the path on to the trunk '
+        f'spokes, rated together (trunk_pin_ring): the escape of each pin out to that ring, a lower bound there to within ~5 % (the 8-neighbour cut, on a neck at 22.5 deg) - not of the path on to the trunk '
         f'past it (section 1 rates the trunk necks); pass >= {1 + LOW_MARGIN:.2f} x need')
     row(f'{"pin":7} {"net":8} {"need A":>6}  {"per layer: cut mm / spokes":44} {"rings A":24} {"A":>6} {"margin":>8}')
     for net in (n for n in B.POWER_TRUNK if n != 'GND'):
@@ -619,7 +627,7 @@ def report(board):
     row(f'Battery GND pin {r["pin"][0]}.{r["pin"][1]} (J1 pinout {B.J1_PINOUT}), direct layers {list(r["direct"])}: the copper leaving '
         f'the pad across every ring from its edge (disc r0 {r["r0"]} mm, inside the relief gap: the cut may run through the spokes) out '
         f'to r1 {r["r1"]} mm (short of {r["away"]}); per layer the min cut on a {RING_GRID:g} mm whole-cell raster, capped at the '
-        f'layer\'s spokes, the layers rated together on their combined cross-section (copper.capacity_a) - a lower bound (pin_ring_cut; '
+        f'layer\'s spokes, the layers rated together on their combined cross-section (copper.capacity_a) - a lower bound to within ~5 % (pin_ring_cut; '
         f'one cut covers every radius):')
     for lay, x in r['per'].items():
         row(f'  {lay:7}: min cut {x["cut_mm"]:5.2f} mm -> {x["cut_a"]:5.2f} A; spokes {x["spokes"][0]} x {x["spokes"][1]:g} mm -> '
@@ -629,7 +637,7 @@ def report(board):
     g = Z.trunk_capacity(board, 'GND')
     row(f'(the brief\'s single-stream GND trunk metric, superseded by PB20: {g["width_mm"]} -> {g["capacity_a"]:.2f} A)')
     row('  GND copper leaving each source pin, out to its nearest GND trunk pin (pin_ring_cut as above: per-layer min cut from the pad '
-        'edge, capped at the spokes, rated together - a lower bound that ignores every via; report only)')
+        'edge, capped at the spokes, rated together - a lower bound (to within ~5 %) that ignores every via; report only)')
     for (ref, pin), amps in GND_SOURCES:
         per, tot, near = gnd_cut_capacity(board, ref, pin)
         row(f'  {ref}.{pin} (carries {amps:.2f} A, ring to {near}): ' + ', '.join(f'{L.split(".")[0]} {mm:.2f} mm {a:.2f} A'

@@ -184,12 +184,12 @@ Facts not in the repo, quoted from memory: check each one before ordering (the B
       cross-section (`copper.capacity_a`), the battery GND pin's ring cut (`power_check.pin_ring_cut`) too since LIO-232: 8.4 A
       against the 7.5 A fuse (summing the layers had shown 9.0 A for copper that carried 6.7 A as a stack; LIO-236 took the best of
       four ray directions, where the cut had passed free along its one ray through the pin's west spoke: 7.8 A before). It is a lower
-      bound that ignores every via. LIO-236: every non-GND power trunk pin is rated by the same ring cut (`power_check.trunk_pin_ring`, the
+      bound (to within ≈ 5 % on a neck at 22.5°: the cut is priced on an 8-neighbour grid; LIO-240) that ignores every via. LIO-236: every non-GND power trunk pin is rated by the same ring cut (`power_check.trunk_pin_ring`, the
       copper leaving it through its real spokes, so a spoke into a thin strip or a dead-end pocket counts what the copper behind it
       passes). LIO-238: it rates the pin's escape out to the relief gap + 2.5 / 4.5 mm (the smaller), not the path on past that ring:
       the trunks' own necks are the power report's section 1, and the copper between a pin's ring and those necks is rated by nothing
       (today J2.1's F.Cu strip out to its stitching via and the VMOT In2 bar from K1.3 to C1.1, both wide; the way up is a pin-to-trunk
-      max-flow). LIO-239: copper past the ring that leads nowhere (no via, no other pad of the net) no longer counts as the way on (F2.2
+      max-flow). LIO-239: copper past the ring that leads nowhere (no via, no other power trunk pad of the net; LIO-240: a signal pad is no way on) no longer counts as the way on (F2.2
       had read 12.4 A for F.Cu copper that passes 7.4 A); the thinnest is J2.2 (VBAT_SW) at 7.9 A against 7.5 A, J1.2 (BAT+) 8.2 A,
       J2.1 (F1_OUT) 8.4 A, K1.1 (F2_OUT) 5.7 A against 5 A and U5B.1 (5V) 6.1 A against 4.71 A.
 - [ ] **C1 Panasonic EEU-FR1E471** (FR, 470 µF 25 V): ESR about 0.04 Ω; 10 mm diameter, 5 mm lead pitch, ≤ 20 mm tall (the STEP envelope
