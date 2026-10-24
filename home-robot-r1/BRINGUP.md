@@ -356,7 +356,8 @@ Steps:
   - The controller sets it high (LED fully on, about 59 mA from J15 pin 5) while a task drives, mapping or Go-to, and low when idle.
   - **No PWM dimming:** a rolling-shutter camera would show bands. GP20 is on PWM slice 2 A if dimming is ever wanted.
   - A 100 kΩ resistor from the MOSFET gate to GND keeps the LED off while the Pico boots or resets (section 10 item 6).
-- **Jetson power:** barrel-jack power needs the Jetson Nano's **J48 jumper** fitted.
+- **Jetson power:** barrel-jack power needs the Jetson Nano's **J48 jumper** fitted. On a B01 it sits beside the barrel jack; on an A02,
+  beside the camera connector J13, on the carrier edge opposite the 40-pin header.
 - **D2 fitted** (DNP as delivered; section 4 item 2): the Pico then runs from the board's 5V with the Jetson off. Once firmware
   enables USB, the RP2040's 1.5 kΩ D+ pull-up feeds 1–2 mA into the unpowered Jetson's hub, so enable USB only while the Pico's VBUS
   sense (GPIO24) is high; without VBUS, hold XSHUT1–XSHUT4 low and idle. The Pico and its sensors (about 0.2 A) keep running after
@@ -405,7 +406,8 @@ Steps:
 
    Measure two things:
    - **(a)** the tallest part over the board top, with every plug mated;
-   - **(b)** how far the Jetson carrier's lead tails stand below its PCB. Measure this on the Jetson, upside down.
+   - **(b)** how far the Jetson carrier's lead tails stand below its PCB. Measure this on the Jetson, upside down. On an A02, include
+     the tails of its J40 / J44 pin headers (the carrier's rear-right corner); the B01 CAD model has no headers there.
 
    Then require **(a) + (b) + 1.5 mm ≤ 20.0 mm**.
 

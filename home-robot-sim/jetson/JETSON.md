@@ -36,7 +36,9 @@ vision/export_onnx.py                          jetson/build_engine.py           
 
 ## What you need
 
-- **Jetson Nano 4 GB** (B01) with **JetPack 4.6.x** (L4T R32.6 / R32.7) on a 32 GB+ SD card, connected to the same network as the PC.
+- **Jetson Nano 4 GB** (B01 or A02, the same SD card image) with **JetPack 4.6.x** (L4T R32.6 / R32.7) on a 32 GB+ SD card, connected
+  to the same network as the PC. If a freshly written card shows nothing but the power LED, the board's QSPI bootloader predates
+  JetPack 4.5: flash it once with SDK Manager (Force Recovery: jumper A02 J40 pins 3-4, or B01 J50 pins 9-10, at power-on).
 - **The robot camera:**
   - USB UVC camera (the OV2735 module, 1080p): `--source usb`.
   - A CSI camera supported by JetPack (IMX219 / IMX477) also works: `--source csi`. The OV5647 Pi camera is not supported by stock
