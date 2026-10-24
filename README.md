@@ -12,7 +12,7 @@ Status: work in progress. Nothing has been ordered or printed yet.
 
 ## Robot at a glance
 
-- **Compute:** Jetson Nano B01 on standoffs over the motors.
+- **Compute:** Jetson Nano 4 GB developer kit on standoffs over the motors: B01 (the CAD model) or A02 (same footprint, ports and power).
 - **Board:** a 74 × 100 mm 4-layer power & I/O board under the Jetson. It carries:
   - a Raspberry Pi Pico for real-time I/O;
   - two Pololu DRV8874 motor drivers;
